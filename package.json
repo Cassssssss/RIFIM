@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "env HOST=0.0.0.0 env-cmd -f .env.development.frontend react-scripts --openssl-legacy-provider start",
+    "start": "npx env-cmd -f .env.development.frontend react-scripts --openssl-legacy-provider start",
     "build": "react-scripts build",
     "server": "env-cmd -f .env.development.backend nodemon server.js",
     "server:prod": "env-cmd -f .env.production.backend node server.js",
