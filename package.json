@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "npx env-cmd -f .env.development.frontend react-scripts --openssl-legacy-provider start",
+    "start": "NODE_ENV=production env-cmd -f .env.production.backend node server.js",
     "build": "react-scripts build",
     "server": "env-cmd -f .env.development.backend nodemon server.js",
     "server:prod": "env-cmd -f .env.production.backend node server.js",
@@ -81,13 +81,5 @@
     "postcss": "^8.4.41",
     "tailwindcss": "^3.4.9",
     "typescript": "^4.9.5"
-  },
-  "babel": {
-    "presets": [
-      "react-app"
-    ],
-    "plugins": [
-      "@babel/plugin-proposal-private-property-in-object"
-    ]
   }
 }
