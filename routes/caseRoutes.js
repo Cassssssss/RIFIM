@@ -5,19 +5,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const AWS = require('aws-sdk');
-
-// Configuration de DigitalOcean Spaces
-const spacesEndpoint = new AWS.Endpoint(process.env.DO_SPACES_ENDPOINT);
-const s3 = new AWS.S3({
-  endpoint: spacesEndpoint,
-  accessKeyId: process.env.DO_SPACES_KEY,
-  secretAccessKey: process.env.DO_SPACES_SECRET,
-  s3ForcePathStyle: true,
-  signatureVersion: 'v4'
-});
-
-const SPACES_URL = process.env.SPACES_URL || 'https://rifim.lon1.digitaloceanspaces.com';
+const s3 = require('../src/utils/spacesConfig');
 
 // Configuration de Multer pour l'upload de fichiers
 const upload = multer({ storage: multer.memoryStorage() });
@@ -44,6 +32,7 @@ router.get('/', async (req, res) => {
 
 // POST new case
 router.post('/', async (req, res) => {
+  console.log('Tentative de création d\'un nouveau cas:', req.body);
   const newCase = new Case({
     ...req.body,
     user: req.userId
@@ -51,6 +40,7 @@ router.post('/', async (req, res) => {
 
   try {
     const savedCase = await newCase.save();
+    console.log('Nouveau cas créé avec succès:', savedCase);
     res.status(201).json(savedCase);
   } catch (error) {
     console.error('Erreur lors de la création du cas:', error);
@@ -60,9 +50,11 @@ router.post('/', async (req, res) => {
 
 // GET specific case
 router.get('/:id', async (req, res) => {
+  console.log('Tentative de récupération du cas:', req.params.id);
   try {
     const caseDoc = await Case.findOne({ _id: req.params.id, user: req.userId });
     if (!caseDoc) {
+      console.log('Cas non trouvé:', req.params.id);
       return res.status(404).json({ message: 'Cas non trouvé' });
     }
 
@@ -73,6 +65,7 @@ router.get('/:id', async (req, res) => {
       caseObject.folderMainImages = Object.fromEntries(caseDoc.folderMainImages);
     }
 
+    console.log('Cas récupéré avec succès:', caseObject);
     res.json(caseObject);
   } catch (error) {
     console.error('Erreur lors de la récupération du cas:', error);
@@ -82,9 +75,11 @@ router.get('/:id', async (req, res) => {
 
 // POST new folder to a case
 router.post('/:id/folders', async (req, res) => {
+  console.log('Tentative d\'ajout d\'un nouveau dossier:', req.body);
   try {
     const caseDoc = await Case.findOne({ _id: req.params.id, user: req.userId });
     if (!caseDoc) {
+      console.log('Cas non trouvé pour l\'ajout du dossier:', req.params.id);
       return res.status(404).json({ message: 'Cas non trouvé' });
     }
 
@@ -95,17 +90,21 @@ router.post('/:id/folders', async (req, res) => {
     }
 
     const updatedCase = await caseDoc.save();
+    console.log('Dossier ajouté avec succès:', folderName);
     res.json(updatedCase);
   } catch (error) {
+    console.error('Erreur lors de l\'ajout du dossier:', error);
     res.status(400).json({ message: error.message });
   }
 });
 
 // POST images to a case
 router.post('/:id/images', upload.array('images'), async (req, res) => {
+  console.log('Tentative d\'ajout d\'images:', req.params.id, req.body.folder);
   try {
     const caseDoc = await Case.findOne({ _id: req.params.id, user: req.userId });
     if (!caseDoc) {
+      console.log('Cas non trouvé pour l\'ajout d\'images:', req.params.id);
       return res.status(404).json({ message: 'Cas non trouvé' });
     }
 
@@ -133,10 +132,11 @@ router.post('/:id/images', upload.array('images'), async (req, res) => {
       caseDoc.images[folder] = [];
     }
 
-    caseDoc.images[folder].push(...results.map(result => `${result.Location}`));
+    caseDoc.images[folder].push(...results.map(result => result.Location));
     caseDoc.markModified('images');
 
     const updatedCase = await caseDoc.save();
+    console.log('Images ajoutées avec succès:', results.map(r => r.Location));
     res.json(updatedCase);
   } catch (error) {
     console.error('Erreur lors de l\'ajout d\'images:', error);
@@ -146,9 +146,11 @@ router.post('/:id/images', upload.array('images'), async (req, res) => {
 
 // POST main image for a case
 router.post('/:id/main-image', upload.single('mainImage'), async (req, res) => {
+  console.log('Tentative de définition de l\'image principale:', req.params.id);
   try {
     const caseDoc = await Case.findOne({ _id: req.params.id, user: req.userId });
     if (!caseDoc) {
+      console.log('Cas non trouvé pour l\'image principale:', req.params.id);
       return res.status(404).json({ message: 'Cas non trouvé' });
     }
 
@@ -162,21 +164,25 @@ router.post('/:id/main-image', upload.single('mainImage'), async (req, res) => {
     };
 
     const result = await s3.upload(params).promise();
-    console.log(result.Location);
+    console.log('Image principale uploadée:', result.Location);
 
-    caseDoc.mainImage = `${result.Location}`;
+    caseDoc.mainImage = result.Location;
     const updatedCase = await caseDoc.save();
+    console.log('Image principale mise à jour avec succès');
     res.json(updatedCase);
   } catch (error) {
+    console.error('Erreur lors de la définition de l\'image principale:', error);
     res.status(400).json({ message: error.message });
   }
 });
 
 // POST main image for a folder
 router.post('/:id/folder-main-image', upload.single('folderMainImage'), async (req, res) => {
+  console.log('Tentative de définition de l\'image principale du dossier:', req.params.id, req.body.folder);
   try {
     const caseDoc = await Case.findOne({ _id: req.params.id, user: req.userId });
     if (!caseDoc) {
+      console.log('Cas non trouvé pour l\'image principale du dossier:', req.params.id);
       return res.status(404).json({ message: 'Cas non trouvé' });
     }
     const folder = req.body.folder;
@@ -190,17 +196,17 @@ router.post('/:id/folder-main-image', upload.single('folderMainImage'), async (r
     };
 
     const result = await s3.upload(params).promise();
+    console.log('Image principale du dossier uploadée:', result.Location);
 
     if (!caseDoc.folderMainImages) {
       caseDoc.folderMainImages = {};
     }
-    caseDoc.folderMainImages.set(folder, `${result.Location}`);
+    caseDoc.folderMainImages[folder] = result.Location;
 
-    // Convertir la Map en objet avant de sauvegarder dans MongoDB
-    caseDoc.folderMainImages = Object.fromEntries(caseDoc.folderMainImages);
     caseDoc.markModified('folderMainImages');
     
     const updatedCase = await caseDoc.save();
+    console.log('Image principale du dossier mise à jour avec succès');
     res.json(updatedCase);
   } catch (error) {
     console.error('Erreur lors de la définition de l\'image principale du dossier:', error);
@@ -210,20 +216,24 @@ router.post('/:id/folder-main-image', upload.single('folderMainImage'), async (r
 
 // DELETE image from a case
 router.delete('/:id/images', async (req, res) => {
+  console.log('Tentative de suppression d\'image:', req.params.id, req.body);
   try {
     const { folder, fileName } = req.body;
     const caseDoc = await Case.findOne({ _id: req.params.id, user: req.userId });
     if (!caseDoc) {
+      console.log('Cas non trouvé pour la suppression d\'image:', req.params.id);
       return res.status(404).json({ message: 'Cas non trouvé' });
     }
 
     if (!caseDoc.images[folder]) {
+      console.log('Dossier non trouvé pour la suppression d\'image:', folder);
       return res.status(404).json({ message: 'Dossier non trouvé' });
     }
 
     const imagePath = `${folder}/${fileName}`;
     const imageIndex = caseDoc.images[folder].findIndex(path => path.endsWith(fileName));
     if (imageIndex === -1) {
+      console.log('Image non trouvée pour la suppression:', fileName);
       return res.status(404).json({ message: 'Image non trouvée' });
     }
 
@@ -240,6 +250,7 @@ router.delete('/:id/images', async (req, res) => {
     };
 
     await s3.deleteObject(params).promise();
+    console.log('Image supprimée avec succès:', key);
 
     res.json(caseDoc);
   } catch (error) {
@@ -250,9 +261,11 @@ router.delete('/:id/images', async (req, res) => {
 
 // DELETE a case
 router.delete('/:id', async (req, res) => {
+  console.log('Tentative de suppression du cas:', req.params.id);
   try {
     const deletedCase = await Case.findOneAndDelete({ _id: req.params.id, user: req.userId });
     if (!deletedCase) {
+      console.log('Cas non trouvé pour la suppression:', req.params.id);
       return res.status(404).json({ message: 'Cas non trouvé' });
     }
 
@@ -276,12 +289,13 @@ router.delete('/:id', async (req, res) => {
         });
 
         await s3.deleteObjects(deleteParams).promise();
+        console.log('Images associées supprimées avec succès');
       }
     } catch (spaceError) {
       console.error('Erreur lors de la suppression des images dans Spaces:', spaceError);
-      // Ne pas bloquer la suppression du cas si la suppression des images échoue
     }
 
+    console.log('Cas supprimé avec succès:', req.params.id);
     res.json({ message: 'Cas et images associées supprimés avec succès' });
   } catch (error) {
     console.error('Erreur lors de la suppression du cas:', error);
@@ -291,9 +305,11 @@ router.delete('/:id', async (req, res) => {
 
 // DELETE a folder from a case
 router.delete('/:id/folders/:folder', async (req, res) => {
+  console.log('Tentative de suppression du dossier:', req.params.id, req.params.folder);
   try {
     const caseDoc = await Case.findOne({ _id: req.params.id, user: req.userId });
     if (!caseDoc) {
+      console.log('Cas non trouvé pour la suppression du dossier:', req.params.id);
       return res.status(404).json({ message: 'Cas non trouvé' });
     }
 
@@ -306,8 +322,8 @@ router.delete('/:id/folders/:folder', async (req, res) => {
       delete caseDoc.images[folder];
     }
 
-    if (caseDoc.folderMainImages && caseDoc.folderMainImages.has(folder)) {
-      caseDoc.folderMainImages.delete(folder);
+    if (caseDoc.folderMainImages && caseDoc.folderMainImages[folder]) {
+      delete caseDoc.folderMainImages[folder];
     }
 
     // Suppression des images du dossier dans DigitalOcean Spaces
@@ -326,9 +342,11 @@ router.delete('/:id/folders/:folder', async (req, res) => {
         deleteParams.Delete.Objects.push({ Key });
       });
       await s3.deleteObjects(deleteParams).promise();
+      console.log('Images du dossier supprimées avec succès');
     }
 
     await caseDoc.save();
+    console.log('Dossier supprimé avec succès:', folder);
     res.json(caseDoc);
   } catch (error) {
     console.error('Erreur lors de la suppression du dossier:', error);
@@ -338,6 +356,7 @@ router.delete('/:id/folders/:folder', async (req, res) => {
 
 // PATCH update case difficulty
 router.patch('/:id', async (req, res) => {
+  console.log('Tentative de mise à jour du cas:', req.params.id, req.body);
   try {
     const { difficulty, answer, sheet } = req.body;
     const updatedCase = await Case.findOneAndUpdate(
@@ -347,9 +366,11 @@ router.patch('/:id', async (req, res) => {
     );
 
     if (!updatedCase) {
+      console.log('Cas non trouvé pour la mise à jour:', req.params.id);
       return res.status(404).json({ message: 'Cas non trouvé' });
     }
 
+    console.log('Cas mis à jour avec succès:', updatedCase);
     res.json(updatedCase);
   } catch (error) {
     console.error('Erreur lors de la mise à jour du cas:', error);
@@ -358,39 +379,48 @@ router.patch('/:id', async (req, res) => {
 });
 
 router.patch('/:id/tags', async (req, res) => {
+  console.log('Tentative de mise à jour des tags:', req.params.id, req.body);
   try {
     const { tagToAdd, tagToRemove } = req.body;
     const caseDoc = await Case.findOne({ _id: req.params.id, user: req.userId });
     
     if (!caseDoc) {
+      console.log('Cas non trouvé pour la mise à jour des tags:', req.params.id);
       return res.status(404).json({ message: 'Cas non trouvé' });
     }
 
     if (tagToAdd && !caseDoc.tags.includes(tagToAdd)) {
       caseDoc.tags.push(tagToAdd);
+      console.log('Tag ajouté:', tagToAdd);
     }
 
     if (tagToRemove) {
       caseDoc.tags = caseDoc.tags.filter(tag => tag !== tagToRemove);
+      console.log('Tag supprimé:', tagToRemove);
     }
 
     await caseDoc.save();
+    console.log('Tags mis à jour avec succès');
     res.json(caseDoc);
   } catch (error) {
+    console.error('Erreur lors de la mise à jour des tags:', error);
     res.status(500).json({ message: error.message });
   }
 });
 
 // POST images for a sheet
 router.post('/:id/sheet-images', upload.single('file'), async (req, res) => {
+  console.log('Tentative d\'upload d\'image pour la fiche:', req.params.id);
   try {
     const caseDoc = await Case.findOne({ _id: req.params.id, user: req.userId });
     if (!caseDoc) {
+      console.log('Cas non trouvé pour l\'upload d\'image de fiche:', req.params.id);
       return res.status(404).json({ message: 'Cas non trouvé' });
     }
 
     const file = req.file;
     if (!file) {
+      console.log('Aucun fichier n\'a été téléchargé');
       return res.status(400).json({ message: 'Aucun fichier n\'a été téléchargé.' });
     }
 
@@ -404,6 +434,7 @@ router.post('/:id/sheet-images', upload.single('file'), async (req, res) => {
     };
 
     const result = await s3.upload(params).promise();
+    console.log('Image de fiche uploadée avec succès:', result.Location);
 
     res.json({ location: result.Location });
   } catch (error) {
@@ -414,30 +445,38 @@ router.post('/:id/sheet-images', upload.single('file'), async (req, res) => {
 
 // GET sheet for a case
 router.get('/:id/sheet', async (req, res) => {
+  console.log('Tentative de récupération de la fiche:', req.params.id);
   try {
     const caseDoc = await Case.findOne({ _id: req.params.id, user: req.userId });
     if (!caseDoc) {
+      console.log('Cas non trouvé pour la récupération de la fiche:', req.params.id);
       return res.status(404).json({ message: 'Cas non trouvé' });
     }
+    console.log('Fiche récupérée avec succès');
     res.json({ title: caseDoc.title, content: caseDoc.sheet });
   } catch (error) {
+    console.error('Erreur lors de la récupération de la fiche:', error);
     res.status(500).json({ message: error.message });
   }
 });
 
 // POST update sheet for a case
 router.post('/:id/sheet', async (req, res) => {
+  console.log('Tentative de mise à jour de la fiche:', req.params.id);
   try {
     const { title, content } = req.body;
     const caseDoc = await Case.findOne({ _id: req.params.id, user: req.userId });
     if (!caseDoc) {
+      console.log('Cas non trouvé pour la mise à jour de la fiche:', req.params.id);
       return res.status(404).json({ message: 'Cas non trouvé' });
     }
     caseDoc.title = title;
     caseDoc.sheet = content;
     await caseDoc.save();
+    console.log('Fiche mise à jour avec succès');
     res.json({ message: 'Fiche mise à jour avec succès' });
   } catch (error) {
+    console.error('Erreur lors de la mise à jour de la fiche:', error);
     res.status(500).json({ message: error.message });
   }
 });
