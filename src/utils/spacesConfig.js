@@ -12,7 +12,7 @@ requiredEnvVars.forEach(varName => {
 });
 
 // Configuration du endpoint
-const spacesEndpoint = new AWS.Endpoint(process.env.DO_SPACES_ENDPOINT);
+const spacesEndpoint = new AWS.Endpoint('https://lon1.digitaloceanspaces.com');
 
 // Configuration du client S3
 const s3 = new AWS.S3({
