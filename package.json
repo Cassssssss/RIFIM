@@ -3,15 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {
-    "start": "NODE_ENV=production node server.js",
-    "build": "GENERATE_SOURCEMAP=false react-scripts build",
-    "server": "env-cmd -f .env.development.backend nodemon server.js",
-    "dev": "concurrently \"npm run server\" \"npm run start\"",
-    "postinstall": "npm run build"
+"scripts": {
+  "start": "NODE_ENV=production node server.js",
+  "build": "GENERATE_SOURCEMAP=false react-scripts build",
+  "server": "env-cmd -f .env.development.backend nodemon server.js",
+  "client": "react-scripts start",
+  "dev": "concurrently \"npm run server\" \"npm run client\"",
+  "postinstall": "npm run build"
   },
-
-
   "homepage": "https://seal-app-irjy.ondigitalocean.app",
   "keywords": [],
   "author": "",
@@ -74,6 +73,7 @@
   "devDependencies": {
     "autoprefixer": "^10.4.20",
     "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
     "env-cmd": "^10.1.0",
     "nodemon": "^3.1.4",
     "postcss": "^8.4.41",
