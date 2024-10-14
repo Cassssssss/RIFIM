@@ -19,8 +19,23 @@ const app = express();
 const PORT = process.env.PORT || 5002;
 
 // Middleware
+const allowedOrigins = process.env.NODE_ENV === 'production' ? [
+  'https://seal-app-2-piuqm.ondigitalocean.app'
+] : [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000' // Au cas où vous utilisez cette adresse
+];
+
 app.use(cors({
-  origin: 'https://seal-app-2-piuqm.ondigitalocean.app',
+  origin: function (origin, callback) {
+    // Autoriser les requêtes sans origine (comme les applications mobiles ou les requêtes avec curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'La politique CORS pour ce site ne permet pas l\'accès depuis l\'origine spécifiée.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
