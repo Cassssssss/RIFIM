@@ -12,7 +12,7 @@ requiredEnvVars.forEach(varName => {
 });
 
 // Configuration du endpoint
-const spacesEndpoint = new AWS.Endpoint('https://rifim.lon1.digitaloceanspaces.com');
+const spacesEndpoint = new AWS.Endpoint('https://lon1.digitaloceanspaces.com');
 
 // Configuration du client S3
 const s3 = new AWS.S3({
