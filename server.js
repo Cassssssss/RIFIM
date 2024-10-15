@@ -19,25 +19,30 @@ const app = express();
 const PORT = process.env.PORT || 5002;
 
 // Middleware
-const allowedOrigins = process.env.NODE_ENV === 'production' ? [
-  'https://seal-app-2-piuqm.ondigitalocean.app'
-] : [
-  'http://localhost:3000',
-  'http://127.0.0.1:3000' // Au cas où vous utilisez cette adresse
-];
+const allowedOrigins = process.env.NODE_ENV === 'production' 
+  ? [
+      'https://seal-app-2-piuqm.ondigitalocean.app',
+      'https://rifim-radiologie.com',
+      'https://www.rifim-radiologie.com'
+    ]
+  : [
+      'http://localhost:3000',
+      'http://127.0.0.1:3000'
+    ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Autoriser les requêtes sans origine (comme les applications mobiles ou les requêtes avec curl)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'La politique CORS pour ce site ne permet pas l\'accès depuis l\'origine spécifiée.';
-      return callback(new Error(msg), false);
+    console.log('Origine de la requête:', origin);
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log('Origine non autorisée:', origin);
+      callback(new Error('Not allowed by CORS'));
     }
-    return callback(null, true);
   },
   credentials: true
 }));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
@@ -52,7 +57,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/cases', caseRoutes);
 app.use('/api/questionnaires', questionnaireRoutes);
 app.use('/api/cases', sheetRoutes);
-app.use('/api', imageRoutes.router);  // Modifié ici
+app.use('/api', imageRoutes.router);
 
 // Après avoir défini vos routes
 console.log('Routes enregistrées :');
@@ -74,9 +79,10 @@ if (process.env.NODE_ENV === 'production') {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).send('Something broke!');
+  res.status(500).json({ message: 'Something went wrong!', error: err.message });
 });
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
+  console.log('Allowed origins:', allowedOrigins);
 });
