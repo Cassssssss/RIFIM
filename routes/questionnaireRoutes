@@ -97,7 +97,7 @@ router.get('/', authMiddleware, async (req, res) => {
 router.post('/', authMiddleware, async (req, res) => {
   console.log('Création d\'un nouveau questionnaire:', JSON.stringify(req.body, null, 2));
   try {
-    const { title, questions } = req.body;
+    const { title, questions, selectedOptions, crData, hiddenQuestions } = req.body;
     
     console.log(`Création du questionnaire : ${title}`);
     for (let question of questions) {
@@ -107,6 +107,9 @@ router.post('/', authMiddleware, async (req, res) => {
     const questionnaire = new Questionnaire({
       title,
       questions,
+      selectedOptions,
+      crData,
+      hiddenQuestions,
       user: req.userId
     });
 
@@ -126,7 +129,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
       console.log(`Questionnaire avec l'ID ${req.params.id} non trouvé pour l'utilisateur ${req.userId}`);
       return res.status(404).json({ message: 'Questionnaire non trouvé' });
     }
-    console.log(`Questionnaire ${req.params.id} récupéré pour l'utilisateur ${req.userId}`);
+    console.log(`Questionnaire ${req.params.id} récupéré pour l'utilisateur ${req.userId}:`, JSON.stringify(questionnaire, null, 2));
     res.json(questionnaire);
   } catch (error) {
     console.error(`Erreur lors de la récupération du questionnaire ${req.params.id}:`, error);
@@ -137,7 +140,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 router.put('/:id', authMiddleware, async (req, res) => {
   console.log(`Mise à jour du questionnaire ${req.params.id}:`, JSON.stringify(req.body, null, 2));
   try {
-    const { title, questions } = req.body;
+    const { title, questions, selectedOptions, crData, hiddenQuestions } = req.body;
 
     console.log(`Mise à jour du questionnaire : ${title}`);
     for (let question of questions) {
@@ -146,7 +149,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
 
     const updatedQuestionnaire = await Questionnaire.findOneAndUpdate(
       { _id: req.params.id, user: req.userId },
-      { title, questions },
+      { title, questions, selectedOptions, crData, hiddenQuestions },
       { new: true, runValidators: true }
     );
 
@@ -154,7 +157,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
       console.log(`Questionnaire avec l'ID ${req.params.id} non trouvé pour la mise à jour`);
       return res.status(404).json({ message: 'Questionnaire non trouvé' });
     }
-    console.log(`Questionnaire ${req.params.id} mis à jour avec succès`);
+    console.log(`Questionnaire ${req.params.id} mis à jour avec succès:`, JSON.stringify(updatedQuestionnaire, null, 2));
     res.json(updatedQuestionnaire);
   } catch (error) {
     console.error(`Erreur lors de la mise à jour du questionnaire ${req.params.id}:`, error);
