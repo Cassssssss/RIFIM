@@ -23,7 +23,7 @@ const QuestionSchema = new mongoose.Schema({
 
 const QuestionnaireSchema = new mongoose.Schema({
   title: String,
-  questions: [QuestionSchema],
+  questions: [mongoose.Schema.Types.Mixed],
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
@@ -32,7 +32,8 @@ const QuestionnaireSchema = new mongoose.Schema({
   crData: {
     crTexts: mongoose.Schema.Types.Mixed,
     freeTexts: mongoose.Schema.Types.Mixed
-  }
+  },
+  hiddenQuestions: mongoose.Schema.Types.Mixed
 });
 
 module.exports = mongoose.model('Questionnaire', QuestionnaireSchema);
