@@ -173,7 +173,7 @@ router.post('/:id/main-image', upload.single('mainImage'), async (req, res) => {
     console.log('Image principale uploadée:', result.Location);
     
     // Construire l'URL publique de l'image
-    const imageUrl = `https://${process.env.DO_SPACES_ENDPOINT}/${params.Key}`;
+    const imageUrl = `${process.env.DO_SPACES_ENDPOINT}/${params.Key}`;
     
     caseDoc.mainImage = imageUrl;
     const updatedCase = await caseDoc.save();
@@ -207,7 +207,7 @@ router.post('/:id/folder-main-image', upload.single('folderMainImage'), async (r
     console.log('Image principale du dossier uploadée:', result.Location);
     
     // Construire l'URL publique de l'image
-    const imageUrl = `https://${process.env.DO_SPACES_ENDPOINT}/${params.Key}`;
+    const imageUrl = `${process.env.DO_SPACES_ENDPOINT}/${params.Key}`;
     
     // Mettre à jour correctement la Map
     if (!caseDoc.folderMainImages) {
