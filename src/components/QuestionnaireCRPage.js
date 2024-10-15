@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
 import QuestionnairePreview from './QuestionnairePreview';
@@ -15,22 +15,23 @@ const QuestionnaireCRPage = () => {
   const [hiddenQuestions, setHiddenQuestions] = useState({});
   const [editableCR, setEditableCR] = useState('');
 
-  useEffect(() => {
-    const fetchQuestionnaire = async () => {
-      try {
-        const response = await axios.get(`/questionnaires/${id}`);
-        const loadedQuestionnaire = response.data;
-        setQuestionnaire(loadedQuestionnaire);
-        setSelectedOptions(loadedQuestionnaire.selectedOptions || {});
-        setCRTexts(loadedQuestionnaire.crData?.crTexts || {});
-        setFreeTexts(loadedQuestionnaire.crData?.freeTexts || {});
-        setHiddenQuestions(loadedQuestionnaire.hiddenQuestions || {});
-      } catch (error) {
-        console.error('Erreur lors du chargement du questionnaire:', error);
-      }
-    };
-    fetchQuestionnaire();
+  const fetchQuestionnaire = useCallback(async () => {
+    try {
+      const response = await axios.get(`/questionnaires/${id}`);
+      const loadedQuestionnaire = response.data;
+      setQuestionnaire(loadedQuestionnaire);
+      setSelectedOptions(loadedQuestionnaire.selectedOptions || {});
+      setCRTexts(loadedQuestionnaire.crData?.crTexts || {});
+      setFreeTexts(loadedQuestionnaire.crData?.freeTexts || {});
+      setHiddenQuestions(loadedQuestionnaire.hiddenQuestions || {});
+    } catch (error) {
+      console.error('Erreur lors du chargement du questionnaire:', error);
+    }
   }, [id]);
+
+  useEffect(() => {
+    fetchQuestionnaire();
+  }, [fetchQuestionnaire]);
 
   useEffect(() => {
     const headerTitle = document.getElementById('header-title');
@@ -39,24 +40,18 @@ const QuestionnaireCRPage = () => {
     }
   }, [questionnaire]);
 
-  useEffect(() => {
-    const generatedCR = generateCR();
-    setEditableCR(generatedCR);
-  }, [questionnaire, selectedOptions, crTexts, freeTexts]);
-
-  const generateCR = () => {
+  const generateCR = useCallback(() => {
     let cr = '';
     
     const addContent = (content, isTitle = false) => {
       if (isTitle || content.startsWith('<strong>') || content.startsWith('<u>')) {
-        cr += '\n'; // Add an empty line before titles or bold/underlined text
+        cr += '\n';
       }
       cr += content.trim() + '\n';
     };
     
     const generateCRRecursive = (questions) => {
       questions.forEach(question => {
-        // Include the answer even if the question is hidden
         if (question.type === 'text' || question.type === 'number') {
           const freeText = freeTexts[question.id];
           if (freeText) {
@@ -95,34 +90,56 @@ const QuestionnaireCRPage = () => {
       generateCRRecursive(questionnaire.questions);
     }
     return cr.trim();
-  };
+  }, [questionnaire, selectedOptions, crTexts, freeTexts]);
 
-  const handleFreeTextChange = (questionId, value) => {
+  useEffect(() => {
+    const generatedCR = generateCR();
+    setEditableCR(generatedCR);
+  }, [generateCR]);
+
+  const handleFreeTextChange = useCallback((questionId, value) => {
     setFreeTexts(prev => ({ ...prev, [questionId]: value }));
-  };
+  }, []);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     try {
-      await axios.put(`/questionnaires/${id}`, {
+      console.log('Données à sauvegarder:', {
         ...questionnaire,
         selectedOptions,
         crData: { crTexts, freeTexts },
         hiddenQuestions
       });
-      navigate('/questionnaires');
+
+      const response = await axios.put(`/questionnaires/${id}`, {
+        ...questionnaire,
+        selectedOptions,
+        crData: { crTexts, freeTexts },
+        hiddenQuestions
+      });
+
+      console.log('Réponse du serveur:', response.data);
+
+      if (response.data) {
+        setQuestionnaire(response.data);
+        alert('Questionnaire sauvegardé avec succès!');
+        navigate('/questionnaires');
+      } else {
+        throw new Error('Réponse du serveur invalide');
+      }
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error);
+      alert('Erreur lors de la sauvegarde. Veuillez réessayer.');
     }
-  };
+  }, [questionnaire, selectedOptions, crTexts, freeTexts, hiddenQuestions, id, navigate]);
 
-  const toggleQuestionVisibility = (questionId) => {
+  const toggleQuestionVisibility = useCallback((questionId) => {
     setHiddenQuestions(prev => ({
       ...prev,
       [questionId]: !prev[questionId]
     }));
-  };
+  }, []);
   
-  const handleOptionChange = (questionId, optionIndex, questionType) => {
+  const handleOptionChange = useCallback((questionId, optionIndex, questionType) => {
     setSelectedOptions(prevOptions => {
       const newOptions = { ...prevOptions };
       if (!newOptions[questionId]) {
@@ -140,7 +157,7 @@ const QuestionnaireCRPage = () => {
       }
       return newOptions;
     });
-  };
+  }, []);
 
   if (!questionnaire) return <div>Chargement...</div>;
 
