@@ -19,7 +19,7 @@ const s3 = new AWS.S3({
   endpoint: spacesEndpoint,
   accessKeyId: process.env.DO_SPACES_KEY,
   secretAccessKey: process.env.DO_SPACES_SECRET,
-  s3ForcePathStyle: true,
+  s3ForcePathStyle: false,
   signatureVersion: 'v4',
   region: 'lon1' // Assurez-vous que c'est la bonne région
 });

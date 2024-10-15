@@ -48,7 +48,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET specific case
+// GET cas spécifique
 router.get('/:id', async (req, res) => {
   console.log('Tentative de récupération du cas:', req.params.id);
   try {
@@ -60,9 +60,11 @@ router.get('/:id', async (req, res) => {
 
     const caseObject = caseDoc.toObject();
 
-    // Convertir `folderMainImages` de Map en objet si nécessaire
+    // S'assurer que folderMainImages est correctement converti
     if (caseDoc.folderMainImages instanceof Map) {
       caseObject.folderMainImages = Object.fromEntries(caseDoc.folderMainImages);
+    } else {
+      caseObject.folderMainImages = caseDoc.folderMainImages || {};
     }
 
     console.log('Cas récupéré avec succès:', caseObject);
@@ -114,11 +116,10 @@ router.post('/:id/images', upload.array('images'), async (req, res) => {
       const caseTitle = caseDoc.title.trim();
       const params = {
         Bucket: process.env.DO_SPACES_BUCKET,
-        Key: `${caseTitle}/${folder}/${file.originalname}`,
+        Key: `rifim/${caseTitle}/${folder}/${file.originalname}`,
         Body: file.buffer,
         ACL: 'public-read'
       };
-
       return s3.upload(params).promise();
     });
 
@@ -158,7 +159,7 @@ router.post('/:id/main-image', upload.single('mainImage'), async (req, res) => {
     const caseTitle = caseDoc.title.trim();
     const params = {
       Bucket: process.env.DO_SPACES_BUCKET,
-      Key: `${caseTitle}/main-image/${req.file.originalname}`,
+      Key: `rifim/${caseTitle}/main-image/${req.file.originalname}`,
       Body: req.file.buffer,
       ACL: 'public-read'
     };
@@ -176,7 +177,7 @@ router.post('/:id/main-image', upload.single('mainImage'), async (req, res) => {
   }
 });
 
-// POST main image for a folder
+// POST image principale pour un dossier
 router.post('/:id/folder-main-image', upload.single('folderMainImage'), async (req, res) => {
   console.log('Tentative de définition de l\'image principale du dossier:', req.params.id, req.body.folder);
   try {
@@ -190,7 +191,7 @@ router.post('/:id/folder-main-image', upload.single('folderMainImage'), async (r
     const caseTitle = caseDoc.title.trim();
     const params = {
       Bucket: process.env.DO_SPACES_BUCKET,
-      Key: `${caseTitle}/${folder}/folder-main-image/${req.file.originalname}`,
+      Key: `rifim/${caseTitle}/${folder}/folder-main-image/${req.file.originalname}`,
       Body: req.file.buffer,
       ACL: 'public-read'
     };
@@ -198,13 +199,14 @@ router.post('/:id/folder-main-image', upload.single('folderMainImage'), async (r
     const result = await s3.upload(params).promise();
     console.log('Image principale du dossier uploadée:', result.Location);
 
+    // Mettre à jour correctement la Map
     if (!caseDoc.folderMainImages) {
-      caseDoc.folderMainImages = {};
+      caseDoc.folderMainImages = new Map();
     }
-    caseDoc.folderMainImages[folder] = result.Location;
+    caseDoc.folderMainImages.set(folder, result.Location);
 
     caseDoc.markModified('folderMainImages');
-    
+
     const updatedCase = await caseDoc.save();
     console.log('Image principale du dossier mise à jour avec succès');
     res.json(updatedCase);
@@ -243,7 +245,7 @@ router.delete('/:id/images', async (req, res) => {
     await caseDoc.save();
 
     // Suppression de l'image de DigitalOcean Spaces
-    const key = `${caseDoc.title}/${imagePath}`;
+    const key = `rifim/${caseDoc.title}/${imagePath}`;
     const params = {
       Bucket: process.env.DO_SPACES_BUCKET,
       Key: key
@@ -273,7 +275,7 @@ router.delete('/:id', async (req, res) => {
     const folder = sanitizeTitle(deletedCase.title);
     const listParams = {
       Bucket: process.env.DO_SPACES_BUCKET,
-      Prefix: `${folder}/`
+      Prefix: `rifim/${folder}/`
     };
 
     try {
@@ -329,7 +331,7 @@ router.delete('/:id/folders/:folder', async (req, res) => {
     // Suppression des images du dossier dans DigitalOcean Spaces
     const listParams = {
       Bucket: process.env.DO_SPACES_BUCKET,
-      Prefix: `${sanitizedCaseTitle}/${folder}/`
+      Prefix: `rifim/${sanitizedCaseTitle}/${folder}/`
     };
 
     const listedObjects = await s3.listObjectsV2(listParams).promise();
@@ -427,7 +429,7 @@ router.post('/:id/sheet-images', upload.single('file'), async (req, res) => {
     const caseTitle = caseDoc.title.trim();
     const params = {
       Bucket: process.env.DO_SPACES_BUCKET,
-      Key: `${caseTitle}/fiche/${file.originalname}`,
+      Key: `rifim/${caseTitle}/fiche/${file.originalname}`,
       Body: file.buffer,
       ACL: 'public-read',
       ContentType: file.mimetype,
