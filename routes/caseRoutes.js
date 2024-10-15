@@ -116,7 +116,6 @@ router.post('/:id/images', upload.array('images'), async (req, res) => {
       return res.status(404).json({ message: 'Cas non trouvé' });
     }
 
-
     const { folder } = req.body;
     const caseTitle = sanitizeTitle(caseDoc.title);
     const uploadPromises = req.files.map(file => {
@@ -126,10 +125,18 @@ router.post('/:id/images', upload.array('images'), async (req, res) => {
         Body: file.buffer,
         ACL: 'public-read'
       };
-      return s3.upload(params).promise();
+      return s3.upload(params).promise().then(result => {
+        // Construire l'URL publique de l'image
+        let endpoint = process.env.DO_SPACES_ENDPOINT;
+        if (!endpoint.startsWith('http')) {
+          endpoint = `https://${endpoint}`;
+        }
+        const imageUrl = `${endpoint}/${params.Key}`;
+        return imageUrl;
+      });
     });
 
-    const results = await Promise.all(uploadPromises);
+    const imageUrls = await Promise.all(uploadPromises);
 
     if (!caseDoc.images) {
       caseDoc.images = {};
@@ -139,11 +146,11 @@ router.post('/:id/images', upload.array('images'), async (req, res) => {
       caseDoc.images[folder] = [];
     }
 
-    caseDoc.images[folder].push(...results.map(result => result.Location));
+    caseDoc.images[folder].push(...imageUrls);
     caseDoc.markModified('images');
 
     const updatedCase = await caseDoc.save();
-    console.log('Images ajoutées avec succès:', results.map(r => r.Location));
+    console.log('Images ajoutées avec succès:', imageUrls);
     res.json(updatedCase);
   } catch (error) {
     console.error('Erreur lors de l\'ajout d\'images:', error);
