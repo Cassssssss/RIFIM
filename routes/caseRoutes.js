@@ -116,7 +116,7 @@ router.post('/:id/images', upload.array('images'), async (req, res) => {
       const caseTitle = caseDoc.title.trim();
       const params = {
         Bucket: process.env.DO_SPACES_BUCKET,
-        Key: `${caseTitle}/${folder}/${file.originalname}`,
+        Key: `rifim/${caseTitle}/${folder}/${file.originalname}`,
         Body: file.buffer,
         ACL: 'public-read'
       };
@@ -159,7 +159,7 @@ router.post('/:id/main-image', upload.single('mainImage'), async (req, res) => {
     const caseTitle = caseDoc.title.trim();
     const params = {
       Bucket: process.env.DO_SPACES_BUCKET,
-      Key: `${caseTitle}/main-image/${req.file.originalname}`,
+      Key: `rifim/${caseTitle}/main-image/${req.file.originalname}`,
       Body: req.file.buffer,
       ACL: 'public-read'
     };
@@ -191,7 +191,7 @@ router.post('/:id/folder-main-image', upload.single('folderMainImage'), async (r
     const caseTitle = caseDoc.title.trim();
     const params = {
       Bucket: process.env.DO_SPACES_BUCKET,
-      Key: `${caseTitle}/${folder}/folder-main-image/${req.file.originalname}`,
+      Key: `rifim/${caseTitle}/${folder}/folder-main-image/${req.file.originalname}`,
       Body: req.file.buffer,
       ACL: 'public-read'
     };
