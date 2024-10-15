@@ -15,7 +15,13 @@ router.use(authMiddleware);
 
 // Fonction utilitaire pour sanitizer le titre du cas
 const sanitizeTitle = (title) => {
-  return title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  let sanitized = title.trim();
+  // Supprimer 'rifim/' s'il est présent
+  if (sanitized.toLowerCase().startsWith('rifim/')) {
+    sanitized = sanitized.substring(6);
+  }
+  sanitized = sanitized.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  return sanitized;
 };
 
 // GET all cases
@@ -110,10 +116,10 @@ router.post('/:id/images', upload.array('images'), async (req, res) => {
       return res.status(404).json({ message: 'Cas non trouvé' });
     }
 
+
     const { folder } = req.body;
-    const sanitizedCaseTitle = sanitizeTitle(caseDoc.title);
+    const caseTitle = sanitizeTitle(caseDoc.title);
     const uploadPromises = req.files.map(file => {
-      const caseTitle = caseDoc.title.trim();
       const params = {
         Bucket: process.env.DO_SPACES_BUCKET,
         Key: `rifim/${caseTitle}/${folder}/${file.originalname}`,
@@ -155,8 +161,7 @@ router.post('/:id/main-image', upload.single('mainImage'), async (req, res) => {
       return res.status(404).json({ message: 'Cas non trouvé' });
     }
 
-    const folder = sanitizeTitle(caseDoc.title);
-    const caseTitle = caseDoc.title.trim();
+    const caseTitle = sanitizeTitle(caseDoc.title);
     const params = {
       Bucket: process.env.DO_SPACES_BUCKET,
       Key: `rifim/${caseTitle}/main-image/${req.file.originalname}`,
@@ -166,8 +171,11 @@ router.post('/:id/main-image', upload.single('mainImage'), async (req, res) => {
 
     const result = await s3.upload(params).promise();
     console.log('Image principale uploadée:', result.Location);
-
-    caseDoc.mainImage = result.Location;
+    
+    // Construire l'URL publique de l'image
+    const imageUrl = `https://${process.env.DO_SPACES_ENDPOINT}/${params.Key}`;
+    
+    caseDoc.mainImage = imageUrl;
     const updatedCase = await caseDoc.save();
     console.log('Image principale mise à jour avec succès');
     res.json(updatedCase);
@@ -187,8 +195,7 @@ router.post('/:id/folder-main-image', upload.single('folderMainImage'), async (r
       return res.status(404).json({ message: 'Cas non trouvé' });
     }
     const folder = req.body.folder;
-    
-    const caseTitle = caseDoc.title.trim();
+    const caseTitle = sanitizeTitle(caseDoc.title);
     const params = {
       Bucket: process.env.DO_SPACES_BUCKET,
       Key: `rifim/${caseTitle}/${folder}/folder-main-image/${req.file.originalname}`,
@@ -198,15 +205,18 @@ router.post('/:id/folder-main-image', upload.single('folderMainImage'), async (r
 
     const result = await s3.upload(params).promise();
     console.log('Image principale du dossier uploadée:', result.Location);
-
+    
+    // Construire l'URL publique de l'image
+    const imageUrl = `https://${process.env.DO_SPACES_ENDPOINT}/${params.Key}`;
+    
     // Mettre à jour correctement la Map
     if (!caseDoc.folderMainImages) {
       caseDoc.folderMainImages = new Map();
     }
-    caseDoc.folderMainImages.set(folder, result.Location);
-
+    caseDoc.folderMainImages.set(folder, imageUrl);
+    
     caseDoc.markModified('folderMainImages');
-
+    
     const updatedCase = await caseDoc.save();
     console.log('Image principale du dossier mise à jour avec succès');
     res.json(updatedCase);
