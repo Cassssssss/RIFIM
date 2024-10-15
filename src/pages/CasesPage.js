@@ -284,15 +284,15 @@ function CasesPage() {
 
   const fetchFolderMainImage = useCallback(async (caseId, folder) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/cases/${caseId}`);
+      const response = await axios.get(`/cases/${caseId}`);
       if (response.data && response.data.folderMainImages && response.data.folderMainImages[folder]) {
-        return `${SPACES_URL}/${response.data.folderMainImages[folder]}`;
+        return response.data.folderMainImages[folder];
       }
     } catch (error) {
       console.error('Erreur lors de la récupération des données du cas:', error);
     }
     return null;
-  }, [API_BASE_URL]);
+  }, []);
 
   const addNewCase = useCallback(async () => {
     if (newCaseTitle.trim() === '') return;
@@ -401,17 +401,14 @@ function CasesPage() {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
   
-        // Mise à jour de l'état local avec le nom du fichier
+        // Mise à jour de l'état local avec le cas mis à jour du serveur
         setCases(prevCases => prevCases.map(c => 
           c._id === selectedCase._id 
-            ? { ...c, folderMainImages: { ...c.folderMainImages, [folder]: file.name } }
+            ? response.data
             : c
         ));
   
-        setSelectedCase(prevCase => ({
-          ...prevCase,
-          folderMainImages: { ...prevCase.folderMainImages, [folder]: file.name }
-        }));
+        setSelectedCase(response.data);
   
       } catch (error) {
         setError('Erreur lors de la définition de l\'image principale du dossier');
@@ -420,7 +417,8 @@ function CasesPage() {
         setIsLoading(false);
       }
     }
-  }, [selectedCase, API_BASE_URL]);
+  }, [selectedCase]);
+  
   
   const deleteFolder = useCallback(async (folder) => {
     if (window.confirm(`Êtes-vous sûr de vouloir supprimer le dossier "${folder}" ?`)) {
