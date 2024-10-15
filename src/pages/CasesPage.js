@@ -295,12 +295,16 @@ function CasesPage() {
   }, []);
 
   const addNewCase = useCallback(async () => {
-    if (newCaseTitle.trim() === '') return;
+    let sanitizedTitle = newCaseTitle.trim();
+    if (sanitizedTitle.toLowerCase().startsWith('rifim/')) {
+      sanitizedTitle = sanitizedTitle.substring('rifim/'.length);
+    }
+    if (sanitizedTitle === '') return;
     setIsLoading(true);
     setError(null);
     try {
       const response = await axios.post(`/cases`, { 
-        title: newCaseTitle,
+        title: sanitizedTitle,
         folders: [],
         images: {},
         difficulty: 1,
