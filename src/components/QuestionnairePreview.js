@@ -285,7 +285,7 @@ const QuestionPreview = ({
               ))}
             </ul>
           )}
-          {question.type === 'text' && (
+{question.type === 'text' && (
             <textarea
               value={freeTexts?.[question.id] || ''}
               onChange={(e) => onFreeTextChange(question.id, e.target.value)}

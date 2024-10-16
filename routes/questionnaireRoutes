@@ -142,14 +142,17 @@ router.put('/:id', authMiddleware, async (req, res) => {
   try {
     const { title, questions, selectedOptions, crData, hiddenQuestions } = req.body;
 
-    console.log(`Mise à jour du questionnaire : ${title}`);
-    for (let question of questions) {
-      await processImagesRecursively(question, title);
-    }
-
     const updatedQuestionnaire = await Questionnaire.findOneAndUpdate(
       { _id: req.params.id, user: req.userId },
-      { title, questions, selectedOptions, crData, hiddenQuestions },
+      { 
+        $set: {
+          title, 
+          questions, 
+          selectedOptions, 
+          crData, 
+          hiddenQuestions
+        }
+      },
       { new: true, runValidators: true }
     );
 

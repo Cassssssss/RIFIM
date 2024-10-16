@@ -32,6 +32,11 @@ const QuestionnaireSchema = new mongoose.Schema({
   crData: {
     crTexts: mongoose.Schema.Types.Mixed,
     freeTexts: mongoose.Schema.Types.Mixed
+  },
+  hiddenQuestions: {
+    type: Map,
+    of: Boolean,
+    default: {}
   }
 });
 
