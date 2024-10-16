@@ -103,22 +103,19 @@ const QuestionnaireCRPage = () => {
 
   const handleSave = useCallback(async () => {
     try {
-      console.log('Données à sauvegarder:', {
+      const dataToSave = {
         ...questionnaire,
         selectedOptions,
         crData: { crTexts, freeTexts },
-        hiddenQuestions
-      });
-
-      const response = await axios.put(`/questionnaires/${id}`, {
-        ...questionnaire,
-        selectedOptions,
-        crData: { crTexts, freeTexts },
-        hiddenQuestions
-      });
-
+        hiddenQuestions // Ajoutez cette ligne
+      };
+      
+      console.log('Données à sauvegarder:', dataToSave);
+  
+      const response = await axios.put(`/questionnaires/${id}`, dataToSave);
+  
       console.log('Réponse du serveur:', response.data);
-
+  
       if (response.data) {
         setQuestionnaire(response.data);
         alert('Questionnaire sauvegardé avec succès!');
