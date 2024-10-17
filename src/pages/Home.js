@@ -67,10 +67,11 @@ function Home() {
       <Title>Bienvenue sur RIFIM</Title>
       <Subtitle>Votre outil de gestion de questionnaires radiologiques</Subtitle>
       <Description>
-        RIFIM est une plateforme innovante conçue pour les professionnels de la radiologie et de l'ostéopathie. 
+        RIFIM est une plateforme conçue pour les professionnels de la radiologie. 
         Elle permet de créer, gérer et utiliser des questionnaires personnalisés pour améliorer la qualité des examens 
         et le suivi des patients. Avec notre outil, vous pouvez facilement structurer vos rapports, 
         standardiser vos procédures et optimiser votre flux de travail.
+        Elle comprends également une base de données de cas de radiologie pour vous entraîner et vous perfectionner.
       </Description>
       <VideoContainer>
         <iframe
