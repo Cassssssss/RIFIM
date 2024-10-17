@@ -44,6 +44,23 @@ const Button = styled(Link)`
   }
 `;
 
+const VideoContainer = styled.div`
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+  height: 0;
+  overflow: hidden;
+
+  iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+`;
+
 function Home() {
   return (
     <HomeContainer>
@@ -55,6 +72,17 @@ function Home() {
         et le suivi des patients. Avec notre outil, vous pouvez facilement structurer vos rapports, 
         standardiser vos procédures et optimiser votre flux de travail.
       </Description>
+      <VideoContainer>
+        <iframe
+          width="560"
+          height="315"
+          src="https://www.youtube.com/embed/VOTRE_ID_VIDEO"
+          title="Vidéo explicative RIFIM"
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        ></iframe>
+      </VideoContainer>
       <Button to="/questionnaires">Voir les questionnaires</Button>
       <Button to="/cases-list">Visualiser les cas de radiologie</Button>
     </HomeContainer>
