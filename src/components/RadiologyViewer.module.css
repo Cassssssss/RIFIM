@@ -452,3 +452,26 @@
   background-color: #3c55a5;
 }
 
+.container {
+  position: auto;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+.content {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.mainViewer {
+  height: calc(100% - [hauteur de votre barre du bas]);
+  overflow-y: auto;
+}
+
+.folderGrid {
+  max-height: 100%;
+  overflow-y: auto;
+}

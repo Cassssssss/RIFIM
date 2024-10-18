@@ -68,7 +68,8 @@ function RadiologyViewer() {
     if (currentCase && currentCase.images && currentCase.images[folder]) {
       const imagePath = currentCase.images[folder][index];
       if (imagePath) {
-        const imageUrl = `${process.env.REACT_APP_SPACES_URL}/${imagePath}`;
+        // Vérifier si l'URL est déjà complète
+        const imageUrl = imagePath.startsWith('http') ? imagePath : `${process.env.REACT_APP_SPACES_URL}/${imagePath}`;
         console.log('Image URL:', imageUrl);
         const imageElement = side === 'left' ? leftViewerRef.current :
                              side === 'right' ? rightViewerRef.current :
@@ -134,6 +135,18 @@ function RadiologyViewer() {
       }
     }
   }, [currentCase, loadImage]);
+
+  useEffect(() => {
+    const preventDefault = (e) => {
+      e.preventDefault();
+    };
+  
+    document.body.addEventListener('wheel', preventDefault, { passive: false });
+  
+    return () => {
+      document.body.removeEventListener('wheel', preventDefault);
+    };
+  }, []);
 
   useEffect(() => {
     fetchCase();
