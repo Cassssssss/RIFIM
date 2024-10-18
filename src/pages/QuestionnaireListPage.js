@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import axios from '../utils/axiosConfig';
+import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/CasesPage.styles';
+
 
 const ListContainer = styled.div`
   background-color: ${props => props.theme.card};
@@ -40,18 +42,31 @@ const ActionButton = styled.button`
 function QuestionnaireListPage() {
   const [questionnaires, setQuestionnaires] = useState([]);
   const [deletedQuestionnaires, setDeletedQuestionnaires] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
 
-  const fetchQuestionnaires = useCallback(async () => {
+  const fetchQuestionnaires = useCallback(async (page = 1) => {
     try {
-      const response = await axios.get('/questionnaires');
-      setQuestionnaires(response.data);
+      const response = await axios.get(`/questionnaires?page=${page}&limit=10`);
+      if (response.data && response.data.questionnaires) {
+        setQuestionnaires(response.data.questionnaires);
+        setCurrentPage(response.data.currentPage);
+        setTotalPages(response.data.totalPages);
+      } else {
+        setQuestionnaires([]);
+        setCurrentPage(1);
+        setTotalPages(0);
+      }
     } catch (error) {
       console.error('Erreur lors de la récupération des questionnaires:', error);
+      setQuestionnaires([]);
+      setCurrentPage(1);
+      setTotalPages(0);
     }
   }, []);
 
   useEffect(() => {
-    fetchQuestionnaires();
+    fetchQuestionnaires(1);
     // Update the header title
     const headerTitle = document.getElementById('header-title');
     if (headerTitle) {
@@ -118,7 +133,16 @@ function QuestionnaireListPage() {
       <ActionButton as={Link} to="/create" className="mt-6">
         CRÉER UN NOUVEAU QUESTIONNAIRE
       </ActionButton>
-    </ListContainer>
+      <PaginationContainer>
+  <PaginationButton onClick={() => fetchQuestionnaires(currentPage - 1)} disabled={currentPage === 1}>
+    Précédent
+  </PaginationButton>
+  <PaginationInfo>Page {currentPage} sur {totalPages}</PaginationInfo>
+  <PaginationButton onClick={() => fetchQuestionnaires(currentPage + 1)} disabled={currentPage === totalPages}>
+    Suivant
+  </PaginationButton>
+</PaginationContainer>
+  </ListContainer>
   );
 }
 
