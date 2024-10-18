@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
 import { Star, ChevronDown, Eye, EyeOff } from 'lucide-react';
 import styled from 'styled-components';
+import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/CasesPage.styles';
+
 
 const PageContainer = styled.div`
   padding: 2rem;
@@ -218,21 +220,25 @@ function CasesListPage() {
   const [showTagDropdown, setShowTagDropdown] = useState(false);
   const [tagFilter, setTagFilter] = useState([]);
   const [allTags, setAllTags] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
 
-  useEffect(() => {
-    fetchCases();
-  }, []);
-
-  const fetchCases = async () => {
+  const fetchCases = useCallback(async (page = 1) => {
     try {
-      const response = await axios.get('/cases');
-      setCases(response.data);
-      const tags = new Set(response.data.flatMap(cas => cas.tags || []));
+      const response = await axios.get(`/cases?page=${page}&limit=10`);
+      setCases(response.data.cases);
+      setCurrentPage(response.data.currentPage);
+      setTotalPages(response.data.totalPages);
+      const tags = new Set(response.data.cases.flatMap(cas => cas.tags || []));
       setAllTags(Array.from(tags));
     } catch (error) {
       console.error('Erreur lors de la récupération des cas:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchCases(1);
+  }, [fetchCases]);
 
   const filteredCases = cases.filter(cas => 
     cas.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -319,6 +325,15 @@ function CasesListPage() {
           <CaseCardComponent key={cas._id} cas={cas} showSpoilers={showSpoilers} />
         ))}
       </CasesList>
+      <PaginationContainer>
+  <PaginationButton onClick={() => fetchCases(currentPage - 1)} disabled={currentPage === 1}>
+    Précédent
+  </PaginationButton>
+  <PaginationInfo>Page {currentPage} sur {totalPages}</PaginationInfo>
+  <PaginationButton onClick={() => fetchCases(currentPage + 1)} disabled={currentPage === totalPages}>
+    Suivant
+  </PaginationButton>
+</PaginationContainer>
     </PageContainer>
   );
 }

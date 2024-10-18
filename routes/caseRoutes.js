@@ -27,9 +27,22 @@ const sanitizeTitle = (title) => {
 // GET all cases
 router.get('/', async (req, res) => {
   try {
-    const cases = await Case.find({ user: req.userId });
-    console.log('Cas récupérés du serveur:', cases);
-    res.json(cases);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const totalCases = await Case.countDocuments({ user: req.userId });
+    const cases = await Case.find({ user: req.userId })
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    res.json({
+      cases,
+      currentPage: page,
+      totalPages: Math.ceil(totalCases / limit),
+      totalCases
+    });
   } catch (error) {
     console.error('Erreur détaillée lors de la récupération des cas:', error);
     res.status(500).json({ message: error.message });

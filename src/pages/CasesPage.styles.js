@@ -449,3 +449,40 @@ export const FolderMainImage = styled.img`
   border-radius: 4px;
   margin-right: 10px;
 `;
+
+
+export const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: ${props => props.theme.surface};
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+`;
+
+export const PaginationButton = styled.button`
+  background-color: ${props => props.theme.primary};
+  color: ${props => props.theme.buttonText};
+  border: none;
+  padding: 0.5rem 1rem;
+  margin: 0 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  
+  &:hover {
+    background-color: ${props => props.theme.secondary};
+  }
+
+  &:disabled {
+    background-color: ${props => props.theme.disabled};
+    cursor: not-allowed;
+  }
+`;
+
+export const PaginationInfo = styled.span`
+  margin: 0 1rem;
+  font-weight: bold;
+`;

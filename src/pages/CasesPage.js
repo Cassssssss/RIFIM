@@ -7,6 +7,8 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
 import * as S from './CasesPage.styles';
 import { CasesGrid, FoldersSection } from './CasesPage.styles';
+import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/CasesPage.styles';
+
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
 console.log('API_BASE_URL:', API_BASE_URL);
@@ -183,6 +185,8 @@ function CasesPage() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(null);
   const [currentFolder, setCurrentFolder] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
     fetchCases();
@@ -201,21 +205,14 @@ function CasesPage() {
     return () => window.removeEventListener('scroll', toggleScrollVisibility);
   }, []);
 
-  const fetchCases = useCallback(async () => {
+  const fetchCases = useCallback(async (page = 1) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`/cases`);
-      console.log('Réponse brute de l\'API:', response.data);
-      
-      const casesWithFullImageUrls = response.data.map(caseItem => ({
-        ...caseItem,
-        images: caseItem.images || {},
-        folderMainImages: caseItem.folderMainImages || {}
-      }));
-  
-      console.log('Cas traités:', casesWithFullImageUrls);
-      setCases(casesWithFullImageUrls);
+      const response = await axios.get(`/cases?page=${page}&limit=10`);
+      setCases(response.data.cases);
+      setCurrentPage(response.data.currentPage);
+      setTotalPages(response.data.totalPages);
     } catch (error) {
       console.error('Erreur détaillée lors de la récupération des cas:', error);
       setError('Erreur lors de la récupération des cas');
@@ -744,6 +741,15 @@ function CasesPage() {
 
     {isLoading && <LoadingSpinner />}
     {error && <ErrorMessage>{error}</ErrorMessage>}
+    <PaginationContainer>
+  <PaginationButton onClick={() => fetchCases(currentPage - 1)} disabled={currentPage === 1}>
+    Précédent
+  </PaginationButton>
+  <PaginationInfo>Page {currentPage} sur {totalPages}</PaginationInfo>
+  <PaginationButton onClick={() => fetchCases(currentPage + 1)} disabled={currentPage === totalPages}>
+    Suivant
+  </PaginationButton>
+</PaginationContainer>
   </S.PageContainer>
 );
 }

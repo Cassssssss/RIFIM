@@ -85,9 +85,23 @@ const processImagesRecursively = async (item, questionnaireTitle, parentId = '')
 
 router.get('/', authMiddleware, async (req, res) => {
   try {
-    const questionnaires = await Questionnaire.find({ user: req.userId });
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const totalQuestionnaires = await Questionnaire.countDocuments({ user: req.userId });
+    const questionnaires = await Questionnaire.find({ user: req.userId })
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
     console.log(`Récupération de ${questionnaires.length} questionnaires pour l'utilisateur ${req.userId}`);
-    res.json(questionnaires);
+    res.json({
+      questionnaires,
+      currentPage: page,
+      totalPages: Math.ceil(totalQuestionnaires / limit),
+      totalQuestionnaires
+    });
   } catch (error) {
     console.error('Erreur lors de la récupération des questionnaires:', error);
     res.status(500).json({ message: error.message });
