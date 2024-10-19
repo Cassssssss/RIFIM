@@ -9,7 +9,9 @@ import LoadingSpinner from './components/LoadingSpinner';
 import Auth from './components/Auth';
 import PrivateRoute from './components/PrivateRoute';
 
+
 const Home = lazy(() => import('./pages/Home'));
+const QuestionnairePage = lazy(() => import('./pages/QuestionnairePage')); // Modifiez cette ligne
 const QuestionnaireListPage = lazy(() => import('./pages/QuestionnaireListPage'));
 const QuestionnaireCreator = lazy(() => import('./components/QuestionnaireCreator'));
 const QuestionnaireCRPage = lazy(() => import('./components/QuestionnaireCRPage'));
@@ -20,6 +22,7 @@ const CasesListPage = lazy(() => import('./pages/CasesListPage'));
 const SheetEditor = lazy(() => import('./components/SheetEditor'));
 const TestUpload = lazy(() => import('./components/TestUpload'));
 const SheetViewer = lazy(() => import('./components/SheetViewer'));
+
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -73,13 +76,14 @@ function App() {
               user={user}
               onLogout={handleLogout}
             />
-<main className="container mt-8">
+            <main className="container mt-8">
               <Suspense fallback={<LoadingSpinner />}>
                 <Routes>
                   <Route path="/login" element={<Auth onLogin={handleLogin} />} />
                   <Route path="/" element={<PrivateRoute />}>
                     <Route index element={<Home />} />
                     <Route path="questionnaires" element={<QuestionnaireListPage />} />
+                    <Route path="questionnaires-list" element={<QuestionnairePage />} />
                     <Route path="create" element={<QuestionnaireCreator />} />
                     <Route path="edit/:id" element={<QuestionnaireCreator />} />
                     <Route path="cr/:id" element={<QuestionnaireCRPage />} />
