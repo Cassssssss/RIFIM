@@ -88,9 +88,40 @@ router.get('/', authMiddleware, async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
+    const search = req.query.search || '';
+    const modality = req.query.modality ? req.query.modality.split(',') : [];
+    const specialty = req.query.specialty ? req.query.specialty.split(',') : [];
 
-    const totalQuestionnaires = await Questionnaire.countDocuments({ user: req.userId });
-    const questionnaires = await Questionnaire.find({ user: req.userId })
+    const query = { user: req.userId };
+    if (search) {
+      query.$and = [
+        {
+          $or: [
+            { title: { $regex: search, $options: 'i' } },
+            { tags: { $regex: search, $options: 'i' } }
+          ]
+        }
+      ];
+    } else {
+      query.$and = [];
+    }
+
+    if (modality.length > 0) {
+      query.$and.push({ tags: { $all: modality } });
+    }
+
+    if (specialty.length > 0) {
+      query.$and.push({ tags: { $all: specialty } });
+    }
+
+    if (query.$and.length === 0) {
+      delete query.$and;
+    }
+
+    console.log('Query:', JSON.stringify(query));
+
+    const totalQuestionnaires = await Questionnaire.countDocuments(query);
+    const questionnaires = await Questionnaire.find(query)
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
@@ -245,6 +276,39 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     res.json({ message: 'Questionnaire et images associées supprimés avec succès', id: req.params.id });
   } catch (error) {
     console.error(`Erreur lors de la suppression du questionnaire ${req.params.id}:`, error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Ajouter un tag à un questionnaire
+router.post('/:id/tags', authMiddleware, async (req, res) => {
+  try {
+    const questionnaire = await Questionnaire.findById(req.params.id);
+    if (!questionnaire) {
+      return res.status(404).json({ message: 'Questionnaire non trouvé' });
+    }
+    const { tag } = req.body;
+    if (!questionnaire.tags.includes(tag)) {
+      questionnaire.tags.push(tag);
+      await questionnaire.save();
+    }
+    res.json({ tags: questionnaire.tags });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Supprimer un tag d'un questionnaire
+router.delete('/:id/tags/:tag', authMiddleware, async (req, res) => {
+  try {
+    const questionnaire = await Questionnaire.findById(req.params.id);
+    if (!questionnaire) {
+      return res.status(404).json({ message: 'Questionnaire non trouvé' });
+    }
+    questionnaire.tags = questionnaire.tags.filter(t => t !== req.params.tag);
+    await questionnaire.save();
+    res.json({ tags: questionnaire.tags });
+  } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });

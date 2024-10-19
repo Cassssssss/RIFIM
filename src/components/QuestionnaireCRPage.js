@@ -107,7 +107,7 @@ const QuestionnaireCRPage = () => {
         ...questionnaire,
         selectedOptions,
         crData: { crTexts, freeTexts },
-        hiddenQuestions // Ajoutez cette ligne
+        hiddenQuestions
       };
       
       console.log('Données à sauvegarder:', dataToSave);
@@ -119,7 +119,8 @@ const QuestionnaireCRPage = () => {
       if (response.data) {
         setQuestionnaire(response.data);
         alert('Questionnaire sauvegardé avec succès!');
-        navigate('/questionnaires');
+        // Ne pas naviguer immédiatement pour vérifier l'état
+        // navigate('/questionnaires');
       } else {
         throw new Error('Réponse du serveur invalide');
       }
@@ -127,7 +128,7 @@ const QuestionnaireCRPage = () => {
       console.error('Erreur lors de la sauvegarde:', error);
       alert('Erreur lors de la sauvegarde. Veuillez réessayer.');
     }
-  }, [questionnaire, selectedOptions, crTexts, freeTexts, hiddenQuestions, id, navigate]);
+  }, [questionnaire, selectedOptions, crTexts, freeTexts, hiddenQuestions, id]);
 
   const toggleQuestionVisibility = useCallback((questionId) => {
     setHiddenQuestions(prev => ({
