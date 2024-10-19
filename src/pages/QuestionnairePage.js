@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import axios from '../utils/axiosConfig';
-import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/CasesPage.styles';
+import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/CasesPage.styles'; // Assurez-vous q
 
 const PageContainer = styled.div`
   display: flex;
@@ -14,25 +14,40 @@ const PageContainer = styled.div`
 const FilterSection = styled.div`
   width: 250px;
   margin-right: 2rem;
+  background-color: ${props => props.theme.card};
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 const FilterGroup = styled.div`
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 `;
 
 const FilterTitle = styled.h3`
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  color: ${props => props.theme.primary};
 `;
 
 const FilterOption = styled.label`
-  display: block;
-  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+
+  input {
+    margin-right: 0.5rem;
+  }
 `;
 
 const FilterIndicator = styled.div`
   margin-top: 1rem;
   font-size: 0.9rem;
   color: ${props => props.theme.primary};
+  padding: 0.5rem;
+  background-color: ${props => props.theme.background};
+  border-radius: 4px;
 `;
 
 const ListContainer = styled.div`
@@ -41,37 +56,45 @@ const ListContainer = styled.div`
   color: ${props => props.theme.text};
   padding: 2rem;
   border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 const SearchBar = styled.input`
   width: 100%;
-  padding: 0.5rem;
-  margin-bottom: 1rem;
+  padding: 0.75rem;
+  margin-bottom: 1.5rem;
   border: 1px solid ${props => props.theme.border};
   border-radius: 4px;
+  font-size: 1rem;
 `;
 
 const QuestionnaireItem = styled.li`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 0;
+  padding: 1rem;
   border-bottom: 1px solid ${props => props.theme.border};
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: ${props => props.theme.hover};
+  }
 `;
 
 const QuestionnaireTitle = styled.span`
   color: ${props => props.theme.text};
   font-size: 1.1rem;
+  font-weight: 500;
 `;
 
-const ActionButton = styled.button`
+const ActionButton = styled(Link)`
   background-color: ${props => props.theme.primary};
   color: ${props => props.theme.buttonText};
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  margin-left: 0.5rem;
+  text-decoration: none;
   
   &:hover {
     background-color: ${props => props.theme.secondary};
@@ -93,39 +116,13 @@ const Tag = styled.span`
   font-size: 0.75rem;
 `;
 
-const AddTagForm = styled.form`
-  display: flex;
-  align-items: center;
-  margin-top: 0.5rem;
-`;
-
-const TagInput = styled.input`
-  padding: 0.25rem;
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 4px;
-  font-size: 0.75rem;
-`;
-
-const AddTagButton = styled.button`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0.25rem 0.5rem;
-  margin-left: 0.25rem;
-  cursor: pointer;
-  font-size: 0.75rem;
-`;
-
-function QuestionnaireListPage() {
+function QuestionnairePage() {
   const [questionnaires, setQuestionnaires] = useState([]);
-  const [deletedQuestionnaires, setDeletedQuestionnaires] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [modalityFilters, setModalityFilters] = useState([]);
   const [specialtyFilters, setSpecialtyFilters] = useState([]);
-  const [newTags, setNewTags] = useState({});
 
   const fetchQuestionnaires = useCallback(async (page = 1) => {
     try {
@@ -163,21 +160,6 @@ function QuestionnaireListPage() {
     }
   }, [fetchQuestionnaires]);
 
-  const handleDelete = useCallback(async (id) => {
-    const questionnaireToDelete = questionnaires.find(q => q._id === id);
-    const isConfirmed = window.confirm(`Êtes-vous sûr de vouloir supprimer le questionnaire "${questionnaireToDelete.title}" ? Cette action peut être annulée avec Cmd+Z (ou Ctrl+Z).`);
-    
-    if (isConfirmed) {
-      try {
-        await axios.delete(`/questionnaires/${id}`);
-        setQuestionnaires(prevQuestionnaires => prevQuestionnaires.filter(q => q._id !== id));
-        setDeletedQuestionnaires(prevDeleted => [...prevDeleted, questionnaireToDelete]);
-      } catch (error) {
-        console.error('Erreur lors de la suppression du questionnaire:', error);
-      }
-    }
-  }, [questionnaires]);
-
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
@@ -202,40 +184,13 @@ function QuestionnaireListPage() {
     });
   };
 
-  const handleAddTag = async (questionnaireId, tag) => {
-    try {
-      const response = await axios.post(`/questionnaires/${questionnaireId}/tags`, { tag });
-      setQuestionnaires(prevQuestionnaires => 
-        prevQuestionnaires.map(q => 
-          q._id === questionnaireId ? { ...q, tags: response.data.tags } : q
-        )
-      );
-      setNewTags(prev => ({ ...prev, [questionnaireId]: '' }));
-    } catch (error) {
-      console.error('Erreur lors de l\'ajout du tag:', error);
-    }
-  };
-
-  const handleRemoveTag = async (questionnaireId, tagToRemove) => {
-    try {
-      const response = await axios.delete(`/questionnaires/${questionnaireId}/tags/${tagToRemove}`);
-      setQuestionnaires(prevQuestionnaires => 
-        prevQuestionnaires.map(q => 
-          q._id === questionnaireId ? { ...q, tags: response.data.tags } : q
-        )
-      );
-    } catch (error) {
-      console.error('Erreur lors de la suppression du tag:', error);
-    }
-  };
-
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchQuestionnaires(1);
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, modalityFilters, specialtyFilters]);
+  }, [searchTerm, modalityFilters, specialtyFilters, fetchQuestionnaires]);
 
   return (
     <PageContainer>
@@ -270,22 +225,12 @@ function QuestionnaireListPage() {
             </FilterOption>
           ))}
         </FilterGroup>
-  <FilterGroup>
-          <FilterTitle>Localisation</FilterTitle>
-          {['Epaule', 'Thorax', 'Ostéo', 'Dig', 'Cardiovasc', 'Séno', 'Uro', 'ORL', 'Pelvis', 'Pedia'].map(specialty => (
-            <FilterOption key={specialty}>
-              <input
-                type="checkbox"
-                name="specialty"
-                value={specialty}
-                checked={specialtyFilters.includes(specialty)}
-                onChange={() => handleSpecialtyFilter(specialty)}
-              />
-              {specialty}
-            </FilterOption>
-          ))}
-        </FilterGroup>
-
+        {(modalityFilters.length > 0 || specialtyFilters.length > 0) && (
+          <FilterIndicator>
+            Filtres appliqués : 
+            {modalityFilters.concat(specialtyFilters).join(', ')}
+          </FilterIndicator>
+        )}
       </FilterSection>
       <ListContainer>
         <SearchBar
@@ -301,37 +246,14 @@ function QuestionnaireListPage() {
                 <QuestionnaireTitle>{questionnaire.title}</QuestionnaireTitle>
                 <TagsContainer>
                   {questionnaire.tags && questionnaire.tags.map(tag => (
-                    <Tag key={tag}>
-                      {tag}
-                      <button onClick={() => handleRemoveTag(questionnaire._id, tag)}>×</button>
-                    </Tag>
+                    <Tag key={tag}>{tag}</Tag>
                   ))}
                 </TagsContainer>
-                <AddTagForm onSubmit={(e) => {
-                  e.preventDefault();
-                  handleAddTag(questionnaire._id, newTags[questionnaire._id]);
-                }}>
-                  <TagInput
-                    type="text"
-                    value={newTags[questionnaire._id] || ''}
-                    onChange={(e) => setNewTags(prev => ({ ...prev, [questionnaire._id]: e.target.value }))}
-                    placeholder="Nouveau tag"
-                  />
-                  <AddTagButton type="submit">Ajouter</AddTagButton>
-                </AddTagForm>
               </div>
-              <div>
-                <ActionButton as={Link} to={`/use/${questionnaire._id}`}>USE</ActionButton>
-                <ActionButton as={Link} to={`/edit/${questionnaire._id}`}>MODIFIER</ActionButton>
-                <ActionButton as={Link} to={`/cr/${questionnaire._id}`}>CR</ActionButton>
-                <ActionButton onClick={() => handleDelete(questionnaire._id)}>SUPPRIMER</ActionButton>
-              </div>
+              <ActionButton to={`/use/${questionnaire._id}`}>UTILISER</ActionButton>
             </QuestionnaireItem>
           ))}
         </ul>
-        <ActionButton as={Link} to="/create" className="mt-6">
-          CRÉER UN NOUVEAU QUESTIONNAIRE
-        </ActionButton>
         <PaginationContainer>
           <PaginationButton onClick={() => fetchQuestionnaires(currentPage - 1)} disabled={currentPage === 1}>
             Précédent
@@ -346,4 +268,4 @@ function QuestionnaireListPage() {
   );
 }
 
-export default QuestionnaireListPage;
+export default QuestionnairePage;
