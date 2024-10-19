@@ -270,21 +270,7 @@ function QuestionnaireListPage() {
             </FilterOption>
           ))}
         </FilterGroup>
-  <FilterGroup>
-          <FilterTitle>Localisation</FilterTitle>
-          {['Epaule', 'Thorax', 'Ostéo', 'Dig', 'Cardiovasc', 'Séno', 'Uro', 'ORL', 'Pelvis', 'Pedia'].map(specialty => (
-            <FilterOption key={specialty}>
-              <input
-                type="checkbox"
-                name="specialty"
-                value={specialty}
-                checked={specialtyFilters.includes(specialty)}
-                onChange={() => handleSpecialtyFilter(specialty)}
-              />
-              {specialty}
-            </FilterOption>
-          ))}
-        </FilterGroup>
+
 
       </FilterSection>
       <ListContainer>
