@@ -31,6 +31,7 @@ const CaseSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  public: { type: Boolean, default: false },
   sheet: { 
     type: String, 
     default: '' 

@@ -8,6 +8,8 @@ import Header from './components/Header';
 import LoadingSpinner from './components/LoadingSpinner';
 import Auth from './components/Auth';
 import PrivateRoute from './components/PrivateRoute';
+import PublicQuestionnairesPage from './pages/PublicQuestionnairesPage';
+import PublicCasesPage from './pages/PublicCasesPage';
 
 
 const Home = lazy(() => import('./pages/Home'));
@@ -96,6 +98,8 @@ function App() {
                   <Route path="/sheet/:caseId" element={<SheetViewer />} />
                   <Route path="/create-sheet/:caseId" element={<SheetEditor />} />
                   <Route path="/test-upload" element={<TestUpload />} />
+                  <Route path="/public-questionnaires" element={<PublicQuestionnairesPage />} />
+<Route path="/public-cases" element={<PublicCasesPage />} />
                 </Routes>
               </Suspense>
             </main>

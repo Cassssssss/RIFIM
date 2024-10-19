@@ -158,10 +158,12 @@ function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
                 {isMenuOpen && (
                   <MenuDropdown>
                     <NavLink to="/" onClick={() => setIsMenuOpen(false)}>Accueil</NavLink>
-                    <NavLink to="/questionnaires" onClick={() => setIsMenuOpen(false)}>Questionnaires</NavLink>
-                    <NavLink to="/questionnaires-list" onClick={() => setIsMenuOpen(false)}>Liste des questionnaires</NavLink> {/* Ajoutez cette ligne */}
+                    <NavLink to="/questionnaires" onClick={() => setIsMenuOpen(false)}>Editeur questionnaires</NavLink>
+                    <NavLink to="/questionnaires-list" onClick={() => setIsMenuOpen(false)}>Questionnaires</NavLink> {/* Ajoutez cette ligne */}
                     <NavLink to="/cases" onClick={() => setIsMenuOpen(false)}>Editeur cas</NavLink>
                     <NavLink to="/cases-list" onClick={() => setIsMenuOpen(false)}>Cas</NavLink>
+                    <NavLink to="/public-questionnaires">Questionnaires Publics</NavLink>
+<NavLink to="/public-cases">Cas Publics</NavLink>
                   </MenuDropdown>
                 )}
               </div>

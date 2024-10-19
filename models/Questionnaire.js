@@ -38,6 +38,7 @@ const QuestionnaireSchema = new mongoose.Schema({
     of: Boolean,
     default: {}
   },
+  public: { type: Boolean, default: false },
   tags: [String],
   modality: String,
   specialty: String
