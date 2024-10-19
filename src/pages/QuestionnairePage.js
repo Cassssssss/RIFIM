@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import axios from '../utils/axiosConfig';
-import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/CasesPage.styles'; // Assurez-vous q
+import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/CasesPage.styles';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 const PageContainer = styled.div`
   display: flex;
@@ -116,6 +117,46 @@ const Tag = styled.span`
   font-size: 0.75rem;
 `;
 
+const FilterDropdown = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const DropdownButton = styled.button`
+  width: 100%;
+  padding: 0.5rem;
+  background-color: ${props => props.theme.background};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+`;
+
+const DropdownContent = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: ${props => props.theme.background};
+  border: 1px solid ${props => props.theme.border};
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  z-index: 1;
+`;
+
+const DropdownOption = styled.label`
+  display: block;
+  padding: 0.5rem;
+  cursor: pointer;
+  &:hover {
+    background-color: ${props => props.theme.hover};
+  }
+`;
+
 function QuestionnairePage() {
   const [questionnaires, setQuestionnaires] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -123,6 +164,13 @@ function QuestionnairePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [modalityFilters, setModalityFilters] = useState([]);
   const [specialtyFilters, setSpecialtyFilters] = useState([]);
+  const [locationFilters, setLocationFilters] = useState([]);
+  const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
+
+  const locationOptions = [
+    "Avant-pied", "Bras", "Bassin", "Cheville", "Coude", "Cuisse", "Doigts", "Epaule", 
+    "Genou", "Hanche", "Jambe", "Parties molles", "Poignet", "Rachis"
+  ];
 
   const fetchQuestionnaires = useCallback(async (page = 1) => {
     try {
@@ -132,7 +180,8 @@ function QuestionnairePage() {
           limit: 10,
           search: searchTerm,
           modality: modalityFilters.join(','),
-          specialty: specialtyFilters.join(',')
+          specialty: specialtyFilters.join(','),
+          location: locationFilters.join(',')
         }
       });
       if (response.data && response.data.questionnaires) {
@@ -150,7 +199,7 @@ function QuestionnairePage() {
       setCurrentPage(1);
       setTotalPages(0);
     }
-  }, [searchTerm, modalityFilters, specialtyFilters]);
+  }, [searchTerm, modalityFilters, specialtyFilters, locationFilters]);
 
   useEffect(() => {
     fetchQuestionnaires(1);
@@ -184,13 +233,23 @@ function QuestionnairePage() {
     });
   };
 
+  const handleLocationFilter = (location) => {
+    setLocationFilters(prev => {
+      if (prev.includes(location)) {
+        return prev.filter(l => l !== location);
+      } else {
+        return [...prev, location];
+      }
+    });
+  };
+
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchQuestionnaires(1);
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, modalityFilters, specialtyFilters, fetchQuestionnaires]);
+  }, [searchTerm, modalityFilters, specialtyFilters, locationFilters, fetchQuestionnaires]);
 
   return (
     <PageContainer>
@@ -225,10 +284,35 @@ function QuestionnairePage() {
             </FilterOption>
           ))}
         </FilterGroup>
-        {(modalityFilters.length > 0 || specialtyFilters.length > 0) && (
+        <FilterGroup>
+          <FilterTitle>Localisation</FilterTitle>
+          <FilterDropdown>
+            <DropdownButton onClick={() => setIsLocationDropdownOpen(!isLocationDropdownOpen)}>
+              Sélectionner {locationFilters.length > 0 && `(${locationFilters.length})`}
+              {isLocationDropdownOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </DropdownButton>
+            {isLocationDropdownOpen && (
+              <DropdownContent>
+                {locationOptions.map(location => (
+                  <DropdownOption key={location}>
+                    <input
+                      type="checkbox"
+                      name="location"
+                      value={location}
+                      checked={locationFilters.includes(location)}
+                      onChange={() => handleLocationFilter(location)}
+                    />
+                    {location}
+                  </DropdownOption>
+                ))}
+              </DropdownContent>
+            )}
+          </FilterDropdown>
+        </FilterGroup>
+        {(modalityFilters.length > 0 || specialtyFilters.length > 0 || locationFilters.length > 0) && (
           <FilterIndicator>
             Filtres appliqués : 
-            {modalityFilters.concat(specialtyFilters).join(', ')}
+            {[...modalityFilters, ...specialtyFilters, ...locationFilters].join(', ')}
           </FilterIndicator>
         )}
       </FilterSection>
