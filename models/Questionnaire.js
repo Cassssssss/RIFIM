@@ -37,7 +37,10 @@ const QuestionnaireSchema = new mongoose.Schema({
     type: Map,
     of: Boolean,
     default: {}
-  }
-});
+  },
+  tags: [String],
+  modality: String,
+  specialty: String
+}, { timestamps: true });
 
 module.exports = mongoose.model('Questionnaire', QuestionnaireSchema);
