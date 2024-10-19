@@ -72,7 +72,7 @@ function Home() {
         Elle permet de créer, gérer et utiliser des questionnaires personnalisés pour améliorer la qualité des examens 
         et le suivi des patients. Avec notre outil, vous pouvez facilement structurer vos rapports, 
         standardiser vos procédures et optimiser votre flux de travail.
-        
+
         Elle comprends également une base de données de cas de radiologie pour vous entraîner et vous perfectionner.
       </Description>
       <VideoContainer>
@@ -86,7 +86,7 @@ function Home() {
           allowFullScreen
         ></iframe>
       </VideoContainer>
-      <Button to="/questionnaires">Voir les questionnaires</Button>
+      <Button to="/questionnaires-list">Voir les questionnaires</Button>
       <Button to="/cases-list">Visualiser les cas de radiologie</Button>
     </HomeContainer>
   );

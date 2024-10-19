@@ -85,6 +85,16 @@ const CaseCard = memo(({ cas, onUpdateDifficulty, onUpdateAnswer, onAddTag, onRe
     setNewTag('');
   }, [cas._id, newTag, onAddTag]);
 
+  const handleTogglePublic = async (id) => {
+    try {
+      await axios.patch(`/api/cases/${id}/togglePublic`);
+      // Rafraîchir la liste des cas
+      fetchCases();
+    } catch (error) {
+      console.error('Erreur lors du changement de visibilité du cas:', error);
+    }
+  };
+
   return (
     <S.CaseCard>
       <Link to={`/radiology-viewer/${cas._id}`}>
@@ -145,6 +155,9 @@ const CaseCard = memo(({ cas, onUpdateDifficulty, onUpdateAnswer, onAddTag, onRe
       <S.Button as={Link} to={`/create-sheet/${cas._id}`}>Créer fiche</S.Button>
       <S.Button onClick={() => onLoadCase(cas._id)}>Charger</S.Button>
       <S.Button onClick={() => onDeleteCase(cas._id)}>Supprimer</S.Button>
+      <button onClick={() => handleTogglePublic(cas._id)}>
+  {cas.public ? 'Rendre privé' : 'Rendre public'}
+</button>
     </S.CaseCard>
   );
 });

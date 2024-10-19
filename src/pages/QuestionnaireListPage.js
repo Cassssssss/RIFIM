@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import axios from '../utils/axiosConfig';
 import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/CasesPage.styles';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 const PageContainer = styled.div`
   display: flex;
@@ -117,6 +118,46 @@ const AddTagButton = styled.button`
   font-size: 0.75rem;
 `;
 
+const FilterDropdown = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const DropdownButton = styled.button`
+  width: 100%;
+  padding: 0.5rem;
+  background-color: ${props => props.theme.background};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+`;
+
+const DropdownContent = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: ${props => props.theme.background};
+  border: 1px solid ${props => props.theme.border};
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  z-index: 1;
+`;
+
+const DropdownOption = styled.label`
+  display: block;
+  padding: 0.5rem;
+  cursor: pointer;
+  &:hover {
+    background-color: ${props => props.theme.hover};
+  }
+`;
+
 function QuestionnaireListPage() {
   const [questionnaires, setQuestionnaires] = useState([]);
   const [deletedQuestionnaires, setDeletedQuestionnaires] = useState([]);
@@ -125,7 +166,14 @@ function QuestionnaireListPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [modalityFilters, setModalityFilters] = useState([]);
   const [specialtyFilters, setSpecialtyFilters] = useState([]);
+  const [locationFilters, setLocationFilters] = useState([]);
+  const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
   const [newTags, setNewTags] = useState({});
+
+  const locationOptions = [
+    "Avant-pied", "Bras", "Bassin", "Cheville", "Coude", "Cuisse", "Doigts", "Epaule", 
+    "Genou", "Hanche", "Jambe", "Parties molles", "Poignet", "Rachis"
+  ];
 
   const fetchQuestionnaires = useCallback(async (page = 1) => {
     try {
@@ -135,7 +183,8 @@ function QuestionnaireListPage() {
           limit: 10,
           search: searchTerm,
           modality: modalityFilters.join(','),
-          specialty: specialtyFilters.join(',')
+          specialty: specialtyFilters.join(','),
+          location: locationFilters.join(',')
         }
       });
       if (response.data && response.data.questionnaires) {
@@ -153,7 +202,7 @@ function QuestionnaireListPage() {
       setCurrentPage(1);
       setTotalPages(0);
     }
-  }, [searchTerm, modalityFilters, specialtyFilters]);
+  }, [searchTerm, modalityFilters, specialtyFilters, locationFilters]);
 
   useEffect(() => {
     fetchQuestionnaires(1);
@@ -202,6 +251,16 @@ function QuestionnaireListPage() {
     });
   };
 
+  const handleLocationFilter = (location) => {
+    setLocationFilters(prev => {
+      if (prev.includes(location)) {
+        return prev.filter(l => l !== location);
+      } else {
+        return [...prev, location];
+      }
+    });
+  };
+
   const handleAddTag = async (questionnaireId, tag) => {
     try {
       const response = await axios.post(`/questionnaires/${questionnaireId}/tags`, { tag });
@@ -229,13 +288,29 @@ function QuestionnaireListPage() {
     }
   };
 
+  const handleTogglePublic = async (id) => {
+    try {
+      const response = await axios.patch(`/questionnaires/${id}/togglePublic`);
+      if (response.data) {
+        setQuestionnaires(prevQuestionnaires => 
+          prevQuestionnaires.map(q => 
+            q._id === id ? { ...q, public: !q.public } : q
+          )
+        );
+        console.log('Visibilité du questionnaire mise à jour avec succès');
+      }
+    } catch (error) {
+      console.error('Erreur lors du changement de visibilité du questionnaire:', error);
+    }
+  };
+
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchQuestionnaires(1);
     }, 300);
-
+  
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, modalityFilters, specialtyFilters]);
+  }, [searchTerm, modalityFilters, specialtyFilters, locationFilters, fetchQuestionnaires]);
 
   return (
     <PageContainer>
@@ -270,8 +345,37 @@ function QuestionnaireListPage() {
             </FilterOption>
           ))}
         </FilterGroup>
-
-
+        <FilterGroup>
+          <FilterTitle>Localisation</FilterTitle>
+          <FilterDropdown>
+            <DropdownButton onClick={() => setIsLocationDropdownOpen(!isLocationDropdownOpen)}>
+              Sélectionner {locationFilters.length > 0 && `(${locationFilters.length})`}
+              {isLocationDropdownOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </DropdownButton>
+            {isLocationDropdownOpen && (
+              <DropdownContent>
+                {locationOptions.map(location => (
+                  <DropdownOption key={location}>
+                    <input
+                      type="checkbox"
+                      name="location"
+                      value={location}
+                      checked={locationFilters.includes(location)}
+                      onChange={() => handleLocationFilter(location)}
+                    />
+                    {location}
+                  </DropdownOption>
+                ))}
+              </DropdownContent>
+            )}
+          </FilterDropdown>
+        </FilterGroup>
+        {(modalityFilters.length > 0 || specialtyFilters.length > 0 || locationFilters.length > 0) && (
+          <FilterIndicator>
+            Filtres appliqués : 
+            {[...modalityFilters, ...specialtyFilters, ...locationFilters].join(', ')}
+          </FilterIndicator>
+        )}
       </FilterSection>
       <ListContainer>
         <SearchBar
@@ -311,6 +415,9 @@ function QuestionnaireListPage() {
                 <ActionButton as={Link} to={`/edit/${questionnaire._id}`}>MODIFIER</ActionButton>
                 <ActionButton as={Link} to={`/cr/${questionnaire._id}`}>CR</ActionButton>
                 <ActionButton onClick={() => handleDelete(questionnaire._id)}>SUPPRIMER</ActionButton>
+                <ActionButton onClick={() => handleTogglePublic(questionnaire._id)}>
+                  {questionnaire.public ? 'Rendre privé' : 'Rendre public'}
+                </ActionButton>
               </div>
             </QuestionnaireItem>
           ))}

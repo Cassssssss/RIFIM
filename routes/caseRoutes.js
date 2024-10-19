@@ -386,6 +386,32 @@ router.delete('/:id/folders/:folder', async (req, res) => {
   }
 });
 
+
+// GET tous les cas publics
+router.get('/public', async (req, res) => {
+  try {
+    const publicCases = await Case.find({ public: true });
+    res.json(publicCases);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// PATCH pour rendre un cas public/privé
+router.patch('/:id/togglePublic', authMiddleware, async (req, res) => {
+  try {
+    const caseDoc = await Case.findOne({ _id: req.params.id, user: req.userId });
+    if (!caseDoc) {
+      return res.status(404).json({ message: 'Cas non trouvé' });
+    }
+    caseDoc.public = !caseDoc.public;
+    await caseDoc.save();
+    res.json(caseDoc);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // PATCH update case difficulty
 router.patch('/:id', async (req, res) => {
   console.log('Tentative de mise à jour du cas:', req.params.id, req.body);

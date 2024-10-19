@@ -181,7 +181,7 @@ function QuestionnairePage() {
           search: searchTerm,
           modality: modalityFilters.join(','),
           specialty: specialtyFilters.join(','),
-          location: locationFilters.join(',')
+          location: locationFilters.join(',')  // Assurez-vous que cette ligne est présente
         }
       });
       if (response.data && response.data.questionnaires) {
@@ -247,7 +247,7 @@ function QuestionnairePage() {
     const delayDebounceFn = setTimeout(() => {
       fetchQuestionnaires(1);
     }, 300);
-
+  
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, modalityFilters, specialtyFilters, locationFilters, fetchQuestionnaires]);
 
@@ -271,7 +271,7 @@ function QuestionnairePage() {
         </FilterGroup>
         <FilterGroup>
           <FilterTitle>Spécialités</FilterTitle>
-          {['Neuro', 'Thorax', 'Ostéo', 'Dig', 'Cardiovasc', 'Séno', 'Uro', 'ORL', 'Pelvis', 'Pedia'].map(specialty => (
+          {['Cardiovasc', 'Dig', 'Neuro', 'ORL', 'Ostéo','Pedia', 'Pelvis', 'Séno', 'Thorax', 'Uro'].map(specialty => (
             <FilterOption key={specialty}>
               <input
                 type="checkbox"

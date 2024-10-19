@@ -12,6 +12,19 @@ router.use((req, res, next) => {
   next();
 });
 
+// GET tous les questionnaires publics
+router.get('/public', async (req, res) => {
+  console.log("Route /public appelée");
+  try {
+    const publicQuestionnaires = await Questionnaire.find({ public: true });
+    console.log("Questionnaires publics trouvés:", publicQuestionnaires.length);
+    res.json(publicQuestionnaires);
+  } catch (error) {
+    console.error("Erreur lors de la récupération des questionnaires publics:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 const compressAndUploadImage = async (imageData, folderName, fileName) => {
   console.log(`Début de l'upload pour ${folderName}/${fileName}`);
   
@@ -91,31 +104,19 @@ router.get('/', authMiddleware, async (req, res) => {
     const search = req.query.search || '';
     const modality = req.query.modality ? req.query.modality.split(',') : [];
     const specialty = req.query.specialty ? req.query.specialty.split(',') : [];
+    const location = req.query.location ? req.query.location.split(',') : [];
 
     const query = { user: req.userId };
     if (search) {
-      query.$and = [
-        {
-          $or: [
-            { title: { $regex: search, $options: 'i' } },
-            { tags: { $regex: search, $options: 'i' } }
-          ]
-        }
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { tags: { $regex: search, $options: 'i' } }
       ];
-    } else {
-      query.$and = [];
     }
 
-    if (modality.length > 0) {
-      query.$and.push({ tags: { $all: modality } });
-    }
-
-    if (specialty.length > 0) {
-      query.$and.push({ tags: { $all: specialty } });
-    }
-
-    if (query.$and.length === 0) {
-      delete query.$and;
+    const tagFilters = [...modality, ...specialty, ...location];
+    if (tagFilters.length > 0) {
+      query.tags = { $all: tagFilters };
     }
 
     console.log('Query:', JSON.stringify(query));
@@ -210,6 +211,21 @@ router.put('/:id', authMiddleware, async (req, res) => {
   } catch (error) {
     console.error(`Erreur lors de la mise à jour du questionnaire ${req.params.id}:`, error);
     res.status(500).json({ message: 'Erreur lors de la mise à jour du questionnaire', error: error.message });
+  }
+});
+
+// PATCH pour rendre un questionnaire public/privé
+router.patch('/:id/togglePublic', authMiddleware, async (req, res) => {
+  try {
+    const questionnaire = await Questionnaire.findOne({ _id: req.params.id, user: req.userId });
+    if (!questionnaire) {
+      return res.status(404).json({ message: 'Questionnaire non trouvé' });
+    }
+    questionnaire.public = !questionnaire.public;
+    await questionnaire.save();
+    res.json(questionnaire);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
