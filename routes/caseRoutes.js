@@ -49,6 +49,19 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET tous les cas publics
+router.get('/public', async (req, res) => {
+  console.log("Route /public des cas appelée");
+  try {
+    const publicCases = await Case.find({ public: true });
+    console.log("Cas publics trouvés:", publicCases.length);
+    res.json(publicCases);
+  } catch (error) {
+    console.error("Erreur lors de la récupération des cas publics:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // POST new case
 router.post('/', async (req, res) => {
   console.log('Tentative de création d\'un nouveau cas:', req.body);
@@ -387,18 +400,10 @@ router.delete('/:id/folders/:folder', async (req, res) => {
 });
 
 
-// GET tous les cas publics
-router.get('/public', async (req, res) => {
-  try {
-    const publicCases = await Case.find({ public: true });
-    res.json(publicCases);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
 
 // PATCH pour rendre un cas public/privé
 router.patch('/:id/togglePublic', authMiddleware, async (req, res) => {
+  console.log("Route /togglePublic appelée pour le cas:", req.params.id);
   try {
     const caseDoc = await Case.findOne({ _id: req.params.id, user: req.userId });
     if (!caseDoc) {
@@ -408,6 +413,7 @@ router.patch('/:id/togglePublic', authMiddleware, async (req, res) => {
     await caseDoc.save();
     res.json(caseDoc);
   } catch (error) {
+    console.error('Erreur lors du basculement de la visibilité:', error);
     res.status(500).json({ message: error.message });
   }
 });
