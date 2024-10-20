@@ -14,62 +14,45 @@ router.use((req, res, next) => {
 
 // GET tous les questionnaires publics
 router.get('/public', async (req, res) => {
-  console.log("Route /public appelée");
   try {
-    const publicQuestionnaires = await Questionnaire.find({ public: true });
-    console.log("Questionnaires publics trouvés:", publicQuestionnaires.length);
-    res.json(publicQuestionnaires);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const search = req.query.search || '';
+    const modality = req.query.modality ? req.query.modality.split(',') : [];
+    const specialty = req.query.specialty ? req.query.specialty.split(',') : [];
+    const location = req.query.location ? req.query.location.split(',') : [];
+
+    const query = { public: true };
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { tags: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const tagFilters = [...modality, ...specialty, ...location];
+    if (tagFilters.length > 0) {
+      query.tags = { $all: tagFilters };
+    }
+
+    const totalQuestionnaires = await Questionnaire.countDocuments(query);
+    const questionnaires = await Questionnaire.find(query)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    res.json({
+      questionnaires,
+      currentPage: page,
+      totalPages: Math.ceil(totalQuestionnaires / limit),
+      totalQuestionnaires
+    });
   } catch (error) {
     console.error("Erreur lors de la récupération des questionnaires publics:", error);
     res.status(500).json({ message: error.message });
   }
 });
-
-const compressAndUploadImage = async (imageData, folderName, fileName) => {
-  console.log(`Début de l'upload pour ${folderName}/${fileName}`);
-  
-  if (imageData.startsWith('http')) {
-    console.log(`Image déjà uploadée : ${imageData}`);
-    return imageData;
-  }
-
-  const matches = imageData.match(/^data:image\/([A-Za-z-+\/]+);base64,(.+)$/);
-  if (!matches || matches.length !== 3) {
-    console.error('Invalid base64 image string');
-    throw new Error('Invalid base64 image string');
-  }
-
-  const imageBuffer = Buffer.from(matches[2], 'base64');
-  const imageType = matches[1];
-
-  const compressedImageBuffer = await sharp(imageBuffer)
-    .resize({ width: 800, height: 800, fit: 'inside' })
-    .webp({ quality: 80 })
-    .toBuffer();
-
-  const sanitizedFolderName = folderName.replace(/[^a-zA-Z0-9]/g, '_');
-  const sanitizedFileName = `${Date.now()}_${fileName.replace(/[^a-zA-Z0-9]/g, '_')}.webp`;
-
-  const fullPath = `${sanitizedFolderName}/${sanitizedFileName}`;
-  console.log(`Chemin complet de l'image : ${fullPath}`);
-
-  const params = {
-    Bucket: process.env.DO_SPACES_BUCKET,
-    Key: fullPath,
-    Body: compressedImageBuffer,
-    ACL: 'public-read',
-    ContentType: 'image/webp'
-  };
-  
-  try {
-    const { Location } = await s3.upload(params).promise();
-    console.log(`Image uploadée avec succès : ${Location}`);
-    return Location;
-  } catch (error) {
-    console.error(`Erreur lors de l'upload de l'image : ${error.message}`);
-    throw error;
-  }
-};
 
 const processImagesRecursively = async (item, questionnaireTitle, parentId = '') => {
   console.log(`Traitement de l'item : ${item.id} pour le questionnaire : ${questionnaireTitle}`);

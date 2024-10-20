@@ -9,7 +9,6 @@ import * as S from './CasesPage.styles';
 import { CasesGrid, FoldersSection } from './CasesPage.styles';
 import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/CasesPage.styles';
 
-
 const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
 console.log('API_BASE_URL:', API_BASE_URL);
 const SPACES_URL = process.env.REACT_APP_SPACES_URL || 'https://rifim.lon1.digitaloceanspaces.com';
@@ -64,7 +63,7 @@ const CollapsibleImageGallery = memo(({ folder, images, onImageClick, onDeleteIm
   );
 });
 
-const CaseCard = memo(({ cas, onUpdateDifficulty, onUpdateAnswer, onAddTag, onRemoveTag, onDeleteCase, onLoadCase }) => {
+const CaseCard = memo(({ cas, onUpdateDifficulty, onUpdateAnswer, onAddTag, onRemoveTag, onDeleteCase, onLoadCase, onTogglePublic }) => {
   const [editingAnswer, setEditingAnswer] = useState(null);
   const [newTag, setNewTag] = useState('');
 
@@ -85,11 +84,9 @@ const CaseCard = memo(({ cas, onUpdateDifficulty, onUpdateAnswer, onAddTag, onRe
     setNewTag('');
   }, [cas._id, newTag, onAddTag]);
 
-  const handleTogglePublic = async (id) => {
+  const handleTogglePublic = async () => {
     try {
-      await axios.patch(`/api/cases/${id}/togglePublic`);
-      // Rafraîchir la liste des cas
-      fetchCases();
+      await onTogglePublic(cas._id);
     } catch (error) {
       console.error('Erreur lors du changement de visibilité du cas:', error);
     }
@@ -155,9 +152,9 @@ const CaseCard = memo(({ cas, onUpdateDifficulty, onUpdateAnswer, onAddTag, onRe
       <S.Button as={Link} to={`/create-sheet/${cas._id}`}>Créer fiche</S.Button>
       <S.Button onClick={() => onLoadCase(cas._id)}>Charger</S.Button>
       <S.Button onClick={() => onDeleteCase(cas._id)}>Supprimer</S.Button>
-      <button onClick={() => handleTogglePublic(cas._id)}>
-  {cas.public ? 'Rendre privé' : 'Rendre public'}
-</button>
+      <S.Button onClick={handleTogglePublic}>
+        {cas.public ? 'Rendre privé' : 'Rendre public'}
+      </S.Button>
     </S.CaseCard>
   );
 });
@@ -395,8 +392,7 @@ function CasesPage() {
       } catch (error) {
         setError('Erreur lors de la définition de l\'image principale');
         console.error('Erreur lors de la définition de l\'image principale:', error);
-      } 
-    finally {
+      } finally {
         setIsLoading(false);
       }
     }
@@ -415,7 +411,6 @@ function CasesPage() {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
   
-        // Mise à jour de l'état local avec le cas mis à jour du serveur
         setCases(prevCases => prevCases.map(c => 
           c._id === selectedCase._id 
             ? response.data
@@ -432,7 +427,6 @@ function CasesPage() {
       }
     }
   }, [selectedCase]);
-  
   
   const deleteFolder = useCallback(async (folder) => {
     if (window.confirm(`Êtes-vous sûr de vouloir supprimer le dossier "${folder}" ?`)) {
@@ -463,7 +457,7 @@ function CasesPage() {
         setIsLoading(false);
       }
     }
-  }, [API_BASE_URL]);
+  }, []);
   
   const verifyImages = useCallback(async () => {
     if (!selectedCase) {
@@ -486,7 +480,6 @@ function CasesPage() {
   
   const deleteExistingImage = useCallback(async (caseId, folder, imagePath) => {
     try {
-      // Extrayez le nom du fichier du chemin complet
       const fileName = imagePath.split('/').pop();
       await axios.delete(`/cases/${caseId}/images`, {
         data: { folder, fileName }
@@ -498,7 +491,7 @@ function CasesPage() {
       console.error('Erreur lors de la suppression de l\'image:', error);
       setError('Erreur lors de la suppression de l\'image');
     }
-  }, [API_BASE_URL]);
+  }, []);
   
   const updateCaseDifficulty = useCallback(async (id, difficulty) => {
     try {
@@ -537,6 +530,22 @@ function CasesPage() {
       setCases(prevCases => prevCases.map(c => c._id === caseId ? response.data : c));
     } catch (error) {
       console.error('Erreur lors de la suppression du tag:', error);
+    }
+  }, []);
+
+  const handleTogglePublic = useCallback(async (id) => {
+    try {
+      const response = await axios.patch(`/cases/${id}/togglePublic`);
+      if (response.data) {
+        setCases(prevCases => 
+          prevCases.map(c => 
+            c._id === id ? { ...c, public: !c.public } : c
+          )
+        );
+        console.log('Visibilité du cas mise à jour avec succès');
+      }
+    } catch (error) {
+      console.error('Erreur lors du changement de visibilité du cas:', error);
     }
   }, []);
   
@@ -674,6 +683,7 @@ function CasesPage() {
               onRemoveTag={handleRemoveTag}
               onDeleteCase={deleteCase}
               onLoadCase={loadCase}
+              onTogglePublic={handleTogglePublic}
             />
           ))
         ) : (
@@ -682,79 +692,79 @@ function CasesPage() {
       </S.CasesGrid>
   
       <S.FoldersSection>
-      {selectedCase && selectedCase.images && (
-        <S.SectionContainer>
-          <h2>{selectedCase.title}</h2>
-          {selectedCase.folders.map(folder => (
-            selectedCase.images[folder] && (
-              <CollapsibleImageGallery
-                key={folder}
-                folder={folder}
-                images={selectedCase.images[folder]}
-                onImageClick={(image, index) => handleImageClick(folder, index)}
-                onDeleteImage={deleteExistingImage}
-                caseId={selectedCase._id}
-                fetchFolderMainImage={fetchFolderMainImage}
-              />
-            )
-          ))}
-          {selectedImage && (
-            <S.LargeImageContainer onClick={closeImage}>
-              <S.LargeImage src={selectedImage} alt="Selected" onClick={(e) => e.stopPropagation()} />
-              <S.CloseButton onClick={(e) => { e.stopPropagation(); closeImage(); }}>
-                <X size={24} />
-              </S.CloseButton>
-              <S.NavigationButton onClick={(e) => { e.stopPropagation(); navigateImage(-1); }} style={{ left: '20px' }}>
-                <ChevronLeft size={24} />
-              </S.NavigationButton>
-              <S.NavigationButton onClick={(e) => { e.stopPropagation(); navigateImage(1); }} style={{ right: '20px' }}>
-                <ChevronRight size={24} />
-              </S.NavigationButton>
-            </S.LargeImageContainer>
-          )}
-        </S.SectionContainer>
+  {selectedCase && selectedCase.images && (
+    <S.SectionContainer>
+      <h2>{selectedCase.title}</h2>
+      {selectedCase.folders.map(folder => (
+        selectedCase.images[folder] && (
+          <CollapsibleImageGallery
+            key={folder}
+            folder={folder}
+            images={selectedCase.images[folder]}
+            onImageClick={(image, index) => handleImageClick(folder, index)}
+            onDeleteImage={deleteExistingImage}
+            caseId={selectedCase._id}
+            fetchFolderMainImage={fetchFolderMainImage}
+          />
+        )
+      ))}
+      {selectedImage && (
+        <S.LargeImageContainer onClick={closeImage}>
+          <S.LargeImage src={selectedImage} alt="Selected" onClick={(e) => e.stopPropagation()} />
+          <S.CloseButton onClick={(e) => { e.stopPropagation(); closeImage(); }}>
+            <X size={24} />
+          </S.CloseButton>
+          <S.NavigationButton onClick={(e) => { e.stopPropagation(); navigateImage(-1); }} style={{ left: '20px' }}>
+            <ChevronLeft size={24} />
+          </S.NavigationButton>
+          <S.NavigationButton onClick={(e) => { e.stopPropagation(); navigateImage(1); }} style={{ right: '20px' }}>
+            <ChevronRight size={24} />
+          </S.NavigationButton>
+        </S.LargeImageContainer>
       )}
-    </S.FoldersSection>
+    </S.SectionContainer>
+  )}
+</S.FoldersSection>
 
-    {imageDetails && (
-      <S.SectionContainer>
-        <h3>Détails des images :</h3>
-        {Object.entries(imageDetails).map(([folder, images]) => (
-          <div key={folder}>
-            <h4>{folder} :</h4>
-            <ul>
-              {images.map((image, index) => (
-                <li key={index}>{image}</li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </S.SectionContainer>
-    )}
+{imageDetails && (
+  <S.SectionContainer>
+    <h3>Détails des images :</h3>
+    {Object.entries(imageDetails).map(([folder, images]) => (
+      <div key={folder}>
+        <h4>{folder} :</h4>
+        <ul>
+          {images.map((image, index) => (
+            <li key={index}>{image}</li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </S.SectionContainer>
+)}
 
-    {selectedCase && (
-      <S.SectionContainer>
-        <h3>Images principales des dossiers :</h3>
-        {selectedCase.folders.map(folder => (
-          <div key={folder}>
-            <h4>{folder}</h4>
-            {selectedCase.folderMainImages && selectedCase.folderMainImages[folder] ? (
-              <img 
-                src={selectedCase.folderMainImages[folder]} 
-                alt={`Image principale de ${folder}`} 
-                style={{ maxWidth: '200px', maxHeight: '200px' }} 
-              />
-            ) : (
-              <p>Pas d'image principale définie pour ce dossier</p>
-            )}
-          </div>
-        ))}
-      </S.SectionContainer>
-    )}
+{selectedCase && (
+  <S.SectionContainer>
+    <h3>Images principales des dossiers :</h3>
+    {selectedCase.folders.map(folder => (
+      <div key={folder}>
+        <h4>{folder}</h4>
+        {selectedCase.folderMainImages && selectedCase.folderMainImages[folder] ? (
+          <img 
+            src={selectedCase.folderMainImages[folder]} 
+            alt={`Image principale de ${folder}`} 
+            style={{ maxWidth: '200px', maxHeight: '200px' }} 
+          />
+        ) : (
+          <p>Pas d'image principale définie pour ce dossier</p>
+        )}
+      </div>
+    ))}
+  </S.SectionContainer>
+)}
 
-    {isLoading && <LoadingSpinner />}
-    {error && <ErrorMessage>{error}</ErrorMessage>}
-    <PaginationContainer>
+{isLoading && <LoadingSpinner />}
+{error && <ErrorMessage>{error}</ErrorMessage>}
+<PaginationContainer>
   <PaginationButton onClick={() => fetchCases(currentPage - 1)} disabled={currentPage === 1}>
     Précédent
   </PaginationButton>
@@ -763,7 +773,7 @@ function CasesPage() {
     Suivant
   </PaginationButton>
 </PaginationContainer>
-  </S.PageContainer>
+</S.PageContainer>
 );
 }
 
