@@ -82,10 +82,16 @@ const QuestionnaireItem = styled.li`
   }
 `;
 
-const QuestionnaireTitle = styled.span`
+const QuestionnaireTitle = styled(Link)`
   color: ${props => props.theme.text};
   font-size: 1.1rem;
   font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  
+  &:hover {
+    text-decoration: underline;
+  }
 `;
 
 const ActionButton = styled(Link)`
@@ -326,16 +332,24 @@ function QuestionnairePage() {
         <ul>
           {questionnaires.map((questionnaire) => (
             <QuestionnaireItem key={questionnaire._id}>
-              <div>
-                <QuestionnaireTitle>{questionnaire.title}</QuestionnaireTitle>
-                <TagsContainer>
-                  {questionnaire.tags && questionnaire.tags.map(tag => (
-                    <Tag key={tag}>{tag}</Tag>
-                  ))}
-                </TagsContainer>
-              </div>
-              <ActionButton to={`/use/${questionnaire._id}`}>UTILISER</ActionButton>
-            </QuestionnaireItem>
+  <div>
+    <QuestionnaireTitle to={`/use/${questionnaire._id}`}>
+      {questionnaire.title}
+    </QuestionnaireTitle>
+    <TagsContainer>
+      {questionnaire.tags && questionnaire.tags.map(tag => (
+        <Tag key={tag}>{tag}</Tag>
+      ))}
+    </TagsContainer>
+  </div>
+  <div>
+    {/* Pour PublicQuestionnairesPage */}
+    <ActionButton to={`/use/${questionnaire._id}`}>UTILISER</ActionButton>
+    
+    {/* Pour QuestionnaireListPage */}
+
+  </div>
+</QuestionnaireItem>
           ))}
         </ul>
         <PaginationContainer>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import styled from 'styled-components';
 import axios from '../utils/axiosConfig';
+import styled from 'styled-components';
 import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/CasesPage.styles';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -58,37 +58,51 @@ const ListContainer = styled.div`
   color: ${props => props.theme.text};
   padding: 2rem;
   border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 const SearchBar = styled.input`
   width: 100%;
-  padding: 0.5rem;
-  margin-bottom: 1rem;
+  padding: 0.75rem;
+  margin-bottom: 1.5rem;
   border: 1px solid ${props => props.theme.border};
   border-radius: 4px;
+  font-size: 1rem;
 `;
 
 const QuestionnaireItem = styled.li`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 0;
+  padding: 1rem;
   border-bottom: 1px solid ${props => props.theme.border};
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: ${props => props.theme.hover};
+  }
 `;
 
-const QuestionnaireTitle = styled.span`
+const QuestionnaireTitle = styled(Link)`
   color: ${props => props.theme.text};
   font-size: 1.1rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  
+  &:hover {
+    text-decoration: underline;
+  }
 `;
 
-const ActionButton = styled(Link)`
+const ActionButton = styled.button`
   background-color: ${props => props.theme.primary};
   color: ${props => props.theme.buttonText};
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  text-decoration: none;
+  margin-left: 0.5rem;
   
   &:hover {
     background-color: ${props => props.theme.secondary};
@@ -125,7 +139,6 @@ const DropdownButton = styled.button`
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  color: ${props => props.theme.text};
 `;
 
 const DropdownContent = styled.div`
@@ -151,6 +164,8 @@ const DropdownOption = styled.label`
   }
 `;
 
+
+
 function PublicQuestionnairesPage() {
   const [questionnaires, setQuestionnaires] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -160,6 +175,8 @@ function PublicQuestionnairesPage() {
   const [specialtyFilters, setSpecialtyFilters] = useState([]);
   const [locationFilters, setLocationFilters] = useState([]);
   const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const locationOptions = [
     "Avant-pied", "Bras", "Bassin", "Cheville", "Coude", "Cuisse", "Doigts", "Epaule", 
@@ -167,6 +184,8 @@ function PublicQuestionnairesPage() {
   ];
 
   const fetchQuestionnaires = useCallback(async (page = 1) => {
+    setIsLoading(true);
+    setError(null);
     try {
       const response = await axios.get('/questionnaires/public', {
         params: {
@@ -182,9 +201,15 @@ function PublicQuestionnairesPage() {
         setQuestionnaires(response.data.questionnaires);
         setCurrentPage(response.data.currentPage);
         setTotalPages(response.data.totalPages);
+      } else {
+        console.error("Format de réponse inattendu:", response.data);
+        setQuestionnaires([]);
       }
     } catch (error) {
       console.error('Erreur lors de la récupération des questionnaires publics:', error);
+      setError("Impossible de charger les questionnaires publics. Veuillez réessayer plus tard.");
+    } finally {
+      setIsLoading(false);
     }
   }, [searchTerm, modalityFilters, specialtyFilters, locationFilters]);
 
@@ -224,6 +249,16 @@ function PublicQuestionnairesPage() {
         return [...prev, location];
       }
     });
+  };
+
+  const addToMyQuestionnaires = async (questionnaireId) => {
+    try {
+      await axios.post(`/questionnaires/${questionnaireId}/copy`);
+      alert('Questionnaire ajouté à votre collection privée.');
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout du questionnaire:', error);
+      alert('Erreur lors de l\'ajout du questionnaire. Veuillez réessayer.');
+    }
   };
 
   useEffect(() => {
@@ -306,21 +341,37 @@ function PublicQuestionnairesPage() {
           value={searchTerm}
           onChange={handleSearch}
         />
-        <ul>
-          {questionnaires.map((questionnaire) => (
-            <QuestionnaireItem key={questionnaire._id}>
-              <div>
-                <QuestionnaireTitle>{questionnaire.title}</QuestionnaireTitle>
-                <TagsContainer>
-                  {questionnaire.tags && questionnaire.tags.map(tag => (
-                    <Tag key={tag}>{tag}</Tag>
-                  ))}
-                </TagsContainer>
-              </div>
-              <ActionButton to={`/use/${questionnaire._id}`}>UTILISER</ActionButton>
-            </QuestionnaireItem>
-          ))}
-        </ul>
+        {isLoading ? (
+          <p>Chargement des questionnaires publics...</p>
+        ) : error ? (
+          <p>{error}</p>
+        ) : (
+          <ul>
+            {questionnaires.map((questionnaire) => (
+<QuestionnaireItem key={questionnaire._id}>
+  <div>
+    <QuestionnaireTitle to={`/use/${questionnaire._id}`}>
+      {questionnaire.title}
+    </QuestionnaireTitle>
+    <TagsContainer>
+      {questionnaire.tags && questionnaire.tags.map(tag => (
+        <Tag key={tag}>{tag}</Tag>
+      ))}
+    </TagsContainer>
+  </div>
+  <div>
+    {/* Pour PublicQuestionnairesPage */}
+    <ActionButton onClick={() => addToMyQuestionnaires(questionnaire._id)}>
+      Ajouter à mes questionnaires
+    </ActionButton>
+    
+    {/* Pour QuestionnaireListPage */}
+    <ActionButton as={Link} to={`/use/${questionnaire._id}`}>UTILISER</ActionButton>
+  </div>
+</QuestionnaireItem>
+            ))}
+          </ul>
+        )}
         <PaginationContainer>
           <PaginationButton onClick={() => fetchQuestionnaires(currentPage - 1)} disabled={currentPage === 1}>
             Précédent
