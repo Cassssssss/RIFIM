@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import styled from 'styled-components';
-import { PlusCircle, Camera, EyeOff, Eye, ChevronDown, ChevronUp, Plus } from 'lucide-react';
+import { PlusCircle, Camera, EyeOff, Eye, ChevronDown, ChevronUp, Plus, Italic } from 'lucide-react';
 
 const ImagePreviewWrapper = styled.div`
   position: fixed;
@@ -35,10 +35,11 @@ const FormatButton = styled.button`
   }
 `;
 
-const TextFormatButtons = ({ onBold, onUnderline, onSize, onCenter }) => (
+const TextFormatButtons = ({ onBold, onUnderline, onItalic, onSize, onCenter }) => (
   <div className="flex space-x-2 mb-2">
     <FormatButton onClick={onBold}>B</FormatButton>
     <FormatButton onClick={onUnderline}>U</FormatButton>
+    <FormatButton onClick={onItalic}><Italic size={16} /></FormatButton>
     <FormatButton onClick={() => onSize('12px')}>Petit</FormatButton>
     <FormatButton onClick={() => onSize('16px')}>Moyen</FormatButton>
     <FormatButton onClick={() => onSize('20px')}>Grand</FormatButton>
@@ -60,7 +61,8 @@ const QuestionPreview = ({
   hiddenQuestions,
   toggleQuestionVisibility,
   imageCaptions,
-  path = []
+  path = [],
+  showAddButton = true
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [showImage, setShowImage] = useState(null);
@@ -116,6 +118,9 @@ const QuestionPreview = ({
         case 'underline':
           formattedText = `<u>${selectedText}</u>`;
           break;
+        case 'italic':
+          formattedText = `<em>${selectedText}</em>`;
+          break;
         case 'size':
           formattedText = `<span style="font-size: ${value};">${selectedText}</span>`;
           break;
@@ -125,7 +130,7 @@ const QuestionPreview = ({
         default:
           formattedText = selectedText;
       }
-
+  
       const newText = textarea.value.substring(0, start) + formattedText + textarea.value.substring(end);
       handleCRTextChange(optionIndex, newText);
     }
@@ -174,16 +179,18 @@ const QuestionPreview = ({
               >
                 <Camera size={20} className="text-blue-500 cursor-pointer" />
               </div>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onImageInsert(question.image);
-                }}
-                className="ml-1 p-1 text-blue-500 hover:text-blue-700 rounded-full hover:bg-blue-100"
-                title="Ajouter l'image au CR"
-              >
-                <Plus size={16} />
-              </button>
+              {showAddButton && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onImageInsert(question.image);
+                  }}
+                  className="ml-1 p-1 text-blue-500 hover:text-blue-700 rounded-full hover:bg-blue-100"
+                  title="Ajouter l'image au CR"
+                >
+                  <Plus size={16} />
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -221,16 +228,18 @@ const QuestionPreview = ({
                         >
                           <Camera size={20} className="text-blue-500 cursor-pointer" />
                         </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onImageInsert(option.image);
-                          }}
-                          className="ml-1 p-1 text-blue-500 hover:text-blue-700 rounded-full hover:bg-blue-100"
-                          title="Ajouter l'image au CR"
-                        >
-                          <Plus size={16} />
-                        </button>
+                        {showAddButton && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onImageInsert(option.image);
+                            }}
+                            className="ml-1 p-1 text-blue-500 hover:text-blue-700 rounded-full hover:bg-blue-100"
+                            title="Ajouter l'image au CR"
+                          >
+                            <Plus size={16} />
+                          </button>
+                        )}
                       </div>
                     )}
                   </label>
@@ -243,12 +252,13 @@ const QuestionPreview = ({
                   )}
                   {showCRFields && isOptionSelected(optionIndex) && (
                     <>
-                      <TextFormatButtons 
-                        onBold={() => formatText(optionIndex, 'bold')}
-                        onUnderline={() => formatText(optionIndex, 'underline')}
-                        onSize={(size) => formatText(optionIndex, 'size', size)}
-                        onCenter={() => formatText(optionIndex, 'center')}
-                      />
+<TextFormatButtons 
+  onBold={() => formatText(optionIndex, 'bold')}
+  onUnderline={() => formatText(optionIndex, 'underline')}
+  onItalic={() => formatText(optionIndex, 'italic')}
+  onSize={(size) => formatText(optionIndex, 'size', size)}
+  onCenter={() => formatText(optionIndex, 'center')}
+/>
                       <textarea
                         id={`cr-text-${question.id}-${optionIndex}`}
                         value={questionCRTexts[optionIndex] || ''}
@@ -277,6 +287,7 @@ const QuestionPreview = ({
                           hiddenQuestions={hiddenQuestions}
                           toggleQuestionVisibility={toggleQuestionVisibility}
                           imageCaptions={imageCaptions}
+                          showAddButton={showAddButton}
                         />
                       ))}
                     </div>
@@ -285,7 +296,7 @@ const QuestionPreview = ({
               ))}
             </ul>
           )}
-{question.type === 'text' && (
+          {question.type === 'text' && (
             <textarea
               value={freeTexts?.[question.id] || ''}
               onChange={(e) => onFreeTextChange(question.id, e.target.value)}
@@ -320,7 +331,8 @@ const QuestionnairePreview = ({
   onImageInsert,
   hiddenQuestions,
   toggleQuestionVisibility,
-  imageCaptions
+  imageCaptions,
+  showAddButton = true
 }) => {
   if (!Array.isArray(questions)) return null;
 
@@ -341,6 +353,7 @@ const QuestionnairePreview = ({
           hiddenQuestions={hiddenQuestions}
           toggleQuestionVisibility={toggleQuestionVisibility}
           imageCaptions={imageCaptions}
+          showAddButton={showAddButton}
         />
       ))}
     </div>

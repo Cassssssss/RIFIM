@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import { ChevronLeft, ChevronRight } from 'lucide-react'; // Assurez-vous d'avoir installé lucide-react
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const OverlayContainer = styled.div`
   position: fixed;
@@ -75,8 +75,21 @@ const StepIndicator = styled.p`
   font-weight: bold;
 `;
 
+const ImagesContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+`;
+
+const StepImage = styled.img`
+  max-width: 45%;
+  height: auto;
+`;
+
 const TutorialOverlay = ({ steps, onClose }) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const contentRef = useRef(null);
 
   const nextStep = () => {
     if (currentStep < steps.length - 1) {
@@ -92,12 +105,25 @@ const TutorialOverlay = ({ steps, onClose }) => {
     }
   };
 
+  const handleClickOutside = (event) => {
+    if (contentRef.current && !contentRef.current.contains(event.target)) {
+      onClose();
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <OverlayContainer>
-      <TutorialContent>
+      <TutorialContent ref={contentRef}>
         <CloseButton onClick={onClose}>&times;</CloseButton>
         <Image src={steps[currentStep].image} alt={`Étape ${currentStep + 1}`} />
-        <p>{steps[currentStep].description}</p>
+        <div>{steps[currentStep].description}</div>
         <StepIndicator>
           Étape {currentStep + 1} sur {steps.length}
         </StepIndicator>

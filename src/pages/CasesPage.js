@@ -8,12 +8,28 @@ import ErrorMessage from '../components/ErrorMessage';
 import * as S from './CasesPage.styles';
 import { CasesGrid, FoldersSection } from './CasesPage.styles';
 import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/CasesPage.styles';
+import styled from 'styled-components';
+import TutorialOverlay from './TutorialOverlay';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
 console.log('API_BASE_URL:', API_BASE_URL);
 const SPACES_URL = process.env.REACT_APP_SPACES_URL || 'https://rifim.lon1.digitaloceanspaces.com';
 
 const UPLOAD_BASE_URL = process.env.REACT_APP_UPLOAD_URL || 'http://localhost:5002/uploads';
+
+const TutorialButton = styled.button`
+  background-color: ${props => props.theme.secondary};
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 1rem;
+  
+  &:hover {
+    background-color: ${props => props.theme.primary};
+  }
+`;
 
 const CollapsibleImageGallery = memo(({ folder, images, onImageClick, onDeleteImage, caseId, fetchFolderMainImage }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -197,6 +213,7 @@ function CasesPage() {
   const [currentFolder, setCurrentFolder] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   useEffect(() => {
     fetchCases();
@@ -552,6 +569,37 @@ function CasesPage() {
   const filteredCases = cases.filter(cas => 
     cas.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const tutorialSteps = [
+    {
+      image: "/tutorials/Screen_Cases1.png",
+      description: <> Te voici dans la page d'importation de cas pédagogique, merci pour l'effort :).
+      Pour commencer, rentre le titre de ton nouveau cas (par exemple "tuberculose") dans l'encadré de texte prévu à cet effet (flèche 1)
+      puis appuie sur "Créer un nouveau cas", ici je l'ai nommé "Nouveau_Cas_1".
+      Ajoute un "dossier" pour chaque séquence que tu voudras ajouter (T1, T2 etc, logique, mais en scanner une série en coupe coronal et une série en coupe sagittale sont considérées
+      comme deux séquences différentes car il n'est pas possible de faire de reconstruction MPR sur ce site malheureusement), donc un dossier= une séquence, ici on a donc un dossier "T1" (flèche 2).  </>
+    },
+    {
+      image: "/tutorials/Screen_Cases1.png",
+      description: <> </>
+    },
+    {
+      image: "/tutorials/Screen_Cases1.png",
+      description: <> </>
+    },
+    {
+      image: "/tutorials/Screen_Cases1.png",
+      description: <> </>
+    },
+    {
+      image: "/tutorials/Screen_Cases1.png",
+      description: <> </>
+    },
+    {
+      image: "/tutorials/Screen_Cases1.png",
+      description: <> </>
+    },
+  ];
   
   return (
     <S.PageContainer>
@@ -658,7 +706,7 @@ function CasesPage() {
             </S.FolderContainer>
           ))}
   
-          <S.Button 
+  <S.Button 
             onClick={addImagesToCase} 
             disabled={Object.values(newImages).every(arr => !arr || arr.length === 0)}
           >
@@ -692,89 +740,96 @@ function CasesPage() {
       </S.CasesGrid>
   
       <S.FoldersSection>
-  {selectedCase && selectedCase.images && (
-    <S.SectionContainer>
-      <h2>{selectedCase.title}</h2>
-      {selectedCase.folders.map(folder => (
-        selectedCase.images[folder] && (
-          <CollapsibleImageGallery
-            key={folder}
-            folder={folder}
-            images={selectedCase.images[folder]}
-            onImageClick={(image, index) => handleImageClick(folder, index)}
-            onDeleteImage={deleteExistingImage}
-            caseId={selectedCase._id}
-            fetchFolderMainImage={fetchFolderMainImage}
-          />
-        )
-      ))}
-      {selectedImage && (
-        <S.LargeImageContainer onClick={closeImage}>
-          <S.LargeImage src={selectedImage} alt="Selected" onClick={(e) => e.stopPropagation()} />
-          <S.CloseButton onClick={(e) => { e.stopPropagation(); closeImage(); }}>
-            <X size={24} />
-          </S.CloseButton>
-          <S.NavigationButton onClick={(e) => { e.stopPropagation(); navigateImage(-1); }} style={{ left: '20px' }}>
-            <ChevronLeft size={24} />
-          </S.NavigationButton>
-          <S.NavigationButton onClick={(e) => { e.stopPropagation(); navigateImage(1); }} style={{ right: '20px' }}>
-            <ChevronRight size={24} />
-          </S.NavigationButton>
-        </S.LargeImageContainer>
-      )}
-    </S.SectionContainer>
-  )}
-</S.FoldersSection>
-
-{imageDetails && (
-  <S.SectionContainer>
-    <h3>Détails des images :</h3>
-    {Object.entries(imageDetails).map(([folder, images]) => (
-      <div key={folder}>
-        <h4>{folder} :</h4>
-        <ul>
-          {images.map((image, index) => (
-            <li key={index}>{image}</li>
-          ))}
-        </ul>
-      </div>
-    ))}
-  </S.SectionContainer>
-)}
-
-{selectedCase && (
-  <S.SectionContainer>
-    <h3>Images principales des dossiers :</h3>
-    {selectedCase.folders.map(folder => (
-      <div key={folder}>
-        <h4>{folder}</h4>
-        {selectedCase.folderMainImages && selectedCase.folderMainImages[folder] ? (
-          <img 
-            src={selectedCase.folderMainImages[folder]} 
-            alt={`Image principale de ${folder}`} 
-            style={{ maxWidth: '200px', maxHeight: '200px' }} 
-          />
-        ) : (
-          <p>Pas d'image principale définie pour ce dossier</p>
+        {selectedCase && selectedCase.images && (
+          <S.SectionContainer>
+            <h2>{selectedCase.title}</h2>
+            {selectedCase.folders.map(folder => (
+              selectedCase.images[folder] && (
+                <CollapsibleImageGallery
+                  key={folder}
+                  folder={folder}
+                  images={selectedCase.images[folder]}
+                  onImageClick={(image, index) => handleImageClick(folder, index)}
+                  onDeleteImage={deleteExistingImage}
+                  caseId={selectedCase._id}
+                  fetchFolderMainImage={fetchFolderMainImage}
+                />
+              )
+            ))}
+            {selectedImage && (
+              <S.LargeImageContainer onClick={closeImage}>
+                <S.LargeImage src={selectedImage} alt="Selected" onClick={(e) => e.stopPropagation()} />
+                <S.CloseButton onClick={(e) => { e.stopPropagation(); closeImage(); }}>
+                  <X size={24} />
+                </S.CloseButton>
+                <S.NavigationButton onClick={(e) => { e.stopPropagation(); navigateImage(-1); }} style={{ left: '20px' }}>
+                  <ChevronLeft size={24} />
+                </S.NavigationButton>
+                <S.NavigationButton onClick={(e) => { e.stopPropagation(); navigateImage(1); }} style={{ right: '20px' }}>
+                  <ChevronRight size={24} />
+                </S.NavigationButton>
+              </S.LargeImageContainer>
+            )}
+          </S.SectionContainer>
         )}
-      </div>
-    ))}
-  </S.SectionContainer>
-)}
+      </S.FoldersSection>
 
-{isLoading && <LoadingSpinner />}
-{error && <ErrorMessage>{error}</ErrorMessage>}
-<PaginationContainer>
-  <PaginationButton onClick={() => fetchCases(currentPage - 1)} disabled={currentPage === 1}>
-    Précédent
-  </PaginationButton>
-  <PaginationInfo>Page {currentPage} sur {totalPages}</PaginationInfo>
-  <PaginationButton onClick={() => fetchCases(currentPage + 1)} disabled={currentPage === totalPages}>
-    Suivant
-  </PaginationButton>
-</PaginationContainer>
-</S.PageContainer>
-);
+      {imageDetails && (
+        <S.SectionContainer>
+          <h3>Détails des images :</h3>
+          {Object.entries(imageDetails).map(([folder, images]) => (
+            <div key={folder}>
+              <h4>{folder} :</h4>
+              <ul>
+                {images.map((image, index) => (
+                  <li key={index}>{image}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </S.SectionContainer>
+      )}
+
+      {selectedCase && (
+        <S.SectionContainer>
+          <h3>Images principales des dossiers :</h3>
+          {selectedCase.folders.map(folder => (
+            <div key={folder}>
+              <h4>{folder}</h4>
+              {selectedCase.folderMainImages && selectedCase.folderMainImages[folder] ? (
+                <img 
+                  src={selectedCase.folderMainImages[folder]} 
+                  alt={`Image principale de ${folder}`} 
+                  style={{ maxWidth: '200px', maxHeight: '200px' }} 
+                />
+              ) : (
+                <p>Pas d'image principale définie pour ce dossier</p>
+              )}
+            </div>
+          ))}
+        </S.SectionContainer>
+      )}
+
+      {isLoading && <LoadingSpinner />}
+      {error && <ErrorMessage>{error}</ErrorMessage>}
+      <PaginationContainer>
+        <PaginationButton onClick={() => fetchCases(currentPage - 1)} disabled={currentPage === 1}>
+          Précédent
+        </PaginationButton>
+        <PaginationInfo>Page {currentPage} sur {totalPages}</PaginationInfo>
+        <PaginationButton onClick={() => fetchCases(currentPage + 1)} disabled={currentPage === totalPages}>
+          Suivant
+        </PaginationButton>
+      </PaginationContainer>
+      <TutorialButton onClick={() => setShowTutorial(true)}>Voir le tutoriel</TutorialButton>
+      {showTutorial && (
+        <TutorialOverlay 
+          steps={tutorialSteps} 
+          onClose={() => setShowTutorial(false)} 
+        />
+      )}
+    </S.PageContainer>
+  );
 }
 
 export default memo(CasesPage);
