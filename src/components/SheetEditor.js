@@ -97,6 +97,7 @@ const SheetEditor = () => {
   const handleImageUpload = (blobInfo, progress) => new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.withCredentials = false;
+    // Utilisez l'URL correcte pour l'upload
     xhr.open('POST', `${process.env.REACT_APP_API_URL}/cases/${caseId}/sheet-images`);
     
     const token = localStorage.getItem('token');

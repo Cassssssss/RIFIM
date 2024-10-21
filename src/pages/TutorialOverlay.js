@@ -88,58 +88,74 @@ const StepImage = styled.img`
 `;
 
 const TutorialOverlay = ({ steps, onClose }) => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const contentRef = useRef(null);
-
-  const nextStep = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      onClose();
-    }
-  };
-
-  const prevStep = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const handleClickOutside = (event) => {
-    if (contentRef.current && !contentRef.current.contains(event.target)) {
-      onClose();
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+    const [currentStep, setCurrentStep] = useState(0);
+    const contentRef = useRef(null);
+  
+    const nextStep = () => {
+      if (currentStep < steps.length - 1) {
+        setCurrentStep(prevStep => prevStep + 1);
+      } else {
+        onClose();
+      }
     };
-  }, []);
-
-  return (
-    <OverlayContainer>
-      <TutorialContent ref={contentRef}>
-        <CloseButton onClick={onClose}>&times;</CloseButton>
-        <Image src={steps[currentStep].image} alt={`Étape ${currentStep + 1}`} />
-        <div>{steps[currentStep].description}</div>
-        <StepIndicator>
-          Étape {currentStep + 1} sur {steps.length}
-        </StepIndicator>
-        <NavigationButtons>
-          <NavButton onClick={prevStep} disabled={currentStep === 0}>
-            <ChevronLeft size={16} style={{ marginRight: '5px' }} />
-            Précédent
-          </NavButton>
-          <NavButton onClick={nextStep}>
-            {currentStep === steps.length - 1 ? 'Terminer' : 'Suivant'}
-            {currentStep < steps.length - 1 && <ChevronRight size={16} style={{ marginLeft: '5px' }} />}
-          </NavButton>
-        </NavigationButtons>
-      </TutorialContent>
-    </OverlayContainer>
-  );
-};
-
-export default TutorialOverlay;
+  
+    const prevStep = () => {
+      if (currentStep > 0) {
+        setCurrentStep(prevStep => prevStep - 1);
+      }
+    };
+  
+    const handleClickOutside = (event) => {
+      if (contentRef.current && !contentRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+  
+    useEffect(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }, []);
+  
+    useEffect(() => {
+      const handleKeyDown = (event) => {
+        if (event.key === 'ArrowRight') {
+          nextStep();
+        } else if (event.key === 'ArrowLeft') {
+          prevStep();
+        }
+      };
+  
+      document.addEventListener('keydown', handleKeyDown);
+  
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+      };
+    }, [currentStep]);
+  
+    return (
+      <OverlayContainer>
+        <TutorialContent ref={contentRef} tabIndex="0">
+          <CloseButton onClick={onClose}>&times;</CloseButton>
+          <Image src={steps[currentStep].image} alt={`Étape ${currentStep + 1}`} />
+          <div>{steps[currentStep].description}</div>
+          <StepIndicator>
+            Étape {currentStep + 1} sur {steps.length}
+          </StepIndicator>
+          <NavigationButtons>
+            <NavButton onClick={prevStep} disabled={currentStep === 0}>
+              <ChevronLeft size={16} style={{ marginRight: '5px' }} />
+              Précédent
+            </NavButton>
+            <NavButton onClick={nextStep}>
+              {currentStep === steps.length - 1 ? 'Terminer' : 'Suivant'}
+              {currentStep < steps.length - 1 && <ChevronRight size={16} style={{ marginLeft: '5px' }} />}
+            </NavButton>
+          </NavigationButtons>
+        </TutorialContent>
+      </OverlayContainer>
+    );
+  };
+  
+  export default TutorialOverlay;

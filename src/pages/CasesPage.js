@@ -580,12 +580,15 @@ function CasesPage() {
       comme deux séquences différentes car il n'est pas possible de faire de reconstruction MPR sur ce site malheureusement), donc un dossier= une séquence, ici on a donc un dossier "T1" (flèche 2).  </>
     },
     {
-      image: "/tutorials/Screen_Cases1.png",
-      description: <> </>
+      image: "/tutorials/Screen_Cases2.png",
+      description: <>Ici on a donc créé 3 dossiers (donc 3 séquences) pour le cas "Exemple" (ça aurait pu être "tuberculose" ou "Neurocysticercose" ou que sais-je). Pour choisir l'image représentative du cas tu cliques sur "Choisir l'image principale du cas" (flèche 1) et tu choisis l'image que tu veux. 
+      Tu ajoutes les images que tu possèdes sur ton ordinateur en cliquant sur le bouton "Ajouter des images" (flèche 2). L'image principale (Flèche 3) correspond à l'image principale du dossier qui sera celle qui représentera la séquence en question lorsque tu consulteras le cas.
+      Tu peux supprimer une séquence avec le bouton "Supprimer le dossier" </>
     },
     {
-      image: "/tutorials/Screen_Cases1.png",
-      description: <> </>
+      image: "/tutorials/Screen_Cases3.png",
+      description: <> Quand tu auras sélectionné les images à importer pour ta séquence elles seront affichées de cette manière (flèche 1). Si tu veux en supprimer une libre à toi.
+      Lorsque tu feras ajouter une image principale du cas ou Image principale du dossier </>
     },
     {
       image: "/tutorials/Screen_Cases1.png",
@@ -678,7 +681,7 @@ function CasesPage() {
                   </S.UploadButton>
                   <S.MainImageButton as="label">
                     <ImageIcon size={20} style={{ marginRight: '10px' }} />
-                    Image principale
+                    Image principale du dossier
                     <S.FileInput
                       type="file"
                       accept="image/*"
@@ -713,9 +716,7 @@ function CasesPage() {
             Ajouter les images au cas
           </S.Button>
   
-          <S.Button onClick={verifyImages} style={{ marginLeft: '10px' }}>
-            Vérifier les images
-          </S.Button>
+
         </S.SectionContainer>
       )}
   
