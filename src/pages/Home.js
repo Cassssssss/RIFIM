@@ -94,24 +94,19 @@ function Home() {
 
   const tutorialSteps = [
     {
-      image: '/tutorials/Screen_Home.png',
-      description: 'Bienvenue sur la page d\'accueil de RIFIM. Ici, vous pouvez accéder à toutes les fonctionnalités principales de l\'application.'
+      image: '/tutorials/Screen_Home_1.png',
+      description: 'C\'est la page d\'accueil de RIFIM. Ici, tu peux accéder à tes questionnaires (comptes rendus), tes cas, ou les questionnaires (CR) et cas publics en cliquant sur \
+      <strong> chacun des 4 boutons</strong>en bas de la page. En appuyant sur l\'acronyme RIFIM en haut à gauche depuis n\'importe quelle page, tu reviens à cette page d\'accueil.'
     },
     {
-      image: '/tutorials/questionnaires-button.png',
-      description: 'Cliquez sur "Voir mes questionnaires" pour accéder à votre liste de questionnaires personnels.'
+      image: '/tutorials/Screen_Home_2.png',
+      description:  <>En cliquant sur le menu déroulant en haut à droite de l'écran, tu as 7 possibilités : accéder à la page d'accueil, à la création de tes questionnaire et donc de CR avec "Editeur questionnaires", 
+      à la consultation de tes questionnaire/CR en cliquant sur "Questionnaires", à la création de tes cas pédagogiques avec "Editeur cas", à la consultation de tes cas avec "Cas", et enfin
+      aux questionnaires et aux cas publics avec "Questionnaires publics" et "Cas publics" (donc ceux que toi ou d'autres utilisateurs auront décidé de partager, <strong>c'est le but principal de la plateforme</strong>).</>
     },
     {
-      image: '/tutorials/cases-button.png',
-      description: 'Le bouton "Visualiser mes cas de radiologie" vous permet d\'accéder à vos cas personnels.'
-    },
-    {
-      image: '/tutorials/public-questionnaires-button.png',
-      description: 'Découvrez les questionnaires partagés par la communauté en cliquant sur "Voir les questionnaires communs".'
-    },
-    {
-      image: '/tutorials/public-cases-button.png',
-      description: 'Explorez les cas de radiologie partagés en cliquant sur "Voir les cas communs".'
+      image: ['/tutorials/Screen_Home_3.png' ],
+      description: 'Un mode sombre est également dispo pour les yeux les plus sensibles.'
     }
   ];
 

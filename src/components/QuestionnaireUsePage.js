@@ -127,12 +127,13 @@ const QuestionnaireUsePage = () => {
   };
 
   const resizeImage = (src, maxWidth, maxHeight) => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => {
+        const canvas = document.createElement('canvas');
         let width = img.width;
         let height = img.height;
-        
+  
         if (width > height) {
           if (width > maxWidth) {
             height *= maxWidth / width;
@@ -144,19 +145,21 @@ const QuestionnaireUsePage = () => {
             height = maxHeight;
           }
         }
-        
-        const canvas = document.createElement('canvas');
+  
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
-        resolve({ 
-          dataUrl: canvas.toDataURL(),
-          width: width,
-          height: height
+        
+        resolve({
+          dataUrl: canvas.toDataURL('image/jpeg', 0.7), // Utilisez JPEG pour une meilleure compression
+          width,
+          height
         });
       };
-      img.onerror = reject;
+      img.onerror = () => {
+        resolve({ dataUrl: src, width: maxWidth, height: maxHeight });
+      };
       img.src = src;
     });
   };
@@ -166,11 +169,28 @@ const QuestionnaireUsePage = () => {
       const formattedContent = editableCR.split('\n').map(line => 
         line.startsWith('<strong>') || line.startsWith('<u>') ? `<p><br>${line}</p>` : `<p>${line}</p>`
       ).join('');
-
-      const resizedImages = await Promise.all(
-        insertedImages.map(src => resizeImage(src, 200, 200))
+  
+      const maxWidth = 200;
+      const maxHeight = 150;
+  
+      const imagePromises = insertedImages.map(src => 
+        new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            const ratio = Math.min(maxWidth / img.width, maxHeight / img.height);
+            const width = Math.round(img.width * ratio);
+            const height = Math.round(img.height * ratio);
+            resolve(`<img src="${src}" alt="Image insérée" width="${width}" height="${height}" style="object-fit: contain;" />`);
+          };
+          img.onerror = () => {
+            resolve(`<img src="${src}" alt="Image insérée" width="${maxWidth}" height="${maxHeight}" style="object-fit: contain;" />`);
+          };
+          img.src = src;
+        })
       );
-
+  
+      const imageElements = await Promise.all(imagePromises);
+  
       const htmlContent = `
         <html>
           <head>
@@ -178,23 +198,18 @@ const QuestionnaireUsePage = () => {
               body { font-family: Calibri, sans-serif; font-size: 12pt; }
               p { margin: 0; padding: 0; }
               .image-container { display: inline-block; margin: 10px 10px 0 0; vertical-align: top; }
-              .image-container img { max-width: 200px; max-height: 200px; }
-              .image-row { white-space: nowrap; overflow: hidden; }
             </style>
           </head>
           <body>
             ${formattedContent}
-            <div class="image-row">
-              ${resizedImages.map(img => `
-                <div class="image-container">
-                  <img src="${img.dataUrl}" alt="Image insérée" style="width: ${img.width}px; height: ${img.height}px;" />
-                </div>
-              `).join('')}
+            <p><br></p> <!-- Ajout d'un retour à la ligne avant les images -->
+            <div style="display: flex; flex-wrap: wrap;">
+              ${imageElements.map(img => `<div class="image-container">${img}</div>`).join('')}
             </div>
           </body>
         </html>
       `;
-
+  
       const blob = new Blob([htmlContent], { type: 'text/html' });
       const clipboardItem = new ClipboardItem({ 'text/html': blob });
       await navigator.clipboard.write([clipboardItem]);

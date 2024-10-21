@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import axios from '../utils/axiosConfig';
 import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/CasesPage.styles';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import TutorialOverlay from './TutorialOverlay';
 
 const PageContainer = styled.div`
   display: flex;
@@ -15,25 +16,40 @@ const PageContainer = styled.div`
 const FilterSection = styled.div`
   width: 250px;
   margin-right: 2rem;
+  background-color: ${props => props.theme.card};
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 const FilterGroup = styled.div`
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 `;
 
 const FilterTitle = styled.h3`
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  color: ${props => props.theme.primary};
 `;
 
 const FilterOption = styled.label`
-  display: block;
-  margin-bottom: 0.25rem;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+
+  input {
+    margin-right: 0.5rem;
+  }
 `;
 
 const FilterIndicator = styled.div`
   margin-top: 1rem;
   font-size: 0.9rem;
   color: ${props => props.theme.primary};
+  padding: 0.5rem;
+  background-color: ${props => props.theme.background};
+  border-radius: 4px;
 `;
 
 const ListContainer = styled.div`
@@ -158,6 +174,20 @@ const DropdownOption = styled.label`
   }
 `;
 
+const TutorialButton = styled.button`
+  background-color: ${props => props.theme.secondary};
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 1rem;
+  
+  &:hover {
+    background-color: ${props => props.theme.primary};
+  }
+`;
+
 function QuestionnaireListPage() {
   const [questionnaires, setQuestionnaires] = useState([]);
   const [deletedQuestionnaires, setDeletedQuestionnaires] = useState([]);
@@ -169,6 +199,7 @@ function QuestionnaireListPage() {
   const [locationFilters, setLocationFilters] = useState([]);
   const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
   const [newTags, setNewTags] = useState({});
+  const [showTutorial, setShowTutorial] = useState(false);
 
   const locationOptions = [
     "Avant-pied", "Bras", "Bassin", "Cheville", "Coude", "Cuisse", "Doigts", "Epaule", 
@@ -312,6 +343,10 @@ function QuestionnaireListPage() {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, modalityFilters, specialtyFilters, locationFilters, fetchQuestionnaires]);
 
+  const tutorialSteps = [
+    // ... (tutorialSteps content remains unchanged)
+  ];
+
   return (
     <PageContainer>
       <FilterSection>
@@ -332,7 +367,7 @@ function QuestionnaireListPage() {
         </FilterGroup>
         <FilterGroup>
           <FilterTitle>Spécialités</FilterTitle>
-          {['Neuro', 'Thorax', 'Ostéo', 'Dig', 'Cardiovasc', 'Séno', 'Uro', 'ORL', 'Pelvis', 'Pedia'].map(specialty => (
+          {['Cardiovasc', 'Dig', 'Neuro', 'ORL', 'Ostéo','Pedia', 'Pelvis', 'Séno', 'Thorax', 'Uro'].map(specialty => (
             <FilterOption key={specialty}>
               <input
                 type="checkbox"
@@ -434,9 +469,16 @@ function QuestionnaireListPage() {
             Suivant
           </PaginationButton>
         </PaginationContainer>
+        <TutorialButton onClick={() => setShowTutorial(true)}>Voir le tutoriel</TutorialButton>
+        {showTutorial && (
+          <TutorialOverlay 
+            steps={tutorialSteps} 
+            onClose={() => setShowTutorial(false)} 
+          />
+        )}
       </ListContainer>
     </PageContainer>
   );
-}
-
-export default QuestionnaireListPage;
+  }
+  
+  export default QuestionnaireListPage;

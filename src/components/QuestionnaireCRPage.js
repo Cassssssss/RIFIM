@@ -166,19 +166,20 @@ const QuestionnaireCRPage = () => {
           <div className="rounded-lg p-0">
             <h3 className="text-xl font-semibold mb-4">Questionnaire</h3>
             <div className="bg-gray-100 p-4 rounded-md">
-              <QuestionnairePreview 
-                title=""
-                questions={questionnaire.questions}
-                selectedOptions={selectedOptions}
-                setSelectedOptions={handleOptionChange}
-                crTexts={crTexts}
-                setCRTexts={setCRTexts}
-                freeTexts={freeTexts}
-                onFreeTextChange={handleFreeTextChange}
-                showCRFields={true}
-                hiddenQuestions={hiddenQuestions}
-                toggleQuestionVisibility={toggleQuestionVisibility}
-              />
+            <QuestionnairePreview 
+  title=""
+  questions={questionnaire.questions}
+  selectedOptions={selectedOptions}
+  setSelectedOptions={handleOptionChange}
+  crTexts={crTexts}
+  setCRTexts={setCRTexts}
+  freeTexts={freeTexts}
+  onFreeTextChange={handleFreeTextChange}
+  showCRFields={true}
+  hiddenQuestions={hiddenQuestions}
+  toggleQuestionVisibility={toggleQuestionVisibility}
+  showAddButton={false} // Ajoutez cette ligne
+/>
             </div>
           </div>
         </div>
