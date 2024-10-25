@@ -7,4 +7,10 @@ build
 .env.development.backend
 .env.production.frontend
 .env.development.frontend
-.env.production.backend.env.development.backend
+.env.production.backend
+.env.development.backend
+# Ignorer tous les vrais fichiers .env
+.env.development.backend
+.env.development.frontend
+.env.production.backend
+.env.production.frontend
