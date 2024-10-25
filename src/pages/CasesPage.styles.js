@@ -244,21 +244,6 @@ export const GalleryHeader = styled.div`
   }
 `;
 
-export const ImagesGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 10px;
-  padding: 1rem;
-  background-color: ${props => props.theme.background};
-`;
-
-export const ImageWrapper = styled.div`
-  position: relative;
-  border-radius: 4px;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-`;
-
 export const ThumbnailImage = styled.img`
   width: 100%;
   height: 100px;
@@ -485,4 +470,31 @@ export const PaginationButton = styled.button`
 export const PaginationInfo = styled.span`
   margin: 0 1rem;
   font-weight: bold;
+`;
+
+export const ImagesGrid = styled.div`
+  display: flex;
+  gap: 10px;
+  padding: 1rem;
+  min-height: 120px;
+  background-color: ${props => props.theme.background};
+  user-select: none;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+`;
+
+export const ImageWrapper = styled.div`
+  position: relative;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  cursor: move;
+  flex: 0 0 auto;
+  width: 100px;
+  height: 100px;
+  
+  &:hover {
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  }
 `;

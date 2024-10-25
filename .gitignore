@@ -5,6 +5,6 @@ build
 .env.frontend
 .env.backend
 .env.development.backend
-#.env.production.frontend
+.env.production.frontend
 .env.development.frontend
-#.env.production.backend.env.development.backend
+.env.production.backend.env.development.backend

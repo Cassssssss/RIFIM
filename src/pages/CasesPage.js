@@ -10,6 +10,8 @@ import { CasesGrid, FoldersSection } from './CasesPage.styles';
 import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/CasesPage.styles';
 import styled from 'styled-components';
 import TutorialOverlay from './TutorialOverlay';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
 console.log('API_BASE_URL:', API_BASE_URL);
@@ -30,7 +32,8 @@ const TutorialButton = styled.button`
   }
 `;
 
-const CollapsibleImageGallery = memo(({ folder, images, onImageClick, onDeleteImage, caseId, fetchFolderMainImage }) => {
+
+const CollapsibleImageGallery = memo(({ folder, images, onImageClick, onDeleteImage, caseId, fetchFolderMainImage, onReorderImages }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [imageLoadError, setImageLoadError] = useState({});
   const [folderMainImage, setFolderMainImage] = useState(null);
@@ -39,42 +42,84 @@ const CollapsibleImageGallery = memo(({ folder, images, onImageClick, onDeleteIm
     const loadFolderMainImage = async () => {
       const imageUrl = await fetchFolderMainImage(caseId, folder);
       setFolderMainImage(imageUrl);
-      console.log(imageUrl);
     };
     loadFolderMainImage();
   }, [caseId, folder, fetchFolderMainImage]);
 
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
+    
+    const sourceIndex = result.source.index;
+    const destinationIndex = result.destination.index;
+    
+    const reorderedImages = Array.from(images);
+    const [movedImage] = reorderedImages.splice(sourceIndex, 1);
+    reorderedImages.splice(destinationIndex, 0, movedImage);
+    
+    onReorderImages(folder, reorderedImages);
+  };
+
   return (
-    <S.GalleryContainer>
-      <S.GalleryHeader onClick={() => setIsOpen(!isOpen)}>
-        <h3>{folder}</h3>
-        {folderMainImage && (
-          <S.FolderMainImage 
-            src={folderMainImage} 
-            alt={`Image principale de ${folder}`} 
-            onError={() => setImageLoadError(prev => ({ ...prev, [folderMainImage]: true }))}
-          />
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <S.GalleryContainer>
+        <S.GalleryHeader onClick={() => setIsOpen(!isOpen)}>
+          <h3>{folder}</h3>
+          {folderMainImage && (
+            <S.FolderMainImage 
+              src={folderMainImage} 
+              alt={`Image principale de ${folder}`} 
+              onError={() => setImageLoadError(prev => ({ ...prev, [folderMainImage]: true }))}
+            />
+          )}
+          {isOpen ? <ChevronUp /> : <ChevronDown />}
+        </S.GalleryHeader>
+        
+        {isOpen && (
+          <Droppable droppableId={folder} direction="horizontal">
+            {(provided) => (
+              <S.ImagesGrid
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+              >
+                {images.map((image, index) => {
+                  const draggableId = `draggable-${folder}-${index}`;
+                  return (
+                    <Draggable 
+                      key={draggableId}
+                      draggableId={draggableId}
+                      index={index}
+                    >
+                      {(provided, snapshot) => (
+                        <S.ImageWrapper
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          style={{
+                            ...provided.draggableProps.style,
+                            opacity: snapshot.isDragging ? 0.5 : 1,
+                          }}
+                        >
+                          <S.ThumbnailImage
+                            src={imageLoadError[image] ? '/images/placeholder.jpg' : image}
+                            alt={`${folder} image ${index}`}
+                            onClick={() => onImageClick(folder, index)}
+                            onError={() => setImageLoadError(prev => ({ ...prev, [image]: true }))}
+                          />
+                          <S.DeleteButton onClick={() => onDeleteImage(caseId, folder, image)}>
+                            <X size={12} />
+                          </S.DeleteButton>
+                        </S.ImageWrapper>
+                      )}
+                    </Draggable>
+                  );
+                })}
+                {provided.placeholder}
+              </S.ImagesGrid>
+            )}
+          </Droppable>
         )}
-        {isOpen ? <ChevronUp /> : <ChevronDown />}
-      </S.GalleryHeader>
-      {isOpen && (
-        <S.ImagesGrid>
-          {images.map((image, index) => (
-            <S.ImageWrapper key={index}>
-              <S.ThumbnailImage
-                src={imageLoadError[image] ? '/images/placeholder.jpg' : image}
-                alt={`${folder} image ${index}`}
-                onClick={() => onImageClick(folder, index)}
-                onError={() => setImageLoadError(prev => ({ ...prev, [image]: true }))}
-              />
-              <S.DeleteButton onClick={() => onDeleteImage(caseId, folder, image)}>
-                <X size={12} />
-              </S.DeleteButton>
-            </S.ImageWrapper>
-          ))}
-        </S.ImagesGrid>
-      )}
-    </S.GalleryContainer>
+      </S.GalleryContainer>
+    </DragDropContext>
   );
 });
 
@@ -622,6 +667,50 @@ function CasesPage() {
     cas.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
+// Ajoutez cette fonction dans CasesPage.js, avant le return
+const handleReorderImages = useCallback(async (folder, reorderedImages) => {
+  if (!selectedCase) return;
+  
+  try {
+    // Mettre à jour l'état local immédiatement pour une meilleure UX
+    setSelectedCase(prevCase => ({
+      ...prevCase,
+      images: {
+        ...prevCase.images,
+        [folder]: reorderedImages
+      }
+    }));
+
+    // Mettre à jour les cas dans la liste
+    setCases(prevCases => prevCases.map(c => 
+      c._id === selectedCase._id 
+        ? {
+            ...c,
+            images: {
+              ...c.images,
+              [folder]: reorderedImages
+            }
+          }
+        : c
+    ));
+
+    // Appeler l'API avec la nouvelle route
+    const response = await axios.patch(`/cases/${selectedCase._id}/reorder-images`, {
+      folder,
+      images: reorderedImages
+    });
+
+    if (!response.data) {
+      throw new Error('Échec de la mise à jour');
+    }
+
+  } catch (error) {
+    console.error('Erreur lors de la réorganisation des images:', error);
+    // Recharger le cas en cas d'erreur
+    await loadCase(selectedCase._id);
+  }
+}, [selectedCase, loadCase]);
+
   return (
     <S.PageContainer>
       <S.Title>Création de cas</S.Title>
@@ -757,22 +846,23 @@ function CasesPage() {
       </S.CasesGrid>
 
       <S.FoldersSection>
-        {selectedCase && selectedCase.images && (
-          <S.SectionContainer>
-            <h2>{selectedCase.title}</h2>
-            {selectedCase.folders.map(folder => (
-              selectedCase.images[folder] && (
-                <CollapsibleImageGallery
-                  key={folder}
-                  folder={folder}
-                  images={selectedCase.images[folder]}
-                  onImageClick={(image, index) => handleImageClick(folder, index)}
-                  onDeleteImage={deleteExistingImage}
-                  caseId={selectedCase._id}
-                  fetchFolderMainImage={fetchFolderMainImage}
-                />
-              )
-            ))}
+      {selectedCase && selectedCase.images && (
+  <S.SectionContainer>
+    <h2>{selectedCase.title}</h2>
+    {selectedCase.folders.map(folder => (
+      selectedCase.images[folder] && (
+        <CollapsibleImageGallery
+          key={folder}
+          folder={folder}
+          images={selectedCase.images[folder]}
+          onImageClick={(image, index) => handleImageClick(folder, index)}
+          onDeleteImage={deleteExistingImage}
+          caseId={selectedCase._id}
+          fetchFolderMainImage={fetchFolderMainImage}
+          onReorderImages={handleReorderImages} // Ajoutez cette ligne
+        />
+      )
+    ))}
             {selectedImage && (
               <S.LargeImageContainer 
                 onClick={closeImage}

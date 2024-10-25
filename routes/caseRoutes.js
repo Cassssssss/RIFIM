@@ -545,4 +545,46 @@ router.post('/:id/sheet', async (req, res) => {
   }
 });
 
+// PATCH pour réorganiser les images
+router.patch('/:id', authMiddleware, async (req, res) => {
+  try {
+    const { images } = req.body;
+    const updatedCase = await Case.findOneAndUpdate(
+      { _id: req.params.id, user: req.userId },
+      { $set: { images } },
+      { new: true }
+    );
+    
+    if (!updatedCase) {
+      return res.status(404).json({ message: 'Cas non trouvé' });
+    }
+    
+    res.json(updatedCase);
+  } catch (error) {
+    console.error('Erreur lors de la réorganisation des images:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Dans caseRoutes.js, ajoutez une nouvelle route spécifique pour la réorganisation des images
+router.patch('/:id/reorder-images', authMiddleware, async (req, res) => {
+  try {
+    const { folder, images } = req.body;
+    const caseDoc = await Case.findOne({ _id: req.params.id, user: req.userId });
+
+    if (!caseDoc) {
+      return res.status(404).json({ message: 'Cas non trouvé' });
+    }
+
+    caseDoc.images[folder] = images;
+    caseDoc.markModified('images'); // Important pour les objets imbriqués
+
+    const updatedCase = await caseDoc.save();
+    res.json(updatedCase);
+  } catch (error) {
+    console.error('Erreur lors de la réorganisation des images:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;
