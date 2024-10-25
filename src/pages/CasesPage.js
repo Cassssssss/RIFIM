@@ -14,7 +14,6 @@ import TutorialOverlay from './TutorialOverlay';
 const API_BASE_URL = process.env.REACT_APP_API_URL || '/api';
 console.log('API_BASE_URL:', API_BASE_URL);
 const SPACES_URL = process.env.REACT_APP_SPACES_URL || 'https://rifim.lon1.digitaloceanspaces.com';
-
 const UPLOAD_BASE_URL = process.env.REACT_APP_UPLOAD_URL || 'http://localhost:5002/uploads';
 
 const TutorialButton = styled.button`
@@ -362,6 +361,25 @@ function CasesPage() {
     }
   }, [selectedCase, newFolderName]);
 
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (selectedImage) {
+        if (event.key === 'ArrowLeft') {
+          navigateImage(-1);
+        } else if (event.key === 'ArrowRight') {
+          navigateImage(1);
+        } else if (event.key === 'Escape') {
+          closeImage();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedImage, navigateImage, closeImage]);
+
   const addImagesToCase = useCallback(async () => {
     if (!selectedCase) return;
     setIsLoading(true);
@@ -565,10 +583,6 @@ function CasesPage() {
       console.error('Erreur lors du changement de visibilité du cas:', error);
     }
   }, []);
-  
-  const filteredCases = cases.filter(cas => 
-    cas.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const tutorialSteps = [
     {
@@ -579,6 +593,7 @@ function CasesPage() {
       Ajoute un "dossier" pour chaque séquence que tu voudras ajouter (T1, T2 etc, logique, mais en scanner une série en coupe coronal et une série en coupe sagittale sont considérées
       comme deux séquences différentes car il n'est pas possible de faire de reconstruction MPR sur ce site malheureusement), donc un dossier= une séquence, ici on a donc un dossier "T1" (flèche 2).  </>
     },
+
     {
       image: "/tutorials/Screen_Cases2.png",
       description: <>Ici on a donc créé 3 dossiers (donc 3 séquences) pour le cas "Exemple" (ça aurait pu être "tuberculose" ou "Neurocysticercose" ou que sais-je). Pour choisir l'image représentative du cas tu cliques sur "Choisir l'image principale du cas" (flèche 1) et tu choisis l'image que tu veux. 
@@ -588,21 +603,24 @@ function CasesPage() {
     {
       image: "/tutorials/Screen_Cases3.png",
       description: <> Quand tu auras sélectionné les images à importer pour ta séquence elles seront affichées de cette manière (flèche 1). Si tu veux en supprimer une libre à toi.
-      Lorsque tu feras ajouter une image principale du cas ou Image principale du dossier </>
+      Lorsque tu feras ajouter une image principale du cas (flèche 2) ou Image principale du dossier (flèche 3), elle ne seront pas affichées elles seront ajoutées automatiquement au cas ne t'en fais pas.
+      Une fois que tu es satisfait de ta sélection d'images pour chaque séquence tu peux appuyer sur "Ajouter les images au cas" (flèche 4) et c'est nikel (yes).  </>
     },
     {
-      image: "/tutorials/Screen_Cases1.png",
-      description: <> </>
-    },
-    {
-      image: "/tutorials/Screen_Cases1.png",
-      description: <> </>
-    },
-    {
-      image: "/tutorials/Screen_Cases1.png",
-      description: <> </>
-    },
+      image: "/tutorials/Screen_Cases4.png",
+      description: <> En bas de la page, quand tu es sur ton cas (ou charge le si tu n'es plus dessus (flèche 1)), clique sur le menu dépliant de la séquence de ton choix (flèche 2) pour pouvoir voir les images correspondant à cette séquence.
+      De nouveau si une ne te plais pas, supprime là si tu le souhaites.
+      Juste en dessous tu peux vérifier l'image principale de dossier et voir si elle te correspond (flèches 3). Clique également sur le nombre d'étoile qui correspond à la difficulté selon toi (tkt c'est à la louche).
+      Comme pour les questionnaires, si tu estimes que ton cas est sympa et intéressant, partage le sur l'espace public (do it) (flèche 5).
+      Tu peux également ajouter des tags pour faciliter la recherche de ton cas (flèche 6).
+      Modifie ensuite la réponse du cas (flèche 7) qui sera la réponse lorsque l'utilisateur cliquera sur "Voir la réponse" (ici tuberculose (souvent la même chose que le titre)) lors de la consultation du cas (il y a un mode pour ne pas se faire spoiler le titre du cas ne t'inquiète pas tu peux mettre le titre que tu veux ça ne gachera pas la surprise). 
+      Et enfin, tu as la possibilité de faire une petite fiche récapitulative du cas que l'utilisateur qui s'entraîne sur ton cas pourra aller consulter après avoir affiché la réponse (c'est important pour la pédagogie fais pas un truc long mais 2/3 images clés avec de la légende et des explications sur la patho ce serait carré).</>
+    }
   ];
+  
+  const filteredCases = cases.filter(cas => 
+    cas.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
   
   return (
     <S.PageContainer>
@@ -709,14 +727,12 @@ function CasesPage() {
             </S.FolderContainer>
           ))}
   
-  <S.Button 
+          <S.Button 
             onClick={addImagesToCase} 
             disabled={Object.values(newImages).every(arr => !arr || arr.length === 0)}
           >
             Ajouter les images au cas
           </S.Button>
-  
-
         </S.SectionContainer>
       )}
   
@@ -739,7 +755,7 @@ function CasesPage() {
           <p>Aucun cas disponible</p>
         )}
       </S.CasesGrid>
-  
+
       <S.FoldersSection>
         {selectedCase && selectedCase.images && (
           <S.SectionContainer>
@@ -758,8 +774,16 @@ function CasesPage() {
               )
             ))}
             {selectedImage && (
-              <S.LargeImageContainer onClick={closeImage}>
-                <S.LargeImage src={selectedImage} alt="Selected" onClick={(e) => e.stopPropagation()} />
+              <S.LargeImageContainer 
+                onClick={closeImage}
+                tabIndex={0}
+                style={{ outline: 'none' }}
+              >
+                <S.LargeImage 
+                  src={selectedImage} 
+                  alt="Selected" 
+                  onClick={(e) => e.stopPropagation()} 
+                />
                 <S.CloseButton onClick={(e) => { e.stopPropagation(); closeImage(); }}>
                   <X size={24} />
                 </S.CloseButton>
@@ -811,23 +835,136 @@ function CasesPage() {
         </S.SectionContainer>
       )}
 
-      {isLoading && <LoadingSpinner />}
-      {error && <ErrorMessage>{error}</ErrorMessage>}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <LoadingSpinner />
+        </div>
+      )}
+
+      {error && (
+        <div className="fixed bottom-4 right-4 bg-red-500 text-white p-4 rounded shadow-lg">
+          <ErrorMessage>{error}</ErrorMessage>
+        </div>
+      )}
+
       <PaginationContainer>
-        <PaginationButton onClick={() => fetchCases(currentPage - 1)} disabled={currentPage === 1}>
+        <PaginationButton 
+          onClick={() => fetchCases(currentPage - 1)} 
+          disabled={currentPage === 1}
+        >
           Précédent
         </PaginationButton>
         <PaginationInfo>Page {currentPage} sur {totalPages}</PaginationInfo>
-        <PaginationButton onClick={() => fetchCases(currentPage + 1)} disabled={currentPage === totalPages}>
+        <PaginationButton 
+          onClick={() => fetchCases(currentPage + 1)} 
+          disabled={currentPage === totalPages}
+        >
           Suivant
         </PaginationButton>
       </PaginationContainer>
-      <TutorialButton onClick={() => setShowTutorial(true)}>Voir le tutoriel</TutorialButton>
+
       {showTutorial && (
-        <TutorialOverlay 
-          steps={tutorialSteps} 
-          onClose={() => setShowTutorial(false)} 
-        />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-4xl max-h-[90vh] overflow-y-auto">
+            <TutorialOverlay 
+              steps={tutorialSteps} 
+              onClose={() => setShowTutorial(false)} 
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="fixed bottom-4 right-4">
+        <TutorialButton onClick={() => setShowTutorial(true)}>
+          Voir le tutoriel
+        </TutorialButton>
+      </div>
+
+      {/* Modal de confirmation pour les actions destructives */}
+      {/* (À implémenter si nécessaire) */}
+
+      {/* Système de notifications pour les actions réussies/échouées */}
+      {/* (À implémenter si nécessaire) */}
+
+      {/* Zone de défilement rapide vers le haut */}
+      {isScrollVisible && (
+        <button
+          className="fixed bottom-20 right-4 bg-primary text-white p-2 rounded-full shadow-lg hover:bg-secondary transition-colors duration-200"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        >
+          <ArrowUp size={24} />
+        </button>
+      )}
+
+      {/* Barre de progression pour les uploads */}
+      {/* (À implémenter si nécessaire) */}
+
+      {/* Section de statistiques */}
+      {selectedCase && (
+        <S.SectionContainer>
+          <h3>Statistiques du cas :</h3>
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            <div className="bg-gray-100 p-4 rounded">
+              <h4 className="font-bold mb-2">Nombre total d'images :</h4>
+              <p>{Object.values(selectedCase.images || {}).reduce((acc, curr) => acc + curr.length, 0)}</p>
+            </div>
+            <div className="bg-gray-100 p-4 rounded">
+              <h4 className="font-bold mb-2">Nombre de dossiers :</h4>
+              <p>{selectedCase.folders?.length || 0}</p>
+            </div>
+            <div className="bg-gray-100 p-4 rounded">
+              <h4 className="font-bold mb-2">Status :</h4>
+              <p>{selectedCase.public ? 'Public' : 'Privé'}</p>
+            </div>
+            <div className="bg-gray-100 p-4 rounded">
+              <h4 className="font-bold mb-2">Difficulté :</h4>
+              <p>{selectedCase.difficulty} / 5</p>
+            </div>
+          </div>
+        </S.SectionContainer>
+      )}
+
+      {/* Section d'historique des modifications */}
+      {/* (À implémenter si nécessaire) */}
+
+      {/* Section de commentaires */}
+      {/* (À implémenter si nécessaire) */}
+
+      {/* Section de métadonnées */}
+      {selectedCase && (
+        <S.SectionContainer>
+          <h3>Métadonnées :</h3>
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            <div>
+              <h4>Identifiant :</h4>
+              <p>{selectedCase._id}</p>
+            </div>
+            <div>
+              <h4>Titre :</h4>
+              <p>{selectedCase.title}</p>
+            </div>
+            <div>
+              <h4>Tags :</h4>
+              <div className="flex flex-wrap gap-2">
+                {selectedCase.tags?.map(tag => (
+                  <span key={tag} className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </S.SectionContainer>
+      )}
+
+      {/* Section de debug (uniquement en développement) */}
+      {process.env.NODE_ENV === 'development' && selectedCase && (
+        <S.SectionContainer>
+          <h3>Debug Info:</h3>
+          <pre className="bg-gray-100 p-4 rounded overflow-x-auto">
+            {JSON.stringify(selectedCase, null, 2)}
+          </pre>
+        </S.SectionContainer>
       )}
     </S.PageContainer>
   );

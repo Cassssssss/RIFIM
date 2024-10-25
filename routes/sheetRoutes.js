@@ -5,26 +5,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        console.log('Détermination du chemin de stockage pour le fichier');
-        const uploadPath = path.join(__dirname, '..', 'uploads');
-        console.log('Chemin de stockage:', uploadPath);
-        if (!fs.existsSync(uploadPath)) {
-            console.log('Création du dossier uploads');
-            fs.mkdirSync(uploadPath, { recursive: true });
-        }
-        cb(null, uploadPath);
-    },
-    filename: function (req, file, cb) {
-        console.log('Détermination du nom du fichier:', file);
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-    }
-});
-
-const upload = multer({ storage: storage });
+const s3 = require('../src/utils/spacesConfig');
 
 router.use(authMiddleware);
 
@@ -35,53 +16,63 @@ router.get('/:caseId/sheet', async (req, res) => {
     if (!caseDoc) {
       return res.status(404).json({ message: 'Cas non trouvé' });
     }
-    res.json({ content: caseDoc.sheet });
+    res.json({ content: caseDoc.sheet, title: caseDoc.title });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
 // Créer ou mettre à jour la fiche d'un cas
-router.post('/:caseId/sheet-images', upload.single('file'), (req, res) => {
-  console.log('Requête reçue pour ajouter une image');
-  console.log('Fichier reçu:', req.file);
-
-  if (!req.file) {
-      console.log('Aucun fichier reçu');
-      return res.status(400).json({ message: 'Aucun fichier reçu.' });
-  }
-
+router.post('/:caseId/sheet', async (req, res) => {
   try {
-      const fileUrl = `${process.env.BASE_URL}/uploads/${req.file.filename}`;
-      console.log('URL du fichier:', fileUrl);
-      res.json({ location: fileUrl });
+    const caseDoc = await Case.findOne({ _id: req.params.caseId, user: req.userId });
+    if (!caseDoc) {
+      return res.status(404).json({ message: 'Cas non trouvé' });
+    }
+    const { title, content } = req.body;
+    caseDoc.title = title;
+    caseDoc.sheet = content;
+    await caseDoc.save();
+    res.json({ message: 'Fiche sauvegardée avec succès' });
   } catch (error) {
-      console.error('Erreur lors de l\'upload:', error);
-      res.status(500).json({ message: 'Erreur lors de l\'upload du fichier' });
+    res.status(500).json({ message: error.message });
   }
 });
 
 // Ajouter une image à la fiche
-router.post('/:caseId/images', (req, res, next) => {
-  console.log('Headers:', req.headers);
-  console.log('Body:', req.body);
-  console.log('Files:', req.files);
-  next();
-}, upload.single('file'), (req, res) => {
-    console.log('Requête reçue pour ajouter une image');
-    console.log('Fichier reçu:', req.file);
-    console.log('Corps de la requête:', req.body);
+router.post('/:caseId/sheet-images', async (req, res) => {
+  if (!req.files || !req.files.file) {
+    return res.status(400).json({ message: 'Aucun fichier reçu.' });
+  }
 
-    if (!req.file) {
-        console.log('Aucun fichier reçu');
-        return res.status(400).json({ message: 'Aucun fichier reçu.' });
+  try {
+    const caseDoc = await Case.findOne({ _id: req.params.caseId, user: req.userId });
+    if (!caseDoc) {
+      return res.status(404).json({ message: 'Cas non trouvé' });
     }
 
-    console.log('Fichier sauvegardé:', req.file.path);
-    const fileUrl = `/uploads/${req.file.filename}`;
-    console.log('URL du fichier:', fileUrl);
+    const file = req.files.file;
+    const sanitizedTitle = caseDoc.title.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+    const fileName = `${Date.now()}-${file.name}`;
+    const filePath = `rifim/${sanitizedTitle}/sheet-images/${fileName}`;
 
+    const params = {
+      Bucket: process.env.DO_SPACES_BUCKET,
+      Key: filePath,
+      Body: file.data,
+      ACL: 'public-read',
+      ContentType: file.mimetype
+    };
+
+    const result = await s3.upload(params).promise();
+    const fileUrl = `${process.env.SPACES_URL}/${filePath}`;
+
+    console.log('Image uploadée:', fileUrl);
     res.json({ location: fileUrl });
+  } catch (error) {
+    console.error('Erreur lors de l\'upload:', error);
+    res.status(500).json({ message: 'Erreur lors de l\'upload de l\'image' });
+  }
 });
 
 module.exports = router;

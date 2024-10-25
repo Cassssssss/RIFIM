@@ -87,7 +87,7 @@ const SheetEditor = () => {
     try {
       await axios.post(`/cases/${caseId}/sheet`, { title, content });
       alert('Fiche sauvegardée avec succès !');
-      navigate('/cases'); // Redirection vers la page CasesPage
+      navigate('/cases');
     } catch (error) {
       console.error('Erreur lors de la sauvegarde de la fiche:', error);
       alert('Erreur lors de la sauvegarde de la fiche');
@@ -95,50 +95,29 @@ const SheetEditor = () => {
   };
 
   const handleImageUpload = (blobInfo, progress) => new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.withCredentials = false;
-    // Utilisez l'URL correcte pour l'upload
-    xhr.open('POST', `${process.env.REACT_APP_API_URL}/cases/${caseId}/sheet-images`);
-    
-    const token = localStorage.getItem('token');
-    if (token) {
-      xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-    }
-    
-    xhr.upload.onprogress = (e) => {
-      progress(e.loaded / e.total * 100);
-    };
-    
-    xhr.onload = () => {
-      if (xhr.status === 403) {
-        reject({ message: 'HTTP Error: ' + xhr.status, remove: true });
-        return;
-      }
-      if (xhr.status < 200 || xhr.status >= 300) {
-        reject('HTTP Error: ' + xhr.status);
-        return;
-      }
-      
-      try {
-        const json = JSON.parse(xhr.responseText);
-        if (!json || typeof json.location != 'string') {
-          reject('Invalid JSON: ' + xhr.responseText);
-          return;
-        }
-        resolve(json.location);
-      } catch (e) {
-        reject('Invalid JSON: ' + xhr.responseText);
-      }
-    };
-    
-    xhr.onerror = () => {
-      reject('Image upload failed due to a XHR Transport error. Code: ' + xhr.status);
-    };
-    
     const formData = new FormData();
     formData.append('file', blobInfo.blob(), blobInfo.filename());
-    
-    xhr.send(formData);
+
+    axios.post(`/cases/${caseId}/sheet-images`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      onUploadProgress: (progressEvent) => {
+        progress(progressEvent.loaded / progressEvent.total * 100);
+      }
+    })
+    .then(response => {
+      if (response.data && response.data.location) {
+        console.log('Image uploadée:', response.data.location);
+        resolve(response.data.location);
+      } else {
+        reject('URL invalide reçue du serveur');
+      }
+    })
+    .catch(error => {
+      console.error('Erreur upload:', error);
+      reject(`Erreur d'upload: ${error.message}`);
+    });
   });
 
   return (
@@ -168,26 +147,8 @@ const SheetEditor = () => {
             'removeformat | help | image',
           content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
           images_upload_handler: handleImageUpload,
-          file_picker_types: 'image',
-          file_picker_callback: (cb, value, meta) => {
-            const input = document.createElement('input');
-            input.setAttribute('type', 'file');
-            input.setAttribute('accept', 'image/*');
-            input.onchange = function () {
-              const file = this.files[0];
-              const reader = new FileReader();
-              reader.onload = function () {
-                const id = 'blobid' + (new Date()).getTime();
-                const blobCache =  tinymce.activeEditor.editorUpload.blobCache;
-                const base64 = reader.result.split(',')[1];
-                const blobInfo = blobCache.create(id, file, base64);
-                blobCache.add(blobInfo);
-                cb(blobInfo.blobUri(), { title: file.name });
-              };
-              reader.readAsDataURL(file);
-            };
-            input.click();
-          }
+          image_advtab: true,
+          automatic_uploads: true
         }}
         onEditorChange={handleEditorChange}
       />
