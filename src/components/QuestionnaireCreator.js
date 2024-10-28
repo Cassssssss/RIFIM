@@ -3,9 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { ChevronDown, ChevronUp, Plus, Trash2, GripVertical, Copy, Camera, Upload } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus, Trash2, GripVertical, Copy, Camera, Upload, Link } from 'lucide-react';
 import axios from '../utils/axiosConfig';
 import QuestionnairePreview from './QuestionnairePreview';
+import LinkEditor from './LinkEditor';
 
 // Styled components (inchangés)
 const CreatorWrapper = styled.div`
@@ -230,6 +231,9 @@ function QuestionnaireCreator() {
     crData: { crTexts: {}, freeTexts: {} },
   });
   const [expandedQuestions, setExpandedQuestions] = useState({});
+  const [showLinkEditor, setShowLinkEditor] = useState(false);
+  const [currentEditingElement, setCurrentEditingElement] = useState(null);
+  const [questionLinks, setQuestionLinks] = useState({});
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -252,6 +256,11 @@ function QuestionnaireCreator() {
             return acc;
           }, {});
           setExpandedQuestions(initialExpanded);
+
+          // Charger les liens pour chaque question
+          if (loadedQuestionnaire.links) {
+            setQuestionLinks(loadedQuestionnaire.links);
+          }
         } catch (error) {
           console.error('Erreur lors du chargement du questionnaire:', error);
         }
@@ -259,6 +268,36 @@ function QuestionnaireCreator() {
       fetchQuestionnaire();
     }
   }, [id]);
+
+  const handleOpenLinkEditor = (elementId, linkIndex) => {
+    setCurrentEditingElement({
+      elementId,
+      linkIndex: typeof linkIndex === 'undefined' ? undefined : linkIndex
+    });
+    setShowLinkEditor(true);
+  };
+
+const handleSaveLink = async (elementId, content, linkIndex, title) => {
+  try {
+    const response = await axios.post(`/questionnaires/${id}/links`, {
+      elementId,
+      content,
+      linkIndex,
+      title
+    });
+
+    if (response.data && response.data.links) {
+      setQuestionLinks(prev => ({
+        ...prev,
+        [elementId]: response.data.links
+      }));
+    }
+
+    console.log('Lien sauvegardé avec succès:', response.data);
+  } catch (error) {
+    console.error('Erreur lors de la sauvegarde du lien:', error);
+  }
+};
 
   const updateQuestionnaire = useCallback((field, value) => {
     setQuestionnaire(prev => ({ ...prev, [field]: value }));
@@ -369,7 +408,13 @@ function QuestionnaireCreator() {
   }, []);
 
   const addQuestion = useCallback((path = [], duplicatedQuestion = null) => {
-    const newQuestion = duplicatedQuestion || { id: Date.now().toString(), text: '', type: 'single', options: [] };
+    const newQuestion = duplicatedQuestion || { 
+      id: Date.now().toString(), 
+      text: '', 
+      type: 'single', 
+      options: [] 
+    };
+    
     setQuestionnaire(prev => {
       const updatedQuestions = JSON.parse(JSON.stringify(prev.questions));
       
@@ -399,7 +444,7 @@ function QuestionnaireCreator() {
       return { ...prev, questions: addRecursive(updatedQuestions, path) };
     });
   }, []);
-  
+
   const addOption = useCallback((path) => {
     setQuestionnaire(prev => {
       const updatedQuestions = JSON.parse(JSON.stringify(prev.questions));
@@ -418,7 +463,7 @@ function QuestionnaireCreator() {
       return { ...prev, questions: updatedQuestions };
     });
   }, []);
-  
+
   const deleteQuestion = useCallback((path) => {
     setQuestionnaire(prev => {
       const updatedQuestions = JSON.parse(JSON.stringify(prev.questions));
@@ -442,7 +487,7 @@ function QuestionnaireCreator() {
       return { ...prev, questions: updatedQuestions };
     });
   }, []);
-  
+
   const deleteOption = useCallback((path) => {
     setQuestionnaire(prev => {
       const updatedQuestions = JSON.parse(JSON.stringify(prev.questions));
@@ -450,7 +495,7 @@ function QuestionnaireCreator() {
       const index = path[path.length - 1];
       let current = updatedQuestions;
       for (let i = 0; i < parentPath.length; i++) {
-        if (parentPath[i] === 'options' || parentPath[i] === 'subQuestions') {
+        if (parentPath[i] === 'options' || path[i] === 'subQuestions') {
           current = current[parentPath[i]];
         } else {
           current = current[path[i]];
@@ -460,33 +505,28 @@ function QuestionnaireCreator() {
       return { ...prev, questions: updatedQuestions };
     });
   }, []);
-  
+
   const handleSave = useCallback(async () => {
     try {
-      console.log('Données à sauvegarder:', JSON.stringify(questionnaire, null, 2));
+      const questionnaireToSave = {
+        ...questionnaire,
+        links: questionLinks  // Ajoutez cette ligne
+      };
+      console.log('Données à sauvegarder:', JSON.stringify(questionnaireToSave, null, 2));
       let response;
       if (id) {
-        response = await axios.put(`/questionnaires/${id}`, questionnaire);
+        response = await axios.put(`/questionnaires/${id}`, questionnaireToSave);
       } else {
-        response = await axios.post('/questionnaires', questionnaire);
+        response = await axios.post('/questionnaires', questionnaireToSave);
       }
       console.log('Réponse du serveur:', response.data);
       setQuestionnaire(response.data);
       navigate('/questionnaires');
     } catch (error) {
       console.error('Erreur lors de la sauvegarde du questionnaire:', error);
-      if (error.response) {
-        console.error('Réponse du serveur:', error.response.data);
-        console.error('Status:', error.response.status);
-        console.error('Headers:', error.response.headers);
-      } else if (error.request) {
-        console.error('Pas de réponse reçue:', error.request);
-      } else {
-        console.error('Erreur de configuration de la requête:', error.message);
-      }
     }
-  }, [questionnaire, id, navigate]);
-  
+  }, [questionnaire, questionLinks, id, navigate]);
+
   const handleFreeTextChange = useCallback((questionId, value) => {
     setQuestionnaire(prev => ({
       ...prev,
@@ -499,7 +539,7 @@ function QuestionnaireCreator() {
       }
     }));
   }, []);
-  
+
   const handleOptionChange = useCallback((questionId, optionIndex, questionType) => {
     setQuestionnaire(prev => {
       const updatedQuestionnaire = JSON.parse(JSON.stringify(prev));
@@ -524,11 +564,12 @@ function QuestionnaireCreator() {
       return updatedQuestionnaire;
     });
   }, []);
-  
+
   const renderQuestion = useCallback((question, path) => {
     const isExpanded = expandedQuestions[path.join('-')] ?? true;
     const questionId = path.join('-');
     const depth = path.length;
+    const links = questionLinks[questionId] || [];
   
     return (
       <DraggableQuestion
@@ -553,30 +594,51 @@ function QuestionnaireCreator() {
               onChange={(e) => updateQuestion(path, 'text', e.target.value)}
               placeholder="Texte de la question"
             />
-           <ImageUpload
-  onImageUpload={handleImageUpload}
-  currentImage={question.image?.src}
-  id={questionId}
-  onAddCaption={handleAddCaption}
-  caption={question.image?.caption}
-  questionnaireTitle={questionnaire.title} // Assurez-vous que cette ligne est présente
-/>
-            <button
-              className="ml-2 p-1 text-blue-500 hover:text-blue-700 rounded-full hover:bg-blue-100"
-              onClick={() => {
-                const duplicated = duplicateQuestion(question);
-                addQuestion(path.slice(0, -1), duplicated);
-              }}
-              title="Dupliquer la question"
-            >
-              <Copy size={16} />
-            </button>
-            <button
-              className="ml-2 p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-100"
-              onClick={() => deleteQuestion(path)}
-            >
-              <Trash2 size={16} />
-            </button>
+            <div className="flex items-center">
+              <ImageUpload
+                onImageUpload={handleImageUpload}
+                currentImage={question.image?.src}
+                id={questionId}
+                onAddCaption={handleAddCaption}
+                caption={question.image?.caption}
+                questionnaireTitle={questionnaire.title}
+              />
+              <div className="flex">
+{links.map((link, index) => (
+  <button
+    key={index}
+    className="ml-2 px-3 py-1 text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded"
+    onClick={() => handleOpenLinkEditor(questionId, index)}
+    title={`Éditer la fiche ${index + 1}`}
+  >
+    {link.title || `Fiche ${index + 1}`}
+  </button>
+))}
+                <button
+                  className="ml-2 p-1 text-blue-500 hover:text-blue-700 rounded-full hover:bg-blue-100"
+                  onClick={() => handleOpenLinkEditor(questionId)}
+                  title="Ajouter une nouvelle fiche"
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
+              <button
+                className="ml-2 p-1 text-blue-500 hover:text-blue-700 rounded-full hover:bg-blue-100"
+                onClick={() => {
+                  const duplicated = duplicateQuestion(question);
+                  addQuestion(path.slice(0, -1), duplicated);
+                }}
+                title="Dupliquer la question"
+              >
+                <Copy size={16} />
+              </button>
+              <button
+                className="ml-2 p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-100"
+                onClick={() => deleteQuestion(path)}
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
           </QuestionHeader>
           {isExpanded && (
             <QuestionContent depth={depth}>
@@ -591,44 +653,65 @@ function QuestionnaireCreator() {
               </StyledSelect>
               {['single', 'multiple'].includes(question.type) && (
                 <div className="space-y-2">
-                  {question.options && question.options.map((option, oIndex) => (
-                    <OptionCard key={option.id || `${questionId}-option-${oIndex}`}>
-                      <div className="flex items-center p-1 rounded">
-                        <input
-                          className="flex-grow p-1 bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none text-sm"
-                          type="text"
-                          value={option.text || ''}
-                          onChange={(e) => updateQuestion([...path, 'options', oIndex], 'text', e.target.value)}
-                          placeholder="Texte de l'option"
-                        />
-                        <ImageUpload
-                          onImageUpload={handleImageUpload}
-                          currentImage={option.image?.src}
-                          id={`${questionId}-options-${oIndex}`}
-                          onAddCaption={handleAddCaption}
-                          caption={option.image?.caption}
-                          questionnaireTitle={questionnaire.title}
-                        />
-                        <button
-                          className="ml-1 p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-100"
-                          onClick={() => deleteOption([...path, 'options', oIndex])}
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                        <button 
-                          className="ml-1 p-1 text-blue-500 hover:text-blue-700 rounded-full hover:bg-blue-100"
-                          onClick={() => addQuestion([...path, 'options', oIndex, 'subQuestions'])}
-                        >
-                          <Plus size={14} />
-                        </button>
-                      </div>
-                      {option.subQuestions && option.subQuestions.map((subQuestion, sqIndex) => (
-                        <SubQuestionWrapper key={subQuestion.id || `${questionId}-option-${oIndex}-subquestion-${sqIndex}`} depth={depth + 1}>
-                          {renderQuestion(subQuestion, [...path, 'options', oIndex, 'subQuestions', sqIndex])}
-                        </SubQuestionWrapper>
-                      ))}
-                    </OptionCard>
-                  ))}
+{question.options && question.options.map((option, oIndex) => (
+  <OptionCard key={option.id || `${questionId}-option-${oIndex}`}>
+    <div className="flex items-center p-1 rounded">
+      <input
+        className="flex-grow p-1 bg-transparent border-b border-transparent focus:border-blue-500 focus:outline-none text-sm"
+        type="text"
+        value={option.text || ''}
+        onChange={(e) => updateQuestion([...path, 'options', oIndex], 'text', e.target.value)}
+        placeholder="Texte de l'option"
+      />
+      <ImageUpload
+        onImageUpload={handleImageUpload}
+        currentImage={option.image?.src}
+        id={`${questionId}-options-${oIndex}`}
+        onAddCaption={handleAddCaption}
+        caption={option.image?.caption}
+        questionnaireTitle={questionnaire.title}
+      />
+      <div className="flex">
+        {/* Cette partie est nouvelle - Ajout de la gestion des liens pour les options */}
+        {(questionLinks[`${questionId}-options-${oIndex}`] || []).map((link, index) => (
+  <button
+    key={index}
+    className="ml-2 px-3 py-1 text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded"
+    onClick={() => handleOpenLinkEditor(`${questionId}-options-${oIndex}`, index)}
+    title={`Éditer la fiche ${index + 1}`}
+  >
+    {link.title || `Fiche ${index + 1}`}
+  </button>
+))}
+        <button
+          className="ml-2 p-1 text-blue-500 hover:text-blue-700 rounded-full hover:bg-blue-100"
+          onClick={() => handleOpenLinkEditor(`${questionId}-options-${oIndex}`)}
+          title="Ajouter une nouvelle fiche"
+        >
+          <Plus size={14} />
+        </button>
+      </div>
+      {/* Fin de la nouvelle partie */}
+      <button
+        className="ml-1 p-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-100"
+        onClick={() => deleteOption([...path, 'options', oIndex])}
+      >
+        <Trash2 size={14} />
+      </button>
+      <button 
+        className="ml-1 p-1 text-blue-500 hover:text-blue-700 rounded-full hover:bg-blue-100"
+        onClick={() => addQuestion([...path, 'options', oIndex, 'subQuestions'])}
+      >
+        <Plus size={14} />
+      </button>
+    </div>
+    {option.subQuestions && option.subQuestions.map((subQuestion, sqIndex) => (
+      <SubQuestionWrapper key={subQuestion.id || `${questionId}-option-${oIndex}-subquestion-${sqIndex}`} depth={depth + 1}>
+        {renderQuestion(subQuestion, [...path, 'options', oIndex, 'subQuestions', sqIndex])}
+      </SubQuestionWrapper>
+    ))}
+  </OptionCard>
+))}
                   <button 
                     className="w-full p-2 mt-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-sm"
                     onClick={() => addOption(path)}
@@ -642,8 +725,8 @@ function QuestionnaireCreator() {
         </QuestionCard>
       </DraggableQuestion>
     );
-  }, [expandedQuestions, moveQuestion, toggleQuestion, updateQuestion, handleImageUpload, duplicateQuestion, addQuestion, deleteQuestion, deleteOption, addOption, handleAddCaption, questionnaire.title]);
-  
+  }, [expandedQuestions, moveQuestion, toggleQuestion, updateQuestion, handleImageUpload, duplicateQuestion, addQuestion, deleteQuestion, deleteOption, addOption, questionnaire.title, handleOpenLinkEditor]);
+
   return (
     <CreatorWrapper>
       <div className="flex flex-col lg:flex-row gap-8">
@@ -679,26 +762,58 @@ function QuestionnaireCreator() {
           <CreatorCard>
             <h3 className="text-xl font-semibold mb-4">Aperçu du questionnaire</h3>
             <div className="bg-opacity-50 bg-gray-100 p-4 rounded-md">
-              <QuestionnairePreview 
-                title={questionnaire.title} 
-                questions={questionnaire.questions}
-                selectedOptions={questionnaire.selectedOptions}
-                setSelectedOptions={handleOptionChange}
-                crTexts={questionnaire.crData?.crTexts || {}}
-                setCRTexts={(newCRTexts) => updateQuestionnaire('crData', {
-                  ...questionnaire.crData,
-                  crTexts: newCRTexts
-                })}
-                freeTexts={questionnaire.crData?.freeTexts || {}}
-                onFreeTextChange={handleFreeTextChange}
-                showCRFields={false}
-              />
+            <QuestionnairePreview 
+  title={questionnaire.title} 
+  questions={questionnaire.questions}
+  selectedOptions={questionnaire.selectedOptions}
+  setSelectedOptions={(questionId, optionIndex, type) => {
+    setQuestionnaire(prev => ({
+      ...prev,
+      selectedOptions: {
+        ...prev.selectedOptions,
+        [questionId]: type === 'single' ? [optionIndex] : 
+          [...(prev.selectedOptions[questionId] || [])].includes(optionIndex) ?
+            [...(prev.selectedOptions[questionId] || [])].filter(i => i !== optionIndex) :
+            [...(prev.selectedOptions[questionId] || []), optionIndex]
+      }
+    }));
+  }}
+  crTexts={questionnaire.crData?.crTexts || {}}
+  setCRTexts={(newCRTexts) => updateQuestionnaire('crData', {
+    ...questionnaire.crData,
+    crTexts: newCRTexts
+  })}
+  freeTexts={questionnaire.crData?.freeTexts || {}}
+  onFreeTextChange={handleFreeTextChange}
+  showCRFields={false}
+  questionnaireLinks={questionLinks}  // Ajoutez cette ligne
+  questionnaireId={id}  // Ajoutez cette ligne
+/>
             </div>
           </CreatorCard>
         </div>
       </div>
+      {showLinkEditor && (
+  <LinkEditor
+    onClose={() => setShowLinkEditor(false)}
+    onSave={handleSaveLink}
+    elementId={currentEditingElement.elementId}
+    questionnaireId={id}
+    linkIndex={currentEditingElement.linkIndex}
+    initialContent={
+      currentEditingElement.linkIndex !== undefined
+        ? questionLinks[currentEditingElement.elementId]?.[currentEditingElement.linkIndex]?.content || ""
+        : ""
+    }
+    initialTitle={
+      currentEditingElement.linkIndex !== undefined
+        ? questionLinks[currentEditingElement.elementId]?.[currentEditingElement.linkIndex]?.title || ""
+        : ""
+    }
+  />
+)}
     </CreatorWrapper>
   );
-  }
-  
-  export default memo(QuestionnaireCreator);
+}
+
+export default memo(QuestionnaireCreator);

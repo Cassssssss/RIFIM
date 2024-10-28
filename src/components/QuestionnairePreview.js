@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import styled from 'styled-components';
 import { PlusCircle, Camera, EyeOff, Eye, ChevronDown, ChevronUp, Plus, Italic } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const ImagePreviewWrapper = styled.div`
   position: fixed;
@@ -35,6 +36,7 @@ const FormatButton = styled.button`
   }
 `;
 
+
 const TextFormatButtons = ({ onBold, onUnderline, onItalic, onSize, onCenter }) => (
   <div className="flex space-x-2 mb-2">
     <FormatButton onClick={onBold}>B</FormatButton>
@@ -62,7 +64,9 @@ const QuestionPreview = ({
   toggleQuestionVisibility,
   imageCaptions,
   path = [],
-  showAddButton = true
+  showAddButton = true,
+  questionnaireLinks,
+  questionnaireId
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [showImage, setShowImage] = useState(null);
@@ -167,9 +171,25 @@ const QuestionPreview = ({
               {hiddenQuestions && hiddenQuestions[question.id] ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           )}
-          <h3 className={`font-semibold ${depth === 0 ? 'text-lg' : 'text-md'} text-gray-900 dark:text-white transition-colors duration-200`}>
-            {question.text || 'Question sans texte'}
-          </h3>
+<div className="flex flex-col">
+  <h3 className={`font-semibold ${depth === 0 ? 'text-lg' : 'text-md'} text-gray-900 dark:text-white transition-colors duration-200`}>
+    {question.text || 'Question sans texte'}
+  </h3>
+  {/* Utiliser question.id au lieu de questionId */}
+  {questionnaireLinks && questionnaireLinks[question.id] && (
+    <div className="flex flex-wrap gap-2 mt-2">
+      {questionnaireLinks[question.id].map((link, index) => (
+        <Link
+          key={index}
+          to={`/questionnaires/${questionnaireId}/links/${question.id}`}
+          className="px-3 py-1 text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded text-sm"
+        >
+          {link.title || `Fiche ${index + 1}`}
+        </Link>
+      ))}
+    </div>
+  )}
+</div>
           {question.image && (
             <div className="flex items-center ml-2">
               <div 
@@ -216,9 +236,24 @@ const QuestionPreview = ({
                       onChange={() => handleOptionChange(optionIndex)}
                       className="mr-2"
                     />
-                    <span className="questionnaire-option text-gray-900 dark:text-white">
-                      {option?.text || `Option ${optionIndex + 1}`}
-                    </span>
+                    <div className="flex flex-col flex-grow">
+                      <span className="questionnaire-option text-gray-900 dark:text-white">
+                        {option?.text || `Option ${optionIndex + 1}`}
+                      </span>
+                      {questionnaireLinks && questionnaireLinks[`${question.id}-options-${optionIndex}`] && (
+  <div className="flex flex-wrap gap-2 mt-1">
+    {questionnaireLinks[`${question.id}-options-${optionIndex}`].map((link, index) => (
+      <Link
+        key={index}
+        to={`/questionnaires/${questionnaireId}/links/${question.id}-options-${optionIndex}`}
+        className="px-3 py-1 text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded text-sm"
+      >
+        {link.title || `Fiche ${index + 1}`}
+      </Link>
+    ))}
+  </div>
+)}
+                    </div>
                     {option?.image && (
                       <div className="flex items-center ml-2">
                         <div 
@@ -252,13 +287,13 @@ const QuestionPreview = ({
                   )}
                   {showCRFields && isOptionSelected(optionIndex) && (
                     <>
-<TextFormatButtons 
-  onBold={() => formatText(optionIndex, 'bold')}
-  onUnderline={() => formatText(optionIndex, 'underline')}
-  onItalic={() => formatText(optionIndex, 'italic')}
-  onSize={(size) => formatText(optionIndex, 'size', size)}
-  onCenter={() => formatText(optionIndex, 'center')}
-/>
+                      <TextFormatButtons 
+                        onBold={() => formatText(optionIndex, 'bold')}
+                        onUnderline={() => formatText(optionIndex, 'underline')}
+                        onItalic={() => formatText(optionIndex, 'italic')}
+                        onSize={(size) => formatText(optionIndex, 'size', size)}
+                        onCenter={() => formatText(optionIndex, 'center')}
+                      />
                       <textarea
                         id={`cr-text-${question.id}-${optionIndex}`}
                         value={questionCRTexts[optionIndex] || ''}
@@ -288,6 +323,8 @@ const QuestionPreview = ({
                           toggleQuestionVisibility={toggleQuestionVisibility}
                           imageCaptions={imageCaptions}
                           showAddButton={showAddButton}
+                          questionnaireLinks={questionnaireLinks}
+                          questionnaireId={questionnaireId}
                         />
                       ))}
                     </div>
@@ -296,68 +333,72 @@ const QuestionPreview = ({
               ))}
             </ul>
           )}
-          {question.type === 'text' && (
-            <textarea
-              value={freeTexts?.[question.id] || ''}
-              onChange={(e) => onFreeTextChange(question.id, e.target.value)}
-              placeholder="Votre réponse..."
-              className="mt-2 w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            />
-          )}
-          {question.type === 'number' && (
-            <input
-              type="number"
-              value={freeTexts?.[question.id] || ''}
-              onChange={(e) => onFreeTextChange(question.id, e.target.value)}
-              placeholder="Votre réponse..."
-              className="mt-2 w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            />
-          )}
-        </div>
-      )}
-    </div>
-  );
+{question.type === 'text' && (
+ <textarea
+   value={freeTexts?.[question.id] || ''}
+   onChange={(e) => onFreeTextChange(question.id, e.target.value)}
+   placeholder="Votre réponse..."
+   className="mt-2 w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+ />
+)}
+{question.type === 'number' && (
+ <input
+   type="number"
+   value={freeTexts?.[question.id] || ''}
+   onChange={(e) => onFreeTextChange(question.id, e.target.value)}
+   placeholder="Votre réponse..."
+   className="mt-2 w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+ />
+)}
+       </div>
+     )}
+   </div>
+ );
 };
 
 const QuestionnairePreview = ({ 
-  questions, 
-  selectedOptions, 
-  setSelectedOptions, 
-  crTexts, 
-  setCRTexts, 
-  freeTexts,
-  onFreeTextChange,
-  showCRFields = false,
-  onImageInsert,
-  hiddenQuestions,
-  toggleQuestionVisibility,
-  imageCaptions,
-  showAddButton = true
+ questions, 
+ selectedOptions, 
+ setSelectedOptions, 
+ crTexts, 
+ setCRTexts, 
+ freeTexts,
+ onFreeTextChange,
+ showCRFields = false,
+ onImageInsert,
+ hiddenQuestions,
+ toggleQuestionVisibility,
+ imageCaptions,
+ showAddButton = true,
+ questionnaireLinks,
+ questionnaireId
 }) => {
-  if (!Array.isArray(questions)) return null;
+ if (!Array.isArray(questions)) return null;
 
-  return (
-    <div className="max-w-2xl mx-auto p-1">
-      {questions.map((question, index) => (
-        <QuestionPreview 
-          key={question?.id || `question-${index}`}
-          question={question}
-          selectedOptions={selectedOptions || {}}
-          setSelectedOptions={setSelectedOptions}
-          crTexts={crTexts || {}}
-          setCRTexts={setCRTexts}
-          freeTexts={freeTexts || {}}
-          onFreeTextChange={onFreeTextChange}
-          showCRFields={showCRFields}
-          onImageInsert={onImageInsert}
-          hiddenQuestions={hiddenQuestions}
-          toggleQuestionVisibility={toggleQuestionVisibility}
-          imageCaptions={imageCaptions}
-          showAddButton={showAddButton}
-        />
-      ))}
-    </div>
-  );
+ return (
+   <div className="max-w-2xl mx-auto p-1">
+     {questions.map((question, index) => (
+       <QuestionPreview 
+         key={question?.id || `question-${index}`}
+         question={question}
+         selectedOptions={selectedOptions || {}}
+         setSelectedOptions={setSelectedOptions}
+         crTexts={crTexts || {}}
+         setCRTexts={setCRTexts}
+         freeTexts={freeTexts || {}}
+         onFreeTextChange={onFreeTextChange}
+         showCRFields={showCRFields}
+         onImageInsert={onImageInsert}
+         hiddenQuestions={hiddenQuestions}
+         toggleQuestionVisibility={toggleQuestionVisibility}
+         imageCaptions={imageCaptions}
+         showAddButton={showAddButton}
+         questionnaireLinks={questionnaireLinks}
+         questionnaireId={questionnaireId}
+       />
+     ))}
+   </div>
+ );
 };
 
 export default QuestionnairePreview;

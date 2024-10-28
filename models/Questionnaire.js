@@ -38,6 +38,15 @@ const QuestionnaireSchema = new mongoose.Schema({
     of: Boolean,
     default: {}
   },
+  links: {
+    type: Map,
+    of: [{
+      content: String,
+      title: String,
+      date: { type: Date, default: Date.now }
+    }],
+    default: new Map()
+  },
   public: { type: Boolean, default: false },
   tags: [String],
   modality: String,

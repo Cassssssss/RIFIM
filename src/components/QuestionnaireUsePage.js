@@ -23,6 +23,7 @@ const QuestionnaireUsePage = () => {
       try {
         const response = await axios.get(`/questionnaires/${id}`);
         const loadedQuestionnaire = response.data;
+        console.log("Questionnaire chargé:", loadedQuestionnaire); // Pour debug
         setQuestionnaire(loadedQuestionnaire);
         setSelectedOptions(loadedQuestionnaire.selectedOptions || {});
         setCRTexts(loadedQuestionnaire.crData?.crTexts || {});
@@ -250,19 +251,21 @@ const QuestionnaireUsePage = () => {
         <div className="w-full lg:w-3/5">
           <div className="rounded-lg p-0">
             <div className="bg-white dark:bg-gray-900 p-4 rounded-md">
-              <QuestionnairePreview 
-                questions={questionnaire.questions}
-                selectedOptions={selectedOptions}
-                setSelectedOptions={handleOptionChange}
-                crTexts={crTexts}
-                setCRTexts={setCRTexts}
-                freeTexts={freeTexts}
-                onFreeTextChange={handleFreeTextChange}
-                showCRFields={false}
-                onImageInsert={handleImageInsert}
-                hiddenQuestions={hiddenQuestions}
-                toggleQuestionVisibility={() => {}}
-              />
+<QuestionnairePreview 
+  questions={questionnaire.questions}
+  selectedOptions={selectedOptions}
+  setSelectedOptions={handleOptionChange}
+  crTexts={crTexts}
+  setCRTexts={setCRTexts}
+  freeTexts={freeTexts}
+  onFreeTextChange={handleFreeTextChange}
+  showCRFields={false}
+  onImageInsert={handleImageInsert}
+  hiddenQuestions={hiddenQuestions}
+  toggleQuestionVisibility={() => {}}
+  questionnaireLinks={questionnaire.links} // Ajoutez ceci
+  questionnaireId={id} // Et ceci
+/>
             </div>
           </div>
         </div>

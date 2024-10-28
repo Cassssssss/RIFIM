@@ -3,9 +3,12 @@ const router = express.Router();
 const s3 = require('../src/utils/spacesConfig');
 const Questionnaire = require('../models/Questionnaire');
 const authMiddleware = require('../middleware/authMiddleware');
+const multer = require('multer');
 const sharp = require('sharp');
 const imageRoutes = require('./imageRoutes');
 const deleteImageFromSpaces = imageRoutes.deleteImageFromSpaces;
+
+const upload = multer();
 
 router.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
@@ -54,6 +57,84 @@ router.get('/public', async (req, res) => {
   }
 });
 
+// GET un questionnaire spécifique
+router.get('/:id', authMiddleware, async (req, res) => {
+  try {
+    const questionnaire = await Questionnaire.findOne({ _id: req.params.id, user: req.userId });
+    if (!questionnaire) {
+      console.log(`Questionnaire avec l'ID ${req.params.id} non trouvé pour l'utilisateur ${req.userId}`);
+      return res.status(404).json({ message: 'Questionnaire non trouvé' });
+    }
+    res.json(questionnaire);
+  } catch (error) {
+    console.error(`Erreur lors de la récupération du questionnaire ${req.params.id}:`, error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// GET tous les questionnaires d'un utilisateur
+router.get('/', authMiddleware, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const search = req.query.search || '';
+    const modality = req.query.modality ? req.query.modality.split(',') : [];
+    const specialty = req.query.specialty ? req.query.specialty.split(',') : [];
+    const location = req.query.location ? req.query.location.split(',') : [];
+
+    const query = { user: req.userId };
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { tags: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const tagFilters = [...modality, ...specialty, ...location];
+    if (tagFilters.length > 0) {
+      query.tags = { $all: tagFilters };
+    }
+
+    const totalQuestionnaires = await Questionnaire.countDocuments(query);
+    const questionnaires = await Questionnaire.find(query)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    res.json({
+      questionnaires,
+      currentPage: page,
+      totalPages: Math.ceil(totalQuestionnaires / limit),
+      totalQuestionnaires
+    });
+  } catch (error) {
+    console.error('Erreur lors de la récupération des questionnaires:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// GET liens d'un élément
+router.get('/links/:elementId', authMiddleware, async (req, res) => {
+  try {
+    const elementId = req.params.elementId;
+    const questionnaireId = elementId.split('-')[0];
+    
+    const questionnaire = await Questionnaire.findById(questionnaireId);
+    if (!questionnaire) {
+      return res.status(404).json({ message: 'Questionnaire non trouvé' });
+    }
+
+    // Renvoie le tableau de liens pour cet elementId
+    const links = questionnaire.links.get(elementId) || [];
+    res.json({ links });
+  } catch (error) {
+    console.error('Erreur lors de la récupération des liens:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// POST nouveau questionnaire
 const processImagesRecursively = async (item, questionnaireTitle, parentId = '') => {
   console.log(`Traitement de l'item : ${item.id} pour le questionnaire : ${questionnaireTitle}`);
   
@@ -79,74 +160,7 @@ const processImagesRecursively = async (item, questionnaireTitle, parentId = '')
   }
 };
 
-router.post('/:id/copy', authMiddleware, async (req, res) => {
-  try {
-    const publicQuestionnaire = await Questionnaire.findOne({ _id: req.params.id, public: true });
-    if (!publicQuestionnaire) {
-      return res.status(404).json({ message: 'Questionnaire public non trouvé' });
-    }
-
-    const newQuestionnaire = new Questionnaire({
-      ...publicQuestionnaire.toObject(),
-      _id: undefined,
-      public: false,
-      user: req.userId
-    });
-
-    await newQuestionnaire.save();
-    res.status(201).json({ message: 'Questionnaire copié avec succès', id: newQuestionnaire._id });
-  } catch (error) {
-    console.error('Erreur lors de la copie du questionnaire:', error);
-    res.status(500).json({ message: 'Erreur lors de la copie du questionnaire' });
-  }
-});
-
-router.get('/', authMiddleware, async (req, res) => {
-  try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
-    const search = req.query.search || '';
-    const modality = req.query.modality ? req.query.modality.split(',') : [];
-    const specialty = req.query.specialty ? req.query.specialty.split(',') : [];
-    const location = req.query.location ? req.query.location.split(',') : [];
-
-    const query = { user: req.userId };
-    if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { tags: { $regex: search, $options: 'i' } }
-      ];
-    }
-
-    const tagFilters = [...modality, ...specialty, ...location];
-    if (tagFilters.length > 0) {
-      query.tags = { $all: tagFilters };
-    }
-
-    console.log('Query:', JSON.stringify(query));
-
-    const totalQuestionnaires = await Questionnaire.countDocuments(query);
-    const questionnaires = await Questionnaire.find(query)
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 });
-
-    console.log(`Récupération de ${questionnaires.length} questionnaires pour l'utilisateur ${req.userId}`);
-    res.json({
-      questionnaires,
-      currentPage: page,
-      totalPages: Math.ceil(totalQuestionnaires / limit),
-      totalQuestionnaires
-    });
-  } catch (error) {
-    console.error('Erreur lors de la récupération des questionnaires:', error);
-    res.status(500).json({ message: error.message });
-  }
-});
-
 router.post('/', authMiddleware, async (req, res) => {
-  console.log('Création d\'un nouveau questionnaire:', JSON.stringify(req.body, null, 2));
   try {
     const { title, questions, selectedOptions, crData, hiddenQuestions } = req.body;
     
@@ -161,37 +175,94 @@ router.post('/', authMiddleware, async (req, res) => {
       selectedOptions,
       crData,
       hiddenQuestions,
-      user: req.userId
+      user: req.userId,
+      links: new Map()
     });
 
     const newQuestionnaire = await questionnaire.save();
-    console.log('Nouveau questionnaire créé avec l\'ID:', newQuestionnaire._id);
     res.status(201).json(newQuestionnaire);
   } catch (error) {
     console.error('Erreur lors de la création du questionnaire:', error);
-    res.status(500).json({ message: 'Erreur lors de la création du questionnaire', error: error.message });
-  }
-});
-
-router.get('/:id', authMiddleware, async (req, res) => {
-  try {
-    const questionnaire = await Questionnaire.findOne({ _id: req.params.id, user: req.userId });
-    if (!questionnaire) {
-      console.log(`Questionnaire avec l'ID ${req.params.id} non trouvé pour l'utilisateur ${req.userId}`);
-      return res.status(404).json({ message: 'Questionnaire non trouvé' });
-    }
-    console.log(`Questionnaire ${req.params.id} récupéré pour l'utilisateur ${req.userId}:`, JSON.stringify(questionnaire, null, 2));
-    res.json(questionnaire);
-  } catch (error) {
-    console.error(`Erreur lors de la récupération du questionnaire ${req.params.id}:`, error);
     res.status(500).json({ message: error.message });
   }
 });
 
-router.put('/:id', authMiddleware, async (req, res) => {
-  console.log(`Mise à jour du questionnaire ${req.params.id}:`, JSON.stringify(req.body, null, 2));
+// POST sauvegarder un lien
+router.post('/:id/links', authMiddleware, async (req, res) => {
   try {
-    const { title, questions, selectedOptions, crData, hiddenQuestions } = req.body;
+    const { elementId, content, linkIndex, title } = req.body; // Ajout de title
+    const questionnaire = await Questionnaire.findById(req.params.id);
+    
+    if (!questionnaire) {
+      return res.status(404).json({ message: 'Questionnaire non trouvé' });
+    }
+
+    // Obtenir les liens existants ou créer un nouveau tableau
+    let existingLinks = questionnaire.links.get(elementId) || [];
+    
+    // Si un linkIndex est fourni, mettre à jour le lien existant
+    if (typeof linkIndex !== 'undefined') {
+      existingLinks[linkIndex] = {
+        content,
+        title, // Ajout du titre
+        date: new Date()
+      };
+    } else {
+      // Sinon, ajouter un nouveau lien
+      existingLinks.push({
+        content,
+        title, // Ajout du titre
+        date: new Date()
+      });
+    }
+
+    // Mettre à jour la Map avec le tableau mis à jour
+    questionnaire.links.set(elementId, existingLinks);
+    questionnaire.markModified('links');
+
+    await questionnaire.save();
+    res.json({ message: 'Lien sauvegardé avec succès', links: existingLinks });
+  } catch (error) {
+    console.error('Erreur lors de la sauvegarde du lien:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// POST images pour les liens
+router.post('/:id/links-images', authMiddleware, upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Aucun fichier n\'a été uploadé' });
+    }
+
+    // Optimisation de l'image
+    const optimizedImageBuffer = await sharp(req.file.buffer)
+      .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality: 80 })
+      .toBuffer();
+
+    const fileName = `${Date.now()}-${req.file.originalname}`;
+    const params = {
+      Bucket: process.env.DO_SPACES_BUCKET,
+      Key: `questionnaires/${req.params.id}/links-images/${fileName}`,
+      Body: optimizedImageBuffer,
+      ACL: 'public-read',
+      ContentType: 'image/jpeg',
+      CacheControl: 'public, max-age=31536000'
+    };
+
+    const uploadResult = await s3.upload(params).promise();
+    res.json({ location: uploadResult.Location });
+  } catch (error) {
+    console.error('Erreur lors de l\'upload de l\'image:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// PUT mise à jour d'un questionnaire
+router.put('/:id', authMiddleware, async (req, res) => {
+  try {
+    const { title, questions, selectedOptions, crData, hiddenQuestions, links } = req.body;
 
     const updatedQuestionnaire = await Questionnaire.findOneAndUpdate(
       { _id: req.params.id, user: req.userId },
@@ -201,39 +272,24 @@ router.put('/:id', authMiddleware, async (req, res) => {
           questions, 
           selectedOptions, 
           crData, 
-          hiddenQuestions
+          hiddenQuestions,
+          links: links || new Map()
         }
       },
       { new: true, runValidators: true }
     );
 
     if (!updatedQuestionnaire) {
-      console.log(`Questionnaire avec l'ID ${req.params.id} non trouvé pour la mise à jour`);
       return res.status(404).json({ message: 'Questionnaire non trouvé' });
     }
-    console.log(`Questionnaire ${req.params.id} mis à jour avec succès:`, JSON.stringify(updatedQuestionnaire, null, 2));
     res.json(updatedQuestionnaire);
   } catch (error) {
-    console.error(`Erreur lors de la mise à jour du questionnaire ${req.params.id}:`, error);
-    res.status(500).json({ message: 'Erreur lors de la mise à jour du questionnaire', error: error.message });
-  }
-});
-
-// PATCH pour rendre un questionnaire public/privé
-router.patch('/:id/togglePublic', authMiddleware, async (req, res) => {
-  try {
-    const questionnaire = await Questionnaire.findOne({ _id: req.params.id, user: req.userId });
-    if (!questionnaire) {
-      return res.status(404).json({ message: 'Questionnaire non trouvé' });
-    }
-    questionnaire.public = !questionnaire.public;
-    await questionnaire.save();
-    res.json(questionnaire);
-  } catch (error) {
+    console.error('Erreur lors de la mise à jour du questionnaire:', error);
     res.status(500).json({ message: error.message });
   }
 });
 
+// DELETE un questionnaire
 router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     const questionnaire = await Questionnaire.findOne({ _id: req.params.id, user: req.userId });
@@ -241,6 +297,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
       return res.status(404).json({ message: 'Questionnaire non trouvé' });
     }
 
+    // Suppression des images
     const deleteImagesRecursively = async (questions) => {
       for (const question of questions) {
         if (question.image && question.image.src) {
@@ -263,73 +320,72 @@ router.delete('/:id', authMiddleware, async (req, res) => {
       }
     };
 
-    console.log(`Suppression des images pour le questionnaire: ${questionnaire.title}`);
-    await deleteImagesRecursively(questionnaire.questions);
-
-    // Suppression du dossier du questionnaire
-    const sanitizedFolderName = questionnaire.title.replace(/[^a-zA-Z0-9]/g, '_');
-    const folderKey = `${sanitizedFolderName}/`;
-    console.log(`Tentative de suppression du dossier: ${folderKey}`);
-    try {
-      const listParams = {
-        Bucket: process.env.DO_SPACES_BUCKET,
-        Prefix: folderKey
-      };
-      const listedObjects = await s3.listObjectsV2(listParams).promise();
-      if (listedObjects.Contents.length > 0) {
-        const deleteParams = {
+    // Suppression des images des liens
+    const deleteLinkImages = async () => {
+      try {
+        const listParams = {
           Bucket: process.env.DO_SPACES_BUCKET,
-          Delete: { Objects: [] }
+          Prefix: `questionnaires/${questionnaire._id}/links-images/`
         };
-        listedObjects.Contents.forEach(({ Key }) => {
-          deleteParams.Delete.Objects.push({ Key });
-        });
-        await s3.deleteObjects(deleteParams).promise();
+        const listedObjects = await s3.listObjectsV2(listParams).promise();
+        if (listedObjects.Contents.length > 0) {
+          const deleteParams = {
+            Bucket: process.env.DO_SPACES_BUCKET,
+            Delete: { Objects: listedObjects.Contents.map(({ Key }) => ({ Key })) }
+          };
+          await s3.deleteObjects(deleteParams).promise();
+        }
+      } catch (error) {
+        console.error('Erreur lors de la suppression des images des liens:', error);
       }
-      console.log(`Dossier supprimé avec succès: ${folderKey}`);
-    } catch (error) {
-      console.error(`Erreur lors de la suppression du dossier ${folderKey}:`, error);
-    }
+    };
 
+    await deleteImagesRecursively(questionnaire.questions);
+    await deleteLinkImages();
     await Questionnaire.findOneAndDelete({ _id: req.params.id, user: req.userId });
 
-    console.log(`Questionnaire supprimé avec succès: ${questionnaire.title}`);
-    res.json({ message: 'Questionnaire et images associées supprimés avec succès', id: req.params.id });
+    res.json({ message: 'Questionnaire supprimé avec succès', id: req.params.id });
   } catch (error) {
-    console.error(`Erreur lors de la suppression du questionnaire ${req.params.id}:`, error);
+    console.error('Erreur lors de la suppression du questionnaire:', error);
     res.status(500).json({ message: error.message });
   }
 });
 
-// Ajouter un tag à un questionnaire
-router.post('/:id/tags', authMiddleware, async (req, res) => {
+// PATCH pour basculer la visibilité publique
+router.patch('/:id/togglePublic', authMiddleware, async (req, res) => {
   try {
-    const questionnaire = await Questionnaire.findById(req.params.id);
+    const questionnaire = await Questionnaire.findOne({ _id: req.params.id, user: req.userId });
     if (!questionnaire) {
       return res.status(404).json({ message: 'Questionnaire non trouvé' });
     }
-    const { tag } = req.body;
-    if (!questionnaire.tags.includes(tag)) {
-      questionnaire.tags.push(tag);
-      await questionnaire.save();
-    }
-    res.json({ tags: questionnaire.tags });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Supprimer un tag d'un questionnaire
-router.delete('/:id/tags/:tag', authMiddleware, async (req, res) => {
-  try {
-    const questionnaire = await Questionnaire.findById(req.params.id);
-    if (!questionnaire) {
-      return res.status(404).json({ message: 'Questionnaire non trouvé' });
-    }
-    questionnaire.tags = questionnaire.tags.filter(t => t !== req.params.tag);
+    questionnaire.public = !questionnaire.public;
     await questionnaire.save();
-    res.json({ tags: questionnaire.tags });
+    res.json(questionnaire);
   } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// POST copier un questionnaire public
+router.post('/:id/copy', authMiddleware, async (req, res) => {
+  try {
+    const publicQuestionnaire = await Questionnaire.findOne({ _id: req.params.id, public: true });
+    if (!publicQuestionnaire) {
+      return res.status(404).json({ message: 'Questionnaire public non trouvé' });
+    }
+
+    const newQuestionnaire = new Questionnaire({
+      ...publicQuestionnaire.toObject(),
+      _id: undefined,
+      public: false,
+      user: req.userId,
+      links: new Map(publicQuestionnaire.links)
+    });
+
+    await newQuestionnaire.save();
+    res.status(201).json({ message: 'Questionnaire copié avec succès', id: newQuestionnaire._id });
+  } catch (error) {
+    console.error('Erreur lors de la copie du questionnaire:', error);
     res.status(500).json({ message: error.message });
   }
 });

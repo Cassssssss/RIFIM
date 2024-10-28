@@ -19,6 +19,7 @@ const QuestionnaireCRPage = () => {
     try {
       const response = await axios.get(`/questionnaires/${id}`);
       const loadedQuestionnaire = response.data;
+      console.log("Questionnaire chargé:", loadedQuestionnaire); // Pour debug
       setQuestionnaire(loadedQuestionnaire);
       setSelectedOptions(loadedQuestionnaire.selectedOptions || {});
       setCRTexts(loadedQuestionnaire.crData?.crTexts || {});
@@ -178,7 +179,9 @@ const QuestionnaireCRPage = () => {
   showCRFields={true}
   hiddenQuestions={hiddenQuestions}
   toggleQuestionVisibility={toggleQuestionVisibility}
-  showAddButton={false} // Ajoutez cette ligne
+  showAddButton={false}
+  questionnaireLinks={questionnaire.links} // Ajoutez ceci
+  questionnaireId={id} // Et ceci
 />
             </div>
           </div>

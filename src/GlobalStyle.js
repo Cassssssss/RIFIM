@@ -66,7 +66,23 @@ const GlobalStyle = createGlobalStyle`
   h3, span, label, input, textarea {
     color: inherit;
   }
+
+    .link-button {
+    padding: 0.25rem 0.75rem;
+    background-color: #ebf5ff;
+    color: #3b82f6;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+  }
+
+  .link-button:hover {
+    background-color: #dbeafe;
+    color: #2563eb;
+  }
 `;
+
+
 
 
 
