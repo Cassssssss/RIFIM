@@ -45,7 +45,7 @@ const QuestionnaireSchema = new mongoose.Schema({
       title: String,
       date: { type: Date, default: Date.now }
     }],
-    default: new Map()
+    default: () => new Map()  // Modification ici
   },
   public: { type: Boolean, default: false },
   tags: [String],

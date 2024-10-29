@@ -115,24 +115,58 @@ router.get('/', authMiddleware, async (req, res) => {
 });
 
 // GET liens d'un élément
-router.get('/links/:elementId', authMiddleware, async (req, res) => {
+router.get('/:id/links/:elementId', authMiddleware, async (req, res) => {
   try {
-    const elementId = req.params.elementId;
-    const questionnaireId = elementId.split('-')[0];
-    
-    const questionnaire = await Questionnaire.findById(questionnaireId);
+    const questionnaire = await Questionnaire.findById(req.params.id);
     if (!questionnaire) {
       return res.status(404).json({ message: 'Questionnaire non trouvé' });
     }
-
-    // Renvoie le tableau de liens pour cet elementId
-    const links = questionnaire.links.get(elementId) || [];
+    const links = questionnaire.links.get(req.params.elementId) || [];
     res.json({ links });
   } catch (error) {
     console.error('Erreur lors de la récupération des liens:', error);
     res.status(500).json({ message: error.message });
   }
 });
+
+// DELETE supprimer un lien spécifique
+router.delete('/:id/links/:elementId/:linkIndex', authMiddleware, async (req, res) => {
+  try {
+    const questionnaire = await Questionnaire.findById(req.params.id);
+    if (!questionnaire) {
+      return res.status(404).json({ message: 'Questionnaire non trouvé' });
+    }
+
+    const elementId = req.params.elementId;
+    const linkIndex = parseInt(req.params.linkIndex);
+    
+    // Récupérer les liens existants
+    let links = questionnaire.links.get(elementId) || [];
+    
+    // Supprimer le lien spécifique
+    if (linkIndex >= 0 && linkIndex < links.length) {
+      links.splice(linkIndex, 1);
+      
+      // Si aucun lien ne reste, supprimer complètement l'entrée
+      if (links.length === 0) {
+        questionnaire.links.delete(elementId);
+      } else {
+        questionnaire.links.set(elementId, links);
+      }
+      
+      questionnaire.markModified('links');
+      await questionnaire.save();
+      
+      res.json({ message: 'Lien supprimé avec succès', links });
+    } else {
+      res.status(404).json({ message: 'Index de lien invalide' });
+    }
+  } catch (error) {
+    console.error('Erreur lors de la suppression du lien:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 
 // POST nouveau questionnaire
 const processImagesRecursively = async (item, questionnaireTitle, parentId = '') => {

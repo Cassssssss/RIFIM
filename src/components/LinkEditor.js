@@ -63,22 +63,22 @@ const LinkEditor = ({ onClose, onSave, elementId, questionnaireId, linkIndex, in
     const editorRef = useRef(null);
   
     useEffect(() => {
-      const fetchContent = async () => {
-        try {
-          const response = await axios.get(`/questionnaires/links/${elementId}`);
-          if (response.data && response.data.links && typeof linkIndex !== 'undefined') {
-            setContent(response.data.links[linkIndex]?.content || '');
-            setTitle(response.data.links[linkIndex]?.title || '');
+        const fetchContent = async () => {
+          try {
+            const response = await axios.get(`/questionnaires/${questionnaireId}/links/${elementId}`);
+            if (response.data && response.data.links && typeof linkIndex !== 'undefined') {
+              setContent(response.data.links[linkIndex]?.content || '');
+              setTitle(response.data.links[linkIndex]?.title || '');
+            }
+          } catch (error) {
+            console.error('Erreur lors du chargement du contenu:', error);
           }
-        } catch (error) {
-          console.error('Erreur lors du chargement du contenu:', error);
+        };
+      
+        if (elementId && questionnaireId) {
+          fetchContent();
         }
-      };
-  
-      if (elementId) {
-        fetchContent();
-      }
-    }, [elementId, linkIndex]);
+      }, [elementId, questionnaireId, linkIndex]);
   
     const handleSave = async () => {
       try {

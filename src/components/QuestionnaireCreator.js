@@ -237,38 +237,39 @@ function QuestionnaireCreator() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (id) {
-      const fetchQuestionnaire = async () => {
-        try {
-          const response = await axios.get(`/questionnaires/${id}`);
-          const loadedQuestionnaire = response.data;
-          setQuestionnaire({
-            ...loadedQuestionnaire,
-            selectedOptions: loadedQuestionnaire.selectedOptions || {},
-            crData: {
-              crTexts: loadedQuestionnaire.crData?.crTexts || {},
-              freeTexts: loadedQuestionnaire.crData?.freeTexts || {}
-            }
-          });
-          const initialExpanded = loadedQuestionnaire.questions.reduce((acc, _, index) => {
-            acc[index] = true;
-            return acc;
-          }, {});
-          setExpandedQuestions(initialExpanded);
-
-          // Charger les liens pour chaque question
-          if (loadedQuestionnaire.links) {
-            setQuestionLinks(loadedQuestionnaire.links);
+useEffect(() => {
+  if (id) {
+    const fetchQuestionnaire = async () => {
+      try {
+        const response = await axios.get(`/questionnaires/${id}`);
+        const loadedQuestionnaire = response.data;
+        
+        // Convertir les liens
+        const linksObject = {};
+        if (loadedQuestionnaire.links && typeof loadedQuestionnaire.links === 'object') {
+          for (let [key, value] of Object.entries(loadedQuestionnaire.links)) {
+            linksObject[key] = value;
           }
-        } catch (error) {
-          console.error('Erreur lors du chargement du questionnaire:', error);
         }
-      };
-      fetchQuestionnaire();
-    }
-  }, [id]);
+        
+        setQuestionLinks(linksObject);
+        setQuestionnaire({
+          ...loadedQuestionnaire,
+          selectedOptions: loadedQuestionnaire.selectedOptions || {},
+          crData: {
+            crTexts: loadedQuestionnaire.crData?.crTexts || {},
+            freeTexts: loadedQuestionnaire.crData?.freeTexts || {}
+          }
+        });
+      } catch (error) {
+        console.error('Erreur lors du chargement du questionnaire:', error);
+      }
+    };
+    fetchQuestionnaire();
+  }
+}, [id]);
 
+  
   const handleOpenLinkEditor = (elementId, linkIndex) => {
     setCurrentEditingElement({
       elementId,
@@ -277,27 +278,56 @@ function QuestionnaireCreator() {
     setShowLinkEditor(true);
   };
 
-const handleSaveLink = async (elementId, content, linkIndex, title) => {
-  try {
-    const response = await axios.post(`/questionnaires/${id}/links`, {
-      elementId,
-      content,
-      linkIndex,
-      title
-    });
-
-    if (response.data && response.data.links) {
-      setQuestionLinks(prev => ({
-        ...prev,
-        [elementId]: response.data.links
-      }));
+  const handleSaveLink = async (elementId, content, linkIndex, title) => {
+    try {
+      const updatedLinks = { ...questionLinks };
+      
+      if (!updatedLinks[elementId]) {
+        updatedLinks[elementId] = [];
+      }
+      
+      const newLink = { content, title, date: new Date() };
+      
+      if (typeof linkIndex !== 'undefined') {
+        updatedLinks[elementId][linkIndex] = newLink;
+      } else {
+        updatedLinks[elementId].push(newLink);
+      }
+      
+      setQuestionLinks(updatedLinks);
+      
+      // Sauvegarder sur le serveur
+      await axios.post(`/questionnaires/${id}/links`, {
+        elementId,
+        content,
+        linkIndex,
+        title
+      });
+      
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde du lien:', error);
     }
+  };
 
-    console.log('Lien sauvegardé avec succès:', response.data);
-  } catch (error) {
-    console.error('Erreur lors de la sauvegarde du lien:', error);
-  }
-};
+  const handleDeleteLink = async (elementId, linkIndex) => {
+    try {
+      await axios.delete(`/questionnaires/${id}/links/${elementId}/${linkIndex}`);
+      
+      // Mettre à jour l'état local des liens
+      setQuestionLinks(prev => {
+        const updated = { ...prev };
+        if (updated[elementId]) {
+          updated[elementId] = updated[elementId].filter((_, index) => index !== linkIndex);
+          if (updated[elementId].length === 0) {
+            delete updated[elementId];
+          }
+        }
+        return updated;
+      });
+    } catch (error) {
+      console.error('Erreur lors de la suppression du lien:', error);
+    }
+  };
 
   const updateQuestionnaire = useCallback((field, value) => {
     setQuestionnaire(prev => ({ ...prev, [field]: value }));
@@ -604,15 +634,26 @@ const handleSaveLink = async (elementId, content, linkIndex, title) => {
                 questionnaireTitle={questionnaire.title}
               />
               <div className="flex">
-{links.map((link, index) => (
-  <button
-    key={index}
-    className="ml-2 px-3 py-1 text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded"
-    onClick={() => handleOpenLinkEditor(questionId, index)}
-    title={`Éditer la fiche ${index + 1}`}
-  >
-    {link.title || `Fiche ${index + 1}`}
-  </button>
+              {links.map((link, index) => (
+  <div key={index} className="flex items-center">
+    <button
+      className="ml-2 px-3 py-1 text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded flex items-center"
+      onClick={() => handleOpenLinkEditor(questionId, index)}
+      title={`Éditer la fiche ${index + 1}`}
+    >
+      {link.title || `Fiche ${index + 1}`}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          handleDeleteLink(questionId, index);
+        }}
+        className="ml-2 text-red-500 hover:text-red-700"
+        title="Supprimer la fiche"
+      >
+        <Trash2 size={14} />
+      </button>
+    </button>
+  </div>
 ))}
                 <button
                   className="ml-2 p-1 text-blue-500 hover:text-blue-700 rounded-full hover:bg-blue-100"
@@ -727,6 +768,9 @@ const handleSaveLink = async (elementId, content, linkIndex, title) => {
     );
   }, [expandedQuestions, moveQuestion, toggleQuestion, updateQuestion, handleImageUpload, duplicateQuestion, addQuestion, deleteQuestion, deleteOption, addOption, questionnaire.title, handleOpenLinkEditor]);
 
+  console.log('questionLinks dans Creator:', questionLinks);
+  console.log('id dans Creator:', id);
+
   return (
     <CreatorWrapper>
       <div className="flex flex-col lg:flex-row gap-8">
@@ -749,21 +793,27 @@ const handleSaveLink = async (elementId, content, linkIndex, title) => {
               >
                 <Plus size={14} className="inline mr-1" /> Ajouter une question
               </button>
+              
               <button 
+              
                 className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 transition-colors text-sm"
                 onClick={handleSave}
+                
               >
                 Sauvegarder le questionnaire
+                
               </button>
             </div>
+            
           </CreatorCard>
         </div>
+        
+        
         <div className="lg:w-2/4">
-          <CreatorCard>
-            <h3 className="text-xl font-semibold mb-4">Aperçu du questionnaire</h3>
-            <div className="bg-opacity-50 bg-gray-100 p-4 rounded-md">
-            <QuestionnairePreview 
-  title={questionnaire.title} 
+  <CreatorCard>
+    <h3 className="text-xl font-semibold mb-4">Aperçu du questionnaire</h3>
+    <div className="bg-opacity-50 bg-gray-100 p-4 rounded-md">
+    <QuestionnairePreview 
   questions={questionnaire.questions}
   selectedOptions={questionnaire.selectedOptions}
   setSelectedOptions={(questionId, optionIndex, type) => {
@@ -786,8 +836,8 @@ const handleSaveLink = async (elementId, content, linkIndex, title) => {
   freeTexts={questionnaire.crData?.freeTexts || {}}
   onFreeTextChange={handleFreeTextChange}
   showCRFields={false}
-  questionnaireLinks={questionLinks}  // Ajoutez cette ligne
-  questionnaireId={id}  // Ajoutez cette ligne
+  questionnaireLinks={questionLinks}
+  questionnaireId={id}
 />
             </div>
           </CreatorCard>
