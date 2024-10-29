@@ -7,6 +7,10 @@ const OptionSchema = new mongoose.Schema({
     src: String,
     caption: String
   },
+  includeInConclusion: {  // Ajout de cet attribut
+    type: Boolean,
+    default: false
+  },
   subQuestions: [/* Définition récursive du schéma de question */]
 });
 

@@ -5,6 +5,8 @@ import QuestionnairePreview from './QuestionnairePreview';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import { X } from 'lucide-react';
+import set from 'lodash/set';
+
 
 const QuestionnaireUsePage = () => {
   const { id } = useParams();
@@ -23,7 +25,6 @@ const QuestionnaireUsePage = () => {
       try {
         const response = await axios.get(`/questionnaires/${id}`);
         const loadedQuestionnaire = response.data;
-        console.log("Questionnaire chargé:", loadedQuestionnaire); // Pour debug
         setQuestionnaire(loadedQuestionnaire);
         setSelectedOptions(loadedQuestionnaire.selectedOptions || {});
         setCRTexts(loadedQuestionnaire.crData?.crTexts || {});
@@ -43,137 +44,139 @@ const QuestionnaireUsePage = () => {
     }
   }, [questionnaire]);
 
-  useEffect(() => {
-    const generatedCR = generateCR().join('\n');
-    setEditableCR(generatedCR);
-  }, [questionnaire, selectedOptions, crTexts, freeTexts]);
-
   const generateCR = () => {
-    let cr = [];
+    let mainContent = [];
+    let conclusionContent = [];
     
-    const addContent = (content, isTitle = false) => {
+    const addContent = (content, isTitle = false, section) => {
       if (isTitle || content.startsWith('<strong>') || content.startsWith('<u>')) {
-        cr.push(''); // Add an empty line before titles or bold/underlined text
+        section.push('');
       }
-      cr.push(content.trim());
+      section.push(content.trim());
     };
     
-    const generateCRRecursive = (questions) => {
+    const generateCRRecursive = (questions, section) => {
       questions.forEach(question => {
-        // Include the answer even if the question is hidden
         if (question.type === 'text' || question.type === 'number') {
           const freeText = freeTexts[question.id];
           if (freeText) {
-            if (question.text === 'INDICATION' || question.text === 'CONCLUSION') {
-              addContent(`<strong>${question.text} :</strong>`, true);
-              addContent(freeText);
+            if (question.text === 'INDICATION') {
+              addContent(`<strong>${question.text} :</strong>`, true, section);
+              addContent(freeText, false, section);
+            } else if (question.text === 'Conclusion') {
+              // Ignorer le champ CONCLUSION car on le génère automatiquement
             } else {
-              addContent(freeText);
+              addContent(freeText, false, section);
             }
           }
         } else if (question.text === 'TECHNIQUE') {
           const selectedIndices = selectedOptions[question.id] || [];
-          const techniqueResponses = selectedIndices.map(index => question.options[index].text);
+          const techniqueResponses = selectedIndices
+            .map(index => question.options[index]?.text)
+            .filter(Boolean);
           if (techniqueResponses.length > 0) {
-            addContent('<strong>TECHNIQUE :</strong>', true);
-            addContent(techniqueResponses.join(', ') + '.');
+            addContent('<strong>TECHNIQUE :</strong>', true, section);
+            addContent(techniqueResponses.join(', ') + '.', false, section);
           }
         } else {
           const selectedIndices = selectedOptions[question.id] || [];
           selectedIndices.forEach(index => {
             const option = question.options[index];
+            if (!option) return;
+    
             const crText = crTexts[question.id]?.[index];
             if (crText) {
-              addContent(crText);
+              addContent(crText, false, section);
+              
+              // Si l'option doit être incluse dans la conclusion
+              if (option.includeInConclusion) {
+                conclusionContent.push(crText);
+              }
             }
-            if (option.subQuestions) {
-              generateCRRecursive(option.subQuestions);
+    
+            // Récursivement vérifier les sous-questions
+            if (option.subQuestions && option.subQuestions.length > 0) {
+              generateCRRecursive(option.subQuestions, section);
             }
           });
         }
       });
     };
     
-    if (questionnaire) {
-      generateCRRecursive(questionnaire.questions);
+    if (questionnaire && Array.isArray(questionnaire.questions)) {
+      generateCRRecursive(questionnaire.questions, mainContent);
     }
-    return cr;
-  };
 
-  const handleFreeTextChange = (questionId, value) => {
-    setFreeTexts(prev => ({ ...prev, [questionId]: value }));
-  };
-
-  const handleSave = async () => {
-    try {
-      await axios.put(`/questionnaires/${id}`, {
-        ...questionnaire,
-        selectedOptions,
-        crData: { crTexts, freeTexts },
-        hiddenQuestions
+    // Ajouter la section conclusion si nécessaire
+    if (conclusionContent.length > 0) {
+      mainContent.push(''); // Ligne vide avant la conclusion
+      mainContent.push('<strong>Conclusion :</strong>');
+      conclusionContent.forEach(content => {
+        mainContent.push(content);
       });
-      // Afficher un message de succès
-    } catch (error) {
-      console.error('Erreur lors de la sauvegarde:', error);
     }
+
+    return mainContent.join('\n');
   };
 
+  useEffect(() => {
+    const generatedCR = generateCR();
+    setEditableCR(generatedCR);
+  }, [questionnaire, selectedOptions, crTexts, freeTexts]);
 
-  const handleImageInsert = (image) => {
+  const handleFreeTextChange = useCallback((questionId, value) => {
+    setFreeTexts(prev => ({ ...prev, [questionId]: value }));
+  }, []);
+
+  const handleImageInsert = useCallback((image) => {
     setInsertedImages(prev => [...prev, image.src]);
-  };
+  }, []);
 
-  const handleImageRemove = (index) => {
+  const handleImageRemove = useCallback((index) => {
     setInsertedImages(prev => prev.filter((_, i) => i !== index));
-  };
+  }, []);
 
-  const resizeImage = (src, maxWidth, maxHeight) => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
+  // Dans QuestionnaireUsePage.js, ajoutez cette fonction avec les autres handlers
+  const handleOptionUpdate = useCallback((path, updatedOption) => {
+    console.log('handleOptionUpdate called with path:', path, 'updatedOption:', updatedOption);
+    setQuestionnaire(prev => {
+      if (!prev) return prev;
   
-        if (width > height) {
-          if (width > maxWidth) {
-            height *= maxWidth / width;
-            width = maxWidth;
-          }
+      const newQuestionnaire = JSON.parse(JSON.stringify(prev));
+  
+      // Construire le chemin vers l'option à mettre à jour
+      const pathString = path.reduce((acc, curr) => {
+        if (typeof curr === 'number') {
+          return `${acc}[${curr}]`;
         } else {
-          if (height > maxHeight) {
-            width *= maxHeight / height;
-            height = maxHeight;
-          }
+          return `${acc}.${curr}`;
         }
+      }, 'questions');
   
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-        
-        resolve({
-          dataUrl: canvas.toDataURL('image/jpeg', 0.7), // Utilisez JPEG pour une meilleure compression
-          width,
-          height
-        });
-      };
-      img.onerror = () => {
-        resolve({ dataUrl: src, width: maxWidth, height: maxHeight });
-      };
-      img.src = src;
+      console.log('pathString:', pathString);
+  
+      // Mettre à jour l'option à l'aide de lodash.set
+      set(newQuestionnaire, pathString, updatedOption);
+  
+      console.log('newQuestionnaire after update:', newQuestionnaire);
+  
+      return newQuestionnaire;
     });
-  };
+  
+    // Forcer la mise à jour du CR
+    setEditableCR(generateCR());
+  }, [generateCR]);
+  
 
   const copyToClipboard = async () => {
     try {
       const formattedContent = editableCR.split('\n').map(line => 
         line.startsWith('<strong>') || line.startsWith('<u>') ? `<p><br>${line}</p>` : `<p>${line}</p>`
       ).join('');
-  
+
       const maxWidth = 200;
       const maxHeight = 150;
-  
+
       const imagePromises = insertedImages.map(src => 
         new Promise((resolve) => {
           const img = new Image();
@@ -189,9 +192,9 @@ const QuestionnaireUsePage = () => {
           img.src = src;
         })
       );
-  
+
       const imageElements = await Promise.all(imagePromises);
-  
+
       const htmlContent = `
         <html>
           <head>
@@ -203,14 +206,14 @@ const QuestionnaireUsePage = () => {
           </head>
           <body>
             ${formattedContent}
-            <p><br></p> <!-- Ajout d'un retour à la ligne avant les images -->
+            <p><br></p>
             <div style="display: flex; flex-wrap: wrap;">
               ${imageElements.map(img => `<div class="image-container">${img}</div>`).join('')}
             </div>
           </body>
         </html>
       `;
-  
+
       const blob = new Blob([htmlContent], { type: 'text/html' });
       const clipboardItem = new ClipboardItem({ 'text/html': blob });
       await navigator.clipboard.write([clipboardItem]);
@@ -223,7 +226,7 @@ const QuestionnaireUsePage = () => {
     }
   };
 
-  const handleOptionChange = (questionId, optionIndex, questionType) => {
+  const handleOptionChange = useCallback((questionId, optionIndex, questionType) => {
     setSelectedOptions(prevOptions => {
       const newOptions = { ...prevOptions };
       if (!newOptions[questionId]) {
@@ -241,7 +244,22 @@ const QuestionnaireUsePage = () => {
       }
       return newOptions;
     });
-  };
+  }, []);
+
+  const handleSave = useCallback(async () => {
+    try {
+      await axios.put(`/questionnaires/${id}`, {
+        ...questionnaire,
+        selectedOptions,
+        crData: { crTexts, freeTexts },
+        hiddenQuestions
+      });
+      alert('Sauvegarde réussie !');
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      alert('Erreur lors de la sauvegarde');
+    }
+  }, [questionnaire, selectedOptions, crTexts, freeTexts, hiddenQuestions, id]);
 
   if (!questionnaire) return <div>Chargement...</div>;
 
@@ -251,21 +269,22 @@ const QuestionnaireUsePage = () => {
         <div className="w-full lg:w-3/5">
           <div className="rounded-lg p-0">
             <div className="bg-white dark:bg-gray-900 p-4 rounded-md">
-<QuestionnairePreview 
-  questions={questionnaire.questions}
-  selectedOptions={selectedOptions}
-  setSelectedOptions={handleOptionChange}
-  crTexts={crTexts}
-  setCRTexts={setCRTexts}
-  freeTexts={freeTexts}
-  onFreeTextChange={handleFreeTextChange}
-  showCRFields={false}
-  onImageInsert={handleImageInsert}
-  hiddenQuestions={hiddenQuestions}
-  toggleQuestionVisibility={() => {}}
-  questionnaireLinks={questionnaire.links} // Ajoutez ceci
-  questionnaireId={id} // Et ceci
-/>
+              <QuestionnairePreview 
+                questions={questionnaire.questions}
+                selectedOptions={selectedOptions}
+                setSelectedOptions={handleOptionChange}
+                crTexts={crTexts}
+                setCRTexts={setCRTexts}
+                freeTexts={freeTexts}
+                onFreeTextChange={handleFreeTextChange}
+                showCRFields={false}
+                onImageInsert={handleImageInsert}
+                hiddenQuestions={hiddenQuestions}
+                toggleQuestionVisibility={() => {}}
+                questionnaireLinks={questionnaire.links}
+                questionnaireId={id}
+                onOptionUpdate={handleOptionUpdate}
+              />
             </div>
           </div>
         </div>
@@ -313,10 +332,16 @@ const QuestionnaireUsePage = () => {
                 Copier
               </button>
               <button 
-                onClick={() => setEditableCR(generateCR().join('\n'))}
+                onClick={() => setEditableCR(generateCR())}
                 className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 transition-colors"
               >
                 Régénérer CR
+              </button>
+              <button
+                onClick={handleSave}
+                className="bg-purple-500 text-white py-2 px-4 rounded hover:bg-purple-600 transition-colors"
+              >
+                Sauvegarder
               </button>
               {copySuccess && <span className="text-green-600">{copySuccess}</span>}
             </div>

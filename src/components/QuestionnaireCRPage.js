@@ -4,6 +4,7 @@ import axios from '../utils/axiosConfig';
 import QuestionnairePreview from './QuestionnairePreview';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
+import set from 'lodash/set';
 
 const QuestionnaireCRPage = () => {
   const { id } = useParams();
@@ -102,6 +103,31 @@ const QuestionnaireCRPage = () => {
     setFreeTexts(prev => ({ ...prev, [questionId]: value }));
   }, []);
 
+  const handleOptionUpdate = useCallback((path, updatedOption) => {
+    setQuestionnaire(prev => {
+      if (!prev) return prev;
+  
+      const newQuestionnaire = JSON.parse(JSON.stringify(prev));
+  
+      // Construire le chemin vers l'option à mettre à jour
+      const pathString = path.reduce((acc, curr) => {
+        if (typeof curr === 'number') {
+          return `${acc}[${curr}]`;
+        } else {
+          return `${acc}.${curr}`;
+        }
+      }, 'questions');
+  
+      // Mettre à jour l'option à l'aide de lodash.set
+      set(newQuestionnaire, pathString, updatedOption);
+  
+      return newQuestionnaire;
+    });
+  
+    // Forcer la mise à jour du CR
+    setEditableCR(generateCR());
+  }, [generateCR]);
+
   const handleSave = useCallback(async () => {
     try {
       const dataToSave = {
@@ -180,8 +206,9 @@ const QuestionnaireCRPage = () => {
   hiddenQuestions={hiddenQuestions}
   toggleQuestionVisibility={toggleQuestionVisibility}
   showAddButton={false}
-  questionnaireLinks={questionnaire.links} // Ajoutez ceci
-  questionnaireId={id} // Et ceci
+  questionnaireLinks={questionnaire.links}
+  questionnaireId={id}
+  onOptionUpdate={handleOptionUpdate} // Ajoutez cette ligne
 />
             </div>
           </div>

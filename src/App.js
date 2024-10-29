@@ -11,9 +11,8 @@ import PrivateRoute from './components/PrivateRoute';
 import PublicQuestionnairesPage from './pages/PublicQuestionnairesPage';
 import PublicCasesPage from './pages/PublicCasesPage';
 
-
 const Home = lazy(() => import('./pages/Home'));
-const QuestionnairePage = lazy(() => import('./pages/QuestionnairePage')); // Modifiez cette ligne
+const QuestionnairePage = lazy(() => import('./pages/QuestionnairePage'));
 const QuestionnaireListPage = lazy(() => import('./pages/QuestionnaireListPage'));
 const QuestionnaireCreator = lazy(() => import('./components/QuestionnaireCreator'));
 const QuestionnaireCRPage = lazy(() => import('./components/QuestionnaireCRPage'));
@@ -24,7 +23,7 @@ const CasesListPage = lazy(() => import('./pages/CasesListPage'));
 const SheetEditor = lazy(() => import('./components/SheetEditor'));
 const TestUpload = lazy(() => import('./components/TestUpload'));
 const SheetViewer = lazy(() => import('./components/SheetViewer'));
-
+const LinkView = lazy(() => import('./components/LinkView'));
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -99,8 +98,15 @@ function App() {
                   <Route path="/create-sheet/:caseId" element={<SheetEditor />} />
                   <Route path="/test-upload" element={<TestUpload />} />
                   <Route path="/public-questionnaires" element={<PublicQuestionnairesPage />} />
-<Route path="/public-cases" element={<PublicCasesPage />} />
-
+                  <Route path="/public-cases" element={<PublicCasesPage />} />
+                  <Route 
+                    path="questionnaire/:questionnaireId/link/:elementId/:linkIndex" 
+                    element={
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <LinkView />
+                      </Suspense>
+                    } 
+                  />
                 </Routes>
               </Suspense>
             </main>

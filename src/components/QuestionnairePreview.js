@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { PlusCircle, Camera, EyeOff, Eye, ChevronDown, ChevronUp, Plus, Italic } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Camera, EyeOff, Eye, ChevronDown, ChevronUp, Plus, Italic } from 'lucide-react';
 
 const ImagePreviewWrapper = styled.div`
   position: fixed;
@@ -15,8 +15,20 @@ const ImagePreviewWrapper = styled.div`
 
 const ImagePreview = ({ image, alt, position }) => (
   <ImagePreviewWrapper style={{ left: `${position.x}px`, top: `${position.y}px` }}>
-    <img src={image.src} alt={alt} style={{ maxWidth: '400px', maxHeight: '400px', width: 'auto', height: 'auto', objectFit: 'contain' }} />
-    <p style={{ marginTop: '5px', fontSize: '12px' }}>{image.caption || 'Pas de légende'}</p>
+    <img 
+      src={image.src} 
+      alt={alt} 
+      style={{ 
+        maxWidth: '400px', 
+        maxHeight: '400px', 
+        width: 'auto', 
+        height: 'auto', 
+        objectFit: 'contain' 
+      }} 
+    />
+    <p style={{ marginTop: '5px', fontSize: '12px' }}>
+      {image.caption || 'Pas de légende'}
+    </p>
   </ImagePreviewWrapper>
 );
 
@@ -65,8 +77,10 @@ const QuestionPreview = ({
   imageCaptions,
   showAddButton = true,
   questionnaireLinks,
-  questionnaireId
+  questionnaireId,
+  onOptionUpdate
 }) => {
+  const navigate = useNavigate();
   const questionId = path.join('-');
   const [isExpanded, setIsExpanded] = useState(true);
   const [showImage, setShowImage] = useState(null);
@@ -78,18 +92,6 @@ const QuestionPreview = ({
   if (hiddenQuestions && hiddenQuestions[question.id] && !showCRFields) {
     return null;
   }
-
-  const questionSelectedOptions = selectedOptions?.[question.id] || [];
-  const questionCRTexts = crTexts?.[question.id] || {};
-
-  const isOptionSelected = (optionIndex) => {
-    if (!selectedOptions?.[question.id]) {
-      return false;
-    }
-    return Array.isArray(selectedOptions[question.id])
-      ? selectedOptions[question.id].includes(optionIndex)
-      : selectedOptions[question.id][optionIndex];
-  };
 
   const handleOptionChange = (optionIndex) => {
     if (typeof setSelectedOptions === 'function') {
@@ -107,37 +109,13 @@ const QuestionPreview = ({
     }));
   };
 
-  const formatText = (optionIndex, format, value = '') => {
-    const textarea = document.getElementById(`cr-text-${question.id}-${optionIndex}`);
-    if (textarea) {
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const selectedText = textarea.value.substring(start, end);
-      let formattedText;
-      
-      switch (format) {
-        case 'bold':
-          formattedText = `<strong>${selectedText}</strong>`;
-          break;
-        case 'underline':
-          formattedText = `<u>${selectedText}</u>`;
-          break;
-        case 'italic':
-          formattedText = `<em>${selectedText}</em>`;
-          break;
-        case 'size':
-          formattedText = `<span style="font-size: ${value};">${selectedText}</span>`;
-          break;
-        case 'center':
-          formattedText = `<div style="text-align: center;">${selectedText}</div>`;
-          break;
-        default:
-          formattedText = selectedText;
-      }
-  
-      const newText = textarea.value.substring(0, start) + formattedText + textarea.value.substring(end);
-      handleCRTextChange(optionIndex, newText);
+  const isOptionSelected = (optionIndex) => {
+    if (!selectedOptions?.[question.id]) {
+      return false;
     }
+    return Array.isArray(selectedOptions[question.id])
+      ? selectedOptions[question.id].includes(optionIndex)
+      : selectedOptions[question.id][optionIndex];
   };
 
   const handleMouseEnter = (event, imageId) => {
@@ -181,6 +159,10 @@ const QuestionPreview = ({
                   <div
                     key={index}
                     className="px-3 py-1 text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded text-sm cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/questionnaire/${questionnaireId}/link/${questionId}/${index}`);
+                    }}
                   >
                     {link.title || `Fiche ${index + 1}`}
                   </div>
@@ -214,6 +196,7 @@ const QuestionPreview = ({
         </div>
         {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
       </div>
+
       {showImage === question.id && question.image && (
         <ImagePreview 
           image={question.image} 
@@ -221,39 +204,54 @@ const QuestionPreview = ({
           position={imagePosition}
         />
       )}
+
       {isExpanded && (
         <div className="mt-2">
           {(question.type === 'single' || question.type === 'multiple') && Array.isArray(question.options) && (
             <ul className="space-y-1">
               {question.options.map((option, optionIndex) => {
+                if (!option) return null;
                 const optionId = `${questionId}-options-${optionIndex}`;
                 return (
                   <li key={option?.id || `${question.id}-option-${optionIndex}`}>
-                    <label className="flex items-center">
-                      <input
-                        type={question.type === 'single' ? 'radio' : 'checkbox'}
-                        checked={isOptionSelected(optionIndex)}
-                        onChange={() => handleOptionChange(optionIndex)}
-                        className="mr-2"
-                      />
-                      <div className="flex flex-col flex-grow">
-                        <span className="questionnaire-option text-gray-900 dark:text-white">
-                          {option?.text || `Option ${optionIndex + 1}`}
-                        </span>
-                        {questionnaireLinks && questionnaireLinks[optionId] && (
-                          <div className="flex flex-wrap gap-2 mt-1">
-                            {questionnaireLinks[optionId].map((link, index) => (
-                              <div
-                                key={index}
-                                className="px-3 py-1 text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded text-sm cursor-pointer"
-                              >
-                                {link.title || `Fiche ${index + 1}`}
-                              </div>
-                            ))}
+                    <div className="flex flex-col">
+                      <div className="flex items-center">
+                        <input
+                          type={question.type === 'single' ? 'radio' : 'checkbox'}
+                          checked={isOptionSelected(optionIndex)}
+                          onChange={() => handleOptionChange(optionIndex)}
+                          className="mr-2"
+                        />
+                        <div className="flex flex-col flex-grow">
+                          <div className="flex items-center">
+                            <span className="questionnaire-option text-gray-900 dark:text-white">
+                              {option?.text || `Option ${optionIndex + 1}`}
+                            </span>
                           </div>
-                        )}
+                          <div className="flex items-center mt-1">
+                          <label className="flex items-center space-x-2 cursor-pointer">
+  <input
+    type="checkbox"
+    className="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out"
+    checked={option.includeInConclusion || false}
+    onChange={(e) => {
+      if (typeof onOptionUpdate === 'function') {
+        const updatedOption = {
+          ...option,
+          includeInConclusion: e.target.checked
+        };
+        onOptionUpdate([...path, 'options', optionIndex], updatedOption);
+      }
+    }}
+  />
+  <span className="text-xs text-gray-500">Conclusion ?</span>
+</label>
+                          </div>
+                        </div>
                       </div>
-                      {option?.image && (
+
+                      {/* Image controls */}
+                      {option.image && (
                         <div className="flex items-center ml-2">
                           <div 
                             className="relative"
@@ -276,64 +274,71 @@ const QuestionPreview = ({
                           )}
                         </div>
                       )}
-                    </label>
-                    {showImage === optionId && option.image && (
-                      <ImagePreview 
-                        image={option.image} 
-                        alt="Option" 
-                        position={imagePosition}
-                      />
-                    )}
-                    {showCRFields && isOptionSelected(optionIndex) && (
-                      <>
-                        <TextFormatButtons 
-                          onBold={() => formatText(optionIndex, 'bold')}
-                          onUnderline={() => formatText(optionIndex, 'underline')}
-                          onItalic={() => formatText(optionIndex, 'italic')}
-                          onSize={(size) => formatText(optionIndex, 'size', size)}
-                          onCenter={() => formatText(optionIndex, 'center')}
+
+                      {/* Show image preview */}
+                      {showImage === optionId && option.image && (
+                        <ImagePreview 
+                          image={option.image} 
+                          alt="Option" 
+                          position={imagePosition}
                         />
-                        <textarea
-                          id={`cr-text-${question.id}-${optionIndex}`}
-                          value={questionCRTexts[optionIndex] || ''}
-                          onChange={(e) => handleCRTextChange(optionIndex, e.target.value)}
-                          placeholder="Texte du CR pour cette option"
-                          className="mt-1 w-full p-2 border rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        />
-                      </>
-                    )}
-                    {isOptionSelected(optionIndex) && Array.isArray(option?.subQuestions) && (
-                      <div className="mt-1">
-                        {option.subQuestions.map((subQuestion, subIndex) => (
-                          <QuestionPreview 
-                            key={subQuestion?.id || `${question.id}-${optionIndex}-${subIndex}`}
-                            question={subQuestion}
-                            path={[...path, 'options', optionIndex, 'subQuestions', subIndex]}
-                            depth={depth + 1}
-                            selectedOptions={selectedOptions}
-                            setSelectedOptions={setSelectedOptions}
-                            crTexts={crTexts}
-                            setCRTexts={setCRTexts}
-                            freeTexts={freeTexts}
-                            onFreeTextChange={onFreeTextChange}
-                            showCRFields={showCRFields}
-                            onImageInsert={onImageInsert}
-                            hiddenQuestions={hiddenQuestions}
-                            toggleQuestionVisibility={toggleQuestionVisibility}
-                            imageCaptions={imageCaptions}
-                            showAddButton={showAddButton}
-                            questionnaireLinks={questionnaireLinks}
-                            questionnaireId={questionnaireId}
+                      )}
+
+                      {/* CR text input for selected options */}
+                      {showCRFields && isOptionSelected(optionIndex) && (
+                        <>
+                          <TextFormatButtons 
+                            onBold={() => handleCRTextChange(optionIndex, `<strong>${option.text}</strong>`)}
+                            onUnderline={() => handleCRTextChange(optionIndex, `<u>${option.text}</u>`)}
+                            onItalic={() => handleCRTextChange(optionIndex, `<em>${option.text}</em>`)}
+                            onSize={(size) => handleCRTextChange(optionIndex, `<span style="font-size: ${size};">${option.text}</span>`)}
+                            onCenter={() => handleCRTextChange(optionIndex, `<div style="text-align: center;">${option.text}</div>`)}
                           />
-                        ))}
-                      </div>
-                    )}
+                          <textarea
+                            id={`cr-text-${question.id}-${optionIndex}`}
+                            value={crTexts[question.id]?.[optionIndex] || ''}
+                            onChange={(e) => handleCRTextChange(optionIndex, e.target.value)}
+                            placeholder="Texte du CR pour cette option"
+                            className="mt-1 w-full p-2 border rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          />
+                        </>
+                      )}
+
+                      {/* Sub-questions */}
+                      {isOptionSelected(optionIndex) && Array.isArray(option?.subQuestions) && (
+                        <div className="ml-6 mt-2">
+                          {option.subQuestions.map((subQuestion, sqIndex) => (
+                            <QuestionPreview
+                              key={subQuestion?.id || `${question.id}-${optionIndex}-${sqIndex}`}
+                              question={subQuestion}
+                              path={[...path, 'options', optionIndex, 'subQuestions', sqIndex]}
+                              depth={depth + 1}
+                              selectedOptions={selectedOptions}
+                              setSelectedOptions={setSelectedOptions}
+                              crTexts={crTexts}
+                              setCRTexts={setCRTexts}
+                              freeTexts={freeTexts}
+                              onFreeTextChange={onFreeTextChange}
+                              showCRFields={showCRFields}
+                              onImageInsert={onImageInsert}
+                              hiddenQuestions={hiddenQuestions}
+                              toggleQuestionVisibility={toggleQuestionVisibility}
+                              imageCaptions={imageCaptions}
+                              showAddButton={showAddButton}
+                              questionnaireLinks={questionnaireLinks}
+                              questionnaireId={questionnaireId}
+                              onOptionUpdate={onOptionUpdate}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </li>
                 );
               })}
             </ul>
           )}
-{question.type === 'text' && (
+          {question.type === 'text' && (
             <textarea
               value={freeTexts?.[question.id] || ''}
               onChange={(e) => onFreeTextChange(question.id, e.target.value)}
@@ -341,7 +346,7 @@ const QuestionPreview = ({
               className="mt-2 w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           )}
-          {question.type === 'number' && (
+         {question.type === 'number' && (
             <input
               type="number"
               value={freeTexts?.[question.id] || ''}
@@ -371,7 +376,8 @@ const QuestionnairePreview = ({
   imageCaptions,
   showAddButton = true,
   questionnaireLinks,
-  questionnaireId
+  questionnaireId,
+  onOptionUpdate
 }) => {
   if (!Array.isArray(questions)) return null;
 
@@ -382,11 +388,11 @@ const QuestionnairePreview = ({
           key={question?.id || `question-${index}`}
           question={question}
           path={[index]}
-          selectedOptions={selectedOptions || {}}
+          selectedOptions={selectedOptions}
           setSelectedOptions={setSelectedOptions}
-          crTexts={crTexts || {}}
+          crTexts={crTexts}
           setCRTexts={setCRTexts}
-          freeTexts={freeTexts || {}}
+          freeTexts={freeTexts}
           onFreeTextChange={onFreeTextChange}
           showCRFields={showCRFields}
           onImageInsert={onImageInsert}
@@ -396,6 +402,7 @@ const QuestionnairePreview = ({
           showAddButton={showAddButton}
           questionnaireLinks={questionnaireLinks}
           questionnaireId={questionnaireId}
+          onOptionUpdate={onOptionUpdate}
         />
       ))}
     </div>

@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-"scripts": {
-  "start": "NODE_ENV=production node server.js",
-  "build": "GENERATE_SOURCEMAP=false react-scripts build",
-  "server": "env-cmd -f .env.development.backend nodemon server.js",
-  "client": "react-scripts start",
-  "dev": "concurrently \"npm run server\" \"npm run client\"",
-  "postinstall": "npm run build"
+  "scripts": {
+    "start": "NODE_ENV=production node server.js",
+    "build": "GENERATE_SOURCEMAP=false react-scripts build",
+    "server": "env-cmd -f .env.development.backend nodemon server.js",
+    "client": "react-scripts start",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "postinstall": "npm run build"
   },
   "homepage": "https://seal-app-irjy.ondigitalocean.app",
   "keywords": [],
@@ -33,6 +33,7 @@
     "framer-motion": "^11.3.30",
     "hast-util-raw": "^9.0.4",
     "jsonwebtoken": "^9.0.2",
+    "lodash": "^4.17.21",
     "lucide-react": "^0.427.0",
     "mongodb": "^6.8.0",
     "mongoose": "^8.6.0",
