@@ -185,6 +185,8 @@ function RadiologyViewer() {
     });
   }, [currentCase, currentFolderLeft, currentFolderRight, currentIndexLeft, currentIndexRight, loadImage]);
 
+
+
   const handleZoom = useCallback((side, delta) => {
     setImageControls(prev => {
       const newControls = {...prev};
@@ -325,6 +327,45 @@ function RadiologyViewer() {
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [handleScroll, isSingleViewMode, toggleViewMode]);
+
+  useEffect(() => {
+    if (isTouchDevice) {
+      const viewer = document.querySelector(`.${styles.viewer}`);
+      let touchStartX = 0;
+      let touchStartY = 0;
+  
+      const handleTouchStart = (e) => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      };
+  
+      const handleTouchMove = (e) => {
+        if (!touchStartX || !touchStartY) return;
+  
+        const deltaX = e.touches[0].clientX - touchStartX;
+        const deltaY = e.touches[0].clientY - touchStartY;
+  
+        if (Math.abs(deltaY) > Math.abs(deltaX)) {
+          // Défilement vertical
+          handleScroll(deltaY, false, isSingleViewMode ? 'single' : 'left');
+        } else {
+          // Pan horizontal
+          handlePan(isSingleViewMode ? 'single' : 'left', deltaX, 0);
+        }
+  
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      };
+  
+      viewer?.addEventListener('touchstart', handleTouchStart);
+      viewer?.addEventListener('touchmove', handleTouchMove);
+  
+      return () => {
+        viewer?.removeEventListener('touchstart', handleTouchStart);
+        viewer?.removeEventListener('touchmove', handleTouchMove);
+      };
+    }
+  }, [handleScroll, handlePan, isSingleViewMode]);
 
   const renderViewer = useCallback((side) => (
     <div 
