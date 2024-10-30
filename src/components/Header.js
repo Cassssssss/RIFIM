@@ -98,6 +98,27 @@ const LogoutButton = styled.button`
   }
 `;
 
+const MobileMenu = styled.div`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: block;
+  }
+`;
+
+const NavLinks = styled.div`
+  @media (max-width: 768px) {
+    display: ${props => props.isOpen ? 'flex' : 'none'};
+    flex-direction: column;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    background: ${props => props.theme.headerBackground};
+    padding: 1rem;
+  }
+`;
+
 function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);

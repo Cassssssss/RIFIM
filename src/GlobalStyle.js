@@ -80,9 +80,43 @@ const GlobalStyle = createGlobalStyle`
     background-color: #dbeafe;
     color: #2563eb;
   }
+
+    html {
+    font-size: 16px;
+    
+    @media (max-width: 768px) {
+      font-size: 14px;
+    }
+  }
+
+  body {
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+  }
+
+  .card {
+    @media (max-width: 768px) {
+      margin: 0.5rem;
+      padding: 0.5rem;
+    }
+  }
+
+  input, select, textarea {
+    @media (max-width: 768px) {
+      font-size: 16px !important; // Empêche le zoom sur iOS
+      max-width: 100%;
+    }
+  }
+
+  .btn {
+    @media (max-width: 768px) {
+      padding: 0.5rem 1rem;
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+  }
 `;
-
-
 
 
 

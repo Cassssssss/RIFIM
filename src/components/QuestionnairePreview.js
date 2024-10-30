@@ -33,6 +33,23 @@ const FormatButton = styled.button`
   }
 `;
 
+const PreviewWrapper = styled.div`
+  max-width: 100%;
+  overflow-x: hidden;
+  
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+  }
+`;
+
+const QuestionCard = styled.div`
+  margin-bottom: 1rem;
+  
+  @media (max-width: 768px) {
+    margin-bottom: 0.5rem;
+  }
+`;
+
 const getBackgroundColor = (depth) => {
   const baseHue = 210;
   const saturation = 90;

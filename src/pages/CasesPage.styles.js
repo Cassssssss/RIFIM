@@ -5,7 +5,12 @@ export const PageContainer = styled.div`
   background-color: ${props => props.theme.background};
   min-height: calc(100vh - 60px);
   padding: 2rem;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 `;
+
 
 export const Title = styled.h1`
   color: ${props => props.theme.text};
@@ -37,6 +42,11 @@ export const InputGroup = styled.div`
   align-items: center;
   margin-bottom: 1rem;
   gap: 1rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
 `;
 
 export const Input = styled.input`
@@ -109,6 +119,16 @@ export const FolderTitle = styled.h3`
 export const FolderActions = styled.div`
   display: flex;
   gap: 0.5rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    width: 100%;
+    
+    button, label {
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+  }
 `;
 
 export const UploadButton = styled.label`
@@ -137,7 +157,11 @@ export const ImagePreviewContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 10rem;
+  margin-top: 1rem;
+
+  @media (max-width: 768px) {
+    gap: 5px;
+  }
 `;
 
 export const ImagePreview = styled.div`
@@ -181,8 +205,11 @@ export const CasesGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1.5rem;
-  margin-top: 2rem;
-  margin-bottom: 2rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 `;
 
 export const FoldersSection = styled.div`
@@ -289,6 +316,10 @@ export const LargeImageContainer = styled.div`
   justify-content: center;
   align-items: center;
   z-index: 9999;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 `;
 
 export const LargeImage = styled.img`
@@ -296,6 +327,12 @@ export const LargeImage = styled.img`
   height: 80vmin;
   object-fit: contain;
   background-color: black;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    height: auto;
+    max-height: 80vh;
+  }
 `;
 
 export const CloseButton = styled.button`
@@ -472,6 +509,7 @@ export const PaginationInfo = styled.span`
   font-weight: bold;
 `;
 
+
 export const ImagesGrid = styled.div`
   display: flex;
   gap: 10px;
@@ -482,6 +520,17 @@ export const ImagesGrid = styled.div`
   overflow-x: auto;
   flex-wrap: nowrap;
   align-items: flex-start;
+
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+    gap: 5px;
+    /* Améliore le défilement sur mobile */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Pour Firefox */
+    &::-webkit-scrollbar {
+      display: none; /* Pour Chrome, Safari et Opera */
+    }
+  }
 `;
 
 export const ImageWrapper = styled.div`
@@ -498,3 +547,4 @@ export const ImageWrapper = styled.div`
     box-shadow: 0 2px 5px rgba(0,0,0,0.3);
   }
 `;
+
