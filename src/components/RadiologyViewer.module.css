@@ -640,3 +640,179 @@
     right: 20px;
   }
 }
+
+/* Modifications des styles existants et ajout des media queries */
+
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+}
+
+.layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    flex-direction: row;  /* Changé de column à row */
+    height: calc(100vh - 60px); /* Ajusté pour la barre du bas */
+  }
+}
+
+.folderGrid {
+  width: 112px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto;
+  
+  @media (max-width: 768px) {
+    width: 80px; /* Réduit la largeur sur mobile */
+    padding: 0.25rem;
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+}
+
+.folderThumbnail {
+  @media (max-width: 768px) {
+    width: 70px;
+    height: 70px;
+    margin-bottom: 0.25rem;
+  }
+}
+
+.mainViewer {
+  flex: 1;
+  
+  @media (max-width: 768px) {
+    height: 100%;
+    margin-left: 0;
+  }
+}
+
+.viewer {
+  touch-action: manipulation; /* Améliore le comportement tactile */
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transform-origin: center;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.bottomBar {
+  @media (max-width: 768px) {
+    height: 60px;
+    padding: 0.5rem;
+    justify-content: space-around;
+  }
+}
+
+/* Ajout des styles pour le zoom tactile */
+.zoomable {
+  transform-origin: center;
+  transition: transform 0.1s ease-out;
+}
+
+/* RadiologyViewer.module.css */
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  
+  @media (max-width: 768px) {
+    height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+}
+
+.layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  height: calc(100vh - 110px); /* Ajuster pour l'en-tête et le bas */
+  
+  @media (max-width: 768px) {
+    flex-direction: row;
+    gap: 0;
+    height: calc(100vh - 100px);
+  }
+}
+
+.folderGrid {
+  width: 112px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto;
+  
+  @media (max-width: 768px) {
+    width: 70px;
+    padding: 5px;
+    background: rgba(0, 0, 0, 0.8);
+    gap: 5px;
+  }
+}
+
+.folderThumbnail {
+  @media (max-width: 768px) {
+    height: 60px;
+    width: 60px;
+    margin-bottom: 5px;
+  }
+}
+
+.folderThumbnailImage {
+  @media (max-width: 768px) {
+    height: 45px;
+    object-fit: cover;
+  }
+}
+
+.folderThumbnailLabel {
+  @media (max-width: 768px) {
+    font-size: 10px;
+    height: 15px;
+  }
+}
+
+.mainViewer {
+  @media (max-width: 768px) {
+    margin-left: 0;
+    flex: 1;
+    height: 100%;
+  }
+}
+
+.bottomBar {
+  height: 50px;
+  padding: 0.5rem;
+  
+  @media (max-width: 768px) {
+    height: 40px;
+    padding: 5px 10px;
+  }
+}
+
+.responseButton, .sheetLink {
+  @media (max-width: 768px) {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+}

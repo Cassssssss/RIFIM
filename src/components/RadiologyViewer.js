@@ -59,10 +59,18 @@ function RadiologyViewer() {
   const [isShortcutGuideVisible, setIsShortcutGuideVisible] = useState(false);
   const [folderThumbnails, setFolderThumbnails] = useState({});
   const isTouchDevice = 'ontouchstart' in window;
+  const [touchDistance, setTouchDistance] = useState(null);
+  const [isMobile] = useState(window.innerWidth < 768);
 
   const leftViewerRef = useRef(null);
   const rightViewerRef = useRef(null);
   const singleViewerRef = useRef(null);
+
+  useEffect(() => {
+    if (isMobile && !isSingleViewMode) {
+      setIsSingleViewMode(true);
+    }
+  }, [isMobile]);
 
   const loadImage = useCallback((folder, index, side) => {
     console.log('Loading image:', folder, index, side);
@@ -367,6 +375,60 @@ function RadiologyViewer() {
     }
   }, [handleScroll, handlePan, isSingleViewMode]);
 
+  const getTouchDistance = (touches) => {
+    return Math.hypot(
+      touches[0].clientX - touches[1].clientX,
+      touches[0].clientY - touches[1].clientY
+    );
+  };
+  
+  useEffect(() => {
+    if (isTouchDevice) {
+      const viewer = document.querySelector(`.${styles.viewer}`);
+      
+      const handleTouchStart = (e) => {
+        if (e.touches.length === 2) {
+          setTouchDistance(getTouchDistance(e.touches));
+        }
+      };
+  
+      const handleTouchMove = (e) => {
+        if (e.touches.length === 2) {
+          e.preventDefault();
+          const newDistance = getTouchDistance(e.touches);
+          
+          if (touchDistance !== null) {
+            const scale = newDistance / touchDistance;
+            const side = isSingleViewMode ? 'single' : 'left';
+            handleZoom(side, (scale - 1) * 1000);
+          }
+          
+          setTouchDistance(newDistance);
+        } else if (e.touches.length === 1) {
+          handlePan(
+            isSingleViewMode ? 'single' : 'left',
+            e.touches[0].clientX - touchStartX,
+            e.touches[0].clientY - touchStartY
+          );
+        }
+      };
+  
+      const handleTouchEnd = () => {
+        setTouchDistance(null);
+      };
+  
+      viewer?.addEventListener('touchstart', handleTouchStart);
+      viewer?.addEventListener('touchmove', handleTouchMove, { passive: false });
+      viewer?.addEventListener('touchend', handleTouchEnd);
+  
+      return () => {
+        viewer?.removeEventListener('touchstart', handleTouchStart);
+        viewer?.removeEventListener('touchmove', handleTouchMove);
+        viewer?.removeEventListener('touchend', handleTouchEnd);
+      };
+    }
+  }, [isTouchDevice, touchDistance, handleZoom, handlePan, isSingleViewMode]);
+
   const renderViewer = useCallback((side) => (
     <div 
       className={`${styles.viewer} ${styles.viewerHalf}`}
@@ -396,37 +458,40 @@ function RadiologyViewer() {
     </div>
   ), [handleZoom, handleScroll, handleMouseDown, handleMouseMove, handleMouseUp, handleDrop, currentFolderLeft, currentFolderRight]);
 
-  const renderFolderThumbnails = useCallback(() => {
-    if (!currentCase || !currentCase.folders) return null;
-  
-    return (
-      <div id="folder-thumbnails" className={styles.folderGrid}>
-        {currentCase.folders.map(folder => (
-          <div 
-            key={folder} 
-            className={styles.folderThumbnail}
-            draggable 
-            onDragStart={(e) => handleDragStart(e, folder)}
-          >
-            <img 
-              src={currentCase.folderMainImages && currentCase.folderMainImages[folder]
-                ? currentCase.folderMainImages[folder]
-                : `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`}
-              alt={`${folder} thumbnail`} 
-              className={styles.folderThumbnailImage}
-              onError={(e) => {
-                if (e.target.src !== `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`) {
-                  e.target.src = `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`;
-                }
-                e.target.onerror = null;
-              }}
-            />
-            <div className={styles.folderThumbnailLabel}>{folder}</div>
-          </div>
-        ))}
-      </div>
-    );
-  }, [currentCase, handleDragStart]);
+const renderFolderThumbnails = useCallback(() => {
+  if (!currentCase || !currentCase.folders) return null;
+
+  return (
+    <div id="folder-thumbnails" className={styles.folderGrid}>
+      {currentCase.folders.map(folder => (
+        <div 
+          key={folder} 
+          className={styles.folderThumbnail}
+          draggable={!isMobile}
+          onDragStart={(e) => !isMobile && handleDragStart(e, folder)}
+          onClick={() => {
+            if (isMobile) {
+              loadImage(folder, 0, 'single');
+              setCurrentFolderLeft(folder);
+            }
+          }}
+        >
+          <img 
+            src={currentCase.folderMainImages?.[folder] || `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`}
+            alt={`${folder} thumbnail`} 
+            className={styles.folderThumbnailImage}
+            onError={(e) => {
+              if (e.target.src !== `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`) {
+                e.target.src = `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`;
+              }
+            }}
+          />
+          <div className={styles.folderThumbnailLabel}>{folder}</div>
+        </div>
+      ))}
+    </div>
+  );
+}, [currentCase, isMobile, handleDragStart, loadImage]);
     
   if (!currentCase) return <div>Chargement...</div>;
     
