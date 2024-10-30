@@ -7,6 +7,7 @@ import { ChevronDown, ChevronUp, Plus, Trash2, GripVertical, Copy, Camera, Uploa
 import axios from '../utils/axiosConfig';
 import QuestionnairePreview from './QuestionnairePreview';
 import LinkEditor from './LinkEditor';
+import { AlertTriangle } from 'lucide-react';
 
 // Styled components (inchangés)
 const CreatorWrapper = styled.div`
@@ -231,6 +232,7 @@ function QuestionnaireCreator() {
     questions: [],
     selectedOptions: {},
     crData: { crTexts: {}, freeTexts: {} },
+    pageTitles: {}  // Changé de new Map() à {}
   });
   const [expandedQuestions, setExpandedQuestions] = useState({});
   const [showLinkEditor, setShowLinkEditor] = useState(false);
@@ -241,37 +243,38 @@ const [linkToDelete, setLinkToDelete] = useState(null);
   const { id } = useParams();
   const navigate = useNavigate();
 
-useEffect(() => {
-  if (id) {
-    const fetchQuestionnaire = async () => {
-      try {
-        const response = await axios.get(`/questionnaires/${id}`);
-        const loadedQuestionnaire = response.data;
-        
-        // Convertir les liens
-        const linksObject = {};
-        if (loadedQuestionnaire.links && typeof loadedQuestionnaire.links === 'object') {
-          for (let [key, value] of Object.entries(loadedQuestionnaire.links)) {
-            linksObject[key] = value;
+  useEffect(() => {
+    if (id) {
+      const fetchQuestionnaire = async () => {
+        try {
+          const response = await axios.get(`/questionnaires/${id}`);
+          const loadedQuestionnaire = response.data;
+          
+          // Convertir les liens
+          const linksObject = {};
+          if (loadedQuestionnaire.links && typeof loadedQuestionnaire.links === 'object') {
+            for (let [key, value] of Object.entries(loadedQuestionnaire.links)) {
+              linksObject[key] = value;
+            }
           }
+          
+          setQuestionLinks(linksObject);
+          setQuestionnaire({
+            ...loadedQuestionnaire,
+            selectedOptions: loadedQuestionnaire.selectedOptions || {},
+            crData: {
+              crTexts: loadedQuestionnaire.crData?.crTexts || {},
+              freeTexts: loadedQuestionnaire.crData?.freeTexts || {}
+            },
+            pageTitles: loadedQuestionnaire.pageTitles || {} // Assurez-vous que c'est un objet
+          });
+        } catch (error) {
+          console.error('Erreur lors du chargement du questionnaire:', error);
         }
-        
-        setQuestionLinks(linksObject);
-        setQuestionnaire({
-          ...loadedQuestionnaire,
-          selectedOptions: loadedQuestionnaire.selectedOptions || {},
-          crData: {
-            crTexts: loadedQuestionnaire.crData?.crTexts || {},
-            freeTexts: loadedQuestionnaire.crData?.freeTexts || {}
-          }
-        });
-      } catch (error) {
-        console.error('Erreur lors du chargement du questionnaire:', error);
-      }
-    };
-    fetchQuestionnaire();
-  }
-}, [id]);
+      };
+      fetchQuestionnaire();
+    }
+  }, [id]);
 
   
   const handleOpenLinkEditor = (elementId, linkIndex) => {
@@ -540,26 +543,27 @@ useEffect(() => {
     });
   }, []);
 
-  const handleSave = useCallback(async () => {
-    try {
-      const questionnaireToSave = {
-        ...questionnaire,
-        links: questionLinks  // Ajoutez cette ligne
-      };
-      console.log('Données à sauvegarder:', JSON.stringify(questionnaireToSave, null, 2));
-      let response;
-      if (id) {
-        response = await axios.put(`/questionnaires/${id}`, questionnaireToSave);
-      } else {
-        response = await axios.post('/questionnaires', questionnaireToSave);
-      }
-      console.log('Réponse du serveur:', response.data);
-      setQuestionnaire(response.data);
-      navigate('/questionnaires');
-    } catch (error) {
-      console.error('Erreur lors de la sauvegarde du questionnaire:', error);
+const handleSave = useCallback(async () => {
+  try {
+    const questionnaireToSave = {
+      ...questionnaire,
+      links: questionLinks,
+      pageTitles: questionnaire.pageTitles || {}  // Assurez-vous que cette ligne est présente
+    };
+    console.log('PageTitles à sauvegarder:', questionnaireToSave.pageTitles); // Ajoutez cette ligne pour le debug
+    let response;
+    if (id) {
+      response = await axios.put(`/questionnaires/${id}`, questionnaireToSave);
+    } else {
+      response = await axios.post('/questionnaires', questionnaireToSave);
     }
-  }, [questionnaire, questionLinks, id, navigate]);
+    console.log('Réponse du serveur:', response.data);
+    setQuestionnaire(response.data);
+    navigate('/questionnaires');
+  } catch (error) {
+    console.error('Erreur lors de la sauvegarde du questionnaire:', error);
+  }
+}, [questionnaire, questionLinks, id, navigate]);
 
   const handleFreeTextChange = useCallback((questionId, value) => {
     setQuestionnaire(prev => ({
@@ -630,14 +634,15 @@ useEffect(() => {
               {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
             </button>
             <input 
-              className="flex-grow p-2 border-b border-transparent focus:border-blue-500 focus:outline-none bg-transparent"
-              type="text" 
-              value={question.text || ''} 
-              onChange={(e) => updateQuestion(path, 'text', e.target.value)}
-              placeholder="Texte de la question"
-            />
-            {depth === 1 && ( // Uniquement pour les questions principales
-  <div className="flex items-center mx-2">
+  className="flex-grow p-2 border-b border-transparent focus:border-blue-500 focus:outline-none bg-transparent"
+  type="text" 
+  value={question.text || ''} 
+  onChange={(e) => updateQuestion(path, 'text', e.target.value)}
+  placeholder="Texte de la question"
+/>
+
+{depth === 1 && ( // Uniquement pour les questions principales
+  <div className="flex items-center mx-2 gap-2">
     <label className="text-sm mr-2">Page:</label>
     <input
       type="number"
@@ -646,6 +651,22 @@ useEffect(() => {
       onChange={(e) => updateQuestion(path, 'page', Math.max(1, parseInt(e.target.value) || 1))}
       className="w-16 p-1 text-sm border rounded"
     />
+<input
+  type="text"
+  value={questionnaire.pageTitles[question.page] ?? ''}  // Changez ici
+  onChange={(e) => {
+    const pageNumber = question.page || 1;
+    setQuestionnaire(prev => ({
+      ...prev,
+      pageTitles: {
+        ...prev.pageTitles,
+        [pageNumber]: e.target.value || ''  // Et ici
+      }
+    }));
+  }}
+  placeholder={`Page ${question.page || 1}`}  // Ajoutez un placeholder à la place
+  className="w-48 p-1 text-sm border rounded"
+/>
   </div>
 )}
             <div className="flex items-center">
@@ -874,6 +895,8 @@ useEffect(() => {
   showCRFields={false}
   questionnaireLinks={questionLinks}
   questionnaireId={id}
+  questionnaire={questionnaire}  // Ajoutez cette ligne
+  setQuestionnaire={setQuestionnaire}  // Ajoutez cette ligne
 />
             </div>
           </CreatorCard>
@@ -927,4 +950,4 @@ useEffect(() => {
   );
 }
 
-export default memo(QuestionnaireCreator);
+export default QuestionnaireCreator;

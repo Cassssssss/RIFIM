@@ -33,6 +33,15 @@ const FormatButton = styled.button`
   }
 `;
 
+const getBackgroundColor = (depth) => {
+  const baseHue = 210;
+  const saturation = 90;
+  const baseLightness = 95;
+  const decrement = 2;
+  const lightness = Math.max(0, baseLightness - depth * decrement);
+  return `hsl(${baseHue}, ${saturation}%, ${lightness}%)`;
+};
+
 const ImagePreview = ({ image, alt, position }) => (
   <ImagePreviewWrapper style={{ left: `${position.x}px`, top: `${position.y}px` }}>
     <img 
@@ -65,7 +74,7 @@ const TextFormatButtons = ({ onBold, onUnderline, onItalic, onSize, onCenter }) 
 );
 
 const QuestionHeader = styled.div`
-  background-color: #eff6ff;
+  background-color: ${({ depth }) => getBackgroundColor(depth)};
   padding: 1rem;
   border-radius: 8px 8px 0 0;
   border-bottom: 1px solid #e2e8f0;
@@ -79,7 +88,7 @@ const QuestionContent = styled.div`
   padding-right: 0;
   background-color: white;
   border-radius: 0 0 8px 8px;
-  border-right: 0;
+  border-right: ;
 `;
 
 const LinkButton = styled.button`
@@ -165,37 +174,35 @@ const QuestionPreview = ({
   };
 
   return (
-<div className="mb- overflow-hidden">
-<div className="bg-white rounded-lg shadow border-l-2 border-blue-400" style={{ margin: 0, width: '100%' }}>
-        <QuestionHeader>
-        <div className="flex items-center flex-grow gap-2">
-   {showCRFields && toggleQuestionVisibility && (
-     <button
-       onClick={(e) => {
-         e.stopPropagation();
-         toggleQuestionVisibility(question.id);
-       }}
-       className="text-gray-500 hover:text-gray-700"
-     >
-       {hiddenQuestions?.[question.id] ? <EyeOff size={18} /> : <Eye size={18} />}
-     </button>
-   )}
-   <h3 className="text-base text-gray-700">{question.text}</h3>
-   <div className="flex items-center gap-2 ml-auto">
-     {questionnaireLinks && questionnaireLinks[questionId]?.map((link, index) => (
-       <LinkButton
-         key={index}
-         onClick={() => navigate(`/questionnaire/${questionnaireId}/link/${questionId}/${index}`)}
-       >
-         {link.title || `Fiche ${index + 1}`}
-       </LinkButton>
-     ))}
-   </div>
-</div>
+    <div className="mb- overflow-hidden">
+      <div className="bg-white rounded-lg shadow border-l-2 border-blue-400" style={{ margin: 0, width: '100%' }}>
+        <QuestionHeader depth={depth}>
+          <div className="flex items-center flex-grow gap-2">
+            {showCRFields && toggleQuestionVisibility && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleQuestionVisibility(question.id);
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                {hiddenQuestions?.[question.id] ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            )}
+            <h3 className="text-base text-gray-700">{question.text}</h3>
+            <div className="flex items-center gap-2 ml-auto">
+              {questionnaireLinks && questionnaireLinks[questionId]?.map((link, index) => (
+                <LinkButton
+                  key={index}
+                  onClick={() => navigate(`/questionnaire/${questionnaireId}/link/${questionId}/${index}`)}
+                >
+                  {link.title || `Fiche ${index + 1}`}
+                </LinkButton>
+              ))}
+            </div>
+          </div>
 
           <div className="flex items-center gap-2">
-
-
             {question.image && (
               <div className="flex items-center">
                 <div 
@@ -245,23 +252,24 @@ const QuestionPreview = ({
                   const optionId = `${questionId}-options-${optionIndex}`;
                   
                   return (
-<div key={option?.id || optionId} className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors">                      <div className="flex items-center justify-between">
-<div 
-  className="flex items-center gap-3 w-full cursor-pointer" 
-  onClick={(e) => {
-    e.preventDefault();
-    handleOptionChange(optionIndex);
-  }}
->
-  <input
-    type={question.type === 'single' ? 'radio' : 'checkbox'}
-    checked={isOptionSelected(optionIndex)}
-    onChange={(e) => handleOptionChange(optionIndex)}
-    className="w-4 h-4"
-    onClick={(e) => e.stopPropagation()}
-  />
-  <span className="text-gray-700">{option.text}</span>
-</div>
+                    <div key={option?.id || optionId} className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div 
+                          className="flex items-center gap-3 w-full cursor-pointer" 
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleOptionChange(optionIndex);
+                          }}
+                        >
+                          <input
+                            type={question.type === 'single' ? 'radio' : 'checkbox'}
+                            checked={isOptionSelected(optionIndex)}
+                            onChange={(e) => handleOptionChange(optionIndex)}
+                            className="w-4 h-4"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <span className="text-gray-700">{option.text}</span>
+                        </div>
 
                         <div className="flex items-center gap-2">
                           {questionnaireLinks && questionnaireLinks[optionId]?.map((link, index) => (
@@ -312,6 +320,7 @@ const QuestionPreview = ({
                             />
                             <span className="text-xs text-gray-500">Conclusion</span>
                           </label>
+                          
                         </div>
                       </div>
 
@@ -341,72 +350,72 @@ const QuestionPreview = ({
                         </div>
                       )}
 
-{isOptionSelected(optionIndex) && option?.subQuestions?.map((subQuestion, sqIndex) => (
-  <div 
-    key={subQuestion?.id || `${optionId}-sub-${sqIndex}`} 
-    className="mt-3 overflow-hidden" 
-    style={{ 
-      marginLeft: '1rem',
-      width: '100%',
-      borderLeft: '2px solid #e5e7eb',
-      maxWidth: 'calc(100% - 1rem)'
-    }}
-  >
-  <QuestionPreview
-                            question={subQuestion}
-                            path={[...path, 'options', optionIndex, 'subQuestions', sqIndex]}
-                            depth={depth + 1}
-                            selectedOptions={selectedOptions}
-                            setSelectedOptions={setSelectedOptions}
-                            crTexts={crTexts}
-                            setCRTexts={setCRTexts}
-                            freeTexts={freeTexts}
-                            onFreeTextChange={onFreeTextChange}
-                            showCRFields={showCRFields}
-                            onImageInsert={onImageInsert}
-                            hiddenQuestions={hiddenQuestions}
-                            toggleQuestionVisibility={toggleQuestionVisibility}
-                            imageCaptions={imageCaptions}
-                            showAddButton={showAddButton}
-                            questionnaireLinks={questionnaireLinks}
-                            questionnaireId={questionnaireId}
-                            onOptionUpdate={onOptionUpdate}
-                            handleImageUpload={handleImageUpload}
-                            handleAddCaption={handleAddCaption}
-                            handleOpenLinkEditor={handleOpenLinkEditor}
-                            questionnaire={questionnaire}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+                      {isOptionSelected(optionIndex) && option?.subQuestions?.map((subQuestion, sqIndex) => (
+                        <div 
+                          key={subQuestion?.id || `${optionId}-sub-${sqIndex}`} 
+                          className="mt-3 overflow-hidden" 
+                          style={{ 
+                            marginLeft: '1rem',
+                            width: '100%',
+                            borderLeft: '2px solid #e5e7eb',
+                            maxWidth: 'calc(100% - 1rem)'
+                          }}
+                        >
+<QuestionPreview
+                              question={subQuestion}
+                              path={[...path, 'options', optionIndex, 'subQuestions', sqIndex]}
+                              depth={depth + 1}
+                              selectedOptions={selectedOptions}
+                              setSelectedOptions={setSelectedOptions}
+                              crTexts={crTexts}
+                              setCRTexts={setCRTexts}
+                              freeTexts={freeTexts}
+                              onFreeTextChange={onFreeTextChange}
+                              showCRFields={showCRFields}
+                              onImageInsert={onImageInsert}
+                              hiddenQuestions={hiddenQuestions}
+                              toggleQuestionVisibility={toggleQuestionVisibility}
+                              imageCaptions={imageCaptions}
+                              showAddButton={showAddButton}
+                              questionnaireLinks={questionnaireLinks}
+                              questionnaireId={questionnaireId}
+                              onOptionUpdate={onOptionUpdate}
+                              handleImageUpload={handleImageUpload}
+                              handleAddCaption={handleAddCaption}
+                              handleOpenLinkEditor={handleOpenLinkEditor}
+                              questionnaire={questionnaire}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
-            {question.type === 'text' && (
-              <textarea
-                value={freeTexts?.[question.id] || ''}
-                onChange={(e) => onFreeTextChange(question.id, e.target.value)}
-                placeholder="Votre réponse..."
-                className="w-full p-3 border rounded-md min-h-[100px]"
-              />
-            )}
+              {question.type === 'text' && (
+                <textarea
+                  value={freeTexts?.[question.id] || ''}
+                  onChange={(e) => onFreeTextChange(question.id, e.target.value)}
+                  placeholder="Votre réponse..."
+                  className="w-full p-3 border rounded-md min-h-[100px]"
+                />
+              )}
 
-            {question.type === 'number' && (
-              <input
-                type="number"
-                value={freeTexts?.[question.id] || ''}
-                onChange={(e) => onFreeTextChange(question.id, e.target.value)}
-                placeholder="Votre réponse..."
-                className="w-full p-3 border rounded-md"
-              />
-            )}
-          </QuestionContent>
-        )}
+              {question.type === 'number' && (
+                <input
+                  type="number"
+                  value={freeTexts?.[question.id] || ''}
+                  onChange={(e) => onFreeTextChange(question.id, e.target.value)}
+                  placeholder="Votre réponse..."
+                  className="w-full p-3 border rounded-md"
+                />
+              )}
+            </QuestionContent>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
 };
 
 const QuestionnairePreview = ({ 
@@ -429,9 +438,12 @@ const QuestionnairePreview = ({
   handleImageUpload,
   handleAddCaption,
   handleOpenLinkEditor,
-  questionnaire
+  questionnaire,
+  setQuestionnaire 
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [editingPageTitle, setEditingPageTitle] = useState(null);
+
   if (!Array.isArray(questions)) return null;
 
   const currentQuestions = questions.filter(q => (q.page || 1) === currentPage);
@@ -441,19 +453,46 @@ const QuestionnairePreview = ({
     <div className="w-full max-w-4xl mx-auto">
       <div className="flex justify-start gap-2 mb-4">
         {[...Array(maxPage)].map((_, idx) => (
-          <button
-            key={idx}
-            onClick={() => setCurrentPage(idx + 1)}
-            className={`
-              px-4 py-2 rounded-md text-sm font-medium
-              ${currentPage === idx + 1 
-                ? 'bg-blue-500 text-white' 
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
-              transition-colors duration-200
-            `}
-          >
-            Page {idx + 1}
-          </button>
+          <div key={idx} className="relative">
+<button
+  onClick={() => setCurrentPage(idx + 1)}
+  onDoubleClick={() => setEditingPageTitle(idx + 1)}
+  className={`
+    px-4 py-2 rounded-md text-sm font-medium
+    ${currentPage === idx + 1 
+      ? 'bg-blue-500 text-white' 
+      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
+    transition-colors duration-200
+  `}
+>
+  {questionnaire?.pageTitles?.[idx + 1] || `Page ${idx + 1}`}
+</button>
+{editingPageTitle === idx + 1 && setQuestionnaire && (
+  <div className="absolute z-10 top-full left-0 mt-1 w-48">
+    <input
+      type="text"
+      className="w-full px-2 py-1 border rounded shadow-lg"
+      value={questionnaire?.pageTitles?.[idx + 1] || `Page ${idx + 1}`}
+      onChange={(e) => {
+        if (!questionnaire) return;
+        const newPageTitles = new Map(questionnaire.pageTitles || new Map());
+        newPageTitles.set(idx + 1, e.target.value);
+        setQuestionnaire(prev => ({
+          ...prev,
+          pageTitles: newPageTitles
+        }));
+      }}
+      onBlur={() => setEditingPageTitle(null)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          setEditingPageTitle(null);
+        }
+      }}
+      autoFocus
+                />
+              </div>
+            )}
+          </div>
         ))}
       </div>
 

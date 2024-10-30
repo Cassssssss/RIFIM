@@ -294,7 +294,15 @@ function QuestionnaireListPage() {
 
   const handleAddTag = async (questionnaireId, tag) => {
     try {
-      const response = await axios.post(`/questionnaires/${questionnaireId}/tags`, { tag });
+      console.log('Tentative d\'ajout de tag:', questionnaireId, tag);
+      if (!tag || !tag.trim()) {
+        console.log('Tag vide, annulation');
+        return;
+      }
+      const response = await axios.post(`/questionnaires/${questionnaireId}/tags`, { 
+        tag: tag.trim() 
+      });
+      console.log('Réponse du serveur:', response.data);
       setQuestionnaires(prevQuestionnaires => 
         prevQuestionnaires.map(q => 
           q._id === questionnaireId ? { ...q, tags: response.data.tags } : q
@@ -302,7 +310,7 @@ function QuestionnaireListPage() {
       );
       setNewTags(prev => ({ ...prev, [questionnaireId]: '' }));
     } catch (error) {
-      console.error('Erreur lors de l\'ajout du tag:', error);
+      console.error('Erreur lors de l\'ajout du tag:', error.response || error);
     }
   };
 

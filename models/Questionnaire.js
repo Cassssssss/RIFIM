@@ -19,12 +19,16 @@ const QuestionSchema = new mongoose.Schema({
   id: String,
   text: String,
   type: String,
-  page: { type: Number, default: 1 }, // Ajout du champ page
+  page: { type: Number, default: 1 },
   image: {
     src: String,
     caption: String
   },
-  options: [OptionSchema]
+  options: [OptionSchema],
+  isImportantToCheck: {  // Ajout de ce champ
+    type: Boolean,
+    default: false
+  }
 });
 
 const QuestionnaireSchema = new mongoose.Schema({
@@ -42,6 +46,10 @@ const QuestionnaireSchema = new mongoose.Schema({
   hiddenQuestions: {
     type: Map,
     of: Boolean,
+    default: {}
+  },
+  pageTitles: {  // Ajoutez ce champ
+    type: Object,
     default: {}
   },
   links: {

@@ -8,7 +8,6 @@ import { X } from 'lucide-react';
 import set from 'lodash/set';
 import styled from 'styled-components';
 
-
 const PreviewWrapper = styled.div`
   background-color: ${props => props.theme.background};
   color: ${props => props.theme.text};
@@ -105,13 +104,11 @@ const QuestionnaireUsePage = () => {
             if (crText) {
               addContent(crText, false, section);
               
-              // Si l'option doit être incluse dans la conclusion
               if (option.includeInConclusion) {
                 conclusionContent.push(crText);
               }
             }
     
-            // Récursivement vérifier les sous-questions
             if (option.subQuestions && option.subQuestions.length > 0) {
               generateCRRecursive(option.subQuestions, section);
             }
@@ -124,9 +121,8 @@ const QuestionnaireUsePage = () => {
       generateCRRecursive(questionnaire.questions, mainContent);
     }
 
-    // Ajouter la section conclusion si nécessaire
     if (conclusionContent.length > 0) {
-      mainContent.push(''); // Ligne vide avant la conclusion
+      mainContent.push('');
       mainContent.push('<strong>Conclusion :</strong>');
       conclusionContent.forEach(content => {
         mainContent.push(content);
@@ -153,15 +149,11 @@ const QuestionnaireUsePage = () => {
     setInsertedImages(prev => prev.filter((_, i) => i !== index));
   }, []);
 
-  // Dans QuestionnaireUsePage.js, ajoutez cette fonction avec les autres handlers
   const handleOptionUpdate = useCallback((path, updatedOption) => {
-    console.log('handleOptionUpdate called with path:', path, 'updatedOption:', updatedOption);
     setQuestionnaire(prev => {
       if (!prev) return prev;
   
       const newQuestionnaire = JSON.parse(JSON.stringify(prev));
-  
-      // Construire le chemin vers l'option à mettre à jour
       const pathString = path.reduce((acc, curr) => {
         if (typeof curr === 'number') {
           return `${acc}[${curr}]`;
@@ -170,23 +162,95 @@ const QuestionnaireUsePage = () => {
         }
       }, 'questions');
   
-      console.log('pathString:', pathString);
-  
-      // Mettre à jour l'option à l'aide de lodash.set
       set(newQuestionnaire, pathString, updatedOption);
-  
-      console.log('newQuestionnaire after update:', newQuestionnaire);
-  
       return newQuestionnaire;
     });
   
-    // Forcer la mise à jour du CR
     setEditableCR(generateCR());
   }, [generateCR]);
-  
 
   const copyToClipboard = async () => {
     try {
+      console.log("Questionnaire:", questionnaire);
+      console.log("Questions marquées comme importantes:", questionnaire.questions.filter(q => q.isImportantToCheck));
+      
+      // Forcer l'affichage de la boîte de dialogue pour les questions importantes
+      const importantQuestions = questionnaire.questions.filter(q => q.isImportantToCheck);
+      
+      if (importantQuestions.length > 0) {
+        const confirmDialog = await new Promise((resolve) => {
+          const dialogElement = document.createElement('div');
+          
+          // Créer une fonction pour gérer le clic sur Annuler
+          const handleCancel = () => {
+            dialogElement.remove();
+            resolve(false);
+          };
+      
+          // Créer une fonction pour gérer le clic sur Continuer
+          const handleContinue = () => {
+            dialogElement.remove();
+            resolve(true);
+          };
+      
+          dialogElement.innerHTML = `
+            <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl transform transition-all">
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="bg-yellow-100 dark:bg-yellow-900 p-2 rounded-full">
+                    <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                  </div>
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Attention !</h3>
+                </div>
+                
+                <p class="mb-4 text-gray-600 dark:text-gray-300">Veuillez vérifier ces questions importantes avant de copier le compte-rendu :</p>
+                
+                <ul class="mb-6 space-y-2">
+                  ${importantQuestions.map(q => `
+                    <li class="flex items-center gap-2 text-gray-700 dark:text-gray-200">
+                      <svg class="w-4 h-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                      </svg>
+                      ${q.text}
+                    </li>
+                  `).join('')}
+                </ul>
+                
+                <p class="mb-6 text-gray-600 dark:text-gray-300">Êtes-vous sûr de vouloir continuer ?</p>
+                
+                <div class="flex justify-end gap-3">
+                  <button
+                    id="cancel-button"
+                    class="px-4 py-2 text-gray-600 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-200 transition-colors rounded-md"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    id="continue-button"
+                    class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+                  >
+                    Continuer
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+      
+          // Ajouter les gestionnaires d'événements après que le HTML soit inséré
+          dialogElement.querySelector('#cancel-button').addEventListener('click', handleCancel);
+          dialogElement.querySelector('#continue-button').addEventListener('click', handleContinue);
+          
+          document.body.appendChild(dialogElement);
+        });
+      
+        if (!confirmDialog) {
+          return;
+        }
+      }
+  
+      // Le reste du code existant...
       const formattedContent = editableCR.split('\n').map(line => 
         line.startsWith('<strong>') || line.startsWith('<u>') ? `<p><br>${line}</p>` : `<p>${line}</p>`
       ).join('');
@@ -285,26 +349,26 @@ const QuestionnaireUsePage = () => {
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="lg:w-3/5">
           <PreviewCard>
-<div className="bg-gray-100 p-4 rounded-md">
-  <QuestionnairePreview 
-    questions={questionnaire.questions}
-    selectedOptions={selectedOptions}
-    setSelectedOptions={handleOptionChange}
-    crTexts={crTexts}
-    setCRTexts={setCRTexts}
-    freeTexts={freeTexts}
-    onFreeTextChange={handleFreeTextChange}
-    showCRFields={false}
-    onImageInsert={handleImageInsert}
-    hiddenQuestions={hiddenQuestions}
-    toggleQuestionVisibility={() => {}}
-    questionnaireLinks={questionnaire.links}
-    questionnaireId={id}
-    onOptionUpdate={handleOptionUpdate}
-    questionnaire={questionnaire}
-    handleOpenLinkEditor={() => {}}
-  />
-</div>
+            <div className="bg-gray-100 p-4 rounded-md">
+              <QuestionnairePreview 
+                questions={questionnaire.questions}
+                selectedOptions={selectedOptions}
+                setSelectedOptions={handleOptionChange}
+                crTexts={crTexts}
+                setCRTexts={setCRTexts}
+                freeTexts={freeTexts}
+                onFreeTextChange={handleFreeTextChange}
+                showCRFields={false}
+                onImageInsert={handleImageInsert}
+                hiddenQuestions={hiddenQuestions}
+                toggleQuestionVisibility={() => {}}
+                questionnaireLinks={questionnaire.links}
+                questionnaireId={id}
+                onOptionUpdate={handleOptionUpdate}
+                questionnaire={questionnaire}
+                handleOpenLinkEditor={() => {}}
+              />
+            </div>
           </PreviewCard>
         </div>
   
@@ -344,14 +408,12 @@ const QuestionnaireUsePage = () => {
               </div>
             </div>
             <div className="mt-4 flex justify-center">
-  <button 
-    onClick={copyToClipboard}
-    className="bg-green-500 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
-  >
-    Copier
-  </button>
-
-
+              <button 
+                onClick={copyToClipboard}
+                className="bg-green-500 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
+              >
+                Copier
+              </button>
               {copySuccess && <span className="text-green-600">{copySuccess}</span>}
             </div>
           </PreviewCard>
@@ -359,7 +421,6 @@ const QuestionnaireUsePage = () => {
       </div>
     </PreviewWrapper>
   );
-  
 };
 
 export default QuestionnaireUsePage;

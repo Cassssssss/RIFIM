@@ -11,7 +11,7 @@ const deleteImageFromSpaces = imageRoutes.deleteImageFromSpaces;
 const upload = multer();
 
 router.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
+  console.log('Route appelée:', req.method, req.url, 'avec le body:', req.body);
   next();
 });
 
@@ -296,7 +296,7 @@ router.post('/:id/links-images', authMiddleware, upload.single('file'), async (r
 // PUT mise à jour d'un questionnaire
 router.put('/:id', authMiddleware, async (req, res) => {
   try {
-    const { title, questions, selectedOptions, crData, hiddenQuestions, links } = req.body;
+    const { title, questions, selectedOptions, crData, hiddenQuestions, links, pageTitles } = req.body;  // Ajoutez pageTitles ici
 
     const updatedQuestionnaire = await Questionnaire.findOneAndUpdate(
       { _id: req.params.id, user: req.userId },
@@ -307,7 +307,8 @@ router.put('/:id', authMiddleware, async (req, res) => {
           selectedOptions, 
           crData, 
           hiddenQuestions,
-          links: links || new Map()
+          links: links || new Map(),
+          pageTitles: pageTitles || {}  // Ajoutez cette ligne
         }
       },
       { new: true, runValidators: true }
@@ -400,6 +401,64 @@ router.patch('/:id/togglePublic', authMiddleware, async (req, res) => {
   }
 });
 
+// Route pour ajouter un tag
+router.post('/:id/tags', authMiddleware, async (req, res) => {
+  try {
+    // Modifier cette ligne pour inclure la vérification de l'utilisateur
+    const questionnaire = await Questionnaire.findOne({ 
+      _id: req.params.id,
+      user: req.userId  // Ajouter cette condition
+    });
+
+    if (!questionnaire) {
+      return res.status(404).json({ message: 'Questionnaire non trouvé' });
+    }
+
+    const { tag } = req.body;
+    if (!tag) {
+      return res.status(400).json({ message: 'Tag requis' });
+    }
+
+    // Si tags n'existe pas, on l'initialise
+    if (!questionnaire.tags) {
+      questionnaire.tags = [];
+    }
+
+    // Ajouter le tag s'il n'existe pas déjà
+    if (!questionnaire.tags.includes(tag)) {
+      questionnaire.tags.push(tag);
+      await questionnaire.save();
+    }
+
+    res.json({ tags: questionnaire.tags });
+  } catch (error) {
+    console.error('Erreur lors de l\'ajout du tag:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Route pour supprimer un tag
+router.delete('/:id/tags/:tag', authMiddleware, async (req, res) => {
+  try {
+    const questionnaire = await Questionnaire.findOne({ 
+      _id: req.params.id,
+      user: req.userId  // Ajouter cette condition également ici
+    });
+    
+    if (!questionnaire) {
+      return res.status(404).json({ message: 'Questionnaire non trouvé' });
+    }
+
+    // Retirer le tag
+    questionnaire.tags = questionnaire.tags.filter(t => t !== req.params.tag);
+    await questionnaire.save();
+
+    res.json({ tags: questionnaire.tags });
+  } catch (error) {
+    console.error('Erreur lors de la suppression du tag:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
 // POST copier un questionnaire public
 router.post('/:id/copy', authMiddleware, async (req, res) => {
   try {

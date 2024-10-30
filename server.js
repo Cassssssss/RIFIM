@@ -56,6 +56,19 @@ connectDB();
 app.use('/api/auth', authRoutes);
 app.use('/api/cases', caseRoutes);
 app.use('/api/questionnaires', questionnaireRoutes);
+// Et ajoutez juste après pour déboguer :
+console.log('Routes disponibles :');
+app._router.stack.forEach((middleware) => {
+  if (middleware.route) {
+    console.log(middleware.route.path, middleware.route.methods);
+  } else if (middleware.name === 'router') {
+    middleware.handle.stack.forEach((handler) => {
+      if (handler.route) {
+        console.log(handler.route.path, handler.route.methods);
+      }
+    });
+  }
+});
 app.use('/api/cases', sheetRoutes);
 app.use('/api', imageRoutes.router);
 
