@@ -14,10 +14,12 @@ const OptionSchema = new mongoose.Schema({
   subQuestions: [/* Définition récursive du schéma de question */]
 });
 
+
 const QuestionSchema = new mongoose.Schema({
   id: String,
   text: String,
   type: String,
+  page: { type: Number, default: 1 }, // Ajout du champ page
   image: {
     src: String,
     caption: String

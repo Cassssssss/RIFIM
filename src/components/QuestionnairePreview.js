@@ -13,6 +13,26 @@ const ImagePreviewWrapper = styled.div`
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 `;
 
+const FormatButton = styled.button`
+  padding: 0.5rem;
+  margin-right: 0.25rem;
+  border: 1px solid ${props => props.theme.border};
+  background-color: ${props => props.theme.card};
+  color: ${props => props.theme.text};
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+  min-width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background-color: #f3f4f6;
+  }
+`;
+
 const ImagePreview = ({ image, alt, position }) => (
   <ImagePreviewWrapper style={{ left: `${position.x}px`, top: `${position.y}px` }}>
     <img 
@@ -26,39 +46,57 @@ const ImagePreview = ({ image, alt, position }) => (
         objectFit: 'contain' 
       }} 
     />
-    <p style={{ marginTop: '5px', fontSize: '12px' }}>
+    <p className="mt-1 text-xs text-gray-600">
       {image.caption || 'Pas de légende'}
     </p>
   </ImagePreviewWrapper>
 );
 
-const FormatButton = styled.button`
-  padding: 0.5rem;
-  margin-right: 0.5rem;
-  border: 1px solid ${props => props.theme.border};
-  background-color: ${props => props.theme.card};
-  color: ${props => props.theme.text};
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: ${props => props.theme.primary};
-    color: ${props => props.theme.buttonText};
-  }
-`;
-
 const TextFormatButtons = ({ onBold, onUnderline, onItalic, onSize, onCenter }) => (
-  <div className="flex space-x-2 mb-2">
+  <div className="flex items-center gap-1 mb-2">
     <FormatButton onClick={onBold}>B</FormatButton>
     <FormatButton onClick={onUnderline}>U</FormatButton>
-    <FormatButton onClick={onItalic}><Italic size={16} /></FormatButton>
+    <FormatButton onClick={onItalic}><Italic size={14} /></FormatButton>
     <FormatButton onClick={() => onSize('12px')}>Petit</FormatButton>
     <FormatButton onClick={() => onSize('16px')}>Moyen</FormatButton>
     <FormatButton onClick={() => onSize('20px')}>Grand</FormatButton>
     <FormatButton onClick={onCenter}>⧏⧐</FormatButton>
   </div>
 );
+
+const QuestionHeader = styled.div`
+  background-color: #eff6ff;
+  padding: 1rem;
+  border-radius: 8px 8px 0 0;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const QuestionContent = styled.div`
+  padding: 1rem;
+  padding-right: 0;
+  background-color: white;
+  border-radius: 0 0 8px 8px;
+  border-right: 0;
+`;
+
+const LinkButton = styled.button`
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  color: #3b82f6;
+  background-color: #eff6ff;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: #dbeafe;
+  }
+`;
 
 const QuestionPreview = ({ 
   question, 
@@ -78,20 +116,20 @@ const QuestionPreview = ({
   showAddButton = true,
   questionnaireLinks,
   questionnaireId,
-  onOptionUpdate
+  onOptionUpdate,
+  handleImageUpload,
+  handleAddCaption,
+  handleOpenLinkEditor,
+  questionnaire
 }) => {
   const navigate = useNavigate();
   const questionId = path.join('-');
   const [isExpanded, setIsExpanded] = useState(true);
   const [showImage, setShowImage] = useState(null);
   const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
-  const questionRef = useRef(null);
 
   if (!question || !question.id) return null;
-
-  if (hiddenQuestions && hiddenQuestions[question.id] && !showCRFields) {
-    return null;
-  }
+  if (hiddenQuestions && hiddenQuestions[question.id] && !showCRFields) return null;
 
   const handleOptionChange = (optionIndex) => {
     if (typeof setSelectedOptions === 'function') {
@@ -110,9 +148,7 @@ const QuestionPreview = ({
   };
 
   const isOptionSelected = (optionIndex) => {
-    if (!selectedOptions?.[question.id]) {
-      return false;
-    }
+    if (!selectedOptions?.[question.id]) return false;
     return Array.isArray(selectedOptions[question.id])
       ? selectedOptions[question.id].includes(optionIndex)
       : selectedOptions[question.id][optionIndex];
@@ -129,164 +165,166 @@ const QuestionPreview = ({
   };
 
   return (
-    <div className={`
-      mb-4
-      ${depth === 0 ? 'border-l-4 border-blue-500 dark:border-blue-700 pl-4' : 'ml-4 pl-2 border-l-2 border-gray-400 dark:border-gray-700'}
-      bg-gray-100
-      rounded-lg overflow-hidden
-      transition-colors duration-200
-    `} ref={questionRef}>
-      <div className="flex items-center justify-between cursor-pointer p-2" onClick={() => setIsExpanded(!isExpanded)}>
-        <div className="flex items-center">
-          {showCRFields && typeof toggleQuestionVisibility === 'function' && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleQuestionVisibility(question.id);
-              }}
-              className="mr-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-            >
-              {hiddenQuestions && hiddenQuestions[question.id] ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
-          )}
-          <div className="flex flex-col">
-            <h3 className={`font-semibold ${depth === 0 ? 'text-lg' : 'text-md'} text-gray-900 dark:text-white transition-colors duration-200`}>
-              {question.text || 'Question sans texte'}
-            </h3>
-            {questionnaireLinks && questionnaireLinks[questionId] && (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {questionnaireLinks[questionId].map((link, index) => (
-                  <div
-                    key={index}
-                    className="px-3 py-1 text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded text-sm cursor-pointer"
+<div className="mb- overflow-hidden">
+<div className="bg-white rounded-lg shadow border-l-2 border-blue-400" style={{ margin: 0, width: '100%' }}>
+        <QuestionHeader>
+        <div className="flex items-center flex-grow gap-2">
+   {showCRFields && toggleQuestionVisibility && (
+     <button
+       onClick={(e) => {
+         e.stopPropagation();
+         toggleQuestionVisibility(question.id);
+       }}
+       className="text-gray-500 hover:text-gray-700"
+     >
+       {hiddenQuestions?.[question.id] ? <EyeOff size={18} /> : <Eye size={18} />}
+     </button>
+   )}
+   <h3 className="text-base text-gray-700">{question.text}</h3>
+   <div className="flex items-center gap-2 ml-auto">
+     {questionnaireLinks && questionnaireLinks[questionId]?.map((link, index) => (
+       <LinkButton
+         key={index}
+         onClick={() => navigate(`/questionnaire/${questionnaireId}/link/${questionId}/${index}`)}
+       >
+         {link.title || `Fiche ${index + 1}`}
+       </LinkButton>
+     ))}
+   </div>
+</div>
+
+          <div className="flex items-center gap-2">
+
+
+            {question.image && (
+              <div className="flex items-center">
+                <div 
+                  className="relative cursor-pointer"
+                  onMouseEnter={(e) => handleMouseEnter(e, questionId)}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  <Camera size={18} className="text-blue-500" />
+                </div>
+                {showAddButton && onImageInsert && (
+                  <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate(`/questionnaire/${questionnaireId}/link/${questionId}/${index}`);
+                      onImageInsert(question.image);
                     }}
+                    className="ml-1 text-blue-500 hover:text-blue-600"
                   >
-                    {link.title || `Fiche ${index + 1}`}
-                  </div>
-                ))}
+                    <Plus size={16} />
+                  </button>
+                )}
               </div>
             )}
+
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="p-1 text-gray-500 hover:text-gray-700"
+            >
+              {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            </button>
           </div>
-          {question.image && (
-            <div className="flex items-center ml-2">
-              <div 
-                className="relative"
-                onMouseEnter={(e) => handleMouseEnter(e, question.id)}
-                onMouseLeave={handleMouseLeave}
-              >
-                <Camera size={20} className="text-blue-500 cursor-pointer" />
-              </div>
-              {showAddButton && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onImageInsert(question.image);
-                  }}
-                  className="ml-1 p-1 text-blue-500 hover:text-blue-700 rounded-full hover:bg-blue-100"
-                  title="Ajouter l'image au CR"
-                >
-                  <Plus size={16} />
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-        {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-      </div>
+        </QuestionHeader>
 
-      {showImage === question.id && question.image && (
-        <ImagePreview 
-          image={question.image} 
-          alt="Question" 
-          position={imagePosition}
-        />
-      )}
+        {showImage === questionId && question.image && (
+          <ImagePreview 
+            image={question.image}
+            alt="Question"
+            position={imagePosition}
+          />
+        )}
 
-      {isExpanded && (
-        <div className="mt-2">
-          {(question.type === 'single' || question.type === 'multiple') && Array.isArray(question.options) && (
-            <ul className="space-y-1">
-              {question.options.map((option, optionIndex) => {
-                if (!option) return null;
-                const optionId = `${questionId}-options-${optionIndex}`;
-                return (
-                  <li key={option?.id || `${question.id}-option-${optionIndex}`}>
-                    <div className="flex flex-col">
-                      <div className="flex items-center">
-                        <input
-                          type={question.type === 'single' ? 'radio' : 'checkbox'}
-                          checked={isOptionSelected(optionIndex)}
-                          onChange={() => handleOptionChange(optionIndex)}
-                          className="mr-2"
-                        />
-                        <div className="flex flex-col flex-grow">
-                          <div className="flex items-center">
-                            <span className="questionnaire-option text-gray-900 dark:text-white">
-                              {option?.text || `Option ${optionIndex + 1}`}
-                            </span>
-                          </div>
-                          <div className="flex items-center mt-1">
-                          <label className="flex items-center space-x-2 cursor-pointer">
+        {isExpanded && (
+          <QuestionContent>
+            {['single', 'multiple'].includes(question.type) && (
+              <div className="space-y-3">
+                {question.options?.map((option, optionIndex) => {
+                  if (!option) return null;
+                  const optionId = `${questionId}-options-${optionIndex}`;
+                  
+                  return (
+<div key={option?.id || optionId} className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors">                      <div className="flex items-center justify-between">
+<div 
+  className="flex items-center gap-3 w-full cursor-pointer" 
+  onClick={(e) => {
+    e.preventDefault();
+    handleOptionChange(optionIndex);
+  }}
+>
   <input
-    type="checkbox"
-    className="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out"
-    checked={option.includeInConclusion || false}
-    onChange={(e) => {
-      if (typeof onOptionUpdate === 'function') {
-        const updatedOption = {
-          ...option,
-          includeInConclusion: e.target.checked
-        };
-        onOptionUpdate([...path, 'options', optionIndex], updatedOption);
-      }
-    }}
+    type={question.type === 'single' ? 'radio' : 'checkbox'}
+    checked={isOptionSelected(optionIndex)}
+    onChange={(e) => handleOptionChange(optionIndex)}
+    className="w-4 h-4"
+    onClick={(e) => e.stopPropagation()}
   />
-  <span className="text-xs text-gray-500">Conclusion ?</span>
-</label>
-                          </div>
+  <span className="text-gray-700">{option.text}</span>
+</div>
+
+                        <div className="flex items-center gap-2">
+                          {questionnaireLinks && questionnaireLinks[optionId]?.map((link, index) => (
+                            <LinkButton
+                              key={index}
+                              onClick={() => navigate(`/questionnaire/${questionnaireId}/link/${optionId}/${index}`)}
+                            >
+                              {link.title || `Fiche ${index + 1}`}
+                            </LinkButton>
+                          ))}
+
+                          {option.image && (
+                            <>
+                              <div 
+                                className="relative cursor-pointer"
+                                onMouseEnter={(e) => handleMouseEnter(e, optionId)}
+                                onMouseLeave={handleMouseLeave}
+                              >
+                                <Camera size={18} className="text-blue-500" />
+                              </div>
+                              {showAddButton && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onImageInsert(option.image);
+                                  }}
+                                  className="text-blue-500 hover:text-blue-600"
+                                >
+                                  <Plus size={16} />
+                                </button>
+                              )}
+                            </>
+                          )}
+
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={option.includeInConclusion || false}
+                              onChange={(e) => {
+                                if (typeof onOptionUpdate === 'function') {
+                                  onOptionUpdate([...path, 'options', optionIndex], {
+                                    ...option,
+                                    includeInConclusion: e.target.checked
+                                  });
+                                }
+                              }}
+                              className="w-4 h-4"
+                            />
+                            <span className="text-xs text-gray-500">Conclusion</span>
+                          </label>
                         </div>
                       </div>
 
-                      {/* Image controls */}
-                      {option.image && (
-                        <div className="flex items-center ml-2">
-                          <div 
-                            className="relative"
-                            onMouseEnter={(e) => handleMouseEnter(e, optionId)}
-                            onMouseLeave={handleMouseLeave}
-                          >
-                            <Camera size={20} className="text-blue-500 cursor-pointer" />
-                          </div>
-                          {showAddButton && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onImageInsert(option.image);
-                              }}
-                              className="ml-1 p-1 text-blue-500 hover:text-blue-700 rounded-full hover:bg-blue-100"
-                              title="Ajouter l'image au CR"
-                            >
-                              <Plus size={16} />
-                            </button>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Show image preview */}
                       {showImage === optionId && option.image && (
                         <ImagePreview 
-                          image={option.image} 
-                          alt="Option" 
+                          image={option.image}
+                          alt="Option"
                           position={imagePosition}
                         />
                       )}
 
-                      {/* CR text input for selected options */}
                       {showCRFields && isOptionSelected(optionIndex) && (
-                        <>
+                        <div className="mt-3">
                           <TextFormatButtons 
                             onBold={() => handleCRTextChange(optionIndex, `<strong>${option.text}</strong>`)}
                             onUnderline={() => handleCRTextChange(optionIndex, `<u>${option.text}</u>`)}
@@ -295,78 +333,88 @@ const QuestionPreview = ({
                             onCenter={() => handleCRTextChange(optionIndex, `<div style="text-align: center;">${option.text}</div>`)}
                           />
                           <textarea
-                            id={`cr-text-${question.id}-${optionIndex}`}
                             value={crTexts[question.id]?.[optionIndex] || ''}
                             onChange={(e) => handleCRTextChange(optionIndex, e.target.value)}
                             placeholder="Texte du CR pour cette option"
-                            className="mt-1 w-full p-2 border rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                            className="w-full p-2 border rounded-md text-sm min-h-[100px]"
                           />
-                        </>
-                      )}
-
-                      {/* Sub-questions */}
-                      {isOptionSelected(optionIndex) && Array.isArray(option?.subQuestions) && (
-                        <div className="ml-6 mt-2">
-                          {option.subQuestions.map((subQuestion, sqIndex) => (
-                            <QuestionPreview
-                              key={subQuestion?.id || `${question.id}-${optionIndex}-${sqIndex}`}
-                              question={subQuestion}
-                              path={[...path, 'options', optionIndex, 'subQuestions', sqIndex]}
-                              depth={depth + 1}
-                              selectedOptions={selectedOptions}
-                              setSelectedOptions={setSelectedOptions}
-                              crTexts={crTexts}
-                              setCRTexts={setCRTexts}
-                              freeTexts={freeTexts}
-                              onFreeTextChange={onFreeTextChange}
-                              showCRFields={showCRFields}
-                              onImageInsert={onImageInsert}
-                              hiddenQuestions={hiddenQuestions}
-                              toggleQuestionVisibility={toggleQuestionVisibility}
-                              imageCaptions={imageCaptions}
-                              showAddButton={showAddButton}
-                              questionnaireLinks={questionnaireLinks}
-                              questionnaireId={questionnaireId}
-                              onOptionUpdate={onOptionUpdate}
-                            />
-                          ))}
                         </div>
                       )}
+
+{isOptionSelected(optionIndex) && option?.subQuestions?.map((subQuestion, sqIndex) => (
+  <div 
+    key={subQuestion?.id || `${optionId}-sub-${sqIndex}`} 
+    className="mt-3 overflow-hidden" 
+    style={{ 
+      marginLeft: '1rem',
+      width: '100%',
+      borderLeft: '2px solid #e5e7eb',
+      maxWidth: 'calc(100% - 1rem)'
+    }}
+  >
+  <QuestionPreview
+                            question={subQuestion}
+                            path={[...path, 'options', optionIndex, 'subQuestions', sqIndex]}
+                            depth={depth + 1}
+                            selectedOptions={selectedOptions}
+                            setSelectedOptions={setSelectedOptions}
+                            crTexts={crTexts}
+                            setCRTexts={setCRTexts}
+                            freeTexts={freeTexts}
+                            onFreeTextChange={onFreeTextChange}
+                            showCRFields={showCRFields}
+                            onImageInsert={onImageInsert}
+                            hiddenQuestions={hiddenQuestions}
+                            toggleQuestionVisibility={toggleQuestionVisibility}
+                            imageCaptions={imageCaptions}
+                            showAddButton={showAddButton}
+                            questionnaireLinks={questionnaireLinks}
+                            questionnaireId={questionnaireId}
+                            onOptionUpdate={onOptionUpdate}
+                            handleImageUpload={handleImageUpload}
+                            handleAddCaption={handleAddCaption}
+                            handleOpenLinkEditor={handleOpenLinkEditor}
+                            questionnaire={questionnaire}
+                          />
+                        </div>
+                      ))}
                     </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-          {question.type === 'text' && (
-            <textarea
-              value={freeTexts?.[question.id] || ''}
-              onChange={(e) => onFreeTextChange(question.id, e.target.value)}
-              placeholder="Votre réponse..."
-              className="mt-2 w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            />
-          )}
-         {question.type === 'number' && (
-            <input
-              type="number"
-              value={freeTexts?.[question.id] || ''}
-              onChange={(e) => onFreeTextChange(question.id, e.target.value)}
-              placeholder="Votre réponse..."
-              className="mt-2 w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            />
-          )}
-        </div>
-      )}
+                  );
+                })}
+              </div>
+            )}
+
+            {question.type === 'text' && (
+              <textarea
+                value={freeTexts?.[question.id] || ''}
+                onChange={(e) => onFreeTextChange(question.id, e.target.value)}
+                placeholder="Votre réponse..."
+                className="w-full p-3 border rounded-md min-h-[100px]"
+              />
+            )}
+
+            {question.type === 'number' && (
+              <input
+                type="number"
+                value={freeTexts?.[question.id] || ''}
+                onChange={(e) => onFreeTextChange(question.id, e.target.value)}
+                placeholder="Votre réponse..."
+                className="w-full p-3 border rounded-md"
+              />
+            )}
+          </QuestionContent>
+        )}
+      </div>
     </div>
   );
 };
 
 const QuestionnairePreview = ({ 
-  questions, 
-  selectedOptions, 
-  setSelectedOptions, 
-  crTexts, 
-  setCRTexts, 
+  questions,
+  selectedOptions,
+  setSelectedOptions,
+  crTexts,
+  setCRTexts,
   freeTexts,
   onFreeTextChange,
   showCRFields = false,
@@ -377,34 +425,66 @@ const QuestionnairePreview = ({
   showAddButton = true,
   questionnaireLinks,
   questionnaireId,
-  onOptionUpdate
+  onOptionUpdate,
+  handleImageUpload,
+  handleAddCaption,
+  handleOpenLinkEditor,
+  questionnaire
 }) => {
+  const [currentPage, setCurrentPage] = useState(1);
   if (!Array.isArray(questions)) return null;
 
+  const currentQuestions = questions.filter(q => (q.page || 1) === currentPage);
+  const maxPage = Math.max(...questions.map(q => q.page || 1), 1);
+
   return (
-    <div className="max-w-2xl mx-auto p-1">
-      {questions.map((question, index) => (
-        <QuestionPreview 
-          key={question?.id || `question-${index}`}
-          question={question}
-          path={[index]}
-          selectedOptions={selectedOptions}
-          setSelectedOptions={setSelectedOptions}
-          crTexts={crTexts}
-          setCRTexts={setCRTexts}
-          freeTexts={freeTexts}
-          onFreeTextChange={onFreeTextChange}
-          showCRFields={showCRFields}
-          onImageInsert={onImageInsert}
-          hiddenQuestions={hiddenQuestions}
-          toggleQuestionVisibility={toggleQuestionVisibility}
-          imageCaptions={imageCaptions}
-          showAddButton={showAddButton}
-          questionnaireLinks={questionnaireLinks}
-          questionnaireId={questionnaireId}
-          onOptionUpdate={onOptionUpdate}
-        />
-      ))}
+    <div className="w-full max-w-4xl mx-auto">
+      <div className="flex justify-start gap-2 mb-4">
+        {[...Array(maxPage)].map((_, idx) => (
+          <button
+            key={idx}
+            onClick={() => setCurrentPage(idx + 1)}
+            className={`
+              px-4 py-2 rounded-md text-sm font-medium
+              ${currentPage === idx + 1 
+                ? 'bg-blue-500 text-white' 
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
+              transition-colors duration-200
+            `}
+          >
+            Page {idx + 1}
+          </button>
+        ))}
+      </div>
+
+      <div className="space-y-4">
+        {currentQuestions.map((question, index) => (
+          <QuestionPreview
+            key={question?.id || `question-${index}`}
+            question={question}
+            path={[questions.indexOf(question)]}
+            selectedOptions={selectedOptions}
+            setSelectedOptions={setSelectedOptions}
+            crTexts={crTexts}
+            setCRTexts={setCRTexts}
+            freeTexts={freeTexts}
+            onFreeTextChange={onFreeTextChange}
+            showCRFields={showCRFields}
+            onImageInsert={onImageInsert}
+            hiddenQuestions={hiddenQuestions}
+            toggleQuestionVisibility={toggleQuestionVisibility}
+            imageCaptions={imageCaptions}
+            showAddButton={showAddButton}
+            questionnaireLinks={questionnaireLinks}
+            questionnaireId={questionnaireId}
+            onOptionUpdate={onOptionUpdate}
+            handleImageUpload={handleImageUpload}
+            handleAddCaption={handleAddCaption}
+            handleOpenLinkEditor={handleOpenLinkEditor}
+            questionnaire={questionnaire}
+          />
+        ))}
+      </div>
     </div>
   );
 };

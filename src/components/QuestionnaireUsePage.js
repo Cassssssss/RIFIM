@@ -6,7 +6,24 @@ import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import { X } from 'lucide-react';
 import set from 'lodash/set';
+import styled from 'styled-components';
 
+
+const PreviewWrapper = styled.div`
+  background-color: ${props => props.theme.background};
+  color: ${props => props.theme.text};
+  padding: 2rem;
+  border-radius: 8px;
+`;
+
+const PreviewCard = styled.div`
+  background-color: ${props => props.theme.card};
+  color: ${props => props.theme.text};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+`;
 
 const QuestionnaireUsePage = () => {
   const { id } = useParams();
@@ -264,33 +281,35 @@ const QuestionnaireUsePage = () => {
   if (!questionnaire) return <div>Chargement...</div>;
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex flex-col lg:flex-row gap-6">
-        <div className="w-full lg:w-3/5">
-          <div className="rounded-lg p-0">
-            <div className="bg-white dark:bg-gray-900 p-4 rounded-md">
-              <QuestionnairePreview 
-                questions={questionnaire.questions}
-                selectedOptions={selectedOptions}
-                setSelectedOptions={handleOptionChange}
-                crTexts={crTexts}
-                setCRTexts={setCRTexts}
-                freeTexts={freeTexts}
-                onFreeTextChange={handleFreeTextChange}
-                showCRFields={false}
-                onImageInsert={handleImageInsert}
-                hiddenQuestions={hiddenQuestions}
-                toggleQuestionVisibility={() => {}}
-                questionnaireLinks={questionnaire.links}
-                questionnaireId={id}
-                onOptionUpdate={handleOptionUpdate}
-              />
-            </div>
-          </div>
+    <PreviewWrapper>
+      <div className="flex flex-col lg:flex-row gap-8">
+        <div className="lg:w-3/5">
+          <PreviewCard>
+<div className="bg-gray-100 p-4 rounded-md">
+  <QuestionnairePreview 
+    questions={questionnaire.questions}
+    selectedOptions={selectedOptions}
+    setSelectedOptions={handleOptionChange}
+    crTexts={crTexts}
+    setCRTexts={setCRTexts}
+    freeTexts={freeTexts}
+    onFreeTextChange={handleFreeTextChange}
+    showCRFields={false}
+    onImageInsert={handleImageInsert}
+    hiddenQuestions={hiddenQuestions}
+    toggleQuestionVisibility={() => {}}
+    questionnaireLinks={questionnaire.links}
+    questionnaireId={id}
+    onOptionUpdate={handleOptionUpdate}
+    questionnaire={questionnaire}
+    handleOpenLinkEditor={() => {}}
+  />
+</div>
+          </PreviewCard>
         </div>
-        <div className="w-full lg:w-2/4">
-          <div className="rounded-lg p-0">
-            <h3 className="text-xl font-semibold mb-4">Aperçu du CR</h3>
+  
+        <div className="lg:w-2/5">
+          <PreviewCard>
             <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-md whitespace-pre-wrap font-calibri text-base">
               <div
                 ref={crRef}
@@ -324,32 +343,23 @@ const QuestionnaireUsePage = () => {
                 ))}
               </div>
             </div>
-            <div className="mt-4 flex justify-between items-center">
-              <button 
-                onClick={copyToClipboard}
-                className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors"
-              >
-                Copier
-              </button>
-              <button 
-                onClick={() => setEditableCR(generateCR())}
-                className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 transition-colors"
-              >
-                Régénérer CR
-              </button>
-              <button
-                onClick={handleSave}
-                className="bg-purple-500 text-white py-2 px-4 rounded hover:bg-purple-600 transition-colors"
-              >
-                Sauvegarder
-              </button>
+            <div className="mt-4 flex justify-center">
+  <button 
+    onClick={copyToClipboard}
+    className="bg-green-500 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
+  >
+    Copier
+  </button>
+
+
               {copySuccess && <span className="text-green-600">{copySuccess}</span>}
             </div>
-          </div>
+          </PreviewCard>
         </div>
       </div>
-    </div>
+    </PreviewWrapper>
   );
+  
 };
 
 export default QuestionnaireUsePage;

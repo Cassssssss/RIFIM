@@ -178,6 +178,8 @@ const ImageUpload = memo(({ onImageUpload, currentImage, id, onAddCaption, capti
   );
 });
 
+
+
 const DraggableQuestion = memo(({ question, index, moveQuestion, path, children }) => {
   const ref = useRef(null);
   const [, drag] = useDrag({
@@ -233,6 +235,8 @@ function QuestionnaireCreator() {
   const [expandedQuestions, setExpandedQuestions] = useState({});
   const [showLinkEditor, setShowLinkEditor] = useState(false);
   const [currentEditingElement, setCurrentEditingElement] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+const [linkToDelete, setLinkToDelete] = useState(null);
   const [questionLinks, setQuestionLinks] = useState({});
   const { id } = useParams();
   const navigate = useNavigate();
@@ -595,7 +599,15 @@ useEffect(() => {
     });
   }, []);
 
-  const renderQuestion = useCallback((question, path) => {
+  const handleDeleteLinkConfirm = async () => {
+    if (linkToDelete) {
+      await handleDeleteLink(linkToDelete.elementId, linkToDelete.index);
+      setLinkToDelete(null);
+      setShowDeleteConfirm(false);
+    }
+  };
+
+    const renderQuestion = useCallback((question, path) => {
     const isExpanded = expandedQuestions[path.join('-')] ?? true;
     const questionId = path.join('-');
     const depth = path.length;
@@ -624,6 +636,18 @@ useEffect(() => {
               onChange={(e) => updateQuestion(path, 'text', e.target.value)}
               placeholder="Texte de la question"
             />
+            {depth === 1 && ( // Uniquement pour les questions principales
+  <div className="flex items-center mx-2">
+    <label className="text-sm mr-2">Page:</label>
+    <input
+      type="number"
+      min="1"
+      value={question.page || 1}
+      onChange={(e) => updateQuestion(path, 'page', Math.max(1, parseInt(e.target.value) || 1))}
+      className="w-16 p-1 text-sm border rounded"
+    />
+  </div>
+)}
             <div className="flex items-center">
               <ImageUpload
                 onImageUpload={handleImageUpload}
@@ -633,25 +657,26 @@ useEffect(() => {
                 caption={question.image?.caption}
                 questionnaireTitle={questionnaire.title}
               />
-              <div className="flex">
-              {links.map((link, index) => (
-  <div key={index} className="flex items-center">
-    <button
-      className="ml-2 px-3 py-1 text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded flex items-center"
-      onClick={() => handleOpenLinkEditor(questionId, index)}
-      title={`Éditer la fiche ${index + 1}`}
-    >
+<div className="flex items-center gap-2 ml-auto">
+  {links.map((link, index) => (
+    <div key={index} className="flex items-center">
+      <button
+        className="px-3 py-1 text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded flex items-center"
+        onClick={() => handleOpenLinkEditor(questionId, index)}
+        title={`Éditer la fiche ${index + 1}`}
+      >
       {link.title || `Fiche ${index + 1}`}
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          handleDeleteLink(questionId, index);
-        }}
-        className="ml-2 text-red-500 hover:text-red-700"
-        title="Supprimer la fiche"
-      >
-        <Trash2 size={14} />
-      </button>
+  onClick={(e) => {
+    e.stopPropagation();
+    setLinkToDelete({ elementId: questionId, index });
+    setShowDeleteConfirm(true);
+  }}
+  className="ml-2 text-red-500 hover:text-red-700"
+  title="Supprimer la fiche"
+>
+  <Trash2 size={14} />
+</button>
     </button>
   </div>
 ))}
@@ -717,11 +742,22 @@ useEffect(() => {
         {(questionLinks[`${questionId}-options-${oIndex}`] || []).map((link, index) => (
   <button
     key={index}
-    className="ml-2 px-3 py-1 text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded"
+    className="ml-2 px-3 py-1 text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded flex items-center"
     onClick={() => handleOpenLinkEditor(`${questionId}-options-${oIndex}`, index)}
     title={`Éditer la fiche ${index + 1}`}
   >
     {link.title || `Fiche ${index + 1}`}
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        setLinkToDelete({ elementId: `${questionId}-options-${oIndex}`, index });
+        setShowDeleteConfirm(true);
+      }}
+      className="ml-2 text-red-500 hover:text-red-700"
+      title="Supprimer la fiche"
+    >
+      <Trash2 size={14} />
+    </button>
   </button>
 ))}
         <button
@@ -861,6 +897,31 @@ useEffect(() => {
         : ""
     }
   />
+)}
+{showDeleteConfirm && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg p-6 max-w-sm">
+      <h3 className="text-lg font-semibold mb-4">Confirmation</h3>
+      <p className="mb-4">Êtes-vous sûr de vouloir supprimer ce lien ?</p>
+      <div className="flex justify-end gap-4">
+        <button
+          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+          onClick={() => {
+            setShowDeleteConfirm(false);
+            setLinkToDelete(null);
+          }}
+        >
+          Annuler
+        </button>
+        <button
+          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          onClick={handleDeleteLinkConfirm}
+        >
+          Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
 )}
     </CreatorWrapper>
   );

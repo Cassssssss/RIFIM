@@ -1,10 +1,31 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
 import QuestionnairePreview from './QuestionnairePreview';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import set from 'lodash/set';
+import styled from 'styled-components';
+
+const ViewerContainer = styled.div`
+  max-width: 1000px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: ${props => props.theme.background};
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+`;
+
+const Content = styled.div`
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+`;
 
 const QuestionnaireCRPage = () => {
   const { id } = useParams();
@@ -15,12 +36,13 @@ const QuestionnaireCRPage = () => {
   const [freeTexts, setFreeTexts] = useState({});
   const [hiddenQuestions, setHiddenQuestions] = useState({});
   const [editableCR, setEditableCR] = useState('');
+  const crRef = useRef(null);
 
   const fetchQuestionnaire = useCallback(async () => {
     try {
       const response = await axios.get(`/questionnaires/${id}`);
       const loadedQuestionnaire = response.data;
-      console.log("Questionnaire chargé:", loadedQuestionnaire); // Pour debug
+      console.log("Questionnaire chargé:", loadedQuestionnaire);
       setQuestionnaire(loadedQuestionnaire);
       setSelectedOptions(loadedQuestionnaire.selectedOptions || {});
       setCRTexts(loadedQuestionnaire.crData?.crTexts || {});
@@ -43,33 +65,36 @@ const QuestionnaireCRPage = () => {
   }, [questionnaire]);
 
   const generateCR = useCallback(() => {
-    let cr = '';
-    
-    const addContent = (content, isTitle = false) => {
+    let mainContent = [];
+    let conclusionContent = [];
+  
+    const addContent = (content, isTitle = false, section) => {
       if (isTitle || content.startsWith('<strong>') || content.startsWith('<u>')) {
-        cr += '\n';
+        section.push('');
       }
-      cr += content.trim() + '\n';
+      section.push(content.trim());
     };
-    
-    const generateCRRecursive = (questions) => {
+  
+    const generateCRRecursive = (questions, section) => {
       questions.forEach(question => {
         if (question.type === 'text' || question.type === 'number') {
           const freeText = freeTexts[question.id];
           if (freeText) {
             if (question.text === 'INDICATION' || question.text === 'CONCLUSION') {
-              addContent(`<strong>${question.text} :</strong>`, true);
-              addContent(freeText);
+              addContent(`<strong>${question.text} :</strong>`, true, section);
+              addContent(freeText, false, section);
             } else {
-              addContent(freeText);
+              addContent(freeText, false, section);
             }
           }
         } else if (question.text === 'TECHNIQUE') {
           const selectedIndices = selectedOptions[question.id] || [];
-          const techniqueResponses = selectedIndices.map(index => question.options[index]?.text).filter(Boolean);
+          const techniqueResponses = selectedIndices
+            .map(index => question.options[index]?.text)
+            .filter(Boolean);
           if (techniqueResponses.length > 0) {
-            addContent('<strong>TECHNIQUE :</strong>', true);
-            addContent(techniqueResponses.join(', ') + '.');
+            addContent('<strong>TECHNIQUE :</strong>', true, section);
+            addContent(techniqueResponses.join(', ') + '.', false, section);
           }
         } else {
           const selectedIndices = selectedOptions[question.id] || [];
@@ -78,20 +103,34 @@ const QuestionnaireCRPage = () => {
             if (!option) return;
             const crText = crTexts[question.id]?.[index];
             if (crText) {
-              addContent(crText);
+              addContent(crText, false, section);
+              // Si l'option doit être incluse dans la conclusion
+              if (option.includeInConclusion) {
+                conclusionContent.push(crText);
+              }
             }
             if (option.subQuestions) {
-              generateCRRecursive(option.subQuestions);
+              generateCRRecursive(option.subQuestions, section);
             }
           });
         }
       });
     };
-    
+  
     if (questionnaire && Array.isArray(questionnaire.questions)) {
-      generateCRRecursive(questionnaire.questions);
+      generateCRRecursive(questionnaire.questions, mainContent);
     }
-    return cr.trim();
+  
+    // Ajouter la section conclusion si nécessaire
+    if (conclusionContent.length > 0) {
+      mainContent.push(''); // Ligne vide avant la conclusion
+      mainContent.push('<strong>CONCLUSION :</strong>');
+      conclusionContent.forEach(content => {
+        mainContent.push(content);
+      });
+    }
+  
+    return mainContent.join('\n');
   }, [questionnaire, selectedOptions, crTexts, freeTexts]);
 
   useEffect(() => {
@@ -99,71 +138,24 @@ const QuestionnaireCRPage = () => {
     setEditableCR(generatedCR);
   }, [generateCR]);
 
+  const handleCRTextChange = useCallback((questionId, optionIndex, text) => {
+    setCRTexts(prev => {
+      const newCRTexts = {
+        ...prev,
+        [questionId]: {
+          ...(prev[questionId] || {}),
+          [optionIndex]: text
+        }
+      };
+      setEditableCR(generateCR());
+      return newCRTexts;
+    });
+  }, [generateCR]);
+
   const handleFreeTextChange = useCallback((questionId, value) => {
     setFreeTexts(prev => ({ ...prev, [questionId]: value }));
   }, []);
 
-  const handleOptionUpdate = useCallback((path, updatedOption) => {
-    setQuestionnaire(prev => {
-      if (!prev) return prev;
-  
-      const newQuestionnaire = JSON.parse(JSON.stringify(prev));
-  
-      // Construire le chemin vers l'option à mettre à jour
-      const pathString = path.reduce((acc, curr) => {
-        if (typeof curr === 'number') {
-          return `${acc}[${curr}]`;
-        } else {
-          return `${acc}.${curr}`;
-        }
-      }, 'questions');
-  
-      // Mettre à jour l'option à l'aide de lodash.set
-      set(newQuestionnaire, pathString, updatedOption);
-  
-      return newQuestionnaire;
-    });
-  
-    // Forcer la mise à jour du CR
-    setEditableCR(generateCR());
-  }, [generateCR]);
-
-  const handleSave = useCallback(async () => {
-    try {
-      const dataToSave = {
-        ...questionnaire,
-        selectedOptions,
-        crData: { crTexts, freeTexts },
-        hiddenQuestions
-      };
-      
-      console.log('Données à sauvegarder:', dataToSave);
-  
-      const response = await axios.put(`/questionnaires/${id}`, dataToSave);
-  
-      console.log('Réponse du serveur:', response.data);
-  
-      if (response.data) {
-        setQuestionnaire(response.data);
-        alert('Questionnaire sauvegardé avec succès!');
-        // Ne pas naviguer immédiatement pour vérifier l'état
-        // navigate('/questionnaires');
-      } else {
-        throw new Error('Réponse du serveur invalide');
-      }
-    } catch (error) {
-      console.error('Erreur lors de la sauvegarde:', error);
-      alert('Erreur lors de la sauvegarde. Veuillez réessayer.');
-    }
-  }, [questionnaire, selectedOptions, crTexts, freeTexts, hiddenQuestions, id]);
-
-  const toggleQuestionVisibility = useCallback((questionId) => {
-    setHiddenQuestions(prev => ({
-      ...prev,
-      [questionId]: !prev[questionId]
-    }));
-  }, []);
-  
   const handleOptionChange = useCallback((questionId, optionIndex, questionType) => {
     setSelectedOptions(prevOptions => {
       const newOptions = { ...prevOptions };
@@ -182,6 +174,54 @@ const QuestionnaireCRPage = () => {
       }
       return newOptions;
     });
+  }, []);
+
+  const handleOptionUpdate = useCallback((path, updatedOption) => {
+    setQuestionnaire(prev => {
+      if (!prev) return prev;
+  
+      const newQuestionnaire = JSON.parse(JSON.stringify(prev));
+      const pathString = path.reduce((acc, curr) => {
+        if (typeof curr === 'number') {
+          return `${acc}[${curr}]`;
+        } else {
+          return `${acc}.${curr}`;
+        }
+      }, 'questions');
+  
+      set(newQuestionnaire, pathString, updatedOption);
+      return newQuestionnaire;
+    });
+  
+    setEditableCR(generateCR());
+  }, [generateCR]);
+
+  const handleSave = useCallback(async () => {
+    try {
+      const dataToSave = {
+        ...questionnaire,
+        selectedOptions,
+        crData: { crTexts, freeTexts },
+        hiddenQuestions
+      };
+      
+      const response = await axios.put(`/questionnaires/${id}`, dataToSave);
+      
+      if (response.data) {
+        setQuestionnaire(response.data);
+        alert('Questionnaire sauvegardé avec succès!');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      alert('Erreur lors de la sauvegarde. Veuillez réessayer.');
+    }
+  }, [questionnaire, selectedOptions, crTexts, freeTexts, hiddenQuestions, id]);
+
+  const toggleQuestionVisibility = useCallback((questionId) => {
+    setHiddenQuestions(prev => ({
+      ...prev,
+      [questionId]: !prev[questionId]
+    }));
   }, []);
 
   if (!questionnaire) return <div>Chargement...</div>;
@@ -208,7 +248,8 @@ const QuestionnaireCRPage = () => {
   showAddButton={false}
   questionnaireLinks={questionnaire.links}
   questionnaireId={id}
-  onOptionUpdate={handleOptionUpdate} // Ajoutez cette ligne
+  onOptionUpdate={handleOptionUpdate}
+  onCRTextChange={handleCRTextChange}  // Assurez-vous que cette ligne est présente
 />
             </div>
           </div>
