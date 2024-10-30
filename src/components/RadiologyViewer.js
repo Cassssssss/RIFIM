@@ -58,6 +58,7 @@ function RadiologyViewer() {
   const [accumulatedDelta, setAccumulatedDelta] = useState(0);
   const [isShortcutGuideVisible, setIsShortcutGuideVisible] = useState(false);
   const [folderThumbnails, setFolderThumbnails] = useState({});
+  const isTouchDevice = 'ontouchstart' in window;
 
   const leftViewerRef = useRef(null);
   const rightViewerRef = useRef(null);
@@ -148,6 +149,8 @@ function RadiologyViewer() {
     };
   }, []);
 
+
+  
   useEffect(() => {
     fetchCase();
   }, [fetchCase]);

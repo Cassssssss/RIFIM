@@ -495,3 +495,148 @@
     width: 100%;
   }
 }
+
+/* Dans RadiologyViewer.module.css */
+
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: fixed; /* Ajout */
+  width: 100%; /* Ajout */
+  top: 0; /* Ajout */
+  left: 0; /* Ajout */
+}
+
+.layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  
+  @media (max-width: 768px) {
+    flex-direction: column; /* Change la direction en mode mobile */
+  }
+}
+
+.folderGrid {
+  width: 112px; /* 28rem */
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    flex-direction: row; /* Affiche les dossiers horizontalement */
+    overflow-x: auto;
+    overflow-y: hidden;
+    height: 120px; /* Hauteur fixe en mobile */
+    padding: 10px;
+    gap: 10px;
+  }
+}
+
+.folderThumbnail {
+  flex: 0 0 auto;
+  
+  @media (max-width: 768px) {
+    width: 100px; /* Largeur fixe en mobile */
+    height: 100px;
+  }
+}
+
+.mainViewer {
+  flex: 1;
+  display: flex;
+  
+  @media (max-width: 768px) {
+    height: calc(100vh - 170px); /* Ajuste la hauteur en tenant compte des thumbnails */
+  }
+}
+
+.dualViewer {
+  display: flex;
+  height: 100%;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+.viewerHalf {
+  width: 50%;
+  height: 100%;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 50%;
+  }
+}
+
+.singleViewer {
+  width: 75%;
+  margin: 0 auto;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.bottomBar {
+  height: 50px;
+  padding: 0.5rem;
+  
+  @media (max-width: 768px) {
+    height: auto;
+    padding: 0.5rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+/* Ajout des styles pour le drag & drop tactile */
+.folderThumbnail {
+  touch-action: none; /* Permet le drag & drop tactile */
+}
+
+/* Améliore les contrôles tactiles */
+.viewer {
+  touch-action: none;
+  
+  @media (max-width: 768px) {
+    &:active {
+      cursor: grabbing;
+    }
+  }
+}
+
+/* Ajuster les boutons pour mobile */
+.responseButton, .sheetLink {
+  @media (max-width: 768px) {
+    padding: 8px 12px;
+    font-size: 14px;
+    width: auto;
+  }
+}
+
+/* Ajuster le popup des raccourcis */
+.shortcutPopup {
+  @media (max-width: 768px) {
+    width: calc(100vw - 40px);
+    left: 20px;
+    right: 20px;
+  }
+}
