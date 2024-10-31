@@ -1,31 +1,36 @@
 /* Base Container */
 .container {
+  position: absolute;
+  width: 100%;
   height: calc(100vh - 60px);
-  margin-top: 60px;
+  left: 0;
+  top: 60px;
   display: flex;
   flex-direction: column;
-  position: fixed;
-  width: 100%;
-  left: 0;
   background-color: var(--background-color);
   overflow: hidden;
-  
-  @media (max-width: 768px) {
-    height: calc(100vh - 100px);
-  }
 }
 
 /* Content and Layout */
 .content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
   background-color: var(--background-color);
   overflow: hidden;
+  margin: 0;
+  padding: 0;
+  min-height: 0;
 }
 
 .layout {
+  flex: 1;
   display: flex;
-  height: 100%;
+  height: calc(100% - 50px);
   background-color: var(--background-color);
+  margin: 0;
+  padding: 0;
+  min-height: 0;
   
   @media (max-width: 768px) {
     flex-direction: row;
@@ -36,17 +41,18 @@
 /* Folder Grid */
 .folderGrid {
   width: 80px;
+  height: 100%;
   display: flex;
   flex-direction: column;
   gap: 4px;
   padding: 4px;
+  margin: 0;
   overflow-y: auto;
   background-color: var(--background-color);
-  height: calc(100vh - 110px);
+  flex-shrink: 0;
   
   @media (max-width: 768px) {
     width: 60px;
-    height: calc(100vh - 150px);
   }
 }
 
@@ -60,9 +66,15 @@
   position: relative;
   margin-bottom: 4px;
   flex-shrink: 0;
-  background-color: var(--background-color);
+  background-color: rgba(255, 255, 255, 0.05);
   cursor: move;
   transition: transform 0.3s ease;
+  border: 1px solid var(--border-color);
+  
+  :global(.dark) & {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
 }
 
 .folderThumbnail:hover {
@@ -88,63 +100,79 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  
+  :global(.dark) & {
+    background-color: #1a202c;
+    color: #e2e8f0;
+  }
 }
 
 /* Main Viewer */
 .mainViewer {
   flex: 1;
-  height: calc(100vh - 110px);
-  margin-left: 8px;
+  display: flex;
+  height: 100%;
+  margin: 0;
+  padding: 0 4px;
+  justify-content: center;
+  align-items: center;
   background-color: var(--background-color);
-  position: relative;
   overflow: hidden;
   
   @media (max-width: 768px) {
-    margin-left: 4px;
     height: calc(100% - 40px);
   }
 }
 
-/* Viewer Types */
-.viewer, .viewerHalf, .singleViewer {
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  overflow: hidden;
-  background-color: black;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 80%;
-  position: relative;
-}
-
+/* Dual Viewer */
 .dualViewer {
   display: flex;
-  gap: 2px;
-  height: calc(100vh - 200px);
+  width: 100%;
+  height: 100%;
+  gap: 4px;
+  padding: 0 4px;
+  margin: 0;
   
   @media (max-width: 768px) {
     flex-direction: column;
   }
 }
 
-.viewerHalf {
-  width: 50%;
+/* Viewer Types */
+.viewer, .viewerHalf, .singleViewer {
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border-color);
+  background-color: black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
   height: 100%;
+  
+  :global(.dark) & {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.viewerHalf {
+  flex: 1;
+  width: 50%;
+  max-width: 50%;
   
   @media (max-width: 768px) {
     width: 100%;
+    max-width: 100%;
     height: 50%;
   }
 }
 
 .singleViewer {
   width: 75%;
-  margin: 0 auto;
+  height: 100%;
   
   @media (max-width: 768px) {
     width: 100%;
-    height: 100%;
   }
 }
 
@@ -152,8 +180,10 @@
 .image {
   max-width: 100%;
   max-height: 100%;
+  margin: 0;
+  padding: 0;
   object-fit: contain;
-  background-color: var(--background-color);
+  display: block;
   transform-origin: center;
   transition: transform 0.1s ease-out;
 }
@@ -172,14 +202,12 @@
 
 /* Bottom Bar */
 .bottomBar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
   height: 50px;
+  width: 100%;
+  margin: 0;
+  padding: 0 16px;
   background-color: var(--header-background);
   color: var(--header-text);
-  padding: 0 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -188,9 +216,6 @@
   @media (max-width: 768px) {
     height: 40px;
     padding: 0 8px;
-    position: fixed;
-    bottom: 0;
-    display: flex !important;
   }
 }
 
@@ -267,6 +292,12 @@
   display: block;
 }
 
+:global(.dark) .shortcutPopup {
+  background-color: #2d3748;
+  color: white;
+  border-color: #4a5568;
+}
+
 /* Response Box */
 .responseBox {
   position: fixed;
@@ -285,59 +316,13 @@
   font-weight: 600;
 }
 
-/* Dark Mode Adjustments */
-:global(.dark) .shortcutPopup {
-  background-color: #2d3748;
-  color: white;
-  border-color: #4a5568;
-}
-
-:global(.dark) .folderThumbnailLabel {
-  background-color: #1a202c;
-  color: #e2e8f0;
-}
-
 /* Touch Device Support */
 .zoomable {
   transform-origin: center;
   transition: transform 0.1s ease-out;
 }
 
-.container {
-  height: 100vh;
-  position: fixed;
-  width: 100%;
-  left: 0;
-  top: 0; /* Changé de margin-top: 60px à top: 0 */
-  display: flex;
-  flex-direction: column;
-  background-color: var(--background-color);
-  overflow: hidden;
-  padding: 60px 0 0 0; /* Ajout du padding-top pour compenser l'en-tête */
-  
-  @media (max-width: 768px) {
-    height: 100vh;
-    padding-top: 60px;
-  }
-}
-
-/* Assurer que le contenu remplit tout l'espace disponible */
-.content {
-  flex: 1;
-  background-color: var(--background-color);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.layout {
-  flex: 1;
-  display: flex;
-  background-color: var(--background-color);
-  min-height: 0; /* Important pour éviter le débordement */
-}
-
-/* Modification de la couleur de fond pour le mode sombre */
+/* Dark Mode Adjustments */
 :global(.dark) .container,
 :global(.dark) .content,
 :global(.dark) .layout,
@@ -345,78 +330,3 @@
 :global(.dark) .folderGrid {
   background-color: var(--background-color);
 }
-
-.mainViewer {
-  flex: 1;
-  display: flex;
-  overflow: hidden;
-  background-color: var(--background-color);
-  
-  @media (max-width: 768px) {
-    height: calc(100% - 40px);
-  }
-}
-
-/* Assurer que la grille des dossiers a le bon arrière-plan */
-.folderGrid {
-  width: 80px;
-  flex-shrink: 0;
-  overflow-y: auto;
-  background-color: var(--background-color);
-  padding: 4px;
-  
-  @media (max-width: 768px) {
-    width: 60px;
-  }
-}
-
-/* Modification des vignettes pour s'adapter au mode sombre */
-.folderThumbnail {
-  background-color: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-color);
-  
-  :global(.dark) & {
-    background-color: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-}
-
-/* S'assurer que les zones de visualisation ont le bon arrière-plan */
-.viewer, .viewerHalf, .singleViewer {
-  background-color: black;
-  border: 1px solid var(--border-color);
-  
-  :global(.dark) & {
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-}
-
-.container {
-  height: calc(100vh - 60px);
-  margin-top: 60px;
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  width: 100%;
-  left: 0;
-  background-color: var(--background-color);
-  
-  @media (max-width: 768px) {
-    height: calc(100vh - 100px); /* Ajuster pour laisser de l'espace pour la barre du bas */
-  }
-}
-
-.mainViewer {
-  background-color: var(--background-color);
-  flex: 1;
-  display: flex;
-  overflow: hidden;
-  padding-left: 8px;
-  height: calc(100% - 40px); /* Ajuster pour la barre du bas */
-  
-  @media (max-width: 768px) {
-    padding-left: 4px;
-    height: calc(100% - 40px); /* Ajuster pour la barre du bas mobile */
-  }
-}
-
