@@ -66,65 +66,11 @@ function RadiologyViewer() {
   const rightViewerRef = useRef(null);
   const singleViewerRef = useRef(null);
 
+  const [touchStartPoints, setTouchStartPoints] = useState(null);
+  const [initialScale, setInitialScale] = useState(1);
+  const [lastTouch, setLastTouch] = useState({ x: 0, y: 0 });
+
   const [theme] = useState(document.documentElement.getAttribute('data-theme') || 'light');
-
-
-  const handleTouchStart = useCallback((e) => {
-    if (e.touches.length === 2) {
-      // Calcul de la distance initiale entre les deux doigts
-      const dist = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY
-      );
-      setTouchDistance(dist);
-    }
-  }, []);
-  
-  const handleTouchMove = useCallback((e) => {
-    if (e.touches.length === 2) {
-      e.preventDefault(); // Empêche le défilement pendant le pincement
-      
-      // Calcul de la nouvelle distance
-      const newDist = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY
-      );
-      
-      if (touchDistance) {
-        // Calcul du ratio de zoom
-        const scale = newDist / touchDistance;
-        const side = isSingleViewMode ? 'single' : 'left';
-        
-        setImageControls(prev => {
-          const newControls = {...prev};
-          const targetControls = newControls[side];
-          
-          // Ajuste l'échelle avec des limites
-          targetControls.scale = Math.max(0.1, Math.min(5, targetControls.scale * scale));
-          
-          return newControls;
-        });
-        
-        // Met à jour la distance pour le prochain mouvement
-        setTouchDistance(newDist);
-      }
-    }
-  }, [touchDistance, isSingleViewMode]);
-  
-  const handleTouchEnd = useCallback(() => {
-    setTouchDistance(null);
-  }, []);
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
-
-  useEffect(() => {
-    if (isMobile && !isSingleViewMode) {
-      setIsSingleViewMode(true);
-    }
-  }, [isMobile]);
-
   const loadImage = useCallback((folder, index, side) => {
     console.log('Loading image:', folder, index, side);
     if (currentCase && currentCase.images && currentCase.images[folder]) {
@@ -147,6 +93,112 @@ function RadiologyViewer() {
       }
     }
   }, [currentCase]);
+
+  const handleScroll = useCallback((deltaY, slowMode = false, side) => {
+    const threshold = slowMode ? 10 : 50;
+    setAccumulatedDelta(prev => {
+      const newDelta = prev + deltaY;
+      if (Math.abs(newDelta) >= threshold) {
+        const direction = newDelta > 0 ? 1 : -1;
+        const currentFolder = side === 'left' || side === 'single' ? currentFolderLeft : currentFolderRight;
+        const currentIndex = side === 'left' || side === 'single' ? currentIndexLeft : currentIndexRight;
+        const images = currentCase.images[currentFolder];
+        if (images) {
+          const newIndex = (currentIndex + direction + images.length) % images.length;
+          loadImage(currentFolder, newIndex, side);
+        }
+        return 0;
+      }
+      return newDelta;
+    });
+  }, [currentCase, currentFolderLeft, currentFolderRight, currentIndexLeft, currentIndexRight, loadImage]);
+
+  const applyImageTransforms = useCallback((side) => {
+    const controls = imageControls[side];
+    const imageElement = side === 'left' ? leftViewerRef.current : 
+                         side === 'right' ? rightViewerRef.current : 
+                         singleViewerRef.current;
+    if (imageElement) {
+      imageElement.style.transform = `scale(${controls.scale}) translate(${controls.translateX}px, ${controls.translateY}px)`;
+      imageElement.style.filter = `contrast(${controls.contrast}%) brightness(${controls.brightness}%)`;
+    }
+  }, [imageControls]);
+
+  const handleTouchStart = useCallback((e, side) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      e.stopPropagation();
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      const distance = Math.hypot(
+        touch2.clientX - touch1.clientX,
+        touch2.clientY - touch1.clientY
+      );
+      setTouchStartPoints({
+        distance,
+        scale: imageControls[side].scale
+      });
+      setInitialScale(imageControls[side].scale);
+    } else if (e.touches.length === 1) {
+      e.preventDefault();
+      setLastTouch({
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY
+      });
+    }
+  }, [imageControls]);
+  
+  const handleTouchMove = useCallback((e, side) => {
+    e.preventDefault();
+    if (e.touches.length === 2 && touchStartPoints) {
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      const newDistance = Math.hypot(
+        touch2.clientX - touch1.clientX,
+        touch2.clientY - touch1.clientY
+      );
+  
+      const scaleFactor = newDistance / touchStartPoints.distance;
+      const newScale = Math.max(0.1, Math.min(5, initialScale * scaleFactor));
+  
+      setImageControls(prev => ({
+        ...prev,
+        [side]: {
+          ...prev[side],
+          scale: newScale
+        }
+      }));
+      applyImageTransforms(side);
+    } else if (e.touches.length === 1) {
+      const touch = e.touches[0];
+      const deltaY = touch.clientY - lastTouch.y;
+      
+      if (Math.abs(deltaY) > 1) {
+        handleScroll(deltaY * 4, false, side);
+      }
+      
+      setLastTouch({
+        x: touch.clientX,
+        y: touch.clientY
+      });
+    }
+  }, [touchStartPoints, initialScale, applyImageTransforms, handleScroll, lastTouch]);
+  
+  const handleTouchEnd = useCallback(() => {
+    setTouchStartPoints(null);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
+  useEffect(() => {
+    if (isMobile && !isSingleViewMode) {
+      setIsSingleViewMode(true);
+    }
+  }, [isMobile]);
+
+
 
   const fetchFolderThumbnails = useCallback((caseData) => {
     if (!caseData) return;
@@ -216,35 +268,6 @@ function RadiologyViewer() {
     fetchCase();
   }, [fetchCase]);
 
-  const applyImageTransforms = useCallback((side) => {
-    const controls = imageControls[side];
-    const imageElement = side === 'left' ? leftViewerRef.current : 
-                         side === 'right' ? rightViewerRef.current : 
-                         singleViewerRef.current;
-    if (imageElement) {
-      imageElement.style.transform = `scale(${controls.scale}) translate(${controls.translateX}px, ${controls.translateY}px)`;
-      imageElement.style.filter = `contrast(${controls.contrast}%) brightness(${controls.brightness}%)`;
-    }
-  }, [imageControls]);
-
-  const handleScroll = useCallback((deltaY, slowMode = false, side) => {
-    const threshold = slowMode ? 10 : 50;
-    setAccumulatedDelta(prev => {
-      const newDelta = prev + deltaY;
-      if (Math.abs(newDelta) >= threshold) {
-        const direction = newDelta > 0 ? 1 : -1;
-        const currentFolder = side === 'left' || side === 'single' ? currentFolderLeft : currentFolderRight;
-        const currentIndex = side === 'left' || side === 'single' ? currentIndexLeft : currentIndexRight;
-        const images = currentCase.images[currentFolder];
-        if (images) {
-          const newIndex = (currentIndex + direction + images.length) % images.length;
-          loadImage(currentFolder, newIndex, side);
-        }
-        return 0;
-      }
-      return newDelta;
-    });
-  }, [currentCase, currentFolderLeft, currentFolderRight, currentIndexLeft, currentIndexRight, loadImage]);
 
 
 
