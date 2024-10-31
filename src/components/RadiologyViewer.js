@@ -336,53 +336,53 @@ function RadiologyViewer() {
     };
   }, [handleScroll, isSingleViewMode, toggleViewMode]);
 
-  useEffect(() => {
-    if (isTouchDevice) {
-      const viewer = document.querySelector(`.${styles.viewer}`);
-      let touchStartY = 0;
-      let lastScrollTime = 0;
-      const scrollDelay = 500000; // Délai minimum entre les défilements
+useEffect(() => {
+  if (isTouchDevice) {
+    const viewer = document.querySelector(`.${styles.viewer}`);
+    let touchStartY = 0;
+    let lastScrollTime = 0;
+    const scrollDelay = 150; // Délai minimum entre les défilements
+    
+    const handleTouchStart = (e) => {
+      touchStartY = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e) => {
+      e.preventDefault();
+      const currentY = e.touches[0].clientY;
+      const deltaY = touchStartY - currentY;
+      const currentTime = Date.now();
       
-      const handleTouchStart = (e) => {
-        touchStartY = e.touches[0].clientY;
-      };
-  
-      const handleTouchMove = (e) => {
-        e.preventDefault();
-        const currentY = e.touches[0].clientY;
-        const deltaY = touchStartY - currentY;
-        const currentTime = Date.now();
-        
-        // Vérifier si assez de temps s'est écoulé depuis le dernier défilement
-        if (currentTime - lastScrollTime > scrollDelay) {
-          if (Math.abs(deltaY) > 50) { // Seuil minimum pour défilement
-            const direction = deltaY > 0 ? 1 : -1;
-            handleScroll(direction * 100, false, isSingleViewMode ? 'single' : 'left');
-            lastScrollTime = currentTime;
-          }
+      // Vérifier si assez de temps s'est écoulé depuis le dernier défilement
+      if (currentTime - lastScrollTime > scrollDelay) {
+        if (Math.abs(deltaY) > 5) { // Seuil minimum pour défilement
+          const direction = deltaY > 0 ? 1 : -1;
+          handleScroll(direction * 100, false, isSingleViewMode ? 'single' : 'left');
+          lastScrollTime = currentTime;
         }
-        
-        touchStartY = currentY;
-      };
-  
-      const preventRefresh = (e) => {
-        e.preventDefault();
-      };
-  
-      // Empêcher le rafraîchissement de la page
-      document.body.style.overflow = 'hidden';
-      document.addEventListener('touchmove', preventRefresh, { passive: false });
-      viewer?.addEventListener('touchstart', handleTouchStart, { passive: false });
-      viewer?.addEventListener('touchmove', handleTouchMove, { passive: false });
-  
-      return () => {
-        document.body.style.overflow = '';
-        document.removeEventListener('touchmove', preventRefresh);
-        viewer?.removeEventListener('touchstart', handleTouchStart);
-        viewer?.removeEventListener('touchmove', handleTouchMove);
-      };
-    }
-  }, [isTouchDevice, handleScroll, isSingleViewMode]);
+      }
+      
+      touchStartY = currentY;
+    };
+
+    const preventRefresh = (e) => {
+      e.preventDefault();
+    };
+
+    // Empêcher le rafraîchissement de la page
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('touchmove', preventRefresh, { passive: false });
+    viewer?.addEventListener('touchstart', handleTouchStart, { passive: false });
+    viewer?.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+    return () => {
+      document.body.style.overflow = '';
+      document.removeEventListener('touchmove', preventRefresh);
+      viewer?.removeEventListener('touchstart', handleTouchStart);
+      viewer?.removeEventListener('touchmove', handleTouchMove);
+    };
+  }
+}, [isTouchDevice, handleScroll, isSingleViewMode]);
 
   const getTouchDistance = (touches) => {
     return Math.hypot(
