@@ -549,26 +549,29 @@ const renderFolderThumbnails = useCallback(() => {
           <div id="main-viewer" className={styles.mainViewer}>
             {isSingleViewMode ? (
               <div 
-                id="single-viewer" 
-                className={`${styles.viewer} ${styles.singleViewer}`}
-                onWheel={(e) => {
-                  e.preventDefault();
-                  if (e.ctrlKey) {
-                    handleZoom('single', -e.deltaY);
-                  } else {
-                    handleScroll(e.deltaY, false, 'single');
-                  }
-                }}
-                onMouseDown={(e) => handleMouseDown(e, 'single')}
-                onMouseMove={(e) => handleMouseMove(e, 'single')}
-                onMouseUp={handleMouseUp}
-                onContextMenu={(e) => e.preventDefault()}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => handleDrop(e, 'single')}
-              >
-                <div className={styles.folderLabel}>{currentFolderLeft}</div>
-                <img ref={singleViewerRef} className={styles.image} alt="Image médicale" />
-              </div>
+  id="single-viewer" 
+  className={`${styles.viewer} ${styles.singleViewer}`}
+  onWheel={(e) => {
+    e.preventDefault();
+    if (e.ctrlKey) {
+      handleZoom('single', -e.deltaY);
+    } else {
+      handleScroll(e.deltaY, false, 'single');
+    }
+  }}
+  onMouseDown={(e) => handleMouseDown(e, 'single')}
+  onMouseMove={(e) => handleMouseMove(e, 'single')}
+  onMouseUp={handleMouseUp}
+  onContextMenu={(e) => e.preventDefault()}
+  onDragOver={(e) => e.preventDefault()}
+  onDrop={(e) => handleDrop(e, 'single')}
+  onTouchStart={(e) => handleTouchStart(e, 'single')}
+  onTouchMove={(e) => handleTouchMove(e, 'single')}
+  onTouchEnd={handleTouchEnd}
+>
+  <div className={styles.folderLabel}>{currentFolderLeft}</div>
+  <img ref={singleViewerRef} className={styles.image} alt="Image médicale" />
+</div>
             ) : (
               <div id="dual-viewer" className={styles.dualViewer}>
                 {renderViewer('left')}
