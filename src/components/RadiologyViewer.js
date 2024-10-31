@@ -158,65 +158,71 @@ function RadiologyViewer() {
     applyImageTransforms(side);
   }, [applyImageTransforms]);
 
-  // Touch handlers
-  const handleTouchStart = useCallback((e, side) => {
-    if (e.touches.length === 2) {
-      e.preventDefault();
-      const touch1 = e.touches[0];
-      const touch2 = e.touches[1];
-      const distance = Math.hypot(
-        touch2.clientX - touch1.clientX,
-        touch2.clientY - touch1.clientY
-      );
-      setTouchStartPoints({
-        distance,
-        scale: imageControls[side].scale
-      });
-      setInitialScale(imageControls[side].scale);
-    } else if (e.touches.length === 1) {
-      setLastTouch({
-        x: e.touches[0].clientX,
-        y: e.touches[0].clientY
-      });
-    }
-  }, [imageControls]);
-
-  const handleTouchMove = useCallback((e, side) => {
+// Modifiez le handleTouchStart
+const handleTouchStart = useCallback((e, side) => {
+  if (e.touches.length === 2) {
     e.preventDefault();
-    if (e.touches.length === 2 && touchStartPoints) {
-      const touch1 = e.touches[0];
-      const touch2 = e.touches[1];
-      const newDistance = Math.hypot(
-        touch2.clientX - touch1.clientX,
-        touch2.clientY - touch1.clientY
-      );
+    e.stopPropagation();
+    const touch1 = e.touches[0];
+    const touch2 = e.touches[1];
+    const distance = Math.hypot(
+      touch2.clientX - touch1.clientX,
+      touch2.clientY - touch1.clientY
+    );
+    setTouchStartPoints({
+      distance,
+      scale: imageControls[side].scale
+    });
+    setInitialScale(imageControls[side].scale);
+  } else if (e.touches.length === 1) {
+    e.preventDefault();
+    e.stopPropagation();
+    setLastTouch({
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY
+    });
+  }
+}, [imageControls]);
 
-      const scaleFactor = newDistance / touchStartPoints.distance;
-      const newScale = Math.max(0.1, Math.min(5, initialScale * scaleFactor));
+// Modifiez le handleTouchMove
+const handleTouchMove = useCallback((e, side) => {
+  e.preventDefault();
+  e.stopPropagation();
 
-      setImageControls(prev => ({
-        ...prev,
-        [side]: {
-          ...prev[side],
-          scale: newScale
-        }
-      }));
+  if (e.touches.length === 2 && touchStartPoints) {
+    const touch1 = e.touches[0];
+    const touch2 = e.touches[1];
+    const newDistance = Math.hypot(
+      touch2.clientX - touch1.clientX,
+      touch2.clientY - touch1.clientY
+    );
 
-      applyImageTransforms(side);
-    } else if (e.touches.length === 1) {
-      const touch = e.touches[0];
-      const deltaY = touch.clientY - lastTouch.y;
-      
-      if (Math.abs(deltaY) > 5) {
-        handleScroll(deltaY * 2, false, side);
+    const scaleFactor = newDistance / touchStartPoints.distance;
+    const newScale = Math.max(0.1, Math.min(5, initialScale * scaleFactor));
+
+    setImageControls(prev => ({
+      ...prev,
+      [side]: {
+        ...prev[side],
+        scale: newScale
       }
-      
-      setLastTouch({
-        x: touch.clientX,
-        y: touch.clientY
-      });
+    }));
+
+    applyImageTransforms(side);
+  } else if (e.touches.length === 1) {
+    const touch = e.touches[0];
+    const deltaY = touch.clientY - lastTouch.y;
+    
+    if (Math.abs(deltaY) > 5) {
+      handleScroll(deltaY * 2, false, side);
     }
-  }, [touchStartPoints, initialScale, applyImageTransforms, handleScroll, lastTouch]);
+    
+    setLastTouch({
+      x: touch.clientX,
+      y: touch.clientY
+    });
+  }
+}, [touchStartPoints, initialScale, applyImageTransforms, handleScroll, lastTouch]);
 
   const handleTouchEnd = useCallback(() => {
     setTouchStartPoints(null);
@@ -393,10 +399,22 @@ function RadiologyViewer() {
       e.preventDefault();
     };
   
-    document.body.addEventListener('wheel', preventDefault, { passive: false });
+    // Empêche le pull-to-refresh sur mobile
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+    document.body.style.height = '100%';
+  
+    document.addEventListener('touchmove', preventDefault, { passive: false });
+    document.addEventListener('touchstart', preventDefault, { passive: false });
   
     return () => {
-      document.body.removeEventListener('wheel', preventDefault);
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
+      document.removeEventListener('touchmove', preventDefault);
+      document.removeEventListener('touchstart', preventDefault);
     };
   }, []);
 
