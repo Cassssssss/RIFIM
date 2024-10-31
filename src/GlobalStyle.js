@@ -6,7 +6,15 @@ const GlobalStyle = createGlobalStyle`
     color: ${props => props.theme.text};
     font-family: 'Poppins', sans-serif;
   }
+:root {
+  --background-color: #F0F2F5;
+  --border-color: #E4E6E8;
+}
 
+:root[data-theme="dark"] {
+  --background-color: #1a1a2e;
+  --border-color: #2a2a3e;
+}
   .card {
     background-color: ${props => props.theme.card};
     border-color: ${props => props.theme.border};

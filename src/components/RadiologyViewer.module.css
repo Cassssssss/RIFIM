@@ -949,3 +949,99 @@
   margin-left: 8px;
   position: relative;
 }
+
+.folderGrid {
+  width: 80px; /* Réduit de 120px à 80px */
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px;
+  overflow-y: auto;
+  background-color: var(--background-color); /* Utilise la couleur de fond du thème */
+  height: calc(100vh - 110px); /* Ajuste la hauteur pour éviter le débordement */
+  
+  @media (max-width: 768px) {
+    width: 60px;
+    height: calc(100vh - 150px);
+  }
+}
+
+.folderThumbnail {
+  width: 100%;
+  aspect-ratio: 1; /* Force un ratio carré */
+  min-height: 60px;
+  max-height: 60px; /* Force une hauteur fixe */
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 4px;
+  flex-shrink: 0; /* Empêche la réduction */
+  background-color: var(--background-color);
+}
+
+.folderThumbnailImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* S'assure que l'image couvre tout l'espace */
+}
+
+.folderThumbnailLabel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 10px;
+  padding: 2px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mainViewer {
+  flex: 1;
+  height: calc(100vh - 110px); /* Ajuste la hauteur */
+  margin-left: 8px;
+  background-color: var(--background-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.viewer, .viewerHalf, .singleViewer {
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
+  height: 100%;
+  
+  img {
+    background-color: var(--background-color);
+  }
+}
+
+.container {
+  height: calc(100vh - 60px); /* Hauteur totale moins l'en-tête */
+  margin-top: 60px; /* Espace pour l'en-tête */
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-color);
+}
+
+.image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  background-color: var(--background-color);
+}
+
+.content {
+  flex: 1;
+  background-color: var(--background-color);
+  overflow: hidden;
+}
+
+.layout {
+  display: flex;
+  height: 100%;
+  background-color: var(--background-color);
+}
