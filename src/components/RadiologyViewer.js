@@ -341,7 +341,7 @@ function RadiologyViewer() {
       const viewer = document.querySelector(`.${styles.viewer}`);
       let touchStartY = 0;
       let lastScrollTime = 0;
-      const scrollDelay = 150; // Délai minimum entre les défilements
+      const scrollDelay = 500000; // Délai minimum entre les défilements
       
       const handleTouchStart = (e) => {
         touchStartY = e.touches[0].clientY;
@@ -355,7 +355,7 @@ function RadiologyViewer() {
         
         // Vérifier si assez de temps s'est écoulé depuis le dernier défilement
         if (currentTime - lastScrollTime > scrollDelay) {
-          if (Math.abs(deltaY) > 5) { // Seuil minimum pour défilement
+          if (Math.abs(deltaY) > 50) { // Seuil minimum pour défilement
             const direction = deltaY > 0 ? 1 : -1;
             handleScroll(direction * 100, false, isSingleViewMode ? 'single' : 'left');
             lastScrollTime = currentTime;
