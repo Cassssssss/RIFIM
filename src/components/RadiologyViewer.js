@@ -339,41 +339,57 @@ function RadiologyViewer() {
   useEffect(() => {
     if (isTouchDevice) {
       const viewer = document.querySelector(`.${styles.viewer}`);
-      let touchStartX = 0;
       let touchStartY = 0;
+      let scrollInterval = null;
+      
+      const preventRefresh = (e) => {
+        e.preventDefault();
+      };
+  
+      document.addEventListener('touchmove', preventRefresh, { passive: false });
   
       const handleTouchStart = (e) => {
-        touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
+        if (scrollInterval) {
+          clearInterval(scrollInterval);
+        }
       };
   
       const handleTouchMove = (e) => {
-        if (!touchStartX || !touchStartY) return;
-  
-        const deltaX = e.touches[0].clientX - touchStartX;
-        const deltaY = e.touches[0].clientY - touchStartY;
-  
-        if (Math.abs(deltaY) > Math.abs(deltaX)) {
-          // Défilement vertical
-          handleScroll(deltaY, false, isSingleViewMode ? 'single' : 'left');
-        } else {
-          // Pan horizontal
-          handlePan(isSingleViewMode ? 'single' : 'left', deltaX, 0);
+        e.preventDefault();
+        const currentY = e.touches[0].clientY;
+        const deltaY = touchStartY - currentY;
+        
+        if (Math.abs(deltaY) > 5) { // Seuil minimum pour démarrer le défilement
+          scrollInterval = setInterval(() => {
+            handleScroll(deltaY, false, isSingleViewMode ? 'single' : 'left');
+          }, 100); // Ajustez l'intervalle selon vos besoins
         }
+        
+        touchStartY = currentY;
+      };
   
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
+      const handleTouchEnd = () => {
+        if (scrollInterval) {
+          clearInterval(scrollInterval);
+        }
       };
   
       viewer?.addEventListener('touchstart', handleTouchStart);
-      viewer?.addEventListener('touchmove', handleTouchMove);
+      viewer?.addEventListener('touchmove', handleTouchMove, { passive: false });
+      viewer?.addEventListener('touchend', handleTouchEnd);
   
       return () => {
+        document.removeEventListener('touchmove', preventRefresh);
         viewer?.removeEventListener('touchstart', handleTouchStart);
         viewer?.removeEventListener('touchmove', handleTouchMove);
+        viewer?.removeEventListener('touchend', handleTouchEnd);
+        if (scrollInterval) {
+          clearInterval(scrollInterval);
+        }
       };
     }
-  }, [handleScroll, handlePan, isSingleViewMode]);
+  }, [handleScroll, isSingleViewMode, isTouchDevice]);
 
   const getTouchDistance = (touches) => {
     return Math.hypot(
