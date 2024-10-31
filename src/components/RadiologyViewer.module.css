@@ -890,3 +890,62 @@
     padding: 0 8px;
   }
 }
+
+.container {
+  height: calc(100vh - 60px); /* Hauteur totale moins l'en-tête */
+  margin-top: 60px; /* Espace pour l'en-tête */
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  width: 100%;
+  left: 0;
+  background-color: #fff;
+}
+
+.layout {
+  display: flex;
+  flex: 1;
+  height: calc(100% - 50px); /* Espace pour la barre de réponse */
+  position: relative;
+}
+
+.folderGrid {
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px;
+  overflow-y: auto;
+  background-color: #fff; /* Enlève le fond noir */
+  
+  @media (max-width: 768px) {
+    width: 80px;
+    height: 100%;
+    padding: 2px;
+  }
+}
+
+.folderThumbnail {
+  width: 100%;
+  height: 80px; /* Hauteur fixe plus petite */
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  
+  @media (max-width: 768px) {
+    height: 60px; /* Encore plus petit sur mobile */
+    margin-bottom: 2px;
+  }
+}
+
+.folderThumbnailImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mainViewer {
+  flex: 1;
+  margin-left: 8px;
+  position: relative;
+}

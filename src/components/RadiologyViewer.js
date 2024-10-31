@@ -340,56 +340,49 @@ function RadiologyViewer() {
     if (isTouchDevice) {
       const viewer = document.querySelector(`.${styles.viewer}`);
       let touchStartY = 0;
-      let scrollInterval = null;
+      let lastScrollTime = 0;
+      const scrollDelay = 150; // Délai minimum entre les défilements
       
-      const preventRefresh = (e) => {
-        e.preventDefault();
-      };
-  
-      document.addEventListener('touchmove', preventRefresh, { passive: false });
-  
       const handleTouchStart = (e) => {
         touchStartY = e.touches[0].clientY;
-        if (scrollInterval) {
-          clearInterval(scrollInterval);
-        }
       };
   
       const handleTouchMove = (e) => {
         e.preventDefault();
         const currentY = e.touches[0].clientY;
         const deltaY = touchStartY - currentY;
+        const currentTime = Date.now();
         
-        if (Math.abs(deltaY) > 5) { // Seuil minimum pour démarrer le défilement
-          scrollInterval = setInterval(() => {
-            handleScroll(deltaY, false, isSingleViewMode ? 'single' : 'left');
-          }, 100); // Ajustez l'intervalle selon vos besoins
+        // Vérifier si assez de temps s'est écoulé depuis le dernier défilement
+        if (currentTime - lastScrollTime > scrollDelay) {
+          if (Math.abs(deltaY) > 5) { // Seuil minimum pour défilement
+            const direction = deltaY > 0 ? 1 : -1;
+            handleScroll(direction * 100, false, isSingleViewMode ? 'single' : 'left');
+            lastScrollTime = currentTime;
+          }
         }
         
         touchStartY = currentY;
       };
   
-      const handleTouchEnd = () => {
-        if (scrollInterval) {
-          clearInterval(scrollInterval);
-        }
+      const preventRefresh = (e) => {
+        e.preventDefault();
       };
   
-      viewer?.addEventListener('touchstart', handleTouchStart);
+      // Empêcher le rafraîchissement de la page
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('touchmove', preventRefresh, { passive: false });
+      viewer?.addEventListener('touchstart', handleTouchStart, { passive: false });
       viewer?.addEventListener('touchmove', handleTouchMove, { passive: false });
-      viewer?.addEventListener('touchend', handleTouchEnd);
   
       return () => {
+        document.body.style.overflow = '';
         document.removeEventListener('touchmove', preventRefresh);
         viewer?.removeEventListener('touchstart', handleTouchStart);
         viewer?.removeEventListener('touchmove', handleTouchMove);
-        viewer?.removeEventListener('touchend', handleTouchEnd);
-        if (scrollInterval) {
-          clearInterval(scrollInterval);
-        }
       };
     }
-  }, [handleScroll, isSingleViewMode, isTouchDevice]);
+  }, [isTouchDevice, handleScroll, isSingleViewMode]);
 
   const getTouchDistance = (touches) => {
     return Math.hypot(
@@ -398,52 +391,7 @@ function RadiologyViewer() {
     );
   };
   
-  useEffect(() => {
-    if (isTouchDevice) {
-      const viewer = document.querySelector(`.${styles.viewer}`);
-      
-      const handleTouchStart = (e) => {
-        if (e.touches.length === 2) {
-          setTouchDistance(getTouchDistance(e.touches));
-        }
-      };
-  
-      const handleTouchMove = (e) => {
-        if (e.touches.length === 2) {
-          e.preventDefault();
-          const newDistance = getTouchDistance(e.touches);
-          
-          if (touchDistance !== null) {
-            const scale = newDistance / touchDistance;
-            const side = isSingleViewMode ? 'single' : 'left';
-            handleZoom(side, (scale - 1) * 1000);
-          }
-          
-          setTouchDistance(newDistance);
-        } else if (e.touches.length === 1) {
-          handlePan(
-            isSingleViewMode ? 'single' : 'left',
-            e.touches[0].clientX - touchStartX,
-            e.touches[0].clientY - touchStartY
-          );
-        }
-      };
-  
-      const handleTouchEnd = () => {
-        setTouchDistance(null);
-      };
-  
-      viewer?.addEventListener('touchstart', handleTouchStart);
-      viewer?.addEventListener('touchmove', handleTouchMove, { passive: false });
-      viewer?.addEventListener('touchend', handleTouchEnd);
-  
-      return () => {
-        viewer?.removeEventListener('touchstart', handleTouchStart);
-        viewer?.removeEventListener('touchmove', handleTouchMove);
-        viewer?.removeEventListener('touchend', handleTouchEnd);
-      };
-    }
-  }, [isTouchDevice, touchDistance, handleZoom, handlePan, isSingleViewMode]);
+
 
   const renderViewer = useCallback((side) => (
     <div 
