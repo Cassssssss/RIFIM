@@ -1,20 +1,29 @@
 import { createGlobalStyle } from 'styled-components';
 
 const GlobalStyle = createGlobalStyle`
-  body {
-    background-color: ${props => props.theme.background};
-    color: ${props => props.theme.text};
-    font-family: 'Poppins', sans-serif;
+ body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
   }
-:root {
-  --background-color: #F0F2F5;
-  --border-color: #E4E6E8;
-}
 
-:root[data-theme="dark"] {
-  --background-color: #1a1a2e;
-  --border-color: #2a2a3e;
-}
+  :root {
+    --background-color: #F0F2F5;
+    --header-background: #4a69bd;
+    --text-color: #333;
+    --border-color: #E4E6E8;
+    --button-background: #4a69bd;
+  }
+
+
+  [data-theme="dark"] {
+    --background-color: #181c2e; /* Couleur sombre comme la page de connexion */
+    --header-background: #1f2335;
+    --text-color: #fff;
+    --border-color: #2a2a3e;
+    --button-background: #4a69bd;
+  }
   .card {
     background-color: ${props => props.theme.card};
     border-color: ${props => props.theme.border};
@@ -124,7 +133,23 @@ const GlobalStyle = createGlobalStyle`
       margin-bottom: 0.5rem;
     }
   }
+
+    .container, .content, .layout, .mainViewer {
+    background-color: var(--background-color);
+  }
+
+  .viewer, .viewerHalf, .singleViewer {
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+  }
+
+  img {
+    background-color: var(--background-color);
+  }
+
 `;
+
+
 
 
 

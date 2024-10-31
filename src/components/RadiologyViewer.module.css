@@ -878,16 +878,21 @@
   left: 0;
   right: 0;
   height: 50px;
-  background-color: var(--header-background);
+  background-color: var(--header-background, #181c2e); /* Couleur du mode sombre par défaut */
+  color: white;
+  padding: 0 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
-  z-index: 100;
+  z-index: 1000;
   
   @media (max-width: 768px) {
     height: 40px;
     padding: 0 8px;
+    position: fixed; /* S'assurer qu'il reste fixé en bas */
+    bottom: 0;
+    display: flex !important; /* Forcer l'affichage */
+    background-color: var(--header-background, #181c2e);
   }
 }
 
@@ -1044,4 +1049,49 @@
   display: flex;
   height: 100%;
   background-color: var(--background-color);
+}
+.responseButton, .sheetLink {
+  background-color: var(--button-background, #4a69bd);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  
+  @media (max-width: 768px) {
+    padding: 6px 12px;
+    font-size: 12px;
+    white-space: nowrap; /* Empêcher le retour à la ligne */
+  }
+}
+
+.container {
+  height: calc(100vh - 60px);
+  margin-top: 60px;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  width: 100%;
+  left: 0;
+  background-color: var(--background-color);
+  
+  @media (max-width: 768px) {
+    height: calc(100vh - 100px); /* Ajuster pour laisser de l'espace pour la barre du bas */
+  }
+}
+
+.mainViewer {
+  background-color: var(--background-color);
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  padding-left: 8px;
+  height: calc(100% - 40px); /* Ajuster pour la barre du bas */
+  
+  @media (max-width: 768px) {
+    padding-left: 4px;
+    height: calc(100% - 40px); /* Ajuster pour la barre du bas mobile */
+  }
 }

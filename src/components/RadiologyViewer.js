@@ -66,6 +66,12 @@ function RadiologyViewer() {
   const rightViewerRef = useRef(null);
   const singleViewerRef = useRef(null);
 
+    const [theme] = useState(document.documentElement.getAttribute('data-theme') || 'light');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
   useEffect(() => {
     if (isMobile && !isSingleViewMode) {
       setIsSingleViewMode(true);
