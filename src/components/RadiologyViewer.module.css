@@ -1,563 +1,127 @@
+/* Base Container */
 .container {
-    @apply mx-auto;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
-  }
-  
-  .header {
-    flex-shrink: 0;
-  }
-  
-  .content {
-    flex: 1;
-    display: flex;
-    overflow: hidden;
-  }
-  
-  .layout {
-    @apply flex gap-4;
-    flex: 1;
-    overflow: hidden;
-  }
-  
-  .folderGrid {
-    @apply flex flex-col w-28 gap-4;
-    flex-shrink: 0;
-    overflow-y: auto;
-    height: 100%;
-  }
-  
-  .folderThumbnail {
-    @apply cursor-move bg-white shadow-md rounded-lg overflow-hidden transition-all duration-300 ease-in-out;
-    flex: 0 0 auto;
-    height: 100px;
-  }
-  
-  .folderThumbnail:hover {
-    transform: scale(1.05);
-  }
-  
-  .folderThumbnailImage {
-    @apply w-full h-3/4 object-cover;
-  }
-  
-  .folderThumbnailLabel {
-    @apply text-center text-xs font-semibold h-1/4 flex items-center justify-center;
-  }
-  
-  .mainViewer {
-    @apply flex-grow ml-4;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-  
-  .viewer, .viewerHalf, .singleViewer {
-    @apply border-2 border-gray-300 dark:border-gray-700 rounded-lg overflow-hidden bg-black;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 80%;
-    position: relative;
-  }
-  
-  .dualViewer {
-    @apply flex gap-2;
-    height: calc(100vh - 200px);
-  }
-  
-  .viewerHalf {
-    @apply w-1/2 h-full;
-  }
-  
-  .singleViewer {
-    @apply w-3/4 mx-auto;
-    left: 0%;
-  }
-  
-  .image {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-  }
-  
-  .folderLabel {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background-color: rgba(0, 0, 0, 0.5);
-    color: white;
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-size: 14px;
-    z-index: 10;
-  }
-  
-  .bottomBar {
-    @apply fixed bottom-0 left-0 right-0 bg-gray-100 dark:bg-gray-800 p-4 flex justify-between items-center;
-    z-index: 1000;
-    height: 50px;
-  }
-  
-  .responseButton {
-    @apply bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full shadow-lg transition-all duration-300 ease-in-out;
-  }
-  
-  .responseBox {
-    @apply fixed bottom-20 right-4 bg-white p-4 rounded-lg shadow-xl max-w-sm;
-    z-index: 1001;
-  }
-  
-  .responseText {
-    @apply text-gray-800 font-semibold;
-  }
-  
- 
-
-  .shortcutIcon {
-    @apply bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center cursor-pointer;
-  }
-  
-  .shortcutPopup {
-    position: absolute;
-    bottom: 40px;
-    left: 0;
-    background-color: white;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 10px;
-    width: 300px;
-    display: none;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  }
-  
-  .shortcutPopup.visible {
-    display: block;
-  }
-  
-  .shortcutTitle {
-    font-size: 16px;
-    font-weight: bold;
-    margin-bottom: 10px;
-  }
-  
-  .shortcutList {
-    list-style-type: none;
-    padding: 0;
-  }
-  
-  .shortcutList li {
-    margin-bottom: 5px;
-  }
-
-  .container {
+  height: calc(100vh - 60px);
+  margin-top: 60px;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  position: fixed;
+  width: 100%;
+  left: 0;
+  background-color: var(--background-color);
   overflow: hidden;
-  padding: 0; /* Retirez le padding */
+  
+  @media (max-width: 768px) {
+    height: calc(100vh - 100px);
+  }
 }
 
-.container {
-  display: flex;
-  flex-direction: column;
-  height: 80vh;
-  overflow: hidden;
-  padding: 0;
-}
-
+/* Content and Layout */
 .content {
   flex: 1;
-  display: flex;
+  background-color: var(--background-color);
   overflow: hidden;
 }
 
 .layout {
   display: flex;
-  flex: 1;
-  overflow: hidden;
-}
-
-.mainViewer {
-  flex: 1;
-  display: flex;
-  overflow: hidden;
-}
-
-.viewer, .viewerHalf, .singleViewer {
-  flex: 0.9;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-}
-
-.dualViewer {
-  display: flex;
-  height: 90%;
-}
-
-.bottomBar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 50px;
-}
-
-.bottomBar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background-color: var(--header-background);
-  color: var(--header-text);
-  padding: 0.5rem 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 1000;
-  height: 50px;
-}
-
-
-
-  
-  .shortcutGuide {
-    display: flex;
-    align-items: center;
-  }
-  
-  .shortcutIcon {
-    width: 30px;
-    height: 30px;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 18px;
-    cursor: pointer;
-    background-color: #4a69bd;
-  }
-  
-  .responseButton {
-    background-color: #4a69bd;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .responseButton:hover {
-    background-color: #3c55a5;
-  }
-
-  
-  .shortcutIcon {
-    width: 30px;
-    height: 30px;
-    border: 2px solid white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 18px;
-    cursor: pointer;
-    background-color: transparent;
-    transition: background-color 0.3s ease;
-  }
-  
-  .shortcutIcon:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-  
-  .responseButton {
-    background-color: white;
-    color: #4a69bd; /* Couleur de l'en-tête */
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    font-size: 14px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-  
-  .responseButton:hover {
-    background-color: rgba(255, 255, 255, 0.8);
-    color: #3c55a5; /* Version plus foncée de la couleur de l'en-tête */
-  }
-
-  .shortcutIcon {
-  width: 30px;
-  height: 30px;
-  border: 2px solid currentColor;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  cursor: pointer;
-  background-color: rgba(255, 255, 255, 0.1);
-  color: inherit;
-  transition: background-color 0.3s ease;
-}
-
-.shortcutIcon:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.folderThumbnailLabel {
-    @apply text-center text-xs font-semibold h-1/4 flex items-center justify-center;
-    background-color: inherit;
-    color: inherit;
-  }
-  
-  :global(.dark) .folderThumbnailLabel {
-    background-color: #1a202c; /* Couleur sombre pour le mode sombre */
-    color: #e2e8f0; /* Couleur claire pour le texte en mode sombre */
-  }
-
-  .shortcutPopup {
-    position: absolute;
-    bottom: 100%;
-    left: 0;
-    background-color: white;
-    color: black;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 10px;
-    width: 300px;
-    display: none;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    z-index: 1000;
-  }
-  
-  .shortcutPopup.visible {
-    display: block;
-  }
-  
-  :global(.dark) .shortcutPopup {
-    background-color: #2d3748;
-    color: white;
-    border-color: #4a5568;
-  }
-
-  .folderGrid {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .folderThumbnail {
-    border: 1px solid #ccc;
-    padding: 0.5rem;
-    border-radius: 4px;
-  }
-  
-  .thumbnailContainer {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-  
-  .thumbnail {
-    width: 50px;
-    height: 50px;
-    object-fit: cover;
-    cursor: pointer;
-    border: 2px solid transparent;
-  }
-  
-  .thumbnail:hover {
-    border-color: #007bff;
-  }
-
-  .thumbnail {
-    width: 50px;
-    height: 50px;
-    object-fit: cover;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: border-color 0.3s ease;
-  }
-  
-  .thumbnail:hover,
-  .thumbnail.selected {
-    border-color: #007bff;
-  }
-
-  .thumbnailWrapper {
-  position: relative;
-  display: inline-block;
-  margin: 2px;
-}
-
-.thumbnail {
-  width: 50px;
-  height: 50px;
-  object-fit: cover;
-  cursor: pointer;
-  border: 2px solid transparent;
-  transition: border-color 0.3s ease;
-}
-
-.thumbnail:hover,
-.thumbnail.selected {
-  border-color: #007bff;
-}
-
-.deleteImageButton {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  background-color: red;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.thumbnailWrapper:hover .deleteImageButton {
-  opacity: 1;
-}
-
-.sheetLink {
-  margin-left: 10px;
-  padding: 10px 20px;
-  background-color: #4a69bd;
-  color: white;
-  text-decoration: none;
-  border-radius: 4px;
-  font-size: 14px;
-  transition: background-color 0.3s;
-}
-
-.sheetLink:hover {
-  background-color: #3c55a5;
-}
-
-.container {
-  position: auto;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow: hidden;
-}
-
-.content {
   height: 100%;
-  overflow-y: auto;
-}
-
-.mainViewer {
-  height: calc(100% - [hauteur de votre barre du bas]);
-  overflow-y: auto;
-}
-
-.folderGrid {
-  max-height: 100%;
-  overflow-y: auto;
-}
-
-.viewer {
-  @media (max-width: 768px) {
-    height: 50vh;
-  }
-}
-
-.dualViewer {
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
-}
-
-.folderGrid {
-  @media (max-width: 768px) {
-    display: flex;
-    overflow-x: auto;
-    width: 100%;
-  }
-}
-
-/* Dans RadiologyViewer.module.css */
-
-.container {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  position: fixed; /* Ajout */
-  width: 100%; /* Ajout */
-  top: 0; /* Ajout */
-  left: 0; /* Ajout */
-}
-
-.layout {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
+  background-color: var(--background-color);
   
   @media (max-width: 768px) {
-    flex-direction: column; /* Change la direction en mode mobile */
+    flex-direction: row;
+    gap: 0;
   }
 }
 
+/* Folder Grid */
 .folderGrid {
-  width: 112px; /* 28rem */
+  width: 80px;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 4px;
+  padding: 4px;
   overflow-y: auto;
+  background-color: var(--background-color);
+  height: calc(100vh - 110px);
   
   @media (max-width: 768px) {
-    width: 100%;
-    flex-direction: row; /* Affiche les dossiers horizontalement */
-    overflow-x: auto;
-    overflow-y: hidden;
-    height: 120px; /* Hauteur fixe en mobile */
-    padding: 10px;
-    gap: 10px;
+    width: 60px;
+    height: calc(100vh - 150px);
   }
 }
 
 .folderThumbnail {
-  flex: 0 0 auto;
+  width: 100%;
+  aspect-ratio: 1;
+  min-height: 60px;
+  max-height: 60px;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+  background-color: var(--background-color);
+  cursor: move;
+  transition: transform 0.3s ease;
+}
+
+.folderThumbnail:hover {
+  transform: scale(1.05);
+}
+
+.folderThumbnailImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.folderThumbnailLabel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 10px;
+  padding: 2px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Main Viewer */
+.mainViewer {
+  flex: 1;
+  height: calc(100vh - 110px);
+  margin-left: 8px;
+  background-color: var(--background-color);
+  position: relative;
+  overflow: hidden;
   
   @media (max-width: 768px) {
-    width: 100px; /* Largeur fixe en mobile */
-    height: 100px;
+    margin-left: 4px;
+    height: calc(100% - 40px);
   }
 }
 
-.mainViewer {
-  flex: 1;
+/* Viewer Types */
+.viewer, .viewerHalf, .singleViewer {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: black;
   display: flex;
-  
-  @media (max-width: 768px) {
-    height: calc(100vh - 170px); /* Ajuste la hauteur en tenant compte des thumbnails */
-  }
+  justify-content: center;
+  align-items: center;
+  height: 80%;
+  position: relative;
 }
 
 .dualViewer {
   display: flex;
-  height: 100%;
+  gap: 2px;
+  height: calc(100vh - 200px);
   
   @media (max-width: 768px) {
     flex-direction: column;
@@ -584,302 +148,37 @@
   }
 }
 
+/* Images */
 .image {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  
-  @media (max-width: 768px) {
-    width: 100%;
-    height: 100%;
-  }
-}
-
-.bottomBar {
-  height: 50px;
-  padding: 0.5rem;
-  
-  @media (max-width: 768px) {
-    height: auto;
-    padding: 0.5rem;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-}
-
-/* Ajout des styles pour le drag & drop tactile */
-.folderThumbnail {
-  touch-action: none; /* Permet le drag & drop tactile */
-}
-
-/* Améliore les contrôles tactiles */
-.viewer {
-  touch-action: none;
-  
-  @media (max-width: 768px) {
-    &:active {
-      cursor: grabbing;
-    }
-  }
-}
-
-/* Ajuster les boutons pour mobile */
-.responseButton, .sheetLink {
-  @media (max-width: 768px) {
-    padding: 8px 12px;
-    font-size: 14px;
-    width: auto;
-  }
-}
-
-/* Ajuster le popup des raccourcis */
-.shortcutPopup {
-  @media (max-width: 768px) {
-    width: calc(100vw - 40px);
-    left: 20px;
-    right: 20px;
-  }
-}
-
-/* Modifications des styles existants et ajout des media queries */
-
-.container {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  position: fixed;
-  width: 100%;
-  top: 0;
-  left: 0;
-}
-
-.layout {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-
-  @media (max-width: 768px) {
-    flex-direction: row;  /* Changé de column à row */
-    height: calc(100vh - 60px); /* Ajusté pour la barre du bas */
-  }
-}
-
-.folderGrid {
-  width: 112px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  overflow-y: auto;
-  
-  @media (max-width: 768px) {
-    width: 80px; /* Réduit la largeur sur mobile */
-    padding: 0.25rem;
-    background-color: rgba(0, 0, 0, 0.8);
-  }
-}
-
-.folderThumbnail {
-  @media (max-width: 768px) {
-    width: 70px;
-    height: 70px;
-    margin-bottom: 0.25rem;
-  }
-}
-
-.mainViewer {
-  flex: 1;
-  
-  @media (max-width: 768px) {
-    height: 100%;
-    margin-left: 0;
-  }
-}
-
-.viewer {
-  touch-action: manipulation; /* Améliore le comportement tactile */
-  
-  @media (max-width: 768px) {
-    width: 100%;
-    height: 100%;
-  }
-}
-
-.image {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  transform-origin: center;
-  
-  @media (max-width: 768px) {
-    width: 100%;
-    height: 100%;
-  }
-}
-
-.bottomBar {
-  @media (max-width: 768px) {
-    height: 60px;
-    padding: 0.5rem;
-    justify-content: space-around;
-  }
-}
-
-/* Ajout des styles pour le zoom tactile */
-.zoomable {
+  background-color: var(--background-color);
   transform-origin: center;
   transition: transform 0.1s ease-out;
 }
 
-/* RadiologyViewer.module.css */
-.container {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  
-  @media (max-width: 768px) {
-    height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-  }
+.folderLabel {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  z-index: 10;
 }
 
-.layout {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-  height: calc(100vh - 110px); /* Ajuster pour l'en-tête et le bas */
-  
-  @media (max-width: 768px) {
-    flex-direction: row;
-    gap: 0;
-    height: calc(100vh - 100px);
-  }
-}
-
-.folderGrid {
-  width: 112px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  overflow-y: auto;
-  
-  @media (max-width: 768px) {
-    width: 70px;
-    padding: 5px;
-    background: rgba(0, 0, 0, 0.8);
-    gap: 5px;
-  }
-}
-
-.folderThumbnail {
-  @media (max-width: 768px) {
-    height: 60px;
-    width: 60px;
-    margin-bottom: 5px;
-  }
-}
-
-.folderThumbnailImage {
-  @media (max-width: 768px) {
-    height: 45px;
-    object-fit: cover;
-  }
-}
-
-.folderThumbnailLabel {
-  @media (max-width: 768px) {
-    font-size: 10px;
-    height: 15px;
-  }
-}
-
-.mainViewer {
-  @media (max-width: 768px) {
-    margin-left: 0;
-    flex: 1;
-    height: 100%;
-  }
-}
-
-.bottomBar {
-  height: 50px;
-  padding: 0.5rem;
-  
-  @media (max-width: 768px) {
-    height: 40px;
-    padding: 5px 10px;
-  }
-}
-
-.responseButton, .sheetLink {
-  @media (max-width: 768px) {
-    padding: 5px 10px;
-    font-size: 12px;
-  }
-}
-
-.container {
-  height: calc(100vh - 60px); /* 60px pour l'en-tête */
-  margin-top: 60px; /* Espace pour l'en-tête */
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  width: 100%;
-  left: 0;
-  
-  @media (max-width: 768px) {
-    height: calc(100vh - 120px); /* Ajustement pour l'en-tête mobile et la barre inférieure */
-    margin-top: 60px;
-  }
-}
-
-.layout {
-  display: flex;
-  height: calc(100% - 50px); /* 50px pour la barre de réponse */
-  overflow: hidden;
-  
-  @media (max-width: 768px) {
-    flex-direction: row;
-    height: calc(100% - 40px);
-  }
-}
-
-.folderGrid {
-  width: 112px;
-  height: 100%;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 8px;
-  background-color: rgba(0, 0, 0, 0.8);
-  
-  @media (max-width: 768px) {
-    width: 80px;
-    padding: 4px;
-    gap: 4px;
-  }
-}
-
-.mainViewer {
-  flex: 1;
-  display: flex;
-  overflow: hidden;
-  padding-left: 8px;
-  height: 100%;
-  
-  @media (max-width: 768px) {
-    padding-left: 4px;
-  }
-}
-
+/* Bottom Bar */
 .bottomBar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   height: 50px;
-  background-color: var(--header-background, #181c2e); /* Couleur du mode sombre par défaut */
-  color: white;
+  background-color: var(--header-background);
+  color: var(--header-text);
   padding: 0 16px;
   display: flex;
   align-items: center;
@@ -889,167 +188,13 @@
   @media (max-width: 768px) {
     height: 40px;
     padding: 0 8px;
-    position: fixed; /* S'assurer qu'il reste fixé en bas */
+    position: fixed;
     bottom: 0;
-    display: flex !important; /* Forcer l'affichage */
-    background-color: var(--header-background, #181c2e);
+    display: flex !important;
   }
 }
 
-.container {
-  height: calc(100vh - 60px); /* Hauteur totale moins l'en-tête */
-  margin-top: 60px; /* Espace pour l'en-tête */
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  width: 100%;
-  left: 0;
-  background-color: #fff;
-}
-
-.layout {
-  display: flex;
-  flex: 1;
-  height: calc(100% - 50px); /* Espace pour la barre de réponse */
-  position: relative;
-}
-
-.folderGrid {
-  width: 120px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 4px;
-  overflow-y: auto;
-  background-color: #fff; /* Enlève le fond noir */
-  
-  @media (max-width: 768px) {
-    width: 80px;
-    height: 100%;
-    padding: 2px;
-  }
-}
-
-.folderThumbnail {
-  width: 100%;
-  height: 80px; /* Hauteur fixe plus petite */
-  border-radius: 4px;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  
-  @media (max-width: 768px) {
-    height: 60px; /* Encore plus petit sur mobile */
-    margin-bottom: 2px;
-  }
-}
-
-.folderThumbnailImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.mainViewer {
-  flex: 1;
-  margin-left: 8px;
-  position: relative;
-}
-
-.folderGrid {
-  width: 80px; /* Réduit de 120px à 80px */
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 4px;
-  overflow-y: auto;
-  background-color: var(--background-color); /* Utilise la couleur de fond du thème */
-  height: calc(100vh - 110px); /* Ajuste la hauteur pour éviter le débordement */
-  
-  @media (max-width: 768px) {
-    width: 60px;
-    height: calc(100vh - 150px);
-  }
-}
-
-.folderThumbnail {
-  width: 100%;
-  aspect-ratio: 1; /* Force un ratio carré */
-  min-height: 60px;
-  max-height: 60px; /* Force une hauteur fixe */
-  border-radius: 4px;
-  overflow: hidden;
-  position: relative;
-  margin-bottom: 4px;
-  flex-shrink: 0; /* Empêche la réduction */
-  background-color: var(--background-color);
-}
-
-.folderThumbnailImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* S'assure que l'image couvre tout l'espace */
-}
-
-.folderThumbnailLabel {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background-color: rgba(0, 0, 0, 0.6);
-  color: white;
-  font-size: 10px;
-  padding: 2px;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.mainViewer {
-  flex: 1;
-  height: calc(100vh - 110px); /* Ajuste la hauteur */
-  margin-left: 8px;
-  background-color: var(--background-color);
-  position: relative;
-  overflow: hidden;
-}
-
-.viewer, .viewerHalf, .singleViewer {
-
-  border: 1px solid var(--border-color);
-  height: 100%;
-  
-  img {
-    background-color: var(--background-color);
-  }
-}
-
-.container {
-  height: calc(100vh - 60px); /* Hauteur totale moins l'en-tête */
-  margin-top: 60px; /* Espace pour l'en-tête */
-  display: flex;
-  flex-direction: column;
-  background-color: var(--background-color);
-}
-
-.image {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  background-color: var(--background-color);
-}
-
-.content {
-  flex: 1;
-  background-color: var(--background-color);
-  overflow: hidden;
-}
-
-.layout {
-  display: flex;
-  height: 100%;
-  background-color: var(--background-color);
-}
+/* Buttons and Links */
 .responseButton, .sheetLink {
   background-color: var(--button-background, #4a69bd);
   color: white;
@@ -1059,39 +204,101 @@
   border: none;
   cursor: pointer;
   text-decoration: none;
+  transition: background-color 0.3s ease;
   
   @media (max-width: 768px) {
     padding: 6px 12px;
     font-size: 12px;
-    white-space: nowrap; /* Empêcher le retour à la ligne */
+    white-space: nowrap;
   }
 }
 
-.container {
-  height: calc(100vh - 60px);
-  margin-top: 60px;
+.responseButton:hover, .sheetLink:hover {
+  background-color: #3c55a5;
+}
+
+/* Shortcut Guide */
+.shortcutGuide {
   display: flex;
-  flex-direction: column;
-  position: fixed;
-  width: 100%;
+  align-items: center;
+}
+
+.shortcutIcon {
+  width: 30px;
+  height: 30px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: inherit;
+  transition: background-color 0.3s ease;
+}
+
+.shortcutIcon:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.shortcutPopup {
+  position: absolute;
+  bottom: 100%;
   left: 0;
-  background-color: var(--background-color);
+  background-color: white;
+  color: black;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  width: 300px;
+  display: none;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  z-index: 1000;
   
   @media (max-width: 768px) {
-    height: calc(100vh - 100px); /* Ajuster pour laisser de l'espace pour la barre du bas */
+    width: calc(100vw - 40px);
+    left: 20px;
+    right: 20px;
   }
 }
 
-.mainViewer {
-  background-color: var(--background-color);
-  flex: 1;
-  display: flex;
-  overflow: hidden;
-  padding-left: 8px;
-  height: calc(100% - 40px); /* Ajuster pour la barre du bas */
-  
-  @media (max-width: 768px) {
-    padding-left: 4px;
-    height: calc(100% - 40px); /* Ajuster pour la barre du bas mobile */
-  }
+.shortcutPopup.visible {
+  display: block;
+}
+
+/* Response Box */
+.responseBox {
+  position: fixed;
+  bottom: 60px;
+  right: 16px;
+  background-color: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  max-width: 320px;
+  z-index: 1001;
+}
+
+.responseText {
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+/* Dark Mode Adjustments */
+:global(.dark) .shortcutPopup {
+  background-color: #2d3748;
+  color: white;
+  border-color: #4a5568;
+}
+
+:global(.dark) .folderThumbnailLabel {
+  background-color: #1a202c;
+  color: #e2e8f0;
+}
+
+/* Touch Device Support */
+.zoomable {
+  transform-origin: center;
+  transition: transform 0.1s ease-out;
 }
