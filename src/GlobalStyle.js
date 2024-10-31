@@ -1,28 +1,28 @@
 import { createGlobalStyle } from 'styled-components';
 
 const GlobalStyle = createGlobalStyle`
- body {
-    background-color: var(--background-color);
-    color: var(--text-color);
+  body {
     margin: 0;
     padding: 0;
+    background-color: ${props => props.theme.background};
+    color: ${props => props.theme.text};
+    font-family: 'Poppins', sans-serif;
   }
-
+    
   :root {
-    --background-color: #F0F2F5;
-    --header-background: #4a69bd;
-    --text-color: #333;
-    --border-color: #E4E6E8;
-    --button-background: #4a69bd;
+    --background-color: ${props => props.theme.background || '#F0F2F5'};
+    --header-background: ${props => props.theme.headerBackground || '#4a69bd'};
+    --text-color: ${props => props.theme.text || '#333'};
+    --border-color: ${props => props.theme.border || '#E4E6E8'};
+    --button-background: ${props => props.theme.primary || '#4a69bd'};
   }
 
 
   [data-theme="dark"] {
-    --background-color: #181c2e; /* Couleur sombre comme la page de connexion */
+    --background-color: #181c2e;
     --header-background: #1f2335;
     --text-color: #fff;
     --border-color: #2a2a3e;
-    --button-background: #4a69bd;
   }
   .card {
     background-color: ${props => props.theme.card};
@@ -84,7 +84,7 @@ const GlobalStyle = createGlobalStyle`
     color: inherit;
   }
 
-    .link-button {
+.link-button {
     padding: 0.25rem 0.75rem;
     background-color: #ebf5ff;
     color: #3b82f6;
@@ -106,8 +106,9 @@ const GlobalStyle = createGlobalStyle`
     }
   }
 
-  body {
-    overflow-x: hidden;
+ body {
+    background-color: var(--background-color);
+    color: var(--text-color);
     margin: 0;
     padding: 0;
   }
@@ -133,23 +134,7 @@ const GlobalStyle = createGlobalStyle`
       margin-bottom: 0.5rem;
     }
   }
-
-    .container, .content, .layout, .mainViewer {
-    background-color: var(--background-color);
-  }
-
-  .viewer, .viewerHalf, .singleViewer {
-    background-color: var(--background-color);
-    border: 1px solid var(--border-color);
-  }
-
-  img {
-    background-color: var(--background-color);
-  }
-
 `;
-
-
 
 
 
