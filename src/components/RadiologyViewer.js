@@ -90,6 +90,7 @@ function RadiologyViewer() {
             setCurrentIndexRight(index);
           }
         }
+        
       }
     }
   }, [currentCase]);
