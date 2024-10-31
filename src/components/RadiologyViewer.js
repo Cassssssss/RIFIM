@@ -90,7 +90,7 @@ function RadiologyViewer() {
             setCurrentIndexRight(index);
           }
         }
-        
+
       }
     }
   }, [currentCase]);
@@ -471,34 +471,38 @@ useEffect(() => {
   
 
 
-  const renderViewer = useCallback((side) => (
-    <div 
-      className={`${styles.viewer} ${styles.viewerHalf}`}
-      onWheel={(e) => {
-        e.preventDefault();
-        if (e.ctrlKey) {
-          handleZoom(side, -e.deltaY);
-        } else {
-          handleScroll(e.deltaY, false, side);
-        }
-      }}
-      onMouseDown={(e) => handleMouseDown(e, side)}
-      onMouseMove={(e) => handleMouseMove(e, side)}
-      onMouseUp={handleMouseUp}
-      onContextMenu={(e) => e.preventDefault()}
-      onDragOver={(e) => e.preventDefault()}
-      onDrop={(e) => handleDrop(e, side)}
-    >
-      <div className={styles.folderLabel}>
-        {side === 'left' ? currentFolderLeft : currentFolderRight}
-      </div>
-      <img 
-        ref={side === 'left' ? leftViewerRef : rightViewerRef}
-        className={styles.image} 
-        alt={`Image médicale ${side}`}
-      />
+const renderViewer = useCallback((side) => (
+  <div 
+    className={`${styles.viewer} ${styles.viewerHalf}`}
+    onWheel={(e) => {
+      e.preventDefault();
+      if (e.ctrlKey) {
+        handleZoom(side, -e.deltaY);
+      } else {
+        handleScroll(e.deltaY, false, side);
+      }
+    }}
+    onMouseDown={(e) => handleMouseDown(e, side)}
+    onMouseMove={(e) => handleMouseMove(e, side)}
+    onMouseUp={handleMouseUp}
+    onContextMenu={(e) => e.preventDefault()}
+    onDragOver={(e) => e.preventDefault()}
+    onDrop={(e) => handleDrop(e, side)}
+    onTouchStart={(e) => handleTouchStart(e, side)}
+    onTouchMove={(e) => handleTouchMove(e, side)}
+    onTouchEnd={handleTouchEnd}
+  >
+    <div className={styles.folderLabel}>
+      {side === 'left' ? currentFolderLeft : currentFolderRight}
     </div>
-  ), [handleZoom, handleScroll, handleMouseDown, handleMouseMove, handleMouseUp, handleDrop, currentFolderLeft, currentFolderRight]);
+    <img 
+      ref={side === 'left' ? leftViewerRef : rightViewerRef}
+      className={styles.image} 
+      alt={`Image médicale ${side}`}
+    />
+  </div>
+), [handleZoom, handleScroll, handleMouseDown, handleMouseMove, handleMouseUp, handleDrop, 
+    handleTouchStart, handleTouchMove, handleTouchEnd, currentFolderLeft, currentFolderRight]);
 
 const renderFolderThumbnails = useCallback(() => {
   if (!currentCase || !currentCase.folders) return null;
