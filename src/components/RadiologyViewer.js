@@ -341,7 +341,7 @@ useEffect(() => {
     const viewer = document.querySelector(`.${styles.viewer}`);
     let touchStartY = 0;
     let lastScrollTime = 0;
-    const scrollDelay = 150; // Délai minimum entre les défilements
+    const scrollDelay = 0; // Délai minimum entre les défilements
     
     const handleTouchStart = (e) => {
       touchStartY = e.touches[0].clientY;
@@ -353,11 +353,12 @@ useEffect(() => {
       const deltaY = touchStartY - currentY;
       const currentTime = Date.now();
       
-      // Vérifier si assez de temps s'est écoulé depuis le dernier défilement
       if (currentTime - lastScrollTime > scrollDelay) {
-        if (Math.abs(deltaY) > 5) { // Seuil minimum pour défilement
+        // Augmenter le seuil et réduire la "force" du défilement
+        if (Math.abs(deltaY) > 1) { // Augmenté de 5 à 15
           const direction = deltaY > 0 ? 1 : -1;
-          handleScroll(direction * 100, false, isSingleViewMode ? 'single' : 'left');
+          // Réduire la valeur de 100 à 50 pour un défilement plus doux
+          handleScroll(direction * 9, false, isSingleViewMode ? 'single' : 'left');
           lastScrollTime = currentTime;
         }
       }
