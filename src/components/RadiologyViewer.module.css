@@ -375,3 +375,61 @@
   overflow: hidden;
   height: 100%;
 }
+
+/* Dans RadiologyViewer.module.css */
+
+/* Ajustez le conteneur principal */
+.container {
+  position: absolute;
+  width: 100%;
+  height: calc(100vh - 60px);
+  left: 0;
+  top: 60px;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-color);
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    /* Ajustez la hauteur pour le mobile */
+    height: calc(100vh - 100px); /* Augmentez l'espace pour la barre du bas */
+  }
+}
+
+/* Ajustez la barre du bas */
+.bottomBar {
+  height: 50px;
+  width: 100%;
+  margin: 0;
+  padding: 0 16px;
+  background-color: var(--header-background);
+  color: var(--header-text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 1000;
+  
+  @media (max-width: 768px) {
+    position: fixed; /* Fixe la barre en bas */
+    bottom: 0;
+    left: 0;
+    height: 40px;
+    padding: 0 8px;
+  }
+}
+
+/* Ajustez le contenu principal */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-color);
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+
+  @media (max-width: 768px) {
+    padding-bottom: 40px; /* Ajoutez un padding pour éviter que le contenu ne soit caché par la barre fixe */
+  }
+}
