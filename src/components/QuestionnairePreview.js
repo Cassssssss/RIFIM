@@ -481,7 +481,7 @@ const QuestionPreview = ({
   key={index}
   d={createPathFromPoints(area.points)}
   fill={selectedOptions[question.id]?.includes(index) 
-    ? `rgba(${getColorValues(area.color || 'blue')}, 0.3)` 
+    ? `rgba(${getColorValues(area.color || 'blue')}, 0.5)` 
     : `rgba(${getColorValues(area.color || 'blue')}, 0.2)`}
   stroke={`rgba(${getColorValues(area.color || 'blue')}, 0.5)`}
   strokeWidth="0.2"

@@ -292,7 +292,7 @@ const ImageMapEditor = ({ image, areas = [], onAreasChange }) => {
   d={createPathFromPoints(area.points)}
   fill={
     selectedArea === index
-      ? `rgba(${getColorValues(area.color || 'blue')}, 0.3)`  // Changé de 0.5 à 0.3
+      ? `rgba(${getColorValues(area.color || 'blue')}, 0.5)`  // Changé de 0.5 à 0.3
       : `rgba(${getColorValues(area.color || 'blue')}, 0.2)`  // Changé de 0.2 à 0.1
   }
   stroke={`rgba(${getColorValues(area.color || 'blue')}, 0.5)`}

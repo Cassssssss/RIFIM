@@ -20,6 +20,10 @@ const QuestionSchema = new mongoose.Schema({
   text: String,
   type: String,
   page: { type: Number, default: 1 },
+  isImportantToCheck: { // Ajoutez cette ligne
+    type: Boolean,
+    default: false
+  },
   image: {
     src: String,
     caption: String

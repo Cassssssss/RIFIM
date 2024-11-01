@@ -691,6 +691,19 @@ const handleSave = useCallback(async () => {
   placeholder="Texte de la question"
 />
 
+{/* Ajoutez ce bloc juste après */}
+{depth === 1 && ( // Uniquement pour les questions de premier niveau
+  <div className="flex items-center ml-4">
+    <input
+      type="checkbox"
+      checked={question.isImportantToCheck || false}
+      onChange={(e) => updateQuestion(path, 'isImportantToCheck', e.target.checked)}
+      className="h-4 w-4 text-blue-600 rounded border-gray-300"
+    />
+    <span className="ml-2 text-sm text-gray-600">Important ?</span>
+  </div>
+)}
+
 {depth === 1 && ( // Uniquement pour les questions principales
   <div className="flex items-center mx-2 gap-2">
     <label className="text-sm mr-2">Page:</label>
