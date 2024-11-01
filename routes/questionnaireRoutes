@@ -296,30 +296,35 @@ router.post('/:id/links-images', authMiddleware, upload.single('file'), async (r
 // PUT mise à jour d'un questionnaire
 router.put('/:id', authMiddleware, async (req, res) => {
   try {
-    const { title, questions, selectedOptions, crData, hiddenQuestions, links, pageTitles } = req.body;  // Ajoutez pageTitles ici
+    const { questions, ...rest } = req.body;
+    
+    // Nettoyer et valider les données des questions
+    const cleanedQuestions = questions.map(q => {
+      if (q.type === 'imageMap' && q.questionImage) {
+        return {
+          ...q,
+          questionImage: {
+            src: q.questionImage.src,
+            areas: Array.isArray(q.questionImage.areas) ? q.questionImage.areas : []
+          }
+        };
+      }
+      return q;
+    });
 
     const updatedQuestionnaire = await Questionnaire.findOneAndUpdate(
       { _id: req.params.id, user: req.userId },
-      { 
-        $set: {
-          title, 
-          questions, 
-          selectedOptions, 
-          crData, 
-          hiddenQuestions,
-          links: links || new Map(),
-          pageTitles: pageTitles || {}  // Ajoutez cette ligne
-        }
-      },
-      { new: true, runValidators: true }
+      { ...rest, questions: cleanedQuestions },
+      { new: true }
     );
 
     if (!updatedQuestionnaire) {
       return res.status(404).json({ message: 'Questionnaire non trouvé' });
     }
+
     res.json(updatedQuestionnaire);
   } catch (error) {
-    console.error('Erreur lors de la mise à jour du questionnaire:', error);
+    console.error('Erreur lors de la mise à jour:', error);
     res.status(500).json({ message: error.message });
   }
 });

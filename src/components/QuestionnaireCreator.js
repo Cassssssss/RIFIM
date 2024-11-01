@@ -8,6 +8,7 @@ import axios from '../utils/axiosConfig';
 import QuestionnairePreview from './QuestionnairePreview';
 import LinkEditor from './LinkEditor';
 import { AlertTriangle } from 'lucide-react';
+import ImageMapEditor from './ImageMapEditor';
 
 // Styled components (inchangés)
 const CreatorWrapper = styled.div`
@@ -249,6 +250,9 @@ const [linkToDelete, setLinkToDelete] = useState(null);
         try {
           const response = await axios.get(`/questionnaires/${id}`);
           const loadedQuestionnaire = response.data;
+  
+          // Ajoutez ce console.log pour vérifier les données
+          console.log('loadedQuestionnaire:', loadedQuestionnaire);
           
           // Convertir les liens
           const linksObject = {};
@@ -266,8 +270,11 @@ const [linkToDelete, setLinkToDelete] = useState(null);
               crTexts: loadedQuestionnaire.crData?.crTexts || {},
               freeTexts: loadedQuestionnaire.crData?.freeTexts || {}
             },
-            pageTitles: loadedQuestionnaire.pageTitles || {} // Assurez-vous que c'est un objet
+            pageTitles: loadedQuestionnaire.pageTitles || {}
           });
+          
+          // Ajoutez un console.log pour vérifier le state mis à jour
+          console.log('questionnaire après setQuestionnaire:', questionnaire);
         } catch (error) {
           console.error('Erreur lors du chargement du questionnaire:', error);
         }
@@ -275,7 +282,6 @@ const [linkToDelete, setLinkToDelete] = useState(null);
       fetchQuestionnaire();
     }
   }, [id]);
-
   
   const handleOpenLinkEditor = (elementId, linkIndex) => {
     setCurrentEditingElement({
@@ -340,6 +346,8 @@ const [linkToDelete, setLinkToDelete] = useState(null);
     setQuestionnaire(prev => ({ ...prev, [field]: value }));
   }, []);
 
+
+
   const moveQuestion = useCallback((dragPath, hoverPath) => {
     setQuestionnaire(prev => {
       const newQuestions = JSON.parse(JSON.stringify(prev.questions));
@@ -403,6 +411,39 @@ const [linkToDelete, setLinkToDelete] = useState(null);
       return { ...prev, questions: updatedQuestions };
     });
   }, []);
+
+
+  const handleQuestionImageUpload = useCallback(async (e, path) => {
+    const file = e.target.files[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('questionnaireTitle', questionnaire.title);
+
+      try {
+        const response = await axios.post('upload-image', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+
+        // Récupérer la question actuelle à partir du path
+        let currentQuestion = questionnaire.questions;
+        for (let i = 0; i < path.length - 1; i++) {
+          currentQuestion = currentQuestion[path[i]];
+        }
+        currentQuestion = currentQuestion[path[path.length - 1]];
+
+        // Mettre à jour avec les zones existantes si elles existent
+        updateQuestion(path, 'questionImage', {
+          src: response.data.imageUrl,
+          areas: currentQuestion?.questionImage?.areas || []
+        });
+      } catch (error) {
+        console.error('Erreur lors du téléchargement de l\'image:', error);
+      }
+    }
+  }, [questionnaire, updateQuestion]);
 
   const handleImageUpload = useCallback(async (file, elementId, questionnaireTitle) => {
     const formData = new FormData();
@@ -545,25 +586,32 @@ const [linkToDelete, setLinkToDelete] = useState(null);
 
 const handleSave = useCallback(async () => {
   try {
-    const questionnaireToSave = {
+    const questionsWithAreas = questionnaire.questions.map(question => {
+      if (question.type === 'imageMap' && question.questionImage) {
+        return {
+          ...question,
+          questionImage: {
+            src: question.questionImage.src,
+            areas: question.questionImage.areas || []
+          }
+        };
+      }
+      return question;
+    });
+
+    const dataToSave = {
       ...questionnaire,
-      links: questionLinks,
-      pageTitles: questionnaire.pageTitles || {}  // Assurez-vous que cette ligne est présente
+      questions: questionsWithAreas,
+      links: questionLinks
     };
-    console.log('PageTitles à sauvegarder:', questionnaireToSave.pageTitles); // Ajoutez cette ligne pour le debug
-    let response;
-    if (id) {
-      response = await axios.put(`/questionnaires/${id}`, questionnaireToSave);
-    } else {
-      response = await axios.post('/questionnaires', questionnaireToSave);
-    }
-    console.log('Réponse du serveur:', response.data);
+
+    const response = await axios.put(`/questionnaires/${id}`, dataToSave);
     setQuestionnaire(response.data);
     navigate('/questionnaires');
   } catch (error) {
-    console.error('Erreur lors de la sauvegarde du questionnaire:', error);
+    console.error('Erreur lors de la sauvegarde:', error);
   }
-}, [questionnaire, questionLinks, id, navigate]);
+}, [questionnaire, id, navigate, questionLinks]);
 
   const handleFreeTextChange = useCallback((questionId, value) => {
     setQuestionnaire(prev => ({
@@ -612,11 +660,13 @@ const handleSave = useCallback(async () => {
   };
 
     const renderQuestion = useCallback((question, path) => {
+      
     const isExpanded = expandedQuestions[path.join('-')] ?? true;
     const questionId = path.join('-');
     const depth = path.length;
     const links = questionLinks[questionId] || [];
   
+    console.log('question.questionImage:', question.questionImage);
     return (
       <DraggableQuestion
         key={question.id || `question-${questionId}`}
@@ -728,17 +778,97 @@ const handleSave = useCallback(async () => {
             </div>
           </QuestionHeader>
           {isExpanded && (
-            <QuestionContent depth={depth}>
-              <StyledSelect
-                value={question.type || 'single'}
-                onChange={(e) => updateQuestion(path, 'type', e.target.value)}
-              >
-                <option value="single">Choix unique</option>
-                <option value="multiple">Choix multiple</option>
-                <option value="text">Texte libre</option>
-                <option value="number">Numérique</option>
-              </StyledSelect>
-              {['single', 'multiple'].includes(question.type) && (
+  <QuestionContent depth={depth}>
+    <StyledSelect
+      value={question.type || 'single'}
+      onChange={(e) => updateQuestion(path, 'type', e.target.value)}
+    >
+      <option value="single">Choix unique</option>
+      <option value="multiple">Choix multiple</option>
+      <option value="text">Texte libre</option>
+      <option value="number">Numérique</option>
+      <option value="imageMap">Image interactive</option>
+    </StyledSelect>
+
+    {/* Image informative standard - seulement si ce n'est pas une image interactive */}
+    {question.type !== 'imageMap' && (
+      <div className="flex items-center mb-4">
+        <ImageUpload
+          onImageUpload={handleImageUpload}
+          currentImage={question.image?.src}
+          id={questionId}
+          onAddCaption={handleAddCaption}
+          caption={question.image?.caption}
+          questionnaireTitle={questionnaire.title}
+        />
+      </div>
+    )}
+
+    {/* Bloc pour la question imageMap */}
+    {question.type === 'imageMap' && (
+      <div className="mt-4">
+        {!question.questionImage?.src ? (
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleQuestionImageUpload(e, path)}
+              className="hidden"
+              id={`question-image-${questionId}`}
+            />
+            <label
+              htmlFor={`question-image-${questionId}`}
+              className="cursor-pointer flex flex-col items-center"
+            >
+              <Camera size={48} className="text-gray-400 mb-2" />
+              <span className="text-gray-600">
+                Cliquez pour ajouter l'image de la question
+              </span>
+            </label>
+          </div>
+        ) : (
+          <div>
+            <div className="relative">
+              <img 
+                src={question.questionImage.src} 
+                alt="Question" 
+                className="w-full rounded-lg"
+              />
+              <div className="absolute top-2 right-2">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleQuestionImageUpload(e, path)}
+                  className="hidden"
+                  id={`question-image-change-${questionId}`}
+                />
+                <label
+                  htmlFor={`question-image-change-${questionId}`}
+                  className="cursor-pointer p-2 bg-white rounded-full shadow hover:bg-gray-100"
+                >
+                  <Camera size={20} className="text-gray-600" />
+                </label>
+              </div>
+            </div>
+            {console.log('Areas passées à ImageMapEditor:', question.questionImage.areas)}
+
+            <ImageMapEditor
+  image={question.questionImage}
+  areas={question.questionImage.areas || []}
+  onAreasChange={(newAreas) => 
+    updateQuestion(path, 'questionImage', {
+      ...question.questionImage,
+      areas: newAreas
+    })
+  }
+/>
+          </div>
+        )}
+      </div>
+    )}
+
+    {/* Ancien rendu des options pour les questions single/multiple */}
+    {['single', 'multiple'].includes(question.type) && (
                 <div className="space-y-2">
 {question.options && question.options.map((option, oIndex) => (
   <OptionCard key={option.id || `${questionId}-option-${oIndex}`}>

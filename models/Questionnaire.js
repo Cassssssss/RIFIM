@@ -24,8 +24,21 @@ const QuestionSchema = new mongoose.Schema({
     src: String,
     caption: String
   },
+  questionImage: {
+    src: String,
+    areas: [{
+      type: { type: String, enum: ['polygon', 'rectangle'] },
+      points: [{
+        x: Number,
+        y: Number
+      }],
+      text: String,
+      crText: String,
+      color: String // Ajoute cette ligne
+    }]
+  },
   options: [OptionSchema],
-  isImportantToCheck: {  // Ajout de ce champ
+  isImportantToCheck: {
     type: Boolean,
     default: false
   }

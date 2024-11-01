@@ -50,6 +50,35 @@ const QuestionCard = styled.div`
   }
 `;
 
+const ImageMapContainer = styled.div`
+  position: relative;
+  width: 100%;
+  margin: 1rem 0;
+  
+  img, svg {
+    width: 100%;
+    height: auto;
+    display: block; // Important pour éviter les espaces
+  }
+  
+  svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+`;
+const getColorValues = (color) => {
+  const colors = {
+    blue: '0, 123, 255',
+    red: '255, 0, 0',
+    green: '0, 255, 0',
+    yellow: '255, 255, 0'
+  };
+  return colors[color] || colors.blue;
+};
+
 const getBackgroundColor = (depth) => {
   const baseHue = 210;
   const saturation = 90;
@@ -123,6 +152,15 @@ const LinkButton = styled.button`
     background-color: #dbeafe;
   }
 `;
+
+const createPathFromPoints = (points) => {
+  if (!points || points.length < 2) return '';
+  return (
+    points
+      .map((point, i) => `${i === 0 ? 'M' : 'L'} ${point.x} ${point.y}`)
+      .join(' ') + ' Z'
+  );
+};
 
 const QuestionPreview = ({ 
   question, 
@@ -418,6 +456,63 @@ const QuestionPreview = ({
                   className="w-full p-3 border rounded-md min-h-[100px]"
                 />
               )}
+{question.type === 'imageMap' && question.questionImage && (
+  <div>
+<ImageMapContainer>
+  <img 
+    src={question.questionImage.src} 
+    alt="Question"
+    className="rounded-lg"
+  />
+  <svg
+    viewBox="0 0 100 100"
+    preserveAspectRatio="none"
+    style={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      pointerEvents: 'all'
+    }}
+  >
+        {question.questionImage.areas?.map((area, index) => (
+<path
+  key={index}
+  d={createPathFromPoints(area.points)}
+  fill={selectedOptions[question.id]?.includes(index) 
+    ? `rgba(${getColorValues(area.color || 'blue')}, 0.3)` 
+    : `rgba(${getColorValues(area.color || 'blue')}, 0.2)`}
+  stroke={`rgba(${getColorValues(area.color || 'blue')}, 0.5)`}
+  strokeWidth="0.2"
+  onClick={() => {
+    setSelectedOptions(question.id, index, 'multiple');
+              if (showCRFields && area.crText) {
+                handleCRTextChange(index, area.crText);
+              }
+            }}
+            style={{ cursor: 'pointer' }}
+          />
+        ))}
+      </svg>
+    </ImageMapContainer>
+    {showCRFields && (
+      <div className="mt-4 space-y-4">
+        {question.questionImage.areas?.map((area, index) => (
+          <div key={index} className="p-4 bg-white rounded shadow">
+            <h5 className="font-medium mb-2">Zone {index + 1} - {area.text}</h5>
+            <textarea
+              value={crTexts[question.id]?.[index] || ''}
+              onChange={(e) => handleCRTextChange(index, e.target.value)}
+              placeholder="Texte du CR pour cette option"
+              className="w-full p-2 border rounded min-h-[100px]"
+            />
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+)}
 
               {question.type === 'number' && (
                 <input

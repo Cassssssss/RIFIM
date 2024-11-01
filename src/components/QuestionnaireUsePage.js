@@ -73,7 +73,16 @@ const QuestionnaireUsePage = () => {
     
     const generateCRRecursive = (questions, section) => {
       questions.forEach(question => {
-        if (question.type === 'text' || question.type === 'number') {
+        // Ajouter la gestion des imageMap ici
+        if (question.type === 'imageMap' && question.questionImage) {
+          const selectedAreas = selectedOptions[question.id] || [];
+          selectedAreas.forEach(areaIndex => {
+            const crText = crTexts[question.id]?.[areaIndex];
+            if (crText) {
+              addContent(crText, false, section);
+            }
+          });
+        } else if (question.type === 'text' || question.type === 'number') {
           const freeText = freeTexts[question.id];
           if (freeText) {
             if (question.text === 'INDICATION') {
@@ -99,7 +108,7 @@ const QuestionnaireUsePage = () => {
           selectedIndices.forEach(index => {
             const option = question.options[index];
             if (!option) return;
-    
+  
             const crText = crTexts[question.id]?.[index];
             if (crText) {
               addContent(crText, false, section);
@@ -108,7 +117,7 @@ const QuestionnaireUsePage = () => {
                 conclusionContent.push(crText);
               }
             }
-    
+  
             if (option.subQuestions && option.subQuestions.length > 0) {
               generateCRRecursive(option.subQuestions, section);
             }
@@ -120,7 +129,7 @@ const QuestionnaireUsePage = () => {
     if (questionnaire && Array.isArray(questionnaire.questions)) {
       generateCRRecursive(questionnaire.questions, mainContent);
     }
-
+  
     if (conclusionContent.length > 0) {
       mainContent.push('');
       mainContent.push('<strong>Conclusion :</strong>');
@@ -128,10 +137,9 @@ const QuestionnaireUsePage = () => {
         mainContent.push(content);
       });
     }
-
+  
     return mainContent.join('\n');
   };
-
   useEffect(() => {
     const generatedCR = generateCR();
     setEditableCR(generatedCR);

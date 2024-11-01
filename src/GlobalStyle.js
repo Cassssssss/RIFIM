@@ -24,6 +24,7 @@ const GlobalStyle = createGlobalStyle`
     --text-color: #fff;
     --border-color: #2a2a3e;
   }
+    
   .card {
     background-color: ${props => props.theme.card};
     border-color: ${props => props.theme.border};

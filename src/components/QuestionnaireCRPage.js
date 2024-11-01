@@ -67,17 +67,26 @@ const QuestionnaireCRPage = () => {
   const generateCR = useCallback(() => {
     let mainContent = [];
     let conclusionContent = [];
-  
+    
     const addContent = (content, isTitle = false, section) => {
       if (isTitle || content.startsWith('<strong>') || content.startsWith('<u>')) {
         section.push('');
       }
       section.push(content.trim());
     };
-  
+    
     const generateCRRecursive = (questions, section) => {
       questions.forEach(question => {
-        if (question.type === 'text' || question.type === 'number') {
+        if (question.type === 'imageMap' && question.questionImage) {
+          // Gérer les zones sélectionnées pour l'image interactive
+          const selectedAreas = selectedOptions[question.id] || [];
+          selectedAreas.forEach(areaIndex => {
+            const crText = crTexts[question.id]?.[areaIndex];
+            if (crText) {
+              addContent(crText, false, section);
+            }
+          });
+        } else if (question.type === 'text' || question.type === 'number') {
           const freeText = freeTexts[question.id];
           if (freeText) {
             if (question.text === 'INDICATION' || question.text === 'CONCLUSION') {
@@ -255,21 +264,22 @@ const QuestionnaireCRPage = () => {
           </div>
         </div>
         <div className="w-full lg:w-2/4">
-          <div className="rounded-lg p-0">
-            <h3 className="text-xl font-semibold mb-4">Aperçu du CR</h3>
-            <div 
-              className="bg-gray-100 p-4 rounded-md whitespace-pre-wrap font-calibri text-base"
-              contentEditable={true}
-              onBlur={(e) => setEditableCR(e.target.innerHTML)}
-              dangerouslySetInnerHTML={{ __html: editableCR }}
-            />
-          </div>
-          <button 
-            onClick={handleSave}
-            className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-          >
-            Enregistrer
-          </button>
+        <div className="rounded-lg p-0">
+  <h3 className="text-xl font-semibold mb-4">Aperçu du CR</h3>
+  <div 
+    className="bg-gray-100 p-4 rounded-md whitespace-pre-wrap font-calibri text-base"
+    contentEditable={true}
+    onBlur={(e) => setEditableCR(e.target.innerHTML)}
+    dangerouslySetInnerHTML={{ __html: editableCR }}
+  />
+</div>
+
+<button 
+  onClick={handleSave}
+  className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+>
+  Enregistrer
+</button>
         </div>
       </div>
     </div>
