@@ -40,10 +40,10 @@ router.post('/login', async (req, res) => {
     }
     console.log('Génération du token JWT');
     const token = jwt.sign(
-        { userId: user._id },
-        process.env.JWT_SECRET,
-        { expiresIn: '1h' }
-      );
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '8h' } // Augmenté à 8 heures
+    );
       res.json({ token, userId: user._id });
     } catch (error) {
         console.error('Erreur lors de la connexion:', error);

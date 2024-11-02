@@ -188,6 +188,35 @@ const TutorialButton = styled.button`
   }
 `;
 
+const VideoContainer = styled.div`
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: ${props => props.theme.card};
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  h3 {
+    margin-bottom: 1rem;
+    color: ${props => props.theme.text};
+  }
+
+  .video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%; /* Ratio 16:9 */
+    height: 0;
+    overflow: hidden;
+    max-width: 100%;
+
+    iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+  }
+`;
+
 function QuestionnaireListPage() {
   const [questionnaires, setQuestionnaires] = useState([]);
   const [deletedQuestionnaires, setDeletedQuestionnaires] = useState([]);
@@ -573,6 +602,34 @@ function QuestionnaireListPage() {
             onClose={() => setShowTutorial(false)} 
           />
         )}
+        <VideoContainer>
+  <h3>Tutoriel vidéo</h3>
+  <div className="video-wrapper">
+    <iframe
+      width="560"
+      height="315"
+      src="https://www.youtube.com/embed/h525ujn4jBc"
+      title="Tutoriel vidéo"
+      frameBorder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowFullScreen
+    ></iframe>
+  </div>
+</VideoContainer>
+<VideoContainer>
+  <h3>Tutoriel vidéo</h3>
+  <div className="video-wrapper">
+    <iframe
+      width="560"
+      height="315"
+      src="https://www.youtube.com/embed/oIC9UXnVnOk"
+      title="Tutoriel vidéo"
+      frameBorder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowFullScreen
+    ></iframe>
+  </div>
+</VideoContainer>
       </ListContainer>
     </PageContainer>
   );

@@ -32,6 +32,35 @@ const TutorialButton = styled.button`
   }
 `;
 
+const VideoContainer = styled.div`
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: ${props => props.theme.card};
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  h3 {
+    margin-bottom: 1rem;
+    color: ${props => props.theme.text};
+  }
+
+  .video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%; /* Ratio 16:9 */
+    height: 0;
+    overflow: hidden;
+    max-width: 100%;
+
+    iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+  }
+`;
+
 
 const CollapsibleImageGallery = memo(({ folder, images, onImageClick, onDeleteImage, caseId, fetchFolderMainImage, onReorderImages }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -1054,8 +1083,23 @@ const handleReorderImages = useCallback(async (folder, reorderedImages) => {
           <pre className="bg-gray-100 p-4 rounded overflow-x-auto">
             {JSON.stringify(selectedCase, null, 2)}
           </pre>
+          
         </S.SectionContainer>
       )}
+      <VideoContainer>
+  <h3>Tutoriel vidéo</h3>
+  <div className="video-wrapper">
+    <iframe
+      width="560"
+      height="315"
+      src="https://www.youtube.com/embed/NerjVRmP7TA"
+      title="Tutoriel vidéo"
+      frameBorder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowFullScreen
+    ></iframe>
+  </div>
+</VideoContainer>
     </S.PageContainer>
   );
 }

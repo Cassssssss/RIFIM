@@ -124,16 +124,34 @@ function Home() {
         Elle comprend également une base de données de cas de radiologie pour vous entraîner et vous perfectionner.
       </Description>
       <VideoContainer>
-        <iframe
-          width="560"
-          height="315"
-          src="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-          title="Vidéo explicative RIFIM"
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        ></iframe>
-      </VideoContainer>
+  <iframe
+    width="560"
+    height="315"
+    src="https://www.youtube.com/embed/y1owHGbqhxg"
+    title="Deuxième vidéo RIFIM"
+    frameBorder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowFullScreen
+  ></iframe>
+</VideoContainer>
+    
+      <VideoContainer>
+  <iframe
+    width="560"
+    height="315"
+    src="https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0&modestbranding=1"
+    title="Vidéo explicative RIFIM"
+    frameBorder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowFullScreen
+  ></iframe>
+</VideoContainer>
+
+{/* Ajoutez un espacement entre les vidéos */}
+<div style={{ height: "2rem" }} />
+
+{/* Deuxième vidéo */}
+
       <ButtonContainer>
         <Button to="/questionnaires-list">Voir mes questionnaires</Button>
         <Button to="/cases-list">Visualiser mes cas de radiologie</Button>

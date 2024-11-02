@@ -245,6 +245,13 @@ const [linkToDelete, setLinkToDelete] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!id) {
+      // Nouveau questionnaire
+      alert("Veuillez créer et sauvegarder votre questionnaire avant d'ajouter des liens");
+    }
+  }, []);
+
+  useEffect(() => {
     if (id) {
       const fetchQuestionnaire = async () => {
         try {
@@ -284,6 +291,11 @@ const [linkToDelete, setLinkToDelete] = useState(null);
   }, [id]);
   
   const handleOpenLinkEditor = (elementId, linkIndex) => {
+    if (!id) {
+      alert('Veuillez d\'abord sauvegarder le questionnaire avant d\'ajouter des liens');
+      return;
+    }
+    
     setCurrentEditingElement({
       elementId,
       linkIndex: typeof linkIndex === 'undefined' ? undefined : linkIndex
@@ -584,34 +596,54 @@ const [linkToDelete, setLinkToDelete] = useState(null);
     });
   }, []);
 
-const handleSave = useCallback(async () => {
-  try {
-    const questionsWithAreas = questionnaire.questions.map(question => {
-      if (question.type === 'imageMap' && question.questionImage) {
-        return {
-          ...question,
-          questionImage: {
-            src: question.questionImage.src,
-            areas: question.questionImage.areas || []
-          }
-        };
+  const handleSave = useCallback(async () => {
+    try {
+      if (!questionnaire.title) {
+        alert('Le titre du questionnaire est requis');
+        return;
       }
-      return question;
-    });
-
-    const dataToSave = {
-      ...questionnaire,
-      questions: questionsWithAreas,
-      links: questionLinks
-    };
-
-    const response = await axios.put(`/questionnaires/${id}`, dataToSave);
-    setQuestionnaire(response.data);
-    navigate('/questionnaires');
-  } catch (error) {
-    console.error('Erreur lors de la sauvegarde:', error);
-  }
-}, [questionnaire, id, navigate, questionLinks]);
+  
+      const dataToSave = {
+        title: questionnaire.title,
+        questions: questionnaire.questions.map(question => ({
+          ...question,
+          page: question.page || 1,
+          type: question.type || 'single',
+          text: question.text || '',
+          id: question.id || Date.now().toString()
+        })),
+        selectedOptions: questionnaire.selectedOptions || {},
+        crData: {
+          crTexts: questionnaire.crData?.crTexts || {},
+          freeTexts: questionnaire.crData?.freeTexts || {}
+        },
+        pageTitles: questionnaire.pageTitles || {},
+        links: questionLinks
+      };
+  
+      console.log('ID du questionnaire:', id);
+      console.log('Données envoyées au serveur:', dataToSave);
+  
+      let response;
+      if (id) {
+        // Modification d'un questionnaire existant
+        response = await axios.put(`/questionnaires/${id}`, dataToSave);
+      } else {
+        // Création d'un nouveau questionnaire
+        response = await axios.post('/questionnaires', dataToSave);
+      }
+  
+      console.log('Réponse serveur:', response.data);
+      setQuestionnaire(response.data);
+      alert('Questionnaire sauvegardé avec succès');
+      navigate('/questionnaires');
+    } catch (error) {
+      console.error('Détails complets de l\'erreur:', error);
+      console.error('Données de la requête:', error?.config?.data);
+      console.error('Réponse serveur:', error?.response?.data);
+      alert(`Erreur lors de la sauvegarde: ${error?.response?.data?.message || error.message}`);
+    }
+  }, [questionnaire, id, navigate, questionLinks]);
 
   const handleFreeTextChange = useCallback((questionId, value) => {
     setQuestionnaire(prev => ({
@@ -764,13 +796,14 @@ const handleSave = useCallback(async () => {
     </button>
   </div>
 ))}
-                <button
-                  className="ml-2 p-1 text-blue-500 hover:text-blue-700 rounded-full hover:bg-blue-100"
-                  onClick={() => handleOpenLinkEditor(questionId)}
-                  title="Ajouter une nouvelle fiche"
-                >
-                  <Plus size={16} />
-                </button>
+<button
+  className={`ml-2 p-1 text-blue-500 hover:text-blue-700 rounded-full hover:bg-blue-100 ${!id ? 'opacity-50 cursor-not-allowed' : ''}`}
+  onClick={() => handleOpenLinkEditor(questionId)}
+  title={!id ? "Sauvegardez d'abord le questionnaire" : "Ajouter une nouvelle fiche"}
+  disabled={!id}
+>
+  <Plus size={14} />
+</button>
               </div>
               <button
                 className="ml-2 p-1 text-blue-500 hover:text-blue-700 rounded-full hover:bg-blue-100"

@@ -87,22 +87,30 @@ const ImageMapEditor = ({ image, areas = [], onAreasChange }) => {
     return colors[color] || colors.blue;
   };
 
- useEffect(() => {
-   const handleKeyDown = (e) => {
-     if ((e.key === 'Delete' || e.key === 'Backspace') && selectedArea !== null) {
-       e.preventDefault();
-       const updatedAreas = areas.filter((_, i) => i !== selectedArea);
-       onAreasChange(updatedAreas);
-       setSelectedArea(null);
-     } else if (e.key === 'Escape' && isDrawing) {
-       setIsDrawing(false);
-       setPoints([]);
-     }
-   };
-
-   window.addEventListener('keydown', handleKeyDown);
-   return () => window.removeEventListener('keydown', handleKeyDown);
- }, [selectedArea, areas, onAreasChange, isDrawing]);
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Vérifier si l'événement vient d'un champ de saisie
+      if (e.target.tagName.toLowerCase() === 'input' || 
+          e.target.tagName.toLowerCase() === 'textarea' || 
+          e.target.isContentEditable) {
+        return; // Ne rien faire si on est dans un champ de saisie
+      }
+  
+      // Sinon procéder avec la logique de suppression de zone
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedArea !== null) {
+        e.preventDefault();
+        const updatedAreas = areas.filter((_, i) => i !== selectedArea);
+        onAreasChange(updatedAreas);
+        setSelectedArea(null);
+      } else if (e.key === 'Escape' && isDrawing) {
+        setIsDrawing(false);
+        setPoints([]);
+      }
+    };
+  
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedArea, areas, onAreasChange, isDrawing]);
 
  const getMousePosition = (e) => {
     const svg = e.currentTarget;

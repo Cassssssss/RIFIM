@@ -8,8 +8,15 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    console.log('Requête envoyée:', config.method, config.url, config.data);
+    // Log plus détaillé de la requête
+    console.log('=== Détails de la requête ===');
+    console.log('Méthode:', config.method);
+    console.log('URL:', config.url);
+    console.log('Données envoyées:', config.data);
+    console.log('Headers:', config.headers);
+    
     const token = localStorage.getItem('token');
+    console.log('Token présent:', !!token);
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
@@ -25,20 +32,37 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
-      // Si on reçoit une erreur 401 (non autorisé)
+      console.log('=== Détails de l\'erreur ===');
+      console.log('Status:', error.response.status);
+      console.log('Données de réponse:', error.response.data);
+      console.log('Headers de réponse:', error.response.headers);
+
       if (error.response.status === 401) {
-        // Supprimer le token et le nom d'utilisateur du localStorage
         localStorage.removeItem('token');
         localStorage.removeItem('username');
-        
-        // Rediriger vers la page de connexion
         window.location.href = '/login';
-      }
-      // Pour les erreurs 404, on retourne un tableau vide comme avant
-      else if (error.response.status === 404) {
+      } else if (error.response.status === 404) {
         console.log('Resource not found:', error.config.url);
         return { data: { links: [] } };
+      } else if (error.response.status === 500) {
+        console.error('Erreur serveur détaillée:', {
+          message: error.response.data,
+          config: {
+            url: error.config.url,
+            method: error.config.method,
+            data: JSON.parse(error.config.data || '{}')
+          }
+        });
+        
+        // Message utilisateur plus convivial
+        alert('Une erreur est survenue lors de la sauvegarde. L\'erreur a été enregistrée pour analyse. Veuillez réessayer ou contacter le support si le problème persiste.');
       }
+    } else if (error.request) {
+      // La requête a été faite mais pas de réponse reçue
+      console.error('Pas de réponse reçue:', error.request);
+    } else {
+      // Une erreur s'est produite lors de la configuration de la requête
+      console.error('Erreur de configuration:', error.message);
     }
     return Promise.reject(error);
   }

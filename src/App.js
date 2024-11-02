@@ -10,6 +10,11 @@ import Auth from './components/Auth';
 import PrivateRoute from './components/PrivateRoute';
 import PublicQuestionnairesPage from './pages/PublicQuestionnairesPage';
 import PublicCasesPage from './pages/PublicCasesPage';
+//import SessionManager from './components/SessionManager';
+  //Si on veut ajouter la déconnexion par inactivité , ajouter <SessionManager /> au trou ligne 73, 
+  //mais j'ai l'impression que si on ouvre plusieurs fenetre en meme temps, 
+  // si on est inactif sur une fenetre, on sera deconnecté sur toutes les fenetres.
+
 
 const Home = lazy(() => import('./pages/Home'));
 const QuestionnairePage = lazy(() => import('./pages/QuestionnairePage'));
@@ -67,7 +72,8 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <GlobalStyle />
+    <GlobalStyle />
+ 
       <DragDropContext onDragEnd={() => {}}>
         <Router>
           <div className={`app ${isDarkMode ? 'dark' : ''}`}>

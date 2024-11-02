@@ -389,13 +389,13 @@ const QuestionPreview = ({
 
                       {showCRFields && isOptionSelected(optionIndex) && (
                         <div className="mt-3">
-                          <TextFormatButtons 
-                            onBold={() => handleCRTextChange(optionIndex, `<strong>${option.text}</strong>`)}
-                            onUnderline={() => handleCRTextChange(optionIndex, `<u>${option.text}</u>`)}
-                            onItalic={() => handleCRTextChange(optionIndex, `<em>${option.text}</em>`)}
-                            onSize={(size) => handleCRTextChange(optionIndex, `<span style="font-size: ${size};">${option.text}</span>`)}
-                            onCenter={() => handleCRTextChange(optionIndex, `<div style="text-align: center;">${option.text}</div>`)}
-                          />
+<TextFormatButtons 
+  onBold={() => handleCRTextChange(optionIndex, `<strong>${crTexts[question.id]?.[optionIndex] || option.text}</strong>`)}
+  onUnderline={() => handleCRTextChange(optionIndex, `<u>${crTexts[question.id]?.[optionIndex] || option.text}</u>`)}
+  onItalic={() => handleCRTextChange(optionIndex, `<em>${crTexts[question.id]?.[optionIndex] || option.text}</em>`)}
+  onSize={(size) => handleCRTextChange(optionIndex, `<span style="font-size: ${size};">${crTexts[question.id]?.[optionIndex] || option.text}</span>`)}
+  onCenter={() => handleCRTextChange(optionIndex, `<div style="text-align: center;">${crTexts[question.id]?.[optionIndex] || option.text}</div>`)}
+/>
                           <textarea
                             value={crTexts[question.id]?.[optionIndex] || ''}
                             onChange={(e) => handleCRTextChange(optionIndex, e.target.value)}
