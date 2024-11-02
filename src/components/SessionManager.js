@@ -18,33 +18,33 @@ const SessionManager = () => {
   const [showWarning, setShowWarning] = useState(false);
   const inactivityTimeout = 30 * 60 * 1000; // 30 minutes
   const warningTime = 5 * 60 * 1000; // 5 minutes avant la déconnexion
-  let inactivityTimer;
-  let warningTimer;
-
-  const resetTimers = () => {
-    clearTimeout(inactivityTimer);
-    clearTimeout(warningTimer);
-    setShowWarning(false);
-
-    // Définir le timer d'avertissement
-    warningTimer = setTimeout(() => {
-      setShowWarning(true);
-    }, inactivityTimeout - warningTime);
-
-    // Définir le timer de déconnexion
-    inactivityTimer = setTimeout(() => {
-      localStorage.removeItem('token');
-      localStorage.removeItem('username');
-      window.location.href = '/login';
-    }, inactivityTimeout);
-  };
-
-  const handleUserActivity = () => {
-    resetTimers();
-  };
+  const updateInterval = 10000; // Mise à jour toutes les 10 secondes
 
   useEffect(() => {
-    // Liste des événements à surveiller
+    // Fonction pour mettre à jour le timestamp d'activité
+    const updateLastActivity = () => {
+      localStorage.setItem('lastActivityTimestamp', Date.now().toString());
+    };
+
+    // Fonction pour vérifier l'inactivité
+    const checkInactivity = () => {
+      const lastActivity = parseInt(localStorage.getItem('lastActivityTimestamp') || '0');
+      const timeSinceLastActivity = Date.now() - lastActivity;
+
+      if (timeSinceLastActivity >= inactivityTimeout) {
+        // Déconnexion
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        window.location.href = '/login';
+      } else if (timeSinceLastActivity >= (inactivityTimeout - warningTime)) {
+        // Afficher l'avertissement
+        setShowWarning(true);
+      } else {
+        setShowWarning(false);
+      }
+    };
+
+    // Événements à surveiller
     const events = [
       'mousedown',
       'mousemove',
@@ -54,21 +54,38 @@ const SessionManager = () => {
       'click'
     ];
 
+    // Gestionnaire d'événements pour l'activité
+    const handleUserActivity = () => {
+      updateLastActivity();
+      setShowWarning(false);
+    };
+
     // Ajouter les écouteurs d'événements
-    events.forEach(eventName => {
-      document.addEventListener(eventName, handleUserActivity);
+    events.forEach(event => {
+      document.addEventListener(event, handleUserActivity);
     });
 
-    // Initialiser les timers
-    resetTimers();
+    // Initialiser le timestamp d'activité
+    updateLastActivity();
 
-    // Nettoyer les écouteurs d'événements à la destruction du composant
+    // Configurer la vérification périodique
+    const intervalCheck = setInterval(checkInactivity, updateInterval);
+
+    // Écouter les changements de localStorage dans les autres fenêtres
+    const handleStorageChange = (e) => {
+      if (e.key === 'lastActivityTimestamp') {
+        setShowWarning(false);
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    // Nettoyage
     return () => {
-      events.forEach(eventName => {
-        document.removeEventListener(eventName, handleUserActivity);
+      events.forEach(event => {
+        document.removeEventListener(event, handleUserActivity);
       });
-      clearTimeout(inactivityTimer);
-      clearTimeout(warningTimer);
+      clearInterval(intervalCheck);
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
@@ -86,7 +103,7 @@ const SessionManager = () => {
         </div>
         <button
           onClick={() => {
-            handleUserActivity();
+            localStorage.setItem('lastActivityTimestamp', Date.now().toString());
             setShowWarning(false);
           }}
           className="mt-2 bg-amber-500 text-white px-4 py-2 rounded hover:bg-amber-600 text-sm"

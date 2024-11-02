@@ -464,24 +464,50 @@ router.delete('/:id/tags/:tag', authMiddleware, async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
-// POST copier un questionnaire public
+// POST copier un questionnaire (public ou privé)
 router.post('/:id/copy', authMiddleware, async (req, res) => {
   try {
-    const publicQuestionnaire = await Questionnaire.findOne({ _id: req.params.id, public: true });
-    if (!publicQuestionnaire) {
-      return res.status(404).json({ message: 'Questionnaire public non trouvé' });
-    }
+    console.log('Tentative de copie du questionnaire:', req.params.id);
+    console.log('ID utilisateur:', req.userId);
 
-    const newQuestionnaire = new Questionnaire({
-      ...publicQuestionnaire.toObject(),
-      _id: undefined,
-      public: false,
-      user: req.userId,
-      links: new Map(publicQuestionnaire.links)
+    // Chercher le questionnaire parmi ceux de l'utilisateur
+    let originalQuestionnaire = await Questionnaire.findOne({
+      _id: req.params.id,
+      $or: [
+        { user: req.userId },
+        { public: true }
+      ]
     });
 
+    if (!originalQuestionnaire) {
+      console.log('Questionnaire non trouvé');
+      return res.status(404).json({
+        message: 'Questionnaire non trouvé ou accès non autorisé'
+      });
+    }
+
+    console.log('Questionnaire trouvé, création de la copie');
+    const newQuestionnaire = new Questionnaire({
+      ...originalQuestionnaire.toObject(),
+      _id: undefined,
+      title: `${originalQuestionnaire.title} (copie)`,
+      public: false,
+      user: req.userId,
+      links: new Map(originalQuestionnaire.links),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    console.log('Sauvegarde de la copie');
     await newQuestionnaire.save();
-    res.status(201).json({ message: 'Questionnaire copié avec succès', id: newQuestionnaire._id });
+    console.log('Copie sauvegardée avec succès');
+
+    res.status(201).json({
+      message: 'Questionnaire copié avec succès',
+      id: newQuestionnaire._id,
+      questionnaire: newQuestionnaire
+    });
+
   } catch (error) {
     console.error('Erreur lors de la copie du questionnaire:', error);
     res.status(500).json({ message: error.message });

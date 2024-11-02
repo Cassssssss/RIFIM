@@ -274,7 +274,7 @@ function QuestionnaireListPage() {
 
   const handleDelete = useCallback(async (id) => {
     const questionnaireToDelete = questionnaires.find(q => q._id === id);
-    const isConfirmed = window.confirm(`Êtes-vous sûr de vouloir supprimer le questionnaire "${questionnaireToDelete.title}" ? Cette action peut être annulée avec Cmd+Z (ou Ctrl+Z).`);
+    const isConfirmed = window.confirm(`Êtes-vous sûr de vouloir supprimer le questionnaire "${questionnaireToDelete.title}" ?`);
     
     if (isConfirmed) {
       try {
@@ -372,6 +372,29 @@ function QuestionnaireListPage() {
     }
   };
 
+  const handleDuplicate = async (questionnaireId) => {
+    try {
+      // Changement ici : ajout de l'en-tête Content-Type
+      const response = await axios.post(
+        `/questionnaires/${questionnaireId}/copy`,
+        {}, // Corps vide mais nécessaire
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      if (response.data) {
+        await fetchQuestionnaires(currentPage); // Ajout de await ici
+        alert('Questionnaire dupliqué avec succès !');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la duplication du questionnaire:', error);
+      alert('Erreur lors de la duplication du questionnaire: ' + error.response?.data?.message || error.message);
+    }
+  };
+  
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchQuestionnaires(1);
@@ -572,13 +595,14 @@ function QuestionnaireListPage() {
                 </AddTagForm>
               </div>
               <div>
-                <ActionButton as={Link} to={`/use/${questionnaire._id}`}>USE</ActionButton>
-                <ActionButton as={Link} to={`/edit/${questionnaire._id}`}>MODIFIER</ActionButton>
-                <ActionButton as={Link} to={`/cr/${questionnaire._id}`}>CR</ActionButton>
-                <ActionButton onClick={() => handleDelete(questionnaire._id)}>SUPPRIMER</ActionButton>
-                <ActionButton onClick={() => handleTogglePublic(questionnaire._id)}>
-                  {questionnaire.public ? 'Rendre privé' : 'Rendre public'}
-                </ActionButton>
+  <ActionButton as={Link} to={`/use/${questionnaire._id}`}>USE</ActionButton>
+  <ActionButton as={Link} to={`/edit/${questionnaire._id}`}>MODIFIER</ActionButton>
+  <ActionButton as={Link} to={`/cr/${questionnaire._id}`}>CR</ActionButton>
+  <ActionButton onClick={() => handleDuplicate(questionnaire._id)}>DUPLIQUER</ActionButton>
+  <ActionButton onClick={() => handleDelete(questionnaire._id)}>SUPPRIMER</ActionButton>
+  <ActionButton onClick={() => handleTogglePublic(questionnaire._id)}>
+    {questionnaire.public ? 'Rendre privé' : 'Rendre public'}
+  </ActionButton>
               </div>
             </QuestionnaireItem>
           ))}
