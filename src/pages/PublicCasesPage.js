@@ -169,29 +169,26 @@ function PublicCasesPage() {
   const [allTags, setAllTags] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+const [totalPages, setTotalPages] = useState(0);
 
-  const fetchCases = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await axios.get('/cases/public');
-      console.log("Réponse de l'API:", response.data);
-      if (Array.isArray(response.data)) {
-        setCases(response.data);
-        const tags = new Set(response.data.flatMap(cas => cas.tags || []));
-        setAllTags(Array.from(tags));
-      } else {
-        console.error("Format de réponse inattendu:", response.data);
-        setCases([]);
-      }
-    } catch (error) {
-      console.error('Erreur lors de la récupération des cas publics:', error);
-      setError("Impossible de charger les cas publics. Veuillez réessayer plus tard.");
-      setCases([]);
-    } finally {
-      setIsLoading(false);
+const fetchCases = useCallback(async (page = 1) => {
+  setIsLoading(true);
+  setError(null);
+  try {
+    const response = await axios.get(`/cases/public?page=${page}&limit=10`);
+    if (response.data) {
+      setCases(response.data.cases);
+      setCurrentPage(response.data.currentPage);
+      setTotalPages(response.data.totalPages);
     }
-  }, []);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des cas publics:', error);
+    setError("Impossible de charger les cas publics. Veuillez réessayer plus tard.");
+  } finally {
+    setIsLoading(false);
+  }
+}, []);
 
   useEffect(() => {
     fetchCases();
@@ -288,6 +285,21 @@ function PublicCasesPage() {
           ))}
         </CasesList>
       )}
+        <PaginationContainer>
+      <PaginationButton 
+        onClick={() => fetchCases(currentPage - 1)} 
+        disabled={currentPage === 1}
+      >
+        Précédent
+      </PaginationButton>
+      <PaginationInfo>Page {currentPage} sur {totalPages}</PaginationInfo>
+      <PaginationButton 
+        onClick={() => fetchCases(currentPage + 1)} 
+        disabled={currentPage === totalPages}
+      >
+        Suivant
+      </PaginationButton>
+    </PaginationContainer>
     </PageContainer>
   );
 }
