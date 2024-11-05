@@ -53,15 +53,27 @@ router.get('/', async (req, res) => {
 router.get('/public', async (req, res) => {
   console.log("Route /public des cas appelée");
   try {
-    const publicCases = await Case.find({ public: true });
-    console.log("Cas publics trouvés:", publicCases.length);
-    res.json(publicCases);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const totalCases = await Case.countDocuments({ public: true });
+    const publicCases = await Case.find({ public: true })
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    res.json({
+      cases: publicCases,
+      currentPage: page,
+      totalPages: Math.ceil(totalCases / limit),
+      totalCases
+    });
   } catch (error) {
     console.error("Erreur lors de la récupération des cas publics:", error);
     res.status(500).json({ message: error.message });
   }
 });
-
 // POST new case
 router.post('/', async (req, res) => {
   console.log('Tentative de création d\'un nouveau cas:', req.body);
