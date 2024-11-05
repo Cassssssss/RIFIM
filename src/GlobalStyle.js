@@ -11,7 +11,7 @@ const GlobalStyle = createGlobalStyle`
     
   :root {
     --background-color: ${props => props.theme.background || '#F0F2F5'};
-    --header-background: ${props => props.theme.headerBackground || '#4a69bd'};
+    --header-background: ${props => props.theme.headerBackground || '#4f5b93'};
     --text-color: ${props => props.theme.text || '#333'};
     --border-color: ${props => props.theme.border || '#E4E6E8'};
     --button-background: ${props => props.theme.primary || '#4a69bd'};

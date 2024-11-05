@@ -58,16 +58,22 @@ router.get('/public', async (req, res) => {
 });
 
 // GET un questionnaire spécifique
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', async (req, res) => {  // Retirez authMiddleware ici
   try {
-    const questionnaire = await Questionnaire.findOne({ _id: req.params.id, user: req.userId });
+    let questionnaire = await Questionnaire.findById(req.params.id);
+    
     if (!questionnaire) {
-      console.log(`Questionnaire avec l'ID ${req.params.id} non trouvé pour l'utilisateur ${req.userId}`);
       return res.status(404).json({ message: 'Questionnaire non trouvé' });
     }
+
+    // Si le questionnaire n'est pas public et que l'utilisateur n'est pas le propriétaire
+    if (!questionnaire.public && (!req.userId || questionnaire.user.toString() !== req.userId)) {
+      return res.status(403).json({ message: 'Accès non autorisé' });
+    }
+
     res.json(questionnaire);
   } catch (error) {
-    console.error(`Erreur lors de la récupération du questionnaire ${req.params.id}:`, error);
+    console.error('Erreur lors de la récupération du questionnaire:', error);
     res.status(500).json({ message: error.message });
   }
 });

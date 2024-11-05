@@ -81,25 +81,27 @@ router.post('/', async (req, res) => {
 });
 
 // GET cas spécifique
-router.get('/:id', async (req, res) => {
-  console.log('Tentative de récupération du cas:', req.params.id);
+router.get('/:id', async (req, res) => {  // Retirez authMiddleware ici
   try {
-    const caseDoc = await Case.findOne({ _id: req.params.id, user: req.userId });
+    const caseDoc = await Case.findById(req.params.id);
+    
     if (!caseDoc) {
-      console.log('Cas non trouvé:', req.params.id);
       return res.status(404).json({ message: 'Cas non trouvé' });
+    }
+
+    // Si le cas n'est pas public et que l'utilisateur n'est pas le propriétaire
+    if (!caseDoc.public && (!req.userId || caseDoc.user.toString() !== req.userId)) {
+      return res.status(403).json({ message: 'Accès non autorisé' });
     }
 
     const caseObject = caseDoc.toObject();
 
-    // S'assurer que folderMainImages est correctement converti
     if (caseDoc.folderMainImages instanceof Map) {
       caseObject.folderMainImages = Object.fromEntries(caseDoc.folderMainImages);
     } else {
       caseObject.folderMainImages = caseDoc.folderMainImages || {};
     }
 
-    console.log('Cas récupéré avec succès:', caseObject);
     res.json(caseObject);
   } catch (error) {
     console.error('Erreur lors de la récupération du cas:', error);
