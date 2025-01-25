@@ -33,7 +33,7 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
 app.use(cors({
   origin: function (origin, callback) {
     console.log('Origine de la requête:', origin);
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       console.log('Origine non autorisée:', origin);
