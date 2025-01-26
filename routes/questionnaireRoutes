@@ -60,20 +60,42 @@ router.get('/public', async (req, res) => {
 // GET un questionnaire spécifique
 router.get('/:id', async (req, res) => {  // Retirez authMiddleware ici
   try {
+<<<<<<< HEAD
     let questionnaire = await Questionnaire.findById(req.params.id);
     
+=======
+    // On récupère le questionnaire via l'ID
+    const questionnaire = await Questionnaire.findById(req.params.id);
+>>>>>>> 9717fe8 (Fix CORS configuration for production and development)
     if (!questionnaire) {
       return res.status(404).json({ message: 'Questionnaire non trouvé' });
     }
 
+<<<<<<< HEAD
     // Si le questionnaire n'est pas public et que l'utilisateur n'est pas le propriétaire
     if (!questionnaire.public && (!req.userId || questionnaire.user.toString() !== req.userId)) {
       return res.status(403).json({ message: 'Accès non autorisé' });
     }
 
+=======
+    // S’il est privé, on exige que l’utilisateur actuel soit le propriétaire
+    if (!questionnaire.public) {
+      // questionnaire.user doit être un ObjectId : on compare via toString()
+      if (questionnaire.user.toString() !== req.userId) {
+        return res.status(403).json({ message: 'Accès refusé (questionnaire privé)' });
+      }
+    }
+
+    // Sinon, tout est OK : on renvoie le questionnaire
+>>>>>>> 9717fe8 (Fix CORS configuration for production and development)
     res.json(questionnaire);
+
   } catch (error) {
+<<<<<<< HEAD
     console.error('Erreur lors de la récupération du questionnaire:', error);
+=======
+    console.error('Erreur lors de la récupération du questionnaire :', error);
+>>>>>>> 9717fe8 (Fix CORS configuration for production and development)
     res.status(500).json({ message: error.message });
   }
 });
