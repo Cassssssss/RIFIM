@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import axios from '../utils/axiosConfig';
-import Icon, { IconWithText, StatusIcon } from './Icons';
 
 const AuthWrapper = styled.div`
   min-height: 100vh;
@@ -32,10 +31,6 @@ const AuthTitle = styled.h1`
   font-size: 2rem;
   color: ${props => props.theme.primary};
   margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
 `;
 
 const AuthSubtitle = styled.h2`
@@ -62,9 +57,7 @@ const InputGroup = styled.div`
 `;
 
 const InputLabel = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  display: block;
   margin-bottom: 0.5rem;
   color: ${props => props.theme.text};
   font-weight: 500;
@@ -74,7 +67,6 @@ const InputLabel = styled.label`
 const Input = styled.input`
   width: 100%;
   padding: 0.75rem 1rem;
-  padding-left: 2.5rem;
   border: 2px solid ${props => props.theme.inputBorder || props.theme.border};
   border-radius: 8px;
   background-color: ${props => props.theme.inputBackground || props.theme.background};
@@ -94,15 +86,6 @@ const Input = styled.input`
   }
 `;
 
-const InputIcon = styled.div`
-  position: absolute;
-  left: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: ${props => props.theme.text};
-  opacity: 0.5;
-`;
-
 const SubmitButton = styled.button`
   width: 100%;
   padding: 0.75rem 1rem;
@@ -114,10 +97,6 @@ const SubmitButton = styled.button`
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
   
   &:hover:not(:disabled) {
     background-color: ${props => props.theme.secondary};
@@ -152,11 +131,6 @@ const ToggleButton = styled.button`
   font-weight: 600;
   text-decoration: underline;
   font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  margin: 0 auto;
   padding: 0.5rem;
   border-radius: 4px;
   transition: background-color 0.2s ease;
@@ -167,9 +141,6 @@ const ToggleButton = styled.button`
 `;
 
 const ErrorMessage = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
   padding: 0.75rem;
   background-color: #FEF2F2;
   border: 1px solid #FECACA;
@@ -180,9 +151,6 @@ const ErrorMessage = styled.div`
 `;
 
 const SuccessMessage = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
   padding: 0.75rem;
   background-color: #F0FDF4;
   border: 1px solid #BBF7D0;
@@ -248,10 +216,7 @@ const Auth = ({ onLogin }) => {
     <AuthWrapper>
       <AuthContainer>
         <AuthHeader>
-          <AuthTitle>
-            <Icon name="stethoscope" size="lg" />
-            RIFIM
-          </AuthTitle>
+          <AuthTitle>🩺 RIFIM</AuthTitle>
           <AuthSubtitle>
             {isLogin ? 'Connexion' : 'Inscription'}
           </AuthSubtitle>
@@ -265,70 +230,46 @@ const Auth = ({ onLogin }) => {
 
         {error && (
           <ErrorMessage>
-            <StatusIcon status="error" />
-            {error}
+            ⚠️ {error}
           </ErrorMessage>
         )}
 
         {success && (
           <SuccessMessage>
-            <StatusIcon status="success" />
-            {success}
+            ✅ {success}
           </SuccessMessage>
         )}
 
         <AuthForm onSubmit={handleSubmit}>
           <InputGroup>
-            <InputLabel>
-              <Icon name="user" size="sm" />
-              Nom d'utilisateur
-            </InputLabel>
-            <div style={{ position: 'relative' }}>
-              <InputIcon>
-                <Icon name="user" size="sm" />
-              </InputIcon>
-              <Input
-                type="text"
-                placeholder="Votre nom d'utilisateur"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                disabled={loading}
-              />
-            </div>
+            <InputLabel>👤 Nom d'utilisateur</InputLabel>
+            <Input
+              type="text"
+              placeholder="Votre nom d'utilisateur"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              disabled={loading}
+            />
           </InputGroup>
 
           <InputGroup>
-            <InputLabel>
-              <Icon name="lock" size="sm" />
-              Mot de passe
-            </InputLabel>
-            <div style={{ position: 'relative' }}>
-              <InputIcon>
-                <Icon name="lock" size="sm" />
-              </InputIcon>
-              <Input
-                type="password"
-                placeholder="Votre mot de passe"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-              />
-            </div>
+            <InputLabel>🔒 Mot de passe</InputLabel>
+            <Input
+              type="password"
+              placeholder="Votre mot de passe"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={loading}
+            />
           </InputGroup>
 
           <SubmitButton type="submit" disabled={loading}>
             {loading ? (
-              <>
-                <Icon name="refresh" size="sm" className="animate-spin" />
-                {isLogin ? 'Connexion...' : 'Inscription...'}
-              </>
+              isLogin ? '🔄 Connexion...' : '🔄 Inscription...'
             ) : (
-              <>
-                <Icon name={isLogin ? 'user' : 'plus'} size="sm" />
-                {isLogin ? 'Se connecter' : "S'inscrire"}
-              </>
+              isLogin ? '👤 Se connecter' : '➕ S\'inscrire'
             )}
           </SubmitButton>
         </AuthForm>
@@ -338,8 +279,7 @@ const Auth = ({ onLogin }) => {
             {isLogin ? "Pas encore de compte ?" : "Déjà un compte ?"}
           </ToggleText>
           <ToggleButton onClick={toggleMode} disabled={loading}>
-            <Icon name={isLogin ? 'plus' : 'user'} size="sm" />
-            {isLogin ? "Créer un compte" : "Se connecter"}
+            {isLogin ? "➕ Créer un compte" : "👤 Se connecter"}
           </ToggleButton>
         </ToggleSection>
       </AuthContainer>
