@@ -1,342 +1,318 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { Moon, Sun, Menu, X, User, LogOut, ChevronDown } from 'lucide-react';
+import axios from '../utils/axiosConfig';
 
-const HeaderWrapper = styled.header`
-  background-color: ${props => props.theme.headerBackground};
-  color: ${props => props.theme.headerText};
-  padding: 1rem 0;
-  width: 100%;
-  transition: background-color 0.3s ease, color 0.3s ease;
-`;
-
-const HeaderContent = styled.div`
+const AuthWrapper = styled.div`
+  min-height: 100vh;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  max-width: 2500px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 0 2rem;
+  justify-content: center;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  padding: 2rem;
 `;
 
-const Logo = styled(Link)`
+const AuthContainer = styled.div`
+  max-width: 400px;
+  width: 100%;
+  padding: 2rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+`;
+
+const AuthHeader = styled.div`
+  text-align: center;
+  margin-bottom: 2rem;
+`;
+
+const AuthTitle = styled.h1`
+  font-size: 2rem;
+  color: #1e3a8a;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+`;
+
+const AuthSubtitle = styled.h2`
   font-size: 1.5rem;
-  font-weight: bold;
-  color: ${props => props.theme.headerText};
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  
-  &:hover {
-    opacity: 0.8;
-  }
+  color: #374151;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
 `;
 
-const Nav = styled.nav`
-  display: flex;
-  gap: 1rem;
-  align-items: center;
+const AuthDescription = styled.p`
+  color: #6b7280;
+  font-size: 0.9rem;
+  line-height: 1.4;
 `;
 
-const NavLink = styled(Link)`
-  color: ${props => props.theme.headerText};
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-  
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-`;
-
-const ThemeToggle = styled.button`
-  background: none;
-  border: none;
-  color: ${props => props.theme.headerText};
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-  
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-`;
-
-const CenterTitle = styled.h2`
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: ${props => props.theme.headerText};
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-`;
-
-const MenuButton = styled.button`
-  background: none;
-  border: none;
-  color: ${props => props.theme.headerText};
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-  
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-`;
-
-const MenuDropdown = styled.div`
-  position: absolute;
-  right: 2rem;
-  top: 4rem;
-  background-color: ${props => props.theme.headerBackground};
-  border: 1px solid ${props => props.theme.headerText};
-  border-radius: 8px;
-  padding: 1rem;
+const AuthForm = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  z-index: 1000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  min-width: 200px;
+  gap: 1.5rem;
 `;
 
-const UserInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: ${props => props.theme.headerText};
-  margin-right: 1rem;
-  padding: 0.5rem;
-  border-radius: 4px;
-  background-color: rgba(255, 255, 255, 0.1);
+const InputGroup = styled.div`
+  position: relative;
 `;
 
-const LogoutButton = styled.button`
+const InputLabel = styled.label`
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #374151;
+  font-weight: 500;
+  font-size: 0.9rem;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background-color: #f9fafb;
+  color: #374151;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  &::placeholder {
+    color: #9ca3af;
+  }
+`;
+
+const SubmitButton = styled.button`
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
+const ToggleSection = styled.div`
+  text-align: center;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+`;
+
+const ToggleText = styled.p`
+  color: #6b7280;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+`;
+
+const ToggleButton = styled.button`
   background: none;
   border: none;
-  color: ${props => props.theme.headerText};
+  color: #3b82f6;
   cursor: pointer;
+  font-weight: 600;
+  text-decoration: underline;
+  font-size: 0.9rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: #eff6ff;
+  }
+`;
+
+const MessageContainer = styled.div`
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
+`;
+
+const ErrorMessage = styled(MessageContainer)`
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+`;
+
+const SuccessMessage = styled(MessageContainer)`
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #16a34a;
+`;
+
+const LoadingSpinner = styled.div`
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
   
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
   }
 `;
 
-const MobileMenu = styled.div`
-  display: none;
-  
-  @media (max-width: 768px) {
-    display: block;
-  }
-`;
+const Auth = ({ onLogin }) => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const navigate = useNavigate();
 
-const NavLinks = styled.div`
-  @media (max-width: 768px) {
-    display: ${props => props.isOpen ? 'flex' : 'none'};
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background-color: ${props => props.theme.headerBackground};
-    flex-direction: column;
-    padding: 1rem;
-    border-top: 1px solid ${props => props.theme.headerText};
-  }
-`;
-
-const DropdownItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  color: ${props => props.theme.headerText};
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-  
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-`;
-
-function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const menuRef = useRef(null);
-  const location = useLocation();
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setShowUserMenu(false);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    
+    try {
+      let response;
+      if (isLogin) {
+        response = await axios.post('/auth/login', { username, password });
+        localStorage.setItem('token', response.data.token);
+        onLogin(response.data.token, username);
+        setSuccess('Connexion réussie ! Redirection...');
+        setTimeout(() => navigate('/'), 1000);
+      } else {
+        response = await axios.post('/auth/register', { username, password });
+        setSuccess('Inscription réussie ! Connexion automatique...');
+        
+        // Connexion automatique après inscription
+        const loginResponse = await axios.post('/auth/login', { username, password });
+        localStorage.setItem('token', loginResponse.data.token);
+        onLogin(loginResponse.data.token, username);
+        setTimeout(() => navigate('/'), 1500);
       }
+    } catch (error) {
+      console.error('Erreur:', error.response ? error.response.data : error.message);
+      setError(
+        error.response?.data?.message || 
+        'Une erreur est survenue. Veuillez réessayer.'
+      );
+    } finally {
+      setLoading(false);
     }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  // Fonction pour obtenir le titre de la page basé sur l'URL
-  const getPageTitle = () => {
-    const path = location.pathname;
-    if (path === '/') return 'Accueil';
-    if (path === '/questionnaires') return 'Mes Questionnaires';
-    if (path === '/questionnaires-list') return 'Questionnaires';
-    if (path === '/create') return 'Créer un Questionnaire';
-    if (path.includes('/edit/')) return 'Modifier le Questionnaire';
-    if (path.includes('/cr/')) return 'Compte Rendu';
-    if (path.includes('/use/')) return 'Utiliser le Questionnaire';
-    if (path === '/cases') return 'Mes Cas';
-    if (path === '/cases-list') return 'Liste des Cas';
-    if (path === '/public-questionnaires') return 'Questionnaires Publics';
-    if (path === '/public-cases') return 'Cas Publics';
-    return 'RIFIM';
   };
 
-  // Fonction pour obtenir le nom d'utilisateur de manière sûre
-  const getUserName = () => {
-    if (!user) return null;
-    
-    // Si user est une string, la retourner directement
-    if (typeof user === 'string') return user;
-    
-    // Si user est un objet, extraire le username
-    if (typeof user === 'object' && user.username) return user.username;
-    
-    // Fallback
-    return 'Utilisateur';
+  const toggleMode = () => {
+    setIsLogin(!isLogin);
+    setError('');
+    setSuccess('');
+    setUsername('');
+    setPassword('');
   };
-
-  const userName = getUserName();
 
   return (
-    <HeaderWrapper>
-      <HeaderContent>
-        {/* Logo */}
-        <Logo to="/">
-          🩺 RIFIM
-        </Logo>
+    <AuthWrapper>
+      <AuthContainer>
+        <AuthHeader>
+          <AuthTitle>
+            🩺 RIFIM
+          </AuthTitle>
+          <AuthSubtitle>
+            {isLogin ? 'Connexion' : 'Inscription'}
+          </AuthSubtitle>
+          <AuthDescription>
+            {isLogin 
+              ? 'Connectez-vous pour accéder à vos questionnaires et cas médicaux'
+              : 'Créez votre compte pour commencer à utiliser RIFIM'
+            }
+          </AuthDescription>
+        </AuthHeader>
 
-        {/* Titre central */}
-        <CenterTitle>
-          {getPageTitle()}
-        </CenterTitle>
+        {error && (
+          <ErrorMessage>
+            ⚠️ {error}
+          </ErrorMessage>
+        )}
 
-        {/* Navigation principale pour desktop */}
-        <Nav className="hidden md:flex">
-          <NavLink to="/questionnaires">
-            📋 Mes CR
-          </NavLink>
-          
-          <NavLink to="/cases">
-            📁 Mes Cas
-          </NavLink>
-          
-          <NavLink to="/public-questionnaires">
-            📖 CR Publics
-          </NavLink>
-          
-          <NavLink to="/public-cases">
-            📂 Cas Publics
-          </NavLink>
+        {success && (
+          <SuccessMessage>
+            ✅ {success}
+          </SuccessMessage>
+        )}
 
-          {/* Toggle du mode sombre */}
-          <ThemeToggle onClick={toggleDarkMode} title="Basculer le thème">
-            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-          </ThemeToggle>
+        <AuthForm onSubmit={handleSubmit}>
+          <InputGroup>
+            <InputLabel>👤 Nom d'utilisateur</InputLabel>
+            <Input
+              type="text"
+              placeholder="Votre nom d'utilisateur"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              disabled={loading}
+            />
+          </InputGroup>
 
-          {/* Menu utilisateur */}
-          {userName && (
-            <div ref={menuRef} style={{ position: 'relative' }}>
-              <MenuButton onClick={() => setShowUserMenu(!showUserMenu)}>
-                <User size={20} />
-                <ChevronDown size={16} />
-              </MenuButton>
-              
-              {showUserMenu && (
-                <MenuDropdown>
-                  <DropdownItem>
-                    <User size={16} />
-                    {userName}
-                  </DropdownItem>
-                  
-                  <DropdownItem>
-                    ⚙️ Paramètres
-                  </DropdownItem>
-                  
-                  <LogoutButton onClick={onLogout}>
-                    <LogOut size={16} />
-                    Déconnexion
-                  </LogoutButton>
-                </MenuDropdown>
-              )}
-            </div>
-          )}
-        </Nav>
+          <InputGroup>
+            <InputLabel>🔒 Mot de passe</InputLabel>
+            <Input
+              type="password"
+              placeholder="Votre mot de passe"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={loading}
+            />
+          </InputGroup>
 
-        {/* Menu mobile */}
-        <MobileMenu>
-          <MenuButton onClick={() => setShowMobileMenu(!showMobileMenu)}>
-            {showMobileMenu ? <X size={20} /> : <Menu size={20} />}
-          </MenuButton>
-          
-          <NavLinks isOpen={showMobileMenu}>
-            <NavLink to="/questionnaires" onClick={() => setShowMobileMenu(false)}>
-              📋 Mes CR
-            </NavLink>
-            
-            <NavLink to="/cases" onClick={() => setShowMobileMenu(false)}>
-              📁 Mes Cas
-            </NavLink>
-            
-            <NavLink to="/public-questionnaires" onClick={() => setShowMobileMenu(false)}>
-              📖 CR Publics
-            </NavLink>
-            
-            <NavLink to="/public-cases" onClick={() => setShowMobileMenu(false)}>
-              📂 Cas Publics
-            </NavLink>
+          <SubmitButton type="submit" disabled={loading}>
+            {loading ? (
+              <>
+                <LoadingSpinner />
+                {isLogin ? 'Connexion...' : 'Inscription...'}
+              </>
+            ) : (
+              <>
+                {isLogin ? '👤 Se connecter' : '➕ S\'inscrire'}
+              </>
+            )}
+          </SubmitButton>
+        </AuthForm>
 
-            <div style={{ padding: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.2)', marginTop: '0.5rem' }}>
-              <ThemeToggle onClick={toggleDarkMode}>
-                {isDarkMode ? '☀️ Mode Clair' : '🌙 Mode Sombre'}
-              </ThemeToggle>
-              
-              {userName && (
-                <LogoutButton onClick={onLogout} style={{ width: '100%', justifyContent: 'flex-start', marginTop: '0.5rem' }}>
-                  <LogOut size={16} />
-                  Déconnexion ({userName})
-                </LogoutButton>
-              )}
-            </div>
-          </NavLinks>
-        </MobileMenu>
-      </HeaderContent>
-    </HeaderWrapper>
+        <ToggleSection>
+          <ToggleText>
+            {isLogin ? "Pas encore de compte ?" : "Déjà un compte ?"}
+          </ToggleText>
+          <ToggleButton onClick={toggleMode} disabled={loading}>
+            {isLogin ? "➕ Créer un compte" : "👤 Se connecter"}
+          </ToggleButton>
+        </ToggleSection>
+      </AuthContainer>
+    </AuthWrapper>
   );
-}
+};
 
-export default Header;
+export default Auth;
