@@ -71,6 +71,41 @@ const Icon = ({ name, size = 20, color, className = '', ...props }) => {
   return React.createElement(IconComponent, { size, color, className, ...props });
 };
 
+// Composant IconWithText simplifié
+export const IconWithText = ({ 
+  iconName, 
+  children, 
+  iconSize = 16, 
+  spacing = '0.5rem',
+  iconPosition = 'left',
+  ...props 
+}) => {
+  const iconElement = <Icon name={iconName} size={iconSize} />;
+  
+  return (
+    <span style={{ display: 'flex', alignItems: 'center', gap: spacing }} {...props}>
+      {iconPosition === 'left' && iconElement}
+      {children}
+      {iconPosition === 'right' && iconElement}
+    </span>
+  );
+};
+
+// Composant StatusIcon simplifié
+export const StatusIcon = ({ status, size = 16, ...props }) => {
+  const statusMap = {
+    success: { name: 'check', color: '#10B981' },
+    error: { name: 'alert', color: '#EF4444' },
+    warning: { name: 'warning', color: '#F59E0B' },
+    info: { name: 'info', color: '#3B82F6' },
+    loading: { name: 'refresh', color: '#6B7280' }
+  };
+  
+  const config = statusMap[status] || statusMap.info;
+  
+  return <Icon name={config.name} size={size} color={config.color} {...props} />;
+};
+
 export default Icon;
 
 // Export des icônes courantes pour usage direct
