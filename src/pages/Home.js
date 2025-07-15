@@ -110,7 +110,7 @@ function Home() {
       
       <ButtonContainer>
         <Button to="/questionnaires">📋 Mes Questionnaires</Button>
-        <Button to="/cases">📁 Mes Cas</Button>
+        <Button to="/cases-list">📁 Mes Cas</Button>
         <Button to="/public-questionnaires">📖 Questionnaires Publics</Button>
         <Button to="/public-cases">📂 Cas Publics</Button>
       </ButtonContainer>

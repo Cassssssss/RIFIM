@@ -251,7 +251,7 @@ function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
             📋 Mes CR
           </NavLink>
           
-          <NavLink to="/cases">
+          <NavLink to="/cases-list">
             📁 Mes Cas
           </NavLink>
           
@@ -308,7 +308,7 @@ function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
               📋 Mes CR
             </NavLink>
             
-            <NavLink to="/cases" onClick={() => setShowMobileMenu(false)}>
+            <NavLink to="/cases-list" onClick={() => setShowMobileMenu(false)}>
               📁 Mes Cas
             </NavLink>
             
