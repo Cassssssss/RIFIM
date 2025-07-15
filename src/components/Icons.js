@@ -13,6 +13,22 @@ import {
 
 // Composant d'icône simple et sûr
 const Icon = ({ name, size = 20, color, className = '', ...props }) => {
+  // Conversion des tailles en valeurs numériques
+  const getSizeValue = (sizeInput) => {
+    if (typeof sizeInput === 'number') return sizeInput;
+    
+    const sizeMap = {
+      'xs': 12,
+      'sm': 16,
+      'md': 20,
+      'lg': 24,
+      'xl': 32,
+      'xxl': 48
+    };
+    
+    return sizeMap[sizeInput] || 20;
+  };
+
   const icons = {
     'home': Home,
     'user': User,
@@ -62,13 +78,24 @@ const Icon = ({ name, size = 20, color, className = '', ...props }) => {
   };
 
   const IconComponent = icons[name];
+  const numericSize = getSizeValue(size);
   
   if (!IconComponent) {
     console.warn(`Icône "${name}" non trouvée, utilisation de l'icône par défaut`);
-    return React.createElement(Info, { size, color, className, ...props });
+    return React.createElement(Info, { 
+      size: numericSize, 
+      color, 
+      className, 
+      ...props 
+    });
   }
   
-  return React.createElement(IconComponent, { size, color, className, ...props });
+  return React.createElement(IconComponent, { 
+    size: numericSize, 
+    color, 
+    className, 
+    ...props 
+  });
 };
 
 // Composant IconWithText simplifié
@@ -80,7 +107,14 @@ export const IconWithText = ({
   iconPosition = 'left',
   ...props 
 }) => {
-  const iconElement = <Icon name={iconName} size={iconSize} />;
+  // Conversion de taille pour IconWithText aussi
+  const getSizeValue = (sizeInput) => {
+    if (typeof sizeInput === 'number') return sizeInput;
+    const sizeMap = { 'xs': 12, 'sm': 16, 'md': 20, 'lg': 24, 'xl': 32, 'xxl': 48 };
+    return sizeMap[sizeInput] || 16;
+  };
+  
+  const iconElement = <Icon name={iconName} size={getSizeValue(iconSize)} />;
   
   return (
     <span style={{ display: 'flex', alignItems: 'center', gap: spacing }} {...props}>
@@ -103,7 +137,14 @@ export const StatusIcon = ({ status, size = 16, ...props }) => {
   
   const config = statusMap[status] || statusMap.info;
   
-  return <Icon name={config.name} size={size} color={config.color} {...props} />;
+  // Conversion de taille pour StatusIcon aussi
+  const getSizeValue = (sizeInput) => {
+    if (typeof sizeInput === 'number') return sizeInput;
+    const sizeMap = { 'xs': 12, 'sm': 16, 'md': 20, 'lg': 24, 'xl': 32, 'xxl': 48 };
+    return sizeMap[sizeInput] || 16;
+  };
+  
+  return <Icon name={config.name} size={getSizeValue(size)} color={config.color} {...props} />;
 };
 
 export default Icon;
