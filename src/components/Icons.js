@@ -7,7 +7,7 @@ import {
   
   // Actions principales
   Plus, Edit, Save, Copy, Trash2, Download, Upload, Search, Filter,
-  Settings, Refresh, Share2, ExternalLink, Eye, EyeOff,
+  Settings, RotateCw, Share2, ExternalLink, Eye, EyeOff,
   
   // Contenu et médias
   File, FileText, Image, Video, Camera, Mic, FileImage, Folder, FolderOpen,
@@ -104,7 +104,7 @@ const ICON_MAP = {
   'search': Search,
   'filter': Filter,
   'settings': Settings,
-  'refresh': Refresh,
+  'refresh': RotateCw,
   'share': Share2,
   'external-link': ExternalLink,
   'view': Eye,
