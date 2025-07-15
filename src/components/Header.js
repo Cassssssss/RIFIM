@@ -313,11 +313,11 @@ function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
           
           <NavLinks isOpen={showMobileMenu}>
             <NavLink to="/questionnaires" onClick={() => setShowMobileMenu(false)}>
-              📋 Mes CR
+              ➕ Créer CR
             </NavLink>
             
             <NavLink to="/questionnaires-list" onClick={() => setShowMobileMenu(false)}>
-              ➕ Créer CR
+              📋 Mes CR
             </NavLink>
             
             <NavLink to="/cases-list" onClick={() => setShowMobileMenu(false)}>
