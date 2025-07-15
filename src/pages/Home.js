@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import TutorialOverlay from '../components/TutorialOverlay';
+// import TutorialOverlay from '../components/TutorialOverlay'; // Commenté temporairement
 
 const HomeContainer = styled.div`
   max-width: 800px;
@@ -116,7 +116,7 @@ function Home() {
       </ButtonContainer>
 
       <div style={{ marginTop: '2rem' }}>
-        <TutorialButton onClick={() => setShowTutorial(true)}>
+        <TutorialButton onClick={() => alert('Tutoriel temporairement désactivé')}>
           ❓ Voir le Tutoriel
         </TutorialButton>
       </div>
@@ -133,12 +133,14 @@ function Home() {
         ></iframe>
       </VideoContainer>
 
+      {/* Tutoriel temporairement désactivé
       {showTutorial && (
         <TutorialOverlay 
           steps={tutorialSteps} 
           onClose={() => setShowTutorial(false)} 
         />
       )}
+      */}
     </HomeContainer>
   );
 }
