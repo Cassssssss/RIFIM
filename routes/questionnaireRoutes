@@ -15,6 +15,34 @@ router.use((req, res, next) => {
   next();
 });
 
+// Middleware d'authentification optionnel
+const optionalAuthMiddleware = (req, res, next) => {
+  const authHeader = req.header('Authorization');
+  
+  if (!authHeader) {
+    // Pas d'authentification, on continue sans req.userId
+    return next();
+  }
+
+  const token = authHeader.split(' ')[1];
+  
+  if (!token) {
+    // Token malformé, on continue sans req.userId
+    return next();
+  }
+
+  try {
+    const jwt = require('jsonwebtoken');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.userId = decoded.userId;
+    next();
+  } catch (error) {
+    // Token invalide, on continue sans req.userId
+    console.log('Token invalide, continuons sans authentification');
+    next();
+  }
+};
+
 // GET tous les questionnaires publics
 router.get('/public', async (req, res) => {
   try {
@@ -57,8 +85,8 @@ router.get('/public', async (req, res) => {
   }
 });
 
-// GET un questionnaire spécifique
-router.get('/:id', async (req, res) => {  // Retirez authMiddleware ici
+// GET un questionnaire spécifique - CORRIGÉ
+router.get('/:id', optionalAuthMiddleware, async (req, res) => {
   try {
     let questionnaire = await Questionnaire.findById(req.params.id);
     
@@ -66,9 +94,19 @@ router.get('/:id', async (req, res) => {  // Retirez authMiddleware ici
       return res.status(404).json({ message: 'Questionnaire non trouvé' });
     }
 
-    // Si le questionnaire n'est pas public et que l'utilisateur n'est pas le propriétaire
-    if (!questionnaire.public && (!req.userId || questionnaire.user.toString() !== req.userId)) {
-      return res.status(403).json({ message: 'Accès non autorisé' });
+    // Si le questionnaire est public, tout le monde peut y accéder
+    if (questionnaire.public) {
+      return res.json(questionnaire);
+    }
+
+    // Si le questionnaire n'est pas public, vérifier l'authentification
+    if (!req.userId) {
+      return res.status(403).json({ message: 'Authentification requise pour accéder à ce questionnaire privé' });
+    }
+
+    // Vérifier que l'utilisateur est le propriétaire
+    if (questionnaire.user.toString() !== req.userId) {
+      return res.status(403).json({ message: 'Accès non autorisé - vous n\'êtes pas le propriétaire de ce questionnaire' });
     }
 
     res.json(questionnaire);
@@ -470,6 +508,7 @@ router.delete('/:id/tags/:tag', authMiddleware, async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
 // POST copier un questionnaire (public ou privé)
 router.post('/:id/copy', authMiddleware, async (req, res) => {
   try {
