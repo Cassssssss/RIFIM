@@ -28,7 +28,7 @@ import {
   ClipboardList, Calendar, Clock, MapPin, Target,
   
   // Drag & Drop et organisation
-  GripVertical, Move, RotateCcw, RotateCw, Maximize, Minimize,
+  GripVertical, Move, RotateCcw, Maximize, Minimize,
   
   // Données et analytiques
   BarChart, PieChart, TrendingUp, TrendingDown, Database,
