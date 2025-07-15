@@ -251,8 +251,16 @@ function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
             📋 Mes CR
           </NavLink>
           
+          <NavLink to="/questionnaires-list">
+            ➕ Créer CR
+          </NavLink>
+          
           <NavLink to="/cases-list">
             📁 Mes Cas
+          </NavLink>
+          
+          <NavLink to="/cases">
+            ➕ Créer Cas
           </NavLink>
           
           <NavLink to="/public-questionnaires">
@@ -308,8 +316,16 @@ function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
               📋 Mes CR
             </NavLink>
             
+            <NavLink to="/questionnaires-list" onClick={() => setShowMobileMenu(false)}>
+              ➕ Créer CR
+            </NavLink>
+            
             <NavLink to="/cases-list" onClick={() => setShowMobileMenu(false)}>
               📁 Mes Cas
+            </NavLink>
+            
+            <NavLink to="/cases" onClick={() => setShowMobileMenu(false)}>
+              ➕ Créer Cas
             </NavLink>
             
             <NavLink to="/public-questionnaires" onClick={() => setShowMobileMenu(false)}>
