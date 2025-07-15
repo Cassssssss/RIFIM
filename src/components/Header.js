@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
-import Icon, { IconWithText } from './Icons'; // Import de notre nouveau système d'icônes
+import { Moon, Sun, Menu, X, User, LogOut, ChevronDown } from 'lucide-react';
 
 const HeaderWrapper = styled.header`
   background-color: ${props => props.theme.headerBackground};
@@ -202,90 +202,93 @@ function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
   // Fonction pour obtenir le titre de la page basé sur l'URL
   const getPageTitle = () => {
     const path = location.pathname;
-    if (path === '/') return { title: 'Accueil', icon: 'home' };
-    if (path === '/questionnaires') return { title: 'Mes Questionnaires', icon: 'checklist' };
-    if (path === '/questionnaires-list') return { title: 'Questionnaires', icon: 'checklist' };
-    if (path === '/create') return { title: 'Créer un Questionnaire', icon: 'plus' };
-    if (path.includes('/edit/')) return { title: 'Modifier le Questionnaire', icon: 'edit' };
-    if (path.includes('/cr/')) return { title: 'Compte Rendu', icon: 'document' };
-    if (path.includes('/use/')) return { title: 'Utiliser le Questionnaire', icon: 'checklist' };
-    if (path === '/cases') return { title: 'Mes Cas', icon: 'folder' };
-    if (path === '/cases-list') return { title: 'Liste des Cas', icon: 'folder' };
-    if (path === '/public-questionnaires') return { title: 'Questionnaires Publics', icon: 'book-open' };
-    if (path === '/public-cases') return { title: 'Cas Publics', icon: 'folder-open' };
-    return { title: 'RIFIM', icon: 'stethoscope' };
+    if (path === '/') return 'Accueil';
+    if (path === '/questionnaires') return 'Mes Questionnaires';
+    if (path === '/questionnaires-list') return 'Questionnaires';
+    if (path === '/create') return 'Créer un Questionnaire';
+    if (path.includes('/edit/')) return 'Modifier le Questionnaire';
+    if (path.includes('/cr/')) return 'Compte Rendu';
+    if (path.includes('/use/')) return 'Utiliser le Questionnaire';
+    if (path === '/cases') return 'Mes Cas';
+    if (path === '/cases-list') return 'Liste des Cas';
+    if (path === '/public-questionnaires') return 'Questionnaires Publics';
+    if (path === '/public-cases') return 'Cas Publics';
+    return 'RIFIM';
   };
 
-  const currentPage = getPageTitle();
+  // Fonction pour obtenir le nom d'utilisateur de manière sûre
+  const getUserName = () => {
+    if (!user) return null;
+    
+    // Si user est une string, la retourner directement
+    if (typeof user === 'string') return user;
+    
+    // Si user est un objet, extraire le username
+    if (typeof user === 'object' && user.username) return user.username;
+    
+    // Fallback
+    return 'Utilisateur';
+  };
+
+  const userName = getUserName();
 
   return (
     <HeaderWrapper>
       <HeaderContent>
-        {/* Logo avec icône médicale */}
+        {/* Logo */}
         <Logo to="/">
-          <Icon name="stethoscope" size="lg" />
-          RIFIM
+          🩺 RIFIM
         </Logo>
 
-        {/* Titre central avec icône de page */}
+        {/* Titre central */}
         <CenterTitle>
-          <Icon name={currentPage.icon} size="md" />
-          {currentPage.title}
+          {getPageTitle()}
         </CenterTitle>
 
         {/* Navigation principale pour desktop */}
         <Nav className="hidden md:flex">
           <NavLink to="/questionnaires">
-            <IconWithText iconName="checklist" iconSize="sm">
-              Mes CR
-            </IconWithText>
+            📋 Mes CR
           </NavLink>
           
           <NavLink to="/cases">
-            <IconWithText iconName="folder" iconSize="sm">
-              Mes Cas
-            </IconWithText>
+            📁 Mes Cas
           </NavLink>
           
           <NavLink to="/public-questionnaires">
-            <IconWithText iconName="book-open" iconSize="sm">
-              CR Publics
-            </IconWithText>
+            📖 CR Publics
           </NavLink>
           
           <NavLink to="/public-cases">
-            <IconWithText iconName="folder-open" iconSize="sm">
-              Cas Publics
-            </IconWithText>
+            📂 Cas Publics
           </NavLink>
 
           {/* Toggle du mode sombre */}
           <ThemeToggle onClick={toggleDarkMode} title="Basculer le thème">
-            <Icon name={isDarkMode ? 'light-mode' : 'dark-mode'} size="md" />
+            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </ThemeToggle>
 
           {/* Menu utilisateur */}
-          {user && (
+          {userName && (
             <div ref={menuRef} style={{ position: 'relative' }}>
               <MenuButton onClick={() => setShowUserMenu(!showUserMenu)}>
-                <Icon name="user" size="md" />
-                <Icon name="chevron-down" size="sm" />
+                <User size={20} />
+                <ChevronDown size={16} />
               </MenuButton>
               
               {showUserMenu && (
                 <MenuDropdown>
                   <DropdownItem>
-                    <Icon name="user" size="sm" />
-                    {user}
+                    <User size={16} />
+                    {userName}
                   </DropdownItem>
                   
                   <DropdownItem>
-                    <Icon name="settings" size="sm" />
-                    Paramètres
+                    ⚙️ Paramètres
                   </DropdownItem>
                   
                   <LogoutButton onClick={onLogout}>
-                    <Icon name="logout" size="sm" />
+                    <LogOut size={16} />
                     Déconnexion
                   </LogoutButton>
                 </MenuDropdown>
@@ -297,45 +300,35 @@ function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
         {/* Menu mobile */}
         <MobileMenu>
           <MenuButton onClick={() => setShowMobileMenu(!showMobileMenu)}>
-            <Icon name={showMobileMenu ? 'close' : 'menu'} size="md" />
+            {showMobileMenu ? <X size={20} /> : <Menu size={20} />}
           </MenuButton>
           
           <NavLinks isOpen={showMobileMenu}>
             <NavLink to="/questionnaires" onClick={() => setShowMobileMenu(false)}>
-              <IconWithText iconName="checklist" iconSize="sm">
-                Mes CR
-              </IconWithText>
+              📋 Mes CR
             </NavLink>
             
             <NavLink to="/cases" onClick={() => setShowMobileMenu(false)}>
-              <IconWithText iconName="folder" iconSize="sm">
-                Mes Cas
-              </IconWithText>
+              📁 Mes Cas
             </NavLink>
             
             <NavLink to="/public-questionnaires" onClick={() => setShowMobileMenu(false)}>
-              <IconWithText iconName="book-open" iconSize="sm">
-                CR Publics
-              </IconWithText>
+              📖 CR Publics
             </NavLink>
             
             <NavLink to="/public-cases" onClick={() => setShowMobileMenu(false)}>
-              <IconWithText iconName="folder-open" iconSize="sm">
-                Cas Publics
-              </IconWithText>
+              📂 Cas Publics
             </NavLink>
 
             <div style={{ padding: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.2)', marginTop: '0.5rem' }}>
               <ThemeToggle onClick={toggleDarkMode}>
-                <IconWithText iconName={isDarkMode ? 'light-mode' : 'dark-mode'} iconSize="sm">
-                  {isDarkMode ? 'Mode Clair' : 'Mode Sombre'}
-                </IconWithText>
+                {isDarkMode ? '☀️ Mode Clair' : '🌙 Mode Sombre'}
               </ThemeToggle>
               
-              {user && (
+              {userName && (
                 <LogoutButton onClick={onLogout} style={{ width: '100%', justifyContent: 'flex-start', marginTop: '0.5rem' }}>
-                  <Icon name="logout" size="sm" />
-                  Déconnexion ({user})
+                  <LogOut size={16} />
+                  Déconnexion ({userName})
                 </LogoutButton>
               )}
             </div>

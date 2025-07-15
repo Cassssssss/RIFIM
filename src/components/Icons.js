@@ -1,4 +1,4 @@
-// src/components/Icons.js - VERSION SIMPLIFIÉE ET SÛRE
+// src/components/Icons.js
 import React from 'react';
 import { 
   Home, User, LogOut, Menu, X, 
@@ -11,24 +11,24 @@ import {
   RotateCw, Sun, Moon
 } from 'lucide-react';
 
+// Fonction utilitaire pour convertir les tailles
+const getSizeValue = (sizeInput) => {
+  if (typeof sizeInput === 'number') return sizeInput;
+  
+  const sizeMap = {
+    'xs': 12,
+    'sm': 16,
+    'md': 20,
+    'lg': 24,
+    'xl': 32,
+    'xxl': 48
+  };
+  
+  return sizeMap[sizeInput] || 20;
+};
+
 // Composant d'icône simple et sûr
 const Icon = ({ name, size = 20, color, className = '', ...props }) => {
-  // Conversion des tailles en valeurs numériques
-  const getSizeValue = (sizeInput) => {
-    if (typeof sizeInput === 'number') return sizeInput;
-    
-    const sizeMap = {
-      'xs': 12,
-      'sm': 16,
-      'md': 20,
-      'lg': 24,
-      'xl': 32,
-      'xxl': 48
-    };
-    
-    return sizeMap[sizeInput] || 20;
-  };
-
   const icons = {
     'home': Home,
     'user': User,
@@ -68,7 +68,7 @@ const Icon = ({ name, size = 20, color, className = '', ...props }) => {
     'refresh': RotateCw,
     'light-mode': Sun,
     'dark-mode': Moon,
-    'stethoscope': Heart, // Fallback vers heart si stethoscope n'existe pas
+    'stethoscope': Heart,
     'checklist': File,
     'folder': File,
     'folder-open': File,
@@ -107,13 +107,6 @@ export const IconWithText = ({
   iconPosition = 'left',
   ...props 
 }) => {
-  // Conversion de taille pour IconWithText aussi
-  const getSizeValue = (sizeInput) => {
-    if (typeof sizeInput === 'number') return sizeInput;
-    const sizeMap = { 'xs': 12, 'sm': 16, 'md': 20, 'lg': 24, 'xl': 32, 'xxl': 48 };
-    return sizeMap[sizeInput] || 16;
-  };
-  
   const iconElement = <Icon name={iconName} size={getSizeValue(iconSize)} />;
   
   return (
@@ -136,13 +129,6 @@ export const StatusIcon = ({ status, size = 16, ...props }) => {
   };
   
   const config = statusMap[status] || statusMap.info;
-  
-  // Conversion de taille pour StatusIcon aussi
-  const getSizeValue = (sizeInput) => {
-    if (typeof sizeInput === 'number') return sizeInput;
-    const sizeMap = { 'xs': 12, 'sm': 16, 'md': 20, 'lg': 24, 'xl': 32, 'xxl': 48 };
-    return sizeMap[sizeInput] || 16;
-  };
   
   return <Icon name={config.name} size={getSizeValue(size)} color={config.color} {...props} />;
 };
