@@ -248,11 +248,11 @@ function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
         {/* Navigation principale pour desktop */}
         <Nav className="hidden md:flex">
           <NavLink to="/questionnaires">
-            📋 Mes CR
+            ➕ Créer CR
           </NavLink>
           
           <NavLink to="/questionnaires-list">
-            ➕ Créer CR
+            📋 Mes CR
           </NavLink>
           
           <NavLink to="/cases-list">
