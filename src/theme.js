@@ -1,19 +1,19 @@
-// src/theme.js - THÈME CORRIGÉ AVEC HEADER ORIGINAL
+// src/theme.js - THÈME HARMONISÉ AVEC LA COULEUR HEADER
 
 export const lightTheme = {
   // ==================== COULEURS HEADER (CONSERVÉES) ====================
   headerBackground: '#4f5b93',     // Couleur header originale
   headerText: '#ffffff',           // Texte header original
   
-  // ==================== COULEURS PRINCIPALES ====================
-  primary: '#4f46e5',              // Bleu médical moderne
-  primaryHover: '#3730a3',         // Bleu foncé au survol
-  secondary: '#10b981',            // Vert médical
+  // ==================== COULEURS PRINCIPALES (HARMONISÉES AVEC HEADER) ====================
+  primary: '#4f5b93',              // MÊME COULEUR QUE LE HEADER !
+  primaryHover: '#3d4873',         // Version plus foncée du header
+  secondary: '#10b981',            // Vert médical (gardé)
   secondaryHover: '#059669',       // Vert foncé au survol
   accent: '#f59e0b',              // Orange pour les badges/alertes
   
   // ==================== BACKGROUNDS ====================
-  background: '#f8fafc',           // Background principal (PAS de dégradé)
+  background: '#f8fafc',           // Background principal
   backgroundSolid: '#f8fafc',      // Background solide
   card: '#ffffff',                 // Cartes/conteneurs
   cardSecondary: '#f9fafb',        // Cartes secondaires
@@ -29,7 +29,7 @@ export const lightTheme = {
   // ==================== BORDURES ====================
   border: '#e5e7eb',               // Bordures principales
   borderLight: '#f3f4f6',          // Bordures discrètes
-  borderFocus: '#4f46e5',          // Bordures focus
+  borderFocus: '#4f5b93',          // Bordures focus (même couleur)
   
   // ==================== ÉTATS ====================
   success: '#10b981',              // Succès
@@ -38,16 +38,16 @@ export const lightTheme = {
   warningLight: '#fef3c7',         // Background avertissement
   error: '#ef4444',                // Erreur
   errorLight: '#fef2f2',           // Background erreur
-  info: '#3b82f6',                 // Information
-  infoLight: '#dbeafe',            // Background information
+  info: '#4f5b93',                 // Information (même couleur)
+  infoLight: '#e0e7ff',            // Background information
   
   // ==================== INTERACTIONS ====================
   hover: '#f9fafb',                // Survol général
   active: '#f3f4f6',               // État actif
-  focus: 'rgba(79, 70, 229, 0.1)', // Focus avec transparence
+  focus: 'rgba(79, 91, 147, 0.1)', // Focus avec transparence du header
   disabled: '#9ca3af',             // Éléments désactivés
   
-  // ==================== BOUTONS ====================
+  // ==================== BOUTONS (HARMONISÉS) ====================
   buttonText: '#ffffff',           // Texte des boutons
   buttonSecondary: '#f3f4f6',      // Boutons secondaires
   buttonSecondaryText: '#374151',  // Texte boutons secondaires
@@ -59,9 +59,9 @@ export const lightTheme = {
   shadowMedium: 'rgba(0, 0, 0, 0.15)', // Ombre moyenne
   shadowStrong: 'rgba(0, 0, 0, 0.25)', // Ombre forte
   
-  // ==================== TAGS ET BADGES ====================
-  tagBackground: '#e0e7ff',        // Background des tags
-  tagText: '#3730a3',              // Texte des tags
+  // ==================== TAGS ET BADGES (HARMONISÉS) ====================
+  tagBackground: '#e0e7ff',        // Background des tags (bleu clair)
+  tagText: '#3d4873',              // Texte des tags (bleu foncé)
   
   // ==================== STATUTS SPÉCIFIQUES ====================
   statusPublic: '#dcfce7',         // Background statut public
@@ -98,35 +98,35 @@ export const lightTheme = {
 };
 
 export const darkTheme = {
-  // ==================== COULEURS HEADER (SOMBRES) ====================
-  headerBackground: '#1f2335',     // Header sombre
+  // ==================== COULEURS HEADER (SOMBRES HARMONISÉES) ====================
+  headerBackground: '#2d3748',     // Header sombre harmonisé
   headerText: '#ffffff',           // Texte header
   
-  // ==================== COULEURS PRINCIPALES ====================
-  primary: '#6366f1',              // Bleu plus vif pour le sombre
-  primaryHover: '#4f46e5',         
+  // ==================== COULEURS PRINCIPALES (HARMONISÉES) ====================
+  primary: '#4f5b93',              // Même couleur primaire en mode sombre
+  primaryHover: '#3d4873',         
   secondary: '#34d399',            // Vert plus vif
   secondaryHover: '#10b981',       
   accent: '#fbbf24',              
   
   // ==================== BACKGROUNDS SOMBRES ====================
-  background: '#181c2e',           // Background principal sombre
-  backgroundSolid: '#181c2e',      // Background solide sombre
-  card: '#1e293b',                 // Cartes sombres
-  cardSecondary: '#334155',        // Cartes secondaires sombres
-  cardHover: '#475569',            // Survol des cartes sombres
-  surface: '#1e293b',              // Surface sombre
+  background: '#1a202c',           // Background principal sombre
+  backgroundSolid: '#1a202c',      // Background solide sombre
+  card: '#2d3748',                 // Cartes sombres
+  cardSecondary: '#4a5568',        // Cartes secondaires sombres
+  cardHover: '#718096',            // Survol des cartes sombres
+  surface: '#2d3748',              // Surface sombre
   
   // ==================== TEXTES SOMBRES ====================
-  text: '#f8fafc',                 
-  textSecondary: '#cbd5e1',        
-  textLight: '#94a3b8',            
-  textInverse: '#1f2937',          
+  text: '#f7fafc',                 
+  textSecondary: '#cbd5e0',        
+  textLight: '#a0aec0',            
+  textInverse: '#1a202c',          
   
   // ==================== BORDURES SOMBRES ====================
-  border: '#475569',               
-  borderLight: '#334155',          
-  borderFocus: '#6366f1',          
+  border: '#4a5568',               
+  borderLight: '#2d3748',          
+  borderFocus: '#4f5b93',          // Même couleur focus
   
   // ==================== ÉTATS SOMBRES ====================
   success: '#34d399',              
@@ -135,19 +135,19 @@ export const darkTheme = {
   warningLight: '#451a03',         
   error: '#f87171',                
   errorLight: '#7f1d1d',           
-  info: '#60a5fa',                 
-  infoLight: '#1e3a8a',            
+  info: '#4f5b93',                 // Même couleur info
+  infoLight: '#2a4365',            
   
   // ==================== INTERACTIONS SOMBRES ====================
-  hover: '#334155',                
-  active: '#475569',               
-  focus: 'rgba(99, 102, 241, 0.2)', 
-  disabled: '#64748b',             
+  hover: '#4a5568',                
+  active: '#718096',               
+  focus: 'rgba(79, 91, 147, 0.3)', // Focus harmonisé
+  disabled: '#718096',             
   
   // ==================== BOUTONS SOMBRES ====================
   buttonText: '#ffffff',           
-  buttonSecondary: '#334155',      
-  buttonSecondaryText: '#f8fafc',  
+  buttonSecondary: '#4a5568',      
+  buttonSecondaryText: '#f7fafc',  
   buttonDanger: '#f87171',         
   buttonDangerHover: '#ef4444',    
   
@@ -156,9 +156,9 @@ export const darkTheme = {
   shadowMedium: 'rgba(0, 0, 0, 0.4)', 
   shadowStrong: 'rgba(0, 0, 0, 0.6)', 
   
-  // ==================== TAGS ET BADGES SOMBRES ====================
-  tagBackground: '#312e81',        
-  tagText: '#a5b4fc',              
+  // ==================== TAGS ET BADGES SOMBRES (HARMONISÉS) ====================
+  tagBackground: '#2a4365',        // Bleu sombre
+  tagText: '#90cdf4',              // Bleu clair
   
   // ==================== STATUTS SOMBRES ====================
   statusPublic: '#064e3b',         
@@ -167,12 +167,12 @@ export const darkTheme = {
   statusPrivateText: '#fcd34d',    
   
   // ==================== INPUTS SOMBRES ====================
-  inputBackground: '#334155',      
-  inputText: '#f8fafc',            
+  inputBackground: '#4a5568',      
+  inputText: '#f7fafc',            
   
   // ==================== QUESTIONS SOMBRES ====================
-  questionBackground: '#334155',   
-  questionBackgroundAlt: '#475569', 
+  questionBackground: '#4a5568',   
+  questionBackgroundAlt: '#718096', 
   
   // ==================== ESPACEMENT (IDENTIQUE) ====================
   spacing: {
