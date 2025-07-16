@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
 import styled from 'styled-components';
 import { ChevronDown, ChevronUp, Plus, Edit, FileText, Copy, Trash2, Eye, EyeOff, Star, Clock, Users, Search } from 'lucide-react';
-import TutorialOverlay from '../components/TutorialOverlay';
+import TutorialOverlay from './TutorialOverlay';
 
 // ==================== STYLED COMPONENTS ====================
 
