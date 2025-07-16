@@ -1,251 +1,191 @@
+// routes/questionnaireRoutes.js - VERSION CORRIGÉE
 const express = require('express');
 const router = express.Router();
-const s3 = require('../src/utils/spacesConfig');
 const Questionnaire = require('../models/Questionnaire');
 const authMiddleware = require('../middleware/authMiddleware');
-const multer = require('multer');
-const sharp = require('sharp');
-const imageRoutes = require('./imageRoutes');
-const deleteImageFromSpaces = imageRoutes.deleteImageFromSpaces;
+const mongoose = require('mongoose');
 
-const upload = multer();
+// IMPORTANT: Les routes spécifiques DOIVENT être avant les routes avec paramètres
 
-router.use((req, res, next) => {
-  console.log('Route appelée:', req.method, req.url, 'avec le body:', req.body);
-  next();
+// Route pour récupérer les questionnaires de l'utilisateur connecté
+router.get('/my', authMiddleware, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+    const modalities = req.query.modalities ? req.query.modalities.split(',').filter(Boolean) : [];
+    const specialties = req.query.specialties ? req.query.specialties.split(',').filter(Boolean) : [];
+    const locations = req.query.locations ? req.query.locations.split(',').filter(Boolean) : [];
+
+    // Construction du filtre de recherche
+    let searchFilter = {
+      user: req.userId // Questionnaires de l'utilisateur connecté uniquement
+    };
+
+    // Recherche textuelle
+    if (search.trim()) {
+      searchFilter.title = { $regex: search, $options: 'i' };
+    }
+
+    // Filtres par tags/modalités
+    if (modalities.length > 0 || specialties.length > 0 || locations.length > 0) {
+      const allFilters = [...modalities, ...specialties, ...locations];
+      searchFilter.tags = { $in: allFilters };
+    }
+
+    console.log('Filtre de recherche:', searchFilter);
+
+    // Compter le total
+    const total = await Questionnaire.countDocuments(searchFilter);
+    const totalPages = Math.ceil(total / limit);
+
+    // Récupérer les questionnaires avec pagination
+    const questionnaires = await Questionnaire.find(searchFilter)
+      .sort({ updatedAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
+
+    res.json({
+      questionnaires,
+      currentPage: page,
+      totalPages,
+      total
+    });
+
+  } catch (error) {
+    console.error('Erreur lors de la récupération des questionnaires utilisateur:', error);
+    res.status(500).json({ 
+      message: 'Erreur lors de la récupération des questionnaires',
+      error: error.message 
+    });
+  }
 });
 
-// Middleware d'authentification optionnel
-const optionalAuthMiddleware = (req, res, next) => {
-  const authHeader = req.header('Authorization');
-  
-  if (!authHeader) {
-    // Pas d'authentification, on continue sans req.userId
-    return next();
-  }
-
-  const token = authHeader.split(' ')[1];
-  
-  if (!token) {
-    // Token malformé, on continue sans req.userId
-    return next();
-  }
-
-  try {
-    const jwt = require('jsonwebtoken');
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.userId = decoded.userId;
-    next();
-  } catch (error) {
-    // Token invalide, on continue sans req.userId
-    console.log('Token invalide, continuons sans authentification');
-    next();
-  }
-};
-
-// GET tous les questionnaires publics
+// Route pour récupérer les questionnaires publics
 router.get('/public', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
     const search = req.query.search || '';
-    const modality = req.query.modality ? req.query.modality.split(',') : [];
-    const specialty = req.query.specialty ? req.query.specialty.split(',') : [];
-    const location = req.query.location ? req.query.location.split(',') : [];
+    const modalities = req.query.modalities ? req.query.modalities.split(',').filter(Boolean) : [];
+    const specialties = req.query.specialties ? req.query.specialties.split(',').filter(Boolean) : [];
+    const locations = req.query.locations ? req.query.locations.split(',').filter(Boolean) : [];
 
-    const query = { public: true };
-    if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { tags: { $regex: search, $options: 'i' } }
-      ];
+    let searchFilter = {
+      public: true // Questionnaires publics uniquement
+    };
+
+    if (search.trim()) {
+      searchFilter.title = { $regex: search, $options: 'i' };
     }
 
-    const tagFilters = [...modality, ...specialty, ...location];
-    if (tagFilters.length > 0) {
-      query.tags = { $all: tagFilters };
+    if (modalities.length > 0 || specialties.length > 0 || locations.length > 0) {
+      const allFilters = [...modalities, ...specialties, ...locations];
+      searchFilter.tags = { $in: allFilters };
     }
 
-    const totalQuestionnaires = await Questionnaire.countDocuments(query);
-    const questionnaires = await Questionnaire.find(query)
-      .skip(skip)
+    const total = await Questionnaire.countDocuments(searchFilter);
+    const totalPages = Math.ceil(total / limit);
+
+    const questionnaires = await Questionnaire.find(searchFilter)
+      .sort({ updatedAt: -1 })
+      .skip((page - 1) * limit)
       .limit(limit)
-      .sort({ createdAt: -1 });
+      .lean();
 
     res.json({
       questionnaires,
       currentPage: page,
-      totalPages: Math.ceil(totalQuestionnaires / limit),
-      totalQuestionnaires
+      totalPages,
+      total
     });
+
   } catch (error) {
-    console.error("Erreur lors de la récupération des questionnaires publics:", error);
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// GET un questionnaire spécifique - CORRIGÉ
-router.get('/:id', optionalAuthMiddleware, async (req, res) => {
-  try {
-    let questionnaire = await Questionnaire.findById(req.params.id);
-    
-    if (!questionnaire) {
-      return res.status(404).json({ message: 'Questionnaire non trouvé' });
-    }
-
-    // Si le questionnaire est public, tout le monde peut y accéder
-    if (questionnaire.public) {
-      return res.json(questionnaire);
-    }
-
-    // Si le questionnaire n'est pas public, vérifier l'authentification
-    if (!req.userId) {
-      return res.status(403).json({ message: 'Authentification requise pour accéder à ce questionnaire privé' });
-    }
-
-    // Vérifier que l'utilisateur est le propriétaire
-    if (questionnaire.user.toString() !== req.userId) {
-      return res.status(403).json({ message: 'Accès non autorisé - vous n\'êtes pas le propriétaire de ce questionnaire' });
-    }
-
-    res.json(questionnaire);
-  } catch (error) {
-    console.error('Erreur lors de la récupération du questionnaire:', error);
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// GET tous les questionnaires d'un utilisateur
-router.get('/', authMiddleware, async (req, res) => {
-  try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
-    const search = req.query.search || '';
-    const modality = req.query.modality ? req.query.modality.split(',') : [];
-    const specialty = req.query.specialty ? req.query.specialty.split(',') : [];
-    const location = req.query.location ? req.query.location.split(',') : [];
-
-    const query = { user: req.userId };
-    if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { tags: { $regex: search, $options: 'i' } }
-      ];
-    }
-
-    const tagFilters = [...modality, ...specialty, ...location];
-    if (tagFilters.length > 0) {
-      query.tags = { $all: tagFilters };
-    }
-
-    const totalQuestionnaires = await Questionnaire.countDocuments(query);
-    const questionnaires = await Questionnaire.find(query)
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 });
-
-    res.json({
-      questionnaires,
-      currentPage: page,
-      totalPages: Math.ceil(totalQuestionnaires / limit),
-      totalQuestionnaires
+    console.error('Erreur lors de la récupération des questionnaires publics:', error);
+    res.status(500).json({ 
+      message: 'Erreur lors de la récupération des questionnaires publics',
+      error: error.message 
     });
-  } catch (error) {
-    console.error('Erreur lors de la récupération des questionnaires:', error);
-    res.status(500).json({ message: error.message });
   }
 });
 
-// GET liens d'un élément
-router.get('/:id/links/:elementId', authMiddleware, async (req, res) => {
+// Route pour ajouter un tag
+router.post('/:id/tags', authMiddleware, async (req, res) => {
   try {
-    const questionnaire = await Questionnaire.findById(req.params.id);
-    if (!questionnaire) {
-      return res.status(404).json({ message: 'Questionnaire non trouvé' });
+    // Vérifier que l'ID est valide
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'ID de questionnaire invalide' });
     }
-    const links = questionnaire.links.get(req.params.elementId) || [];
-    res.json({ links });
-  } catch (error) {
-    console.error('Erreur lors de la récupération des liens:', error);
-    res.status(500).json({ message: error.message });
-  }
-});
 
-// DELETE supprimer un lien spécifique
-router.delete('/:id/links/:elementId/:linkIndex', authMiddleware, async (req, res) => {
-  try {
-    const questionnaire = await Questionnaire.findById(req.params.id);
+    const questionnaire = await Questionnaire.findOne({ 
+      _id: req.params.id,
+      user: req.userId
+    });
+
     if (!questionnaire) {
       return res.status(404).json({ message: 'Questionnaire non trouvé' });
     }
 
-    const elementId = req.params.elementId;
-    const linkIndex = parseInt(req.params.linkIndex);
-    
-    // Récupérer les liens existants
-    let links = questionnaire.links.get(elementId) || [];
-    
-    // Supprimer le lien spécifique
-    if (linkIndex >= 0 && linkIndex < links.length) {
-      links.splice(linkIndex, 1);
-      
-      // Si aucun lien ne reste, supprimer complètement l'entrée
-      if (links.length === 0) {
-        questionnaire.links.delete(elementId);
-      } else {
-        questionnaire.links.set(elementId, links);
-      }
-      
-      questionnaire.markModified('links');
+    const { tag } = req.body;
+    if (!tag || !tag.trim()) {
+      return res.status(400).json({ message: 'Tag requis' });
+    }
+
+    // Initialiser tags si nécessaire
+    if (!questionnaire.tags) {
+      questionnaire.tags = [];
+    }
+
+    // Ajouter le tag s'il n'existe pas déjà
+    const trimmedTag = tag.trim();
+    if (!questionnaire.tags.includes(trimmedTag)) {
+      questionnaire.tags.push(trimmedTag);
       await questionnaire.save();
-      
-      res.json({ message: 'Lien supprimé avec succès', links });
-    } else {
-      res.status(404).json({ message: 'Index de lien invalide' });
     }
+
+    res.json({ tags: questionnaire.tags });
   } catch (error) {
-    console.error('Erreur lors de la suppression du lien:', error);
-    res.status(500).json({ message: error.message });
+    console.error('Erreur lors de l\'ajout du tag:', error);
+    res.status(500).json({ message: 'Erreur serveur lors de l\'ajout du tag' });
   }
 });
 
+// Route pour supprimer un tag
+router.delete('/:id/tags/:tag', authMiddleware, async (req, res) => {
+  try {
+    // Vérifier que l'ID est valide
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'ID de questionnaire invalide' });
+    }
 
-// POST nouveau questionnaire
-const processImagesRecursively = async (item, questionnaireTitle, parentId = '') => {
-  console.log(`Traitement de l'item : ${item.id} pour le questionnaire : ${questionnaireTitle}`);
-  
-  if (item.image && item.image.src) {
-    console.log(`Traitement de l'image pour l'item : ${item.id}`);
-    try {
-      item.image.src = await compressAndUploadImage(item.image.src, questionnaireTitle, `${parentId}_${item.id}`);
-    } catch (error) {
-      console.error(`Erreur lors du traitement de l'image pour l'item ${item.id}:`, error);
+    const questionnaire = await Questionnaire.findOne({ 
+      _id: req.params.id,
+      user: req.userId
+    });
+    
+    if (!questionnaire) {
+      return res.status(404).json({ message: 'Questionnaire non trouvé' });
     }
-  }
-  
-  if (item.options) {
-    for (let option of item.options) {
-      await processImagesRecursively(option, questionnaireTitle, `${parentId}_${item.id}`);
-    }
-  }
-  
-  if (item.subQuestions) {
-    for (let subQuestion of item.subQuestions) {
-      await processImagesRecursively(subQuestion, questionnaireTitle, `${parentId}_${item.id}`);
-    }
-  }
-};
 
+    // Retirer le tag
+    const tagToRemove = decodeURIComponent(req.params.tag);
+    questionnaire.tags = questionnaire.tags ? questionnaire.tags.filter(t => t !== tagToRemove) : [];
+    await questionnaire.save();
+
+    res.json({ tags: questionnaire.tags });
+  } catch (error) {
+    console.error('Erreur lors de la suppression du tag:', error);
+    res.status(500).json({ message: 'Erreur serveur lors de la suppression du tag' });
+  }
+});
+
+// Route pour créer un questionnaire
 router.post('/', authMiddleware, async (req, res) => {
   try {
     const { title, questions, selectedOptions, crData, hiddenQuestions } = req.body;
     
     console.log(`Création du questionnaire : ${title}`);
-    for (let question of questions) {
-      await processImagesRecursively(question, title);
-    }
 
     const questionnaire = new Questionnaire({
       title,
@@ -254,269 +194,134 @@ router.post('/', authMiddleware, async (req, res) => {
       crData,
       hiddenQuestions,
       user: req.userId,
-      links: new Map()
+      links: new Map(),
+      tags: [] // Initialiser avec un tableau vide
     });
 
     const newQuestionnaire = await questionnaire.save();
     res.status(201).json(newQuestionnaire);
   } catch (error) {
     console.error('Erreur lors de la création du questionnaire:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'Erreur lors de la création du questionnaire' });
   }
 });
 
-// POST sauvegarder un lien
-router.post('/:id/links', authMiddleware, async (req, res) => {
+// Route pour récupérer un questionnaire par ID
+router.get('/:id', authMiddleware, async (req, res) => {
   try {
-    const { elementId, content, linkIndex, title } = req.body; // Ajout de title
-    const questionnaire = await Questionnaire.findById(req.params.id);
-    
-    if (!questionnaire) {
-      return res.status(404).json({ message: 'Questionnaire non trouvé' });
+    // Vérifier que l'ID est valide
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'ID de questionnaire invalide' });
     }
 
-    // Obtenir les liens existants ou créer un nouveau tableau
-    let existingLinks = questionnaire.links.get(elementId) || [];
-    
-    // Si un linkIndex est fourni, mettre à jour le lien existant
-    if (typeof linkIndex !== 'undefined') {
-      existingLinks[linkIndex] = {
-        content,
-        title, // Ajout du titre
-        date: new Date()
-      };
-    } else {
-      // Sinon, ajouter un nouveau lien
-      existingLinks.push({
-        content,
-        title, // Ajout du titre
-        date: new Date()
-      });
-    }
-
-    // Mettre à jour la Map avec le tableau mis à jour
-    questionnaire.links.set(elementId, existingLinks);
-    questionnaire.markModified('links');
-
-    await questionnaire.save();
-    res.json({ message: 'Lien sauvegardé avec succès', links: existingLinks });
-  } catch (error) {
-    console.error('Erreur lors de la sauvegarde du lien:', error);
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// POST images pour les liens
-router.post('/:id/links-images', authMiddleware, upload.single('file'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'Aucun fichier n\'a été uploadé' });
-    }
-
-    // Optimisation de l'image
-    const optimizedImageBuffer = await sharp(req.file.buffer)
-      .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
-      .jpeg({ quality: 80 })
-      .toBuffer();
-
-    const fileName = `${Date.now()}-${req.file.originalname}`;
-    const params = {
-      Bucket: process.env.DO_SPACES_BUCKET,
-      Key: `questionnaires/${req.params.id}/links-images/${fileName}`,
-      Body: optimizedImageBuffer,
-      ACL: 'public-read',
-      ContentType: 'image/jpeg',
-      CacheControl: 'public, max-age=31536000'
-    };
-
-    const uploadResult = await s3.upload(params).promise();
-    res.json({ location: uploadResult.Location });
-  } catch (error) {
-    console.error('Erreur lors de l\'upload de l\'image:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// PUT mise à jour d'un questionnaire
-router.put('/:id', authMiddleware, async (req, res) => {
-  try {
-    const { questions, ...rest } = req.body;
-    
-    // Nettoyer et valider les données des questions
-    const cleanedQuestions = questions.map(q => {
-      if (q.type === 'imageMap' && q.questionImage) {
-        return {
-          ...q,
-          questionImage: {
-            src: q.questionImage.src,
-            areas: Array.isArray(q.questionImage.areas) ? q.questionImage.areas : []
-          }
-        };
-      }
-      return q;
+    const questionnaire = await Questionnaire.findOne({
+      _id: req.params.id,
+      $or: [
+        { user: req.userId },
+        { public: true }
+      ]
     });
-
-    const updatedQuestionnaire = await Questionnaire.findOneAndUpdate(
-      { _id: req.params.id, user: req.userId },
-      { ...rest, questions: cleanedQuestions },
-      { new: true }
-    );
-
-    if (!updatedQuestionnaire) {
-      return res.status(404).json({ message: 'Questionnaire non trouvé' });
-    }
-
-    res.json(updatedQuestionnaire);
-  } catch (error) {
-    console.error('Erreur lors de la mise à jour:', error);
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// DELETE un questionnaire
-router.delete('/:id', authMiddleware, async (req, res) => {
-  try {
-    const questionnaire = await Questionnaire.findOne({ _id: req.params.id, user: req.userId });
+    
     if (!questionnaire) {
       return res.status(404).json({ message: 'Questionnaire non trouvé' });
     }
-
-    // Suppression des images
-    const deleteImagesRecursively = async (questions) => {
-      for (const question of questions) {
-        if (question.image && question.image.src) {
-          const urlParts = question.image.src.split('/');
-          const fileName = urlParts[urlParts.length - 1];
-          await deleteImageFromSpaces(questionnaire.title, fileName);
-        }
-        if (question.options) {
-          for (const option of question.options) {
-            if (option.image && option.image.src) {
-              const urlParts = option.image.src.split('/');
-              const fileName = urlParts[urlParts.length - 1];
-              await deleteImageFromSpaces(questionnaire.title, fileName);
-            }
-            if (option.subQuestions) {
-              await deleteImagesRecursively(option.subQuestions);
-            }
-          }
-        }
-      }
-    };
-
-    // Suppression des images des liens
-    const deleteLinkImages = async () => {
-      try {
-        const listParams = {
-          Bucket: process.env.DO_SPACES_BUCKET,
-          Prefix: `questionnaires/${questionnaire._id}/links-images/`
-        };
-        const listedObjects = await s3.listObjectsV2(listParams).promise();
-        if (listedObjects.Contents.length > 0) {
-          const deleteParams = {
-            Bucket: process.env.DO_SPACES_BUCKET,
-            Delete: { Objects: listedObjects.Contents.map(({ Key }) => ({ Key })) }
-          };
-          await s3.deleteObjects(deleteParams).promise();
-        }
-      } catch (error) {
-        console.error('Erreur lors de la suppression des images des liens:', error);
-      }
-    };
-
-    await deleteImagesRecursively(questionnaire.questions);
-    await deleteLinkImages();
-    await Questionnaire.findOneAndDelete({ _id: req.params.id, user: req.userId });
-
-    res.json({ message: 'Questionnaire supprimé avec succès', id: req.params.id });
-  } catch (error) {
-    console.error('Erreur lors de la suppression du questionnaire:', error);
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// PATCH pour basculer la visibilité publique
-router.patch('/:id/togglePublic', authMiddleware, async (req, res) => {
-  try {
-    const questionnaire = await Questionnaire.findOne({ _id: req.params.id, user: req.userId });
-    if (!questionnaire) {
-      return res.status(404).json({ message: 'Questionnaire non trouvé' });
-    }
-    questionnaire.public = !questionnaire.public;
-    await questionnaire.save();
+    
     res.json(questionnaire);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Erreur lors de la récupération du questionnaire:', error);
+    res.status(500).json({ message: 'Erreur lors de la récupération du questionnaire' });
   }
 });
 
-// Route pour ajouter un tag
-router.post('/:id/tags', authMiddleware, async (req, res) => {
+// Route pour mettre à jour un questionnaire
+router.put('/:id', authMiddleware, async (req, res) => {
   try {
-    // Modifier cette ligne pour inclure la vérification de l'utilisateur
-    const questionnaire = await Questionnaire.findOne({ 
-      _id: req.params.id,
-      user: req.userId  // Ajouter cette condition
-    });
+    // Vérifier que l'ID est valide
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'ID de questionnaire invalide' });
+    }
 
+    const questionnaire = await Questionnaire.findOneAndUpdate(
+      { 
+        _id: req.params.id, 
+        user: req.userId 
+      },
+      req.body,
+      { new: true }
+    );
+    
     if (!questionnaire) {
       return res.status(404).json({ message: 'Questionnaire non trouvé' });
     }
-
-    const { tag } = req.body;
-    if (!tag) {
-      return res.status(400).json({ message: 'Tag requis' });
-    }
-
-    // Si tags n'existe pas, on l'initialise
-    if (!questionnaire.tags) {
-      questionnaire.tags = [];
-    }
-
-    // Ajouter le tag s'il n'existe pas déjà
-    if (!questionnaire.tags.includes(tag)) {
-      questionnaire.tags.push(tag);
-      await questionnaire.save();
-    }
-
-    res.json({ tags: questionnaire.tags });
+    
+    res.json(questionnaire);
   } catch (error) {
-    console.error('Erreur lors de l\'ajout du tag:', error);
-    res.status(500).json({ message: error.message });
+    console.error('Erreur lors de la mise à jour du questionnaire:', error);
+    res.status(500).json({ message: 'Erreur lors de la mise à jour du questionnaire' });
   }
 });
 
-// Route pour supprimer un tag
-router.delete('/:id/tags/:tag', authMiddleware, async (req, res) => {
+// Route pour modifier la visibilité (public/privé)
+router.patch('/:id', authMiddleware, async (req, res) => {
   try {
-    const questionnaire = await Questionnaire.findOne({ 
+    // Vérifier que l'ID est valide
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'ID de questionnaire invalide' });
+    }
+
+    const questionnaire = await Questionnaire.findOneAndUpdate(
+      { 
+        _id: req.params.id, 
+        user: req.userId 
+      },
+      req.body,
+      { new: true }
+    );
+    
+    if (!questionnaire) {
+      return res.status(404).json({ message: 'Questionnaire non trouvé' });
+    }
+    
+    res.json(questionnaire);
+  } catch (error) {
+    console.error('Erreur lors de la modification du questionnaire:', error);
+    res.status(500).json({ message: 'Erreur lors de la modification du questionnaire' });
+  }
+});
+
+// Route pour supprimer un questionnaire
+router.delete('/:id', authMiddleware, async (req, res) => {
+  try {
+    // Vérifier que l'ID est valide
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'ID de questionnaire invalide' });
+    }
+
+    const questionnaire = await Questionnaire.findOneAndDelete({
       _id: req.params.id,
-      user: req.userId  // Ajouter cette condition également ici
+      user: req.userId
     });
     
     if (!questionnaire) {
       return res.status(404).json({ message: 'Questionnaire non trouvé' });
     }
-
-    // Retirer le tag
-    questionnaire.tags = questionnaire.tags.filter(t => t !== req.params.tag);
-    await questionnaire.save();
-
-    res.json({ tags: questionnaire.tags });
+    
+    res.json({ message: 'Questionnaire supprimé avec succès' });
   } catch (error) {
-    console.error('Erreur lors de la suppression du tag:', error);
-    res.status(500).json({ message: error.message });
+    console.error('Erreur lors de la suppression du questionnaire:', error);
+    res.status(500).json({ message: 'Erreur lors de la suppression du questionnaire' });
   }
 });
 
-// POST copier un questionnaire (public ou privé)
+// Route pour copier un questionnaire
 router.post('/:id/copy', authMiddleware, async (req, res) => {
   try {
-    console.log('Tentative de copie du questionnaire:', req.params.id);
-    console.log('ID utilisateur:', req.userId);
+    // Vérifier que l'ID est valide
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'ID de questionnaire invalide' });
+    }
 
-    // Chercher le questionnaire parmi ceux de l'utilisateur
-    let originalQuestionnaire = await Questionnaire.findOne({
+    const originalQuestionnaire = await Questionnaire.findOne({
       _id: req.params.id,
       $or: [
         { user: req.userId },
@@ -525,13 +330,11 @@ router.post('/:id/copy', authMiddleware, async (req, res) => {
     });
 
     if (!originalQuestionnaire) {
-      console.log('Questionnaire non trouvé');
       return res.status(404).json({
         message: 'Questionnaire non trouvé ou accès non autorisé'
       });
     }
 
-    console.log('Questionnaire trouvé, création de la copie');
     const newQuestionnaire = new Questionnaire({
       ...originalQuestionnaire.toObject(),
       _id: undefined,
@@ -539,13 +342,12 @@ router.post('/:id/copy', authMiddleware, async (req, res) => {
       public: false,
       user: req.userId,
       links: new Map(originalQuestionnaire.links),
+      tags: originalQuestionnaire.tags || [],
       createdAt: new Date(),
       updatedAt: new Date()
     });
 
-    console.log('Sauvegarde de la copie');
     await newQuestionnaire.save();
-    console.log('Copie sauvegardée avec succès');
 
     res.status(201).json({
       message: 'Questionnaire copié avec succès',
@@ -555,7 +357,74 @@ router.post('/:id/copy', authMiddleware, async (req, res) => {
 
   } catch (error) {
     console.error('Erreur lors de la copie du questionnaire:', error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: 'Erreur lors de la copie du questionnaire' });
+  }
+});
+
+// Route pour sauvegarder un lien
+router.post('/:id/links', authMiddleware, async (req, res) => {
+  try {
+    // Vérifier que l'ID est valide
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'ID de questionnaire invalide' });
+    }
+
+    const { elementId, content, linkIndex, title } = req.body;
+    const questionnaire = await Questionnaire.findById(req.params.id);
+    
+    if (!questionnaire) {
+      return res.status(404).json({ message: 'Questionnaire non trouvé' });
+    }
+
+    let existingLinks = questionnaire.links.get(elementId) || [];
+    
+    if (typeof linkIndex !== 'undefined') {
+      existingLinks[linkIndex] = {
+        content,
+        title,
+        date: new Date()
+      };
+    } else {
+      existingLinks.push({
+        content,
+        title,
+        date: new Date()
+      });
+    }
+
+    questionnaire.links.set(elementId, existingLinks);
+    questionnaire.markModified('links');
+    await questionnaire.save();
+
+    res.json({
+      message: 'Lien sauvegardé avec succès',
+      links: existingLinks
+    });
+  } catch (error) {
+    console.error('Erreur lors de la sauvegarde du lien:', error);
+    res.status(500).json({ message: 'Erreur lors de la sauvegarde du lien' });
+  }
+});
+
+// Route pour récupérer les liens
+router.get('/:id/links/:elementId', authMiddleware, async (req, res) => {
+  try {
+    // Vérifier que l'ID est valide
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'ID de questionnaire invalide' });
+    }
+
+    const questionnaire = await Questionnaire.findById(req.params.id);
+    
+    if (!questionnaire) {
+      return res.status(404).json({ message: 'Questionnaire non trouvé' });
+    }
+
+    const links = questionnaire.links.get(req.params.elementId) || [];
+    res.json({ links });
+  } catch (error) {
+    console.error('Erreur lors de la récupération des liens:', error);
+    res.status(500).json({ message: 'Erreur lors de la récupération des liens' });
   }
 });
 
