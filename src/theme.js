@@ -1,4 +1,4 @@
-// src/theme.js - NOUVEAU THÈME MÉDICAL MODERNE
+// src/theme.js - THÈME MÉDICAL MODERNE COMPLET
 
 export const lightTheme = {
   // Couleurs principales
@@ -80,7 +80,12 @@ export const lightTheme = {
     lg: '12px',
     xl: '16px',
     full: '9999px'
-  }
+  },
+
+  // Ancien système pour compatibilité
+  inputBackground: '#ffffff',
+  questionBackground: '#f9fafb',
+  questionBackgroundAlt: '#f3f4f6'
 };
 
 export const darkTheme = {
@@ -163,5 +168,10 @@ export const darkTheme = {
     lg: '12px',
     xl: '16px',
     full: '9999px'
-  }
+  },
+
+  // Ancien système pour compatibilité
+  inputBackground: '#334155',
+  questionBackground: '#334155',
+  questionBackgroundAlt: '#475569'
 };
