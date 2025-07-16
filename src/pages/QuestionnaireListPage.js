@@ -10,7 +10,7 @@ import TutorialOverlay from '../components/TutorialOverlay';
 
 const PageWrapper = styled.div`
   background: ${props => props.theme.background};
-  min-height: 100vh;
+  min-height: calc(100vh - 60px);
   padding: 0;
 `;
 

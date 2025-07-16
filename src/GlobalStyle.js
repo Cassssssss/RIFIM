@@ -1,142 +1,249 @@
+// src/GlobalStyle.js - STYLES GLOBAUX CORRIGÉS
 import { createGlobalStyle } from 'styled-components';
 
 const GlobalStyle = createGlobalStyle`
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
   body {
     margin: 0;
     padding: 0;
     background-color: ${props => props.theme.background};
     color: ${props => props.theme.text};
-    font-family: 'Poppins', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  html {
+    scroll-behavior: smooth;
   }
     
+  // Variables CSS pour compatibilité
   :root {
-    --background-color: ${props => props.theme.background || '#F0F2F5'};
-    --header-background: ${props => props.theme.headerBackground || '#4f5b93'};
-    --text-color: ${props => props.theme.text || '#333'};
-    --border-color: ${props => props.theme.border || '#E4E6E8'};
-    --button-background: ${props => props.theme.primary || '#4a69bd'};
+    --background-color: ${props => props.theme.background};
+    --header-background: ${props => props.theme.headerBackground};
+    --text-color: ${props => props.theme.text};
+    --border-color: ${props => props.theme.border};
+    --button-background: ${props => props.theme.primary};
+    --card-background: ${props => props.theme.card};
+    --shadow: ${props => props.theme.shadow};
   }
 
-
-  [data-theme="dark"] {
-    --background-color: #181c2e;
-    --header-background: #1f2335;
-    --text-color: #fff;
-    --border-color: #2a2a3e;
+  // Styles pour les éléments de base
+  h1, h2, h3, h4, h5, h6 {
+    color: ${props => props.theme.text};
+    margin-bottom: 0.5rem;
   }
-    
+
+  p {
+    color: ${props => props.theme.text};
+    line-height: 1.6;
+  }
+
+  a {
+    color: ${props => props.theme.primary};
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: ${props => props.theme.primaryHover};
+    }
+  }
+
+  // Styles pour les cartes
   .card {
     background-color: ${props => props.theme.card};
-    border-color: ${props => props.theme.border};
+    border: 1px solid ${props => props.theme.border};
+    border-radius: 8px;
+    box-shadow: 0 2px 4px ${props => props.theme.shadow};
+    transition: all 0.3s ease;
   }
 
+  // Styles pour les inputs
   input, textarea, select {
-    background-color: ${props => props.theme.inputBackground};
-    color: ${props => props.theme.inputText};
-    border-color: ${props => props.theme.border};
+    background-color: ${props => props.theme.inputBackground || props.theme.card};
+    color: ${props => props.theme.inputText || props.theme.text};
+    border: 1px solid ${props => props.theme.border};
+    border-radius: 4px;
+    padding: 0.5rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: ${props => props.theme.borderFocus};
+      box-shadow: 0 0 0 2px ${props => props.theme.focus};
+    }
+
+    &::placeholder {
+      color: ${props => props.theme.textLight};
+    }
   }
 
   select {
-    background-color: ${props => props.theme.inputBackground};
-    color: ${props => props.theme.inputText};
-    border-color: ${props => props.theme.border};
-    padding: 0.5rem;
-    border-radius: 4px;
-    width: 100%;
+    cursor: pointer;
+    
+    option {
+      background-color: ${props => props.theme.inputBackground || props.theme.card};
+      color: ${props => props.theme.inputText || props.theme.text};
+    }
   }
 
   textarea {
-    background-color: ${props => props.theme.inputBackground};
-    color: ${props => props.theme.inputText};
-    border: 1px solid ${props => props.theme.border};
-    padding: 0.5rem;
-    border-radius: 4px;
-    width: 100%;
     min-height: 100px;
-    font-family: inherit;
+    resize: vertical;
   }
 
+  // Styles pour les boutons
   .btn {
     background-color: ${props => props.theme.primary};
     color: ${props => props.theme.buttonText};
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &:hover {
+      background-color: ${props => props.theme.primaryHover};
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &:disabled {
+      background-color: ${props => props.theme.disabled};
+      cursor: not-allowed;
+      transform: none;
+    }
   }
 
-  .btn:hover {
-    background-color: ${props => props.theme.secondary};
+  .btn-secondary {
+    background-color: ${props => props.theme.buttonSecondary};
+    color: ${props => props.theme.buttonSecondaryText};
+    border: 1px solid ${props => props.theme.border};
+
+    &:hover {
+      background-color: ${props => props.theme.hover};
+    }
   }
 
-  h2, h3 {
+  .btn-danger {
+    background-color: ${props => props.theme.buttonDanger};
+    color: ${props => props.theme.textInverse};
+
+    &:hover {
+      background-color: ${props => props.theme.buttonDangerHover};
+    }
+  }
+
+  // Classes utilitaires Tailwind
+  .bg-gray-100 {
+    background-color: ${props => props.theme.cardSecondary};
+  }
+
+  .text-gray-700 {
+    color: ${props => props.theme.textSecondary};
+  }
+
+  .border-gray-300 {
+    border-color: ${props => props.theme.border};
+  }
+
+  // Scrollbars personnalisées
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: ${props => props.theme.cardSecondary};
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: ${props => props.theme.border};
+    border-radius: 4px;
+    
+    &:hover {
+      background: ${props => props.theme.textLight};
+    }
+  }
+
+  // Styles pour les questionnaires
+  .questionnaire-card {
+    background-color: ${props => props.theme.card};
+    border: 1px solid ${props => props.theme.border};
+    transition: all 0.3s ease;
+
+    &:hover {
+      box-shadow: 0 4px 12px ${props => props.theme.shadowMedium};
+      border-color: ${props => props.theme.primary};
+    }
+  }
+
+  // Animations
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  // Responsive
+  @media (max-width: 768px) {
+    body {
+      font-size: 14px;
+    }
+    
+    .container {
+      padding: 1rem;
+    }
+  }
+
+  // Focus visible pour l'accessibilité
+  :focus-visible {
+    outline: 2px solid ${props => props.theme.primary};
+    outline-offset: 2px;
+  }
+
+  // Sélection de texte
+  ::selection {
+    background-color: ${props => props.theme.primary}30;
     color: ${props => props.theme.text};
   }
 
-  .bg-gray-100 {
-    background-color: ${props => props.theme.card};
-  }
-
-  .dark .bg-gray-100 {
-    background-color: ${props => props.theme.questionBackground};
-  }
-
-  .questionnaire-option {
-    color: ${props => props.theme.questionnaireOptionText};
-  }
-
-  h3, span, label, input, textarea {
-    color: inherit;
-  }
-
-.link-button {
-    padding: 0.25rem 0.75rem;
-    background-color: #ebf5ff;
-    color: #3b82f6;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    transition: all 0.2s;
-  }
-
-  .link-button:hover {
-    background-color: #dbeafe;
-    color: #2563eb;
-  }
-
-    html {
-    font-size: 16px;
+  // Print styles
+  @media print {
+    body {
+      background: white !important;
+      color: black !important;
+    }
     
-    @media (max-width: 768px) {
-      font-size: 14px;
-    }
-  }
-
- body {
-    background-color: var(--background-color);
-    color: var(--text-color);
-    margin: 0;
-    padding: 0;
-  }
-
-  .card {
-    @media (max-width: 768px) {
-      margin: 0.5rem;
-      padding: 0.5rem;
-    }
-  }
-
-  input, select, textarea {
-    @media (max-width: 768px) {
-      font-size: 16px !important; // Empêche le zoom sur iOS
-      max-width: 100%;
-    }
-  }
-
-  .btn {
-    @media (max-width: 768px) {
-      padding: 0.5rem 1rem;
-      width: 100%;
-      margin-bottom: 0.5rem;
+    .no-print {
+      display: none !important;
     }
   }
 `;
-
-
-
-export default GlobalStyle;
