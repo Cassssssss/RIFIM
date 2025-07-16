@@ -506,10 +506,13 @@ function QuestionnaireListPage() {
   // Fonction de changement de visibilité
   const toggleVisibility = async (id, isPublic) => {
     try {
-      await axios.patch(`/questionnaires/${id}`, { public: !isPublic });
+      // Utiliser l'endpoint correct pour basculer la visibilité
+      await axios.patch(`/questionnaires/${id}/togglePublic`);
+      // Recharger les questionnaires pour voir le changement
       fetchQuestionnaires(currentPage);
     } catch (error) {
       console.error('Erreur lors de la modification de la visibilité:', error);
+      alert('Erreur lors de la modification de la visibilité');
     }
   };
 
@@ -678,8 +681,7 @@ function QuestionnaireListPage() {
                   CR
                 </ActionButton>
                 
-                <ActionButton 
-                  to="#"
+                <Button 
                   variant="secondary"
                   onClick={(e) => {
                     e.preventDefault();
@@ -689,11 +691,14 @@ function QuestionnaireListPage() {
                 >
                   <Copy />
                   DUPLIQUER
-                </ActionButton>
+                </Button>
                 
                 <Button 
                   variant="secondary"
-                  onClick={() => toggleVisibility(questionnaire._id, questionnaire.public)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggleVisibility(questionnaire._id, questionnaire.public);
+                  }}
                 >
                   {questionnaire.public ? <EyeOff /> : <Eye />}
                   {questionnaire.public ? 'Rendre privé' : 'Rendre public'}
