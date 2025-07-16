@@ -1,208 +1,167 @@
-import { medicalColors, withOpacity } from './medicalColors';
+// src/theme.js - NOUVEAU THÈME MÉDICAL MODERNE
 
 export const lightTheme = {
-  // Couleurs de base
-  body: medicalColors.neutral.white,
-  text: medicalColors.neutral.charcoal,
+  // Couleurs principales
+  primary: '#4f46e5',           // Bleu médical moderne
+  primaryHover: '#3730a3',      // Bleu foncé au survol
+  secondary: '#10b981',         // Vert médical
+  secondaryHover: '#059669',    // Vert foncé au survol
+  accent: '#f59e0b',           // Orange pour les badges/alertes
   
-  // Couleurs principales médicales
-  primary: medicalColors.primary.main,
-  secondary: medicalColors.secondary.main,
-  accent: medicalColors.accent.main,
+  // Backgrounds
+  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', // Dégradé principal
+  backgroundSolid: '#f8fafc',   // Background solide alternatif
+  card: '#ffffff',              // Cartes/conteneurs
+  cardSecondary: '#f9fafb',     // Cartes secondaires
+  cardHover: '#f3f4f6',         // Survol des cartes
   
-  // Backgrounds médicaux
-  background: medicalColors.neutral.offWhite,
+  // Textes
+  text: '#1f2937',              // Texte principal
+  textSecondary: '#6b7280',     // Texte secondaire
+  textLight: '#9ca3af',         // Texte discret
+  textInverse: '#ffffff',       // Texte sur fond coloré
   
   // Bordures et séparateurs
-  border: medicalColors.cards.border,
+  border: '#e5e7eb',            // Bordures principales
+  borderLight: '#f3f4f6',       // Bordures discrètes
+  borderFocus: '#4f46e5',       // Bordures focus
   
-  // Cartes médicales
-  card: medicalColors.cards.background,
-  cardSecondary: medicalColors.cards.backgroundAlt,
-  cardTertiary: medicalColors.neutral.lightGray,
-  cardHover: medicalColors.cards.hover,
-  cardSelected: medicalColors.cards.selected,
+  // États
+  success: '#10b981',           // Succès
+  successLight: '#dcfce7',      // Background succès
+  warning: '#f59e0b',           // Avertissement
+  warningLight: '#fef3c7',      // Background avertissement
+  error: '#ef4444',             // Erreur
+  errorLight: '#fef2f2',        // Background erreur
+  info: '#3b82f6',              // Information
+  infoLight: '#dbeafe',         // Background information
   
-  // Inputs et formulaires médicaux
-  inputBackground: medicalColors.forms.input.bg,
-  inputText: medicalColors.neutral.charcoal,
-  inputBorder: medicalColors.forms.input.border,
-  inputFocus: medicalColors.forms.input.focus,
-  inputError: medicalColors.forms.input.error,
-  inputSuccess: medicalColors.forms.input.success,
-  inputDisabled: medicalColors.forms.input.disabled,
+  // Interactions
+  hover: '#f9fafb',             // Survol général
+  active: '#f3f4f6',            // État actif
+  focus: 'rgba(79, 70, 229, 0.1)', // Focus avec transparence
   
-  // Boutons standardisés
-  buttonPrimary: medicalColors.buttons.primary.bg,
-  buttonPrimaryText: medicalColors.buttons.primary.text,
-  buttonPrimaryHover: medicalColors.buttons.primary.hover,
-  buttonPrimaryActive: medicalColors.buttons.primary.active,
-  buttonPrimaryDisabled: medicalColors.buttons.primary.disabled,
+  // Boutons
+  buttonText: '#ffffff',        // Texte des boutons
+  buttonSecondary: '#f3f4f6',   // Boutons secondaires
+  buttonSecondaryText: '#374151', // Texte boutons secondaires
+  buttonDanger: '#ef4444',      // Boutons de suppression
+  buttonDangerHover: '#dc2626', // Boutons de suppression au survol
   
-  buttonSecondary: medicalColors.buttons.secondary.bg,
-  buttonSecondaryText: medicalColors.buttons.secondary.text,
-  buttonSecondaryHover: medicalColors.buttons.secondary.hover,
-  buttonSecondaryActive: medicalColors.buttons.secondary.active,
+  // Ombres
+  shadow: 'rgba(0, 0, 0, 0.1)', // Ombre légère
+  shadowMedium: 'rgba(0, 0, 0, 0.15)', // Ombre moyenne
+  shadowStrong: 'rgba(0, 0, 0, 0.25)', // Ombre forte
   
-  buttonTertiary: medicalColors.buttons.tertiary.bg,
-  buttonTertiaryText: medicalColors.buttons.tertiary.text,
-  buttonTertiaryHover: medicalColors.buttons.tertiary.hover,
-  buttonTertiaryBorder: medicalColors.buttons.tertiary.border,
+  // Tags et badges
+  tagBackground: '#e0e7ff',     // Background des tags
+  tagText: '#3730a3',           // Texte des tags
   
-  buttonDanger: medicalColors.buttons.danger.bg,
-  buttonDangerText: medicalColors.buttons.danger.text,
-  buttonDangerHover: medicalColors.buttons.danger.hover,
+  // Statuts spécifiques
+  statusPublic: '#dcfce7',      // Background statut public
+  statusPublicText: '#166534',  // Texte statut public
+  statusPrivate: '#fef3c7',     // Background statut privé
+  statusPrivateText: '#92400e', // Texte statut privé
   
-  buttonSuccess: medicalColors.buttons.success.bg,
-  buttonSuccessText: medicalColors.buttons.success.text,
-  buttonSuccessHover: medicalColors.buttons.success.hover,
-  
-  // Compatibilité ancien système
-  buttonText: medicalColors.buttons.primary.text,
-  
-  // Questions et options médicales
-  questionBackground: medicalColors.questions.background,
-  questionBackgroundAlt: medicalColors.questions.backgroundAlt,
-  optionBackground: medicalColors.questions.backgroundAlt,
-  optionText: medicalColors.questions.text,
-  optionTextSecondary: medicalColors.questions.textSecondary,
-  optionSelected: medicalColors.questions.selected,
-  optionHover: medicalColors.questions.hover,
-  
-  // Header médical
-  headerBackground: medicalColors.primary.main,
-  headerText: medicalColors.neutral.white,
-  
-  // Status et alertes médicales
-  success: medicalColors.status.success,
-  warning: medicalColors.status.warning,
-  error: medicalColors.status.error,
-  info: medicalColors.status.info,
-  critical: medicalColors.status.critical,
-  
-  // Niveaux de profondeur
-  depth: {
-    level0: medicalColors.depth.level0,
-    level1: medicalColors.depth.level1,
-    level2: medicalColors.depth.level2,
-    level3: medicalColors.depth.level3,
+  // Espacement (ajout pour consistency)
+  spacing: {
+    xs: '0.25rem',    // 4px
+    sm: '0.5rem',     // 8px
+    md: '0.75rem',    // 12px
+    lg: '1rem',       // 16px
+    xl: '1.5rem',     // 24px
+    xxl: '2rem'       // 32px
   },
   
-  // Ombres médicales
-  shadow: medicalColors.cards.shadow,
-  shadowHover: withOpacity(medicalColors.primary.main, 0.15),
-  
-  // Espacements standardisés
-  spacing: medicalColors.spacing,
-  
-  // Tailles de boutons standardisées
-  buttonSizes: medicalColors.buttonSizes,
-  
-  // Compatibilité avec l'ancien système
-  disabled: medicalColors.buttons.primary.disabled,
+  // Rayons de bordure
+  borderRadius: {
+    sm: '4px',
+    md: '8px',
+    lg: '12px',
+    xl: '16px',
+    full: '9999px'
+  }
 };
 
 export const darkTheme = {
-  // Couleurs de base pour le mode sombre médical
-  body: '#1a1a2e',
-  text: '#FFFFFF',
+  // Couleurs principales (adaptées pour le mode sombre)
+  primary: '#6366f1',           // Bleu plus vif pour le sombre
+  primaryHover: '#4f46e5',      
+  secondary: '#34d399',         // Vert plus vif
+  secondaryHover: '#10b981',    
+  accent: '#fbbf24',           
   
-  // Couleurs principales adaptées pour le dark mode
-  primary: medicalColors.primary.light,
-  secondary: medicalColors.secondary.light,
-  accent: medicalColors.accent.light,
+  // Backgrounds sombres
+  background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)', 
+  backgroundSolid: '#0f172a',   
+  card: '#1e293b',              
+  cardSecondary: '#334155',     
+  cardHover: '#475569',         
   
-  // Backgrounds sombres médicaux
-  background: '#0f1629',
+  // Textes pour mode sombre
+  text: '#f8fafc',              
+  textSecondary: '#cbd5e1',     
+  textLight: '#94a3b8',         
+  textInverse: '#1f2937',       
   
-  // Bordures pour le dark mode
-  border: '#2a2a3e',
+  // Bordures sombres
+  border: '#475569',            
+  borderLight: '#334155',       
+  borderFocus: '#6366f1',       
   
-  // Cartes sombres médicales
-  card: '#1e2233',
-  cardSecondary: '#2a2a3e',
-  cardTertiary: '#2d3142',
-  cardHover: '#404463',
-  cardSelected: withOpacity(medicalColors.primary.light, 0.2),
+  // États adaptés
+  success: '#34d399',           
+  successLight: '#064e3b',      
+  warning: '#fbbf24',           
+  warningLight: '#451a03',      
+  error: '#f87171',             
+  errorLight: '#7f1d1d',        
+  info: '#60a5fa',              
+  infoLight: '#1e3a8a',         
   
-  // Inputs pour le dark mode
-  inputBackground: '#2a2a3e',
-  inputText: '#E4E6E8',
-  inputBorder: '#404463',
-  inputFocus: medicalColors.primary.light,
-  inputError: medicalColors.status.error,
-  inputSuccess: medicalColors.status.success,
-  inputDisabled: '#404463',
+  // Interactions sombres
+  hover: '#334155',             
+  active: '#475569',            
+  focus: 'rgba(99, 102, 241, 0.2)', 
   
-  // Boutons pour le dark mode
-  buttonPrimary: medicalColors.primary.light,
-  buttonPrimaryText: '#FFFFFF',
-  buttonPrimaryHover: medicalColors.primary.main,
-  buttonPrimaryActive: medicalColors.primary.dark,
-  buttonPrimaryDisabled: '#6c757d',
+  // Boutons sombres
+  buttonText: '#ffffff',        
+  buttonSecondary: '#334155',   
+  buttonSecondaryText: '#f8fafc', 
+  buttonDanger: '#f87171',      
+  buttonDangerHover: '#ef4444', 
   
-  buttonSecondary: medicalColors.secondary.light,
-  buttonSecondaryText: '#FFFFFF',
-  buttonSecondaryHover: medicalColors.secondary.main,
-  buttonSecondaryActive: medicalColors.secondary.dark,
+  // Ombres sombres
+  shadow: 'rgba(0, 0, 0, 0.3)', 
+  shadowMedium: 'rgba(0, 0, 0, 0.4)', 
+  shadowStrong: 'rgba(0, 0, 0, 0.6)', 
   
-  buttonTertiary: '#2a2a3e',
-  buttonTertiaryText: '#E4E6E8',
-  buttonTertiaryHover: '#404463',
-  buttonTertiaryBorder: '#404463',
+  // Tags et badges sombres
+  tagBackground: '#312e81',     
+  tagText: '#a5b4fc',           
   
-  buttonDanger: medicalColors.buttons.danger.bg,
-  buttonDangerText: medicalColors.buttons.danger.text,
-  buttonDangerHover: medicalColors.buttons.danger.hover,
+  // Statuts sombres
+  statusPublic: '#064e3b',      
+  statusPublicText: '#6ee7b7',  
+  statusPrivate: '#451a03',     
+  statusPrivateText: '#fcd34d', 
   
-  buttonSuccess: medicalColors.buttons.success.bg,
-  buttonSuccessText: medicalColors.buttons.success.text,
-  buttonSuccessHover: medicalColors.buttons.success.hover,
-  
-  // Compatibilité
-  buttonText: '#FFFFFF',
-  
-  // Questions et options pour le dark mode
-  questionBackground: '#1e2233',
-  questionBackgroundAlt: '#2a2a3e',
-  optionBackground: '#2a2a3e',
-  optionText: '#FFFFFF',
-  optionTextSecondary: '#BDBDBD',
-  optionSelected: withOpacity(medicalColors.primary.light, 0.2),
-  optionHover: '#404463',
-  
-  // Header pour le dark mode
-  headerBackground: '#1e2233',
-  headerText: '#FFFFFF',
-  
-  // Status pour le dark mode
-  success: medicalColors.status.success,
-  warning: medicalColors.status.warning,
-  error: medicalColors.status.error,
-  info: medicalColors.primary.light,
-  critical: medicalColors.status.critical,
-  
-  // Niveaux de profondeur pour le dark mode
-  depth: {
-    level0: '#1e2233',
-    level1: '#2a2a3e',
-    level2: '#2d3142',
-    level3: '#404463',
+  // Espacement identique
+  spacing: {
+    xs: '0.25rem',    
+    sm: '0.5rem',     
+    md: '0.75rem',    
+    lg: '1rem',       
+    xl: '1.5rem',     
+    xxl: '2rem'       
   },
   
-  // Ombres pour le dark mode
-  shadow: 'rgba(0, 0, 0, 0.3)',
-  shadowHover: 'rgba(0, 0, 0, 0.4)',
-  
-  // Espacements standardisés
-  spacing: medicalColors.spacing,
-  
-  // Tailles de boutons standardisées
-  buttonSizes: medicalColors.buttonSizes,
-  
-  // Compatibilité
-  disabled: '#6c757d',
-  
-  // Propriétés spécifiques au dark mode (pour compatibilité)
-  questionnaireOptionText: '#E4E6E8',
+  // Rayons identiques
+  borderRadius: {
+    sm: '4px',
+    md: '8px',
+    lg: '12px',
+    xl: '16px',
+    full: '9999px'
+  }
 };
