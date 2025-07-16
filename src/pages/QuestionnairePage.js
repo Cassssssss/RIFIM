@@ -1,9 +1,10 @@
+// pages/QuestionnairePage.js - VERSION COMPLÈTE AVEC BOUTON SUPPRIMER PLUS PETIT
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import axios from '../utils/axiosConfig';
 import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/CasesPage.styles';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
 
 const PageContainer = styled.div`
   display: flex;
@@ -39,6 +40,46 @@ const FilterOption = styled.label`
 
   input {
     margin-right: 0.5rem;
+  }
+`;
+
+const FilterDropdown = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const DropdownButton = styled.button`
+  width: 100%;
+  padding: 0.5rem;
+  background-color: ${props => props.theme.background};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+`;
+
+const DropdownContent = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: ${props => props.theme.background};
+  border: 1px solid ${props => props.theme.border};
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  z-index: 1;
+`;
+
+const DropdownOption = styled.label`
+  display: block;
+  padding: 0.5rem;
+  cursor: pointer;
+  &:hover {
+    background-color: ${props => props.theme.hover};
   }
 `;
 
@@ -108,6 +149,34 @@ const ActionButton = styled(Link)`
   }
 `;
 
+// ========== NOUVEAU STYLED COMPONENT POUR LE BOUTON SUPPRIMER PLUS PETIT ==========
+const DeleteButton = styled.button`
+  background-color: #ef4444;
+  color: white;
+  padding: 0.25rem 0.5rem; // Plus petit padding
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.75rem; // Plus petite taille de police
+  display: flex;
+  align-items: center;
+  gap: 0.25rem; // Plus petit gap
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+  }
+
+  svg {
+    width: 12px; // Plus petite icône
+    height: 12px;
+  }
+`;
+
 const TagsContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -123,46 +192,6 @@ const Tag = styled.span`
   font-size: 0.75rem;
 `;
 
-const FilterDropdown = styled.div`
-  position: relative;
-  width: 100%;
-`;
-
-const DropdownButton = styled.button`
-  width: 100%;
-  padding: 0.5rem;
-  background-color: ${props => props.theme.background};
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 4px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-`;
-
-const DropdownContent = styled.div`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  max-height: 200px;
-  overflow-y: auto;
-  background-color: ${props => props.theme.background};
-  border: 1px solid ${props => props.theme.border};
-  border-top: none;
-  border-radius: 0 0 4px 4px;
-  z-index: 1;
-`;
-
-const DropdownOption = styled.label`
-  display: block;
-  padding: 0.5rem;
-  cursor: pointer;
-  &:hover {
-    background-color: ${props => props.theme.hover};
-  }
-`;
-
 function QuestionnairePage() {
   const [questionnaires, setQuestionnaires] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -171,8 +200,12 @@ function QuestionnairePage() {
   const [modalityFilters, setModalityFilters] = useState([]);
   const [specialtyFilters, setSpecialtyFilters] = useState([]);
   const [locationFilters, setLocationFilters] = useState([]);
+  const [isModalityDropdownOpen, setIsModalityDropdownOpen] = useState(false);
+  const [isSpecialtyDropdownOpen, setIsSpecialtyDropdownOpen] = useState(false);
   const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
 
+  const modalityOptions = ['Rx', 'TDM', 'IRM', 'Echo'];
+  const specialtyOptions = ['Cardiovasc', 'Dig', 'Neuro', 'ORL', 'Ostéo', 'Pedia', 'Pelvis', 'Séno', 'Thorax', 'Uro'];
   const locationOptions = [
     "Avant-pied", "Bras", "Bassin", "Cheville", "Coude", "Cuisse", "Doigts", "Epaule", 
     "Genou", "Hanche", "Jambe", "Parties molles", "Poignet", "Rachis"
@@ -187,7 +220,7 @@ function QuestionnairePage() {
           search: searchTerm,
           modality: modalityFilters.join(','),
           specialty: specialtyFilters.join(','),
-          location: locationFilters.join(',')  // Assurez-vous que cette ligne est présente
+          location: locationFilters.join(',')
         }
       });
       if (response.data && response.data.questionnaires) {
@@ -249,52 +282,79 @@ function QuestionnairePage() {
     });
   };
 
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      fetchQuestionnaires(1);
-    }, 300);
-  
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, modalityFilters, specialtyFilters, locationFilters, fetchQuestionnaires]);
+  // ========== FONCTION DE SUPPRESSION ==========
+  const deleteQuestionnaire = async (id) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce questionnaire ?')) {
+      try {
+        await axios.delete(`/questionnaires/${id}`);
+        fetchQuestionnaires(currentPage);
+      } catch (error) {
+        console.error('Erreur lors de la suppression:', error);
+        alert('Erreur lors de la suppression du questionnaire');
+      }
+    }
+  };
 
   return (
     <PageContainer>
       <FilterSection>
         <FilterGroup>
-          <FilterTitle>Modalités</FilterTitle>
-          {['Rx', 'TDM', 'IRM', 'Echo'].map(modality => (
-            <FilterOption key={modality}>
-              <input
-                type="checkbox"
-                name="modality"
-                value={modality}
-                checked={modalityFilters.includes(modality)}
-                onChange={() => handleModalityFilter(modality)}
-              />
-              {modality}
-            </FilterOption>
-          ))}
+          <FilterTitle>📊 Modalités</FilterTitle>
+          <FilterDropdown>
+            <DropdownButton onClick={() => setIsModalityDropdownOpen(!isModalityDropdownOpen)}>
+              Modalités
+              {isModalityDropdownOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </DropdownButton>
+            {isModalityDropdownOpen && (
+              <DropdownContent>
+                {modalityOptions.map(modality => (
+                  <DropdownOption key={modality}>
+                    <input
+                      type="checkbox"
+                      name="modality"
+                      value={modality}
+                      checked={modalityFilters.includes(modality)}
+                      onChange={() => handleModalityFilter(modality)}
+                    />
+                    {modality}
+                  </DropdownOption>
+                ))}
+              </DropdownContent>
+            )}
+          </FilterDropdown>
         </FilterGroup>
+
         <FilterGroup>
-          <FilterTitle>Spécialités</FilterTitle>
-          {['Cardiovasc', 'Dig', 'Neuro', 'ORL', 'Ostéo','Pedia', 'Pelvis', 'Séno', 'Thorax', 'Uro'].map(specialty => (
-            <FilterOption key={specialty}>
-              <input
-                type="checkbox"
-                name="specialty"
-                value={specialty}
-                checked={specialtyFilters.includes(specialty)}
-                onChange={() => handleSpecialtyFilter(specialty)}
-              />
-              {specialty}
-            </FilterOption>
-          ))}
+          <FilterTitle>🏥 Spécialités</FilterTitle>
+          <FilterDropdown>
+            <DropdownButton onClick={() => setIsSpecialtyDropdownOpen(!isSpecialtyDropdownOpen)}>
+              Spécialités
+              {isSpecialtyDropdownOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </DropdownButton>
+            {isSpecialtyDropdownOpen && (
+              <DropdownContent>
+                {specialtyOptions.map(specialty => (
+                  <DropdownOption key={specialty}>
+                    <input
+                      type="checkbox"
+                      name="specialty"
+                      value={specialty}
+                      checked={specialtyFilters.includes(specialty)}
+                      onChange={() => handleSpecialtyFilter(specialty)}
+                    />
+                    {specialty}
+                  </DropdownOption>
+                ))}
+              </DropdownContent>
+            )}
+          </FilterDropdown>
         </FilterGroup>
+
         <FilterGroup>
-          <FilterTitle>Localisation</FilterTitle>
+          <FilterTitle>📍 Localisation</FilterTitle>
           <FilterDropdown>
             <DropdownButton onClick={() => setIsLocationDropdownOpen(!isLocationDropdownOpen)}>
-              Sélectionner {locationFilters.length > 0 && `(${locationFilters.length})`}
+              Localisation
               {isLocationDropdownOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
             </DropdownButton>
             {isLocationDropdownOpen && (
@@ -332,24 +392,26 @@ function QuestionnairePage() {
         <ul>
           {questionnaires.map((questionnaire) => (
             <QuestionnaireItem key={questionnaire._id}>
-  <div>
-    <QuestionnaireTitle to={`/use/${questionnaire._id}`}>
-      {questionnaire.title}
-    </QuestionnaireTitle>
-    <TagsContainer>
-      {questionnaire.tags && questionnaire.tags.map(tag => (
-        <Tag key={tag}>{tag}</Tag>
-      ))}
-    </TagsContainer>
-  </div>
-  <div>
-    {/* Pour PublicQuestionnairesPage */}
-    <ActionButton to={`/use/${questionnaire._id}`}>UTILISER</ActionButton>
-    
-    {/* Pour QuestionnaireListPage */}
-
-  </div>
-</QuestionnaireItem>
+              <div>
+                <QuestionnaireTitle to={`/use/${questionnaire._id}`}>
+                  {questionnaire.title}
+                </QuestionnaireTitle>
+                <TagsContainer>
+                  {questionnaire.tags && questionnaire.tags.map(tag => (
+                    <Tag key={tag}>{tag}</Tag>
+                  ))}
+                </TagsContainer>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <ActionButton to={`/use/${questionnaire._id}`}>UTILISER</ActionButton>
+                
+                {/* ========== BOUTON SUPPRIMER PLUS PETIT ========== */}
+                <DeleteButton onClick={() => deleteQuestionnaire(questionnaire._id)}>
+                  <Trash2 />
+                  SUPPRIMER
+                </DeleteButton>
+              </div>
+            </QuestionnaireItem>
           ))}
         </ul>
         <PaginationContainer>

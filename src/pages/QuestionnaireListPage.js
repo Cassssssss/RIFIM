@@ -52,28 +52,6 @@ const FilterTitle = styled.h3`
   gap: 0.5rem;
 `;
 
-const FilterOption = styled.label`
-  display: flex;
-  align-items: center;
-  margin-bottom: 0.5rem;
-  padding: 0.5rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: ${props => props.theme.text};
-
-  &:hover {
-    background-color: ${props => props.theme.hover};
-  }
-
-  input {
-    margin-right: 0.5rem;
-    width: 16px;
-    height: 16px;
-    accent-color: ${props => props.theme.primary};
-  }
-`;
-
 const FilterDropdown = styled.div`
   position: relative;
   width: 100%;
@@ -319,7 +297,7 @@ const Button = styled.button`
       default: return 'white';
     }
   }};
-  padding: 0.5rem 1rem;
+  padding: ${props => props.variant === 'danger' ? '0.25rem 0.5rem' : '0.5rem 1rem'};
   border: 1px solid ${props => {
     switch(props.variant) {
       case 'secondary': return props.theme.border;
@@ -328,7 +306,7 @@ const Button = styled.button`
   }};
   border-radius: 8px;
   font-weight: 500;
-  font-size: 0.85rem;
+  font-size: ${props => props.variant === 'danger' ? '0.75rem' : '0.85rem'};
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -342,8 +320,8 @@ const Button = styled.button`
   }
 
   svg {
-    width: 16px;
-    height: 16px;
+    width: ${props => props.variant === 'danger' ? '12px' : '16px'};
+    height: ${props => props.variant === 'danger' ? '12px' : '16px'};
   }
 `;
 
@@ -398,7 +376,7 @@ const VideoContainer = styled.div`
   }
 `;
 
-// ==================== NOUVEAUX STYLED COMPONENTS POUR LES TAGS ====================
+// ==================== STYLED COMPONENTS POUR LES TAGS ====================
 
 const TagsSection = styled.div`
   margin: 1rem 0;
@@ -504,29 +482,48 @@ const CancelTagButton = styled.button`
   }
 `;
 
+const LoadingMessage = styled.div`
+  text-align: center;
+  padding: 2rem;
+  color: ${props => props.theme.textSecondary};
+  font-size: 1.1rem;
+`;
+
+const ErrorMessage = styled.div`
+  text-align: center;
+  padding: 2rem;
+  color: #ef4444;
+  font-size: 1.1rem;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  margin: 1rem 0;
+`;
+
 // ==================== COMPOSANT PRINCIPAL ====================
 
 function QuestionnaireListPage() {
   const [questionnaires, setQuestionnaires] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [totalQuestionnaires, setTotalQuestionnaires] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [modalityFilters, setModalityFilters] = useState([]);
   const [specialtyFilters, setSpecialtyFilters] = useState([]);
   const [locationFilters, setLocationFilters] = useState([]);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [locationDropdownOpen, setLocationDropdownOpen] = useState(false);
   const [modalityDropdownOpen, setModalityDropdownOpen] = useState(false);
   const [specialtyDropdownOpen, setSpecialtyDropdownOpen] = useState(false);
-  const [locationDropdownOpen, setLocationDropdownOpen] = useState(false);
-  const [showTutorial, setShowTutorial] = useState(false);
 
-  // ========== NOUVEAUX ÉTATS POUR LA GESTION DES TAGS ==========
+  // États pour la gestion des tags
   const [newTags, setNewTags] = useState({});
   const [isAddingTag, setIsAddingTag] = useState({});
 
-  // Listes des options pour les filtres
+  // Données de filtres
   const modalities = ['Rx', 'TDM', 'IRM', 'Echo'];
   const specialties = ['Cardiovasc', 'Dig', 'Neuro', 'ORL', 'Ostéo', 'Pedia', 'Pelvis', 'Séno', 'Thorax', 'Uro'];
-  const locations = ['Localisation 1', 'Localisation 2', 'Localisation 3'];
+  const locations = ['Genou', 'Épaule', 'Rachis', 'Cheville', 'Poignet', 'Hanche'];
 
   const tutorialSteps = [
     {
@@ -543,53 +540,34 @@ function QuestionnaireListPage() {
     }
   ];
 
+  // Fonction de récupération des questionnaires
   const fetchQuestionnaires = useCallback(async (page = 1) => {
     try {
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: '12',
+        limit: '9',
         search: searchTerm,
-        modalities: modalityFilters.join(','),
-        specialties: specialtyFilters.join(','),
-        locations: locationFilters.join(',')
+        modality: modalityFilters.join(','),
+        specialty: specialtyFilters.join(','),
+        location: locationFilters.join(',')
       });
 
-      const response = await axios.get(`/questionnaires/my?${params}`);
+      const response = await axios.get(`/questionnaires?${params}`);
       setQuestionnaires(response.data.questionnaires);
       setCurrentPage(response.data.currentPage);
       setTotalPages(response.data.totalPages);
+      setTotalQuestionnaires(response.data.totalQuestionnaires);
     } catch (error) {
       console.error('Erreur lors de la récupération des questionnaires:', error);
     }
   }, [searchTerm, modalityFilters, specialtyFilters, locationFilters]);
 
+  // Effet pour charger les questionnaires
   useEffect(() => {
     fetchQuestionnaires(1);
   }, [fetchQuestionnaires]);
 
-  const deleteQuestionnaire = async (id) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce questionnaire ?')) {
-      try {
-        await axios.delete(`/questionnaires/${id}`);
-        fetchQuestionnaires(currentPage);
-      } catch (error) {
-        console.error('Erreur lors de la suppression:', error);
-      }
-    }
-  };
-
-  const toggleVisibility = async (id, currentVisibility) => {
-    try {
-      await axios.patch(`/questionnaires/${id}`, {
-        public: !currentVisibility
-      });
-      fetchQuestionnaires(currentPage);
-    } catch (error) {
-      console.error('Erreur lors de la modification de la visibilité:', error);
-    }
-  };
-
-  // ========== NOUVELLES FONCTIONS POUR LA GESTION DES TAGS ==========
+  // ========== FONCTIONS POUR LA GESTION DES TAGS ==========
 
   const handleAddTag = async (questionnaireId, tag) => {
     if (!tag || !tag.trim()) return;
@@ -640,6 +618,7 @@ function QuestionnaireListPage() {
     }
   };
 
+  // Handlers des filtres
   const handleModalityFilter = (modality) => {
     setModalityFilters(prev => 
       prev.includes(modality) 
@@ -664,6 +643,31 @@ function QuestionnaireListPage() {
     );
   };
 
+  // Fonction de changement de visibilité
+  const toggleVisibility = async (id, isPublic) => {
+    try {
+      await axios.patch(`/questionnaires/${id}/togglePublic`);
+      fetchQuestionnaires(currentPage);
+    } catch (error) {
+      console.error('Erreur lors de la modification de la visibilité:', error);
+      alert('Erreur lors de la modification de la visibilité');
+    }
+  };
+
+  // Fonction de suppression
+  const deleteQuestionnaire = async (id) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce questionnaire ?')) {
+      try {
+        await axios.delete(`/questionnaires/${id}`);
+        fetchQuestionnaires(currentPage);
+      } catch (error) {
+        console.error('Erreur lors de la suppression:', error);
+        alert('Erreur lors de la suppression du questionnaire');
+      }
+    }
+  };
+
+  // Fonctions utilitaires
   const getQuestionnaireIcon = (tags) => {
     if (!tags || tags.length === 0) return '📋';
     if (tags.includes('IRM') || tags.includes('irm')) return '🧲';
@@ -690,11 +694,9 @@ function QuestionnaireListPage() {
   return (
     <PageContainer>
       {/* SECTION FILTRES */}
-      <FilterSection>
+      <FilterSection className="filter-section">
         <FilterGroup>
-          <FilterTitle>
-            📊 Modalités
-          </FilterTitle>
+          <FilterTitle>📊 Modalités</FilterTitle>
           <FilterDropdown>
             <DropdownButton onClick={() => setModalityDropdownOpen(!modalityDropdownOpen)}>
               Modalités ({modalityFilters.length})
@@ -718,9 +720,7 @@ function QuestionnaireListPage() {
         </FilterGroup>
 
         <FilterGroup>
-          <FilterTitle>
-            🏥 Spécialités
-          </FilterTitle>
+          <FilterTitle>🏥 Spécialités</FilterTitle>
           <FilterDropdown>
             <DropdownButton onClick={() => setSpecialtyDropdownOpen(!specialtyDropdownOpen)}>
               Spécialités ({specialtyFilters.length})
@@ -744,9 +744,7 @@ function QuestionnaireListPage() {
         </FilterGroup>
 
         <FilterGroup>
-          <FilterTitle>
-            📍 Localisation
-          </FilterTitle>
+          <FilterTitle>📍 Localisation</FilterTitle>
           <FilterDropdown>
             <DropdownButton onClick={() => setLocationDropdownOpen(!locationDropdownOpen)}>
               Localisation ({locationFilters.length})
@@ -869,7 +867,7 @@ function QuestionnaireListPage() {
                 </MetaItem>
               </CardMeta>
 
-              {/* Actions */}
+              {/* Actions - LIENS ORIGINAUX CONSERVÉS */}
               <ActionButtons>
                 <ActionButton 
                   to={`/use/${questionnaire._id}`}
@@ -899,6 +897,7 @@ function QuestionnaireListPage() {
                   variant="secondary"
                   onClick={(e) => {
                     e.preventDefault();
+                    // TODO: Logique de duplication
                     console.log('Dupliquer:', questionnaire._id);
                   }}
                 >
