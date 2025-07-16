@@ -1,25 +1,19 @@
-// pages/QuestionnaireListPage.js - VERSION MODERNE COMPLÈTE
+// pages/QuestionnaireListPage.js - VERSION CORRIGÉE AVEC NAVIGATION ORIGINALE
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
 import styled from 'styled-components';
-import { ChevronDown, ChevronUp, Plus, Edit, FileText, Copy, Trash2, Eye, EyeOff, Star, Clock, Users, Search } from 'lucide-react';
+import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/CasesPage.styles';
+import { ChevronDown, ChevronUp, Edit, FileText, Copy, Trash2, Eye, EyeOff, Clock, Users } from 'lucide-react';
 import TutorialOverlay from './TutorialOverlay';
 
-// ==================== STYLED COMPONENTS ====================
+// ==================== STYLED COMPONENTS AMÉLIORÉS ====================
 
-const PageWrapper = styled.div`
-  background: ${props => props.theme.background};
-  min-height: calc(100vh - 60px);
-  padding: 0;
-`;
-
-const Container = styled.div`
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 2rem;
+const PageContainer = styled.div`
   display: flex;
-  gap: 2rem;
+  background-color: ${props => props.theme.background};
+  min-height: calc(100vh - 60px);
+  padding: 2rem;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -28,80 +22,76 @@ const Container = styled.div`
   }
 `;
 
-const Sidebar = styled.div`
+const FilterSection = styled.div`
   width: 280px;
-  background: ${props => props.theme.card};
-  border-radius: ${props => props.theme.borderRadius.lg};
+  margin-right: 2rem;
+  background-color: ${props => props.theme.card};
   padding: 1.5rem;
-  height: fit-content;
+  border-radius: 12px;
   box-shadow: 0 4px 20px ${props => props.theme.shadow};
   border: 1px solid ${props => props.theme.border};
+  height: fit-content;
 
   @media (max-width: 768px) {
     width: 100%;
+    margin-right: 0;
   }
-`;
-
-const SidebarTitle = styled.h3`
-  color: ${props => props.theme.text};
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 `;
 
 const FilterGroup = styled.div`
   margin-bottom: 2rem;
 `;
 
-const FilterItem = styled.label`
+const FilterTitle = styled.h3`
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: ${props => props.theme.primary};
   display: flex;
   align-items: center;
   gap: 0.5rem;
+`;
+
+const FilterOption = styled.label`
+  display: flex;
+  align-items: center;
   margin-bottom: 0.5rem;
   padding: 0.5rem;
-  border-radius: ${props => props.theme.borderRadius.md};
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   color: ${props => props.theme.text};
 
   &:hover {
-    background: ${props => props.theme.hover};
+    background-color: ${props => props.theme.hover};
   }
 
-  input[type="checkbox"] {
+  input {
+    margin-right: 0.5rem;
     width: 16px;
     height: 16px;
     accent-color: ${props => props.theme.primary};
   }
 `;
 
-const MainContent = styled.div`
-  flex: 1;
-`;
-
-const SearchSection = styled.div`
-  background: ${props => props.theme.card};
-  border-radius: ${props => props.theme.borderRadius.lg};
-  padding: 1.5rem;
-  margin-bottom: 2rem;
+const ListContainer = styled.div`
+  flex-grow: 1;
+  background-color: ${props => props.theme.card};
+  color: ${props => props.theme.text};
+  padding: 2rem;
+  border-radius: 12px;
   box-shadow: 0 4px 20px ${props => props.theme.shadow};
   border: 1px solid ${props => props.theme.border};
 `;
 
-const SearchBox = styled.div`
-  position: relative;
-`;
-
-const SearchInput = styled.input`
+const SearchBar = styled.input`
   width: 100%;
-  padding: 0.75rem 1rem 0.75rem 3rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 2rem;
   border: 2px solid ${props => props.theme.border};
-  border-radius: ${props => props.theme.borderRadius.md};
+  border-radius: 8px;
   font-size: 1rem;
-  background: ${props => props.theme.backgroundSolid};
+  background-color: ${props => props.theme.backgroundSolid};
   color: ${props => props.theme.text};
   transition: all 0.2s ease;
 
@@ -116,44 +106,7 @@ const SearchInput = styled.input`
   }
 `;
 
-const SearchIcon = styled(Search)`
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: ${props => props.theme.textLight};
-  width: 20px;
-  height: 20px;
-`;
-
-const StatsBar = styled.div`
-  background: ${props => props.theme.card};
-  border-radius: ${props => props.theme.borderRadius.lg};
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 20px ${props => props.theme.shadow};
-  border: 1px solid ${props => props.theme.border};
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 1rem;
-`;
-
-const StatItem = styled.div`
-  text-align: center;
-`;
-
-const StatNumber = styled.div`
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: ${props => props.theme.primary};
-  margin-bottom: 0.25rem;
-`;
-
-const StatLabel = styled.div`
-  font-size: 0.85rem;
-  color: ${props => props.theme.textSecondary};
-`;
-
+// Cartes modernes au lieu de liste
 const QuestionnairesGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
@@ -167,17 +120,16 @@ const QuestionnairesGrid = styled.div`
 
 const QuestionnaireCard = styled.div`
   background: ${props => props.theme.card};
-  border-radius: ${props => props.theme.borderRadius.lg};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 4px 20px ${props => props.theme.shadow};
-  border: 2px solid transparent;
+  box-shadow: 0 2px 10px ${props => props.theme.shadow};
   transition: all 0.3s ease;
   position: relative;
-  overflow: hidden;
 
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 30px ${props => props.theme.shadowMedium};
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px ${props => props.theme.shadowMedium};
     border-color: ${props => props.theme.primary};
   }
 `;
@@ -189,40 +141,28 @@ const CardHeader = styled.div`
   margin-bottom: 1rem;
 `;
 
-const CardTitle = styled.h3`
+const QuestionnaireTitle = styled.h3`
+  color: ${props => props.theme.text};
   font-size: 1.2rem;
   font-weight: 600;
-  color: ${props => props.theme.text};
-  margin-bottom: 0.5rem;
+  margin: 0;
+  line-height: 1.3;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  line-height: 1.3;
 `;
 
-const CardIcon = styled.div`
+const QuestionnaireIcon = styled.div`
   width: 24px;
   height: 24px;
   background: ${props => props.theme.primary};
-  border-radius: ${props => props.theme.borderRadius.sm};
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${props => props.theme.textInverse};
+  color: white;
   font-size: 0.9rem;
   flex-shrink: 0;
-`;
-
-const StatusBadge = styled.div`
-  padding: 0.25rem 0.75rem;
-  border-radius: ${props => props.theme.borderRadius.full};
-  font-size: 0.75rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  background: ${props => props.isPublic ? props.theme.statusPublic : props.theme.statusPrivate};
-  color: ${props => props.isPublic ? props.theme.statusPublicText : props.theme.statusPrivateText};
 `;
 
 const TagsContainer = styled.div`
@@ -233,10 +173,10 @@ const TagsContainer = styled.div`
 `;
 
 const Tag = styled.span`
-  background: ${props => props.theme.tagBackground};
+  background-color: ${props => props.theme.tagBackground};
   color: ${props => props.theme.tagText};
   padding: 0.25rem 0.5rem;
-  border-radius: ${props => props.theme.borderRadius.sm};
+  border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 500;
 `;
@@ -248,7 +188,7 @@ const CardMeta = styled.div`
   margin-bottom: 1.5rem;
   padding: 1rem;
   background: ${props => props.theme.cardSecondary};
-  border-radius: ${props => props.theme.borderRadius.md};
+  border-radius: 8px;
 `;
 
 const MetaItem = styled.div`
@@ -265,163 +205,122 @@ const MetaItem = styled.div`
   }
 `;
 
-const CardActions = styled.div`
+const ActionButtons = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
 `;
 
-const Button = styled.button`
+const ActionButton = styled(Link)`
+  background-color: ${props => {
+    switch (props.variant) {
+      case 'primary': return props.theme.primary;
+      case 'secondary': return props.theme.buttonSecondary;
+      case 'danger': return props.theme.errorLight;
+      default: return props.theme.buttonSecondary;
+    }
+  }};
+  color: ${props => {
+    switch (props.variant) {
+      case 'primary': return props.theme.textInverse;
+      case 'secondary': return props.theme.buttonSecondaryText;
+      case 'danger': return props.theme.buttonDanger;
+      default: return props.theme.buttonSecondaryText;
+    }
+  }};
   padding: ${props => props.size === 'large' ? '0.75rem 1.5rem' : '0.5rem 1rem'};
-  border: none;
-  border-radius: ${props => props.theme.borderRadius.md};
+  border: ${props => props.variant === 'secondary' ? `1px solid ${props.theme.border}` : 'none'};
+  border-radius: 8px;
+  text-decoration: none;
   font-weight: 500;
+  font-size: ${props => props.size === 'large' ? '0.95rem' : '0.85rem'};
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  text-decoration: none;
-  font-size: ${props => props.size === 'large' ? '0.95rem' : '0.85rem'};
-  min-width: ${props => props.size === 'large' ? '140px' : 'auto'};
   justify-content: center;
+  ${props => props.size === 'large' && 'flex: 1; min-width: 140px;'}
+
+  &:hover {
+    background-color: ${props => {
+      switch (props.variant) {
+        case 'primary': return props.theme.primaryHover;
+        case 'secondary': return props.theme.hover;
+        case 'danger': return props.theme.buttonDanger;
+        default: return props.theme.hover;
+      }
+    }};
+    color: ${props => props.variant === 'danger' ? props.theme.textInverse : 'inherit'};
+    transform: translateY(-1px);
+  }
 
   svg {
     width: 16px;
     height: 16px;
   }
+`;
 
-  ${props => {
+const Button = styled.button`
+  background-color: ${props => {
     switch (props.variant) {
-      case 'primary':
-        return `
-          background: ${props.theme.primary};
-          color: ${props.theme.textInverse};
-          flex: 1;
-          
-          &:hover {
-            background: ${props.theme.primaryHover};
-            transform: translateY(-1px);
-          }
-        `;
-      case 'secondary':
-        return `
-          background: ${props.theme.buttonSecondary};
-          color: ${props.theme.buttonSecondaryText};
-          border: 1px solid ${props.theme.border};
-          
-          &:hover {
-            background: ${props.theme.hover};
-          }
-        `;
-      case 'danger':
-        return `
-          background: ${props.theme.errorLight};
-          color: ${props.theme.buttonDanger};
-          border: 1px solid ${props.theme.error}30;
-          
-          &:hover {
-            background: ${props.theme.error};
-            color: ${props.theme.textInverse};
-          }
-        `;
-      default:
-        return `
-          background: ${props.theme.buttonSecondary};
-          color: ${props.theme.buttonSecondaryText};
-        `;
+      case 'primary': return props.theme.primary;
+      case 'secondary': return props.theme.buttonSecondary;
+      case 'danger': return props.theme.errorLight;
+      default: return props.theme.buttonSecondary;
     }
-  }}
-`;
-
-const CopyBadge = styled.div`
-  position: absolute;
-  top: 0.75rem;
-  left: 0.75rem;
-  background: ${props => props.theme.accent};
-  color: ${props => props.theme.textInverse};
-  padding: 0.25rem 0.5rem;
-  border-radius: ${props => props.theme.borderRadius.sm};
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-`;
-
-const CreateButton = styled.button`
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  background: ${props => props.theme.secondary};
-  color: ${props => props.theme.textInverse};
-  border: none;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  font-size: 1.5rem;
-  cursor: pointer;
-  box-shadow: 0 4px 20px ${props => props.theme.secondary}50;
-  transition: all 0.3s ease;
-  z-index: 1000;
-
-  &:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 25px ${props => props.theme.secondary}70;
-  }
-
-  svg {
-    width: 24px;
-    height: 24px;
-  }
-`;
-
-const Pagination = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.5rem;
-  background: ${props => props.theme.card};
-  border-radius: ${props => props.theme.borderRadius.lg};
-  box-shadow: 0 4px 20px ${props => props.theme.shadow};
-  border: 1px solid ${props => props.theme.border};
-`;
-
-const PaginationButton = styled.button`
+  }};
+  color: ${props => {
+    switch (props.variant) {
+      case 'primary': return props.theme.textInverse;
+      case 'secondary': return props.theme.buttonSecondaryText;
+      case 'danger': return props.theme.buttonDanger;
+      default: return props.theme.buttonSecondaryText;
+    }
+  }};
   padding: 0.5rem 1rem;
-  background: ${props => props.disabled ? props.theme.cardSecondary : props.theme.primary};
-  color: ${props => props.disabled ? props.theme.textLight : props.theme.textInverse};
-  border: none;
-  border-radius: ${props => props.theme.borderRadius.md};
-  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+  border: ${props => props.variant === 'secondary' ? `1px solid ${props.theme.border}` : 'none'};
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.85rem;
+  cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   gap: 0.5rem;
 
-  &:hover:not(:disabled) {
-    background: ${props => props.theme.primaryHover};
+  &:hover {
+    background-color: ${props => {
+      switch (props.variant) {
+        case 'primary': return props.theme.primaryHover;
+        case 'secondary': return props.theme.hover;
+        case 'danger': return props.theme.buttonDanger;
+        default: return props.theme.hover;
+      }
+    }};
+    color: ${props => props.variant === 'danger' ? props.theme.textInverse : 'inherit'};
+    transform: translateY(-1px);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
   }
 `;
 
-const PaginationInfo = styled.span`
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.9rem;
-`;
-
 const TutorialButton = styled.button`
-  background: ${props => props.theme.secondary};
+  background-color: ${props => props.theme.secondary};
   color: ${props => props.theme.textInverse};
   padding: 0.75rem 1.5rem;
   border: none;
-  border-radius: ${props => props.theme.borderRadius.md};
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 500;
+  margin-top: 2rem;
   transition: all 0.2s ease;
-  margin-top: 1rem;
   
   &:hover {
-    background: ${props => props.theme.secondaryHover};
+    background-color: ${props => props.theme.secondaryHover};
     transform: translateY(-1px);
   }
 `;
@@ -429,8 +328,8 @@ const TutorialButton = styled.button`
 const VideoContainer = styled.div`
   margin-top: 2rem;
   padding: 1.5rem;
-  background: ${props => props.theme.card};
-  border-radius: ${props => props.theme.borderRadius.lg};
+  background-color: ${props => props.theme.card};
+  border-radius: 12px;
   box-shadow: 0 4px 20px ${props => props.theme.shadow};
   border: 1px solid ${props => props.theme.border};
 
@@ -446,7 +345,7 @@ const VideoContainer = styled.div`
     padding-bottom: 56.25%;
     height: 0;
     overflow: hidden;
-    border-radius: ${props => props.theme.borderRadius.md};
+    border-radius: 8px;
 
     iframe {
       position: absolute;
@@ -454,8 +353,52 @@ const VideoContainer = styled.div`
       left: 0;
       width: 100%;
       height: 100%;
-      border-radius: ${props => props.theme.borderRadius.md};
+      border-radius: 8px;
     }
+  }
+`;
+
+const FilterDropdown = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const DropdownButton = styled.button`
+  width: 100%;
+  padding: 0.5rem;
+  background-color: ${props => props.theme.background};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  color: ${props => props.theme.text};
+`;
+
+const DropdownContent = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: ${props => props.theme.card};
+  border: 1px solid ${props => props.theme.border};
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  z-index: 10;
+  box-shadow: 0 4px 12px ${props => props.theme.shadow};
+`;
+
+const DropdownOption = styled.label`
+  display: block;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: ${props => props.theme.text};
+  
+  &:hover {
+    background-color: ${props => props.theme.hover};
   }
 `;
 
@@ -501,7 +444,7 @@ function QuestionnaireListPage() {
   const [specialtyFilters, setSpecialtyFilters] = useState([]);
   const [locationFilters, setLocationFilters] = useState([]);
   const [showTutorial, setShowTutorial] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [locationDropdownOpen, setLocationDropdownOpen] = useState(false);
 
   // Données de filtres
   const modalities = ['Rx', 'TDM', 'IRM', 'Echo'];
@@ -510,7 +453,6 @@ function QuestionnaireListPage() {
 
   // Fonction de récupération des questionnaires
   const fetchQuestionnaires = useCallback(async (page = 1) => {
-    setLoading(true);
     try {
       const params = new URLSearchParams({
         page: page.toString(),
@@ -528,8 +470,6 @@ function QuestionnaireListPage() {
       setTotalQuestionnaires(response.data.totalQuestionnaires);
     } catch (error) {
       console.error('Erreur lors de la récupération des questionnaires:', error);
-    } finally {
-      setLoading(false);
     }
   }, [searchTerm, modalityFilters, specialtyFilters, locationFilters]);
 
@@ -585,17 +525,7 @@ function QuestionnaireListPage() {
     }
   };
 
-  // Calcul des statistiques
-  const publicCount = questionnaires.filter(q => q.public).length;
-  const privateCount = questionnaires.filter(q => !q.public).length;
-  const thisWeekCount = questionnaires.filter(q => {
-    const created = new Date(q.createdAt);
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    return created > weekAgo;
-  }).length;
-
-  // Steps du tutoriel (vous pouvez les personnaliser)
+  // Steps du tutoriel
   const tutorialSteps = [
     {
       image: ['/tutorials/questionnaire-1.png'],
@@ -614,288 +544,249 @@ function QuestionnaireListPage() {
   // ==================== RENDU COMPONENT ====================
 
   return (
-    <PageWrapper>
-      <Container>
-        {/* SIDEBAR - FILTRES */}
-        <Sidebar>
-          <FilterGroup>
-            <SidebarTitle>
-              🔍 Modalités
-            </SidebarTitle>
-            {modalities.map(modality => (
-              <FilterItem key={modality}>
-                <input
-                  type="checkbox"
-                  checked={modalityFilters.includes(modality)}
-                  onChange={() => handleModalityFilter(modality)}
-                />
-                <span>{modality}</span>
-              </FilterItem>
-            ))}
-          </FilterGroup>
-
-          <FilterGroup>
-            <SidebarTitle>
-              🏥 Spécialités
-            </SidebarTitle>
-            {specialties.map(specialty => (
-              <FilterItem key={specialty}>
-                <input
-                  type="checkbox"
-                  checked={specialtyFilters.includes(specialty)}
-                  onChange={() => handleSpecialtyFilter(specialty)}
-                />
-                <span>{specialty}</span>
-              </FilterItem>
-            ))}
-          </FilterGroup>
-
-          <FilterGroup>
-            <SidebarTitle>
-              📍 Localisation
-            </SidebarTitle>
-            {locations.map(location => (
-              <FilterItem key={location}>
-                <input
-                  type="checkbox"
-                  checked={locationFilters.includes(location)}
-                  onChange={() => handleLocationFilter(location)}
-                />
-                <span>{location}</span>
-              </FilterItem>
-            ))}
-          </FilterGroup>
-        </Sidebar>
-
-        {/* CONTENU PRINCIPAL */}
-        <MainContent>
-          {/* BARRE DE RECHERCHE */}
-          <SearchSection>
-            <SearchBox>
-              <SearchIcon />
-              <SearchInput
-                type="text"
-                placeholder="🔍 Rechercher un questionnaire..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+    <PageContainer>
+      {/* SIDEBAR - FILTRES */}
+      <FilterSection>
+        <FilterGroup>
+          <FilterTitle>🔍 Modalités</FilterTitle>
+          {modalities.map(modality => (
+            <FilterOption key={modality}>
+              <input
+                type="checkbox"
+                checked={modalityFilters.includes(modality)}
+                onChange={() => handleModalityFilter(modality)}
               />
-            </SearchBox>
-          </SearchSection>
+              <span>{modality}</span>
+            </FilterOption>
+          ))}
+        </FilterGroup>
 
-          {/* STATISTIQUES */}
-          <StatsBar>
-            <StatItem>
-              <StatNumber>{totalQuestionnaires}</StatNumber>
-              <StatLabel>Questionnaires</StatLabel>
-            </StatItem>
-            <StatItem>
-              <StatNumber>{publicCount}</StatNumber>
-              <StatLabel>Publics</StatLabel>
-            </StatItem>
-            <StatItem>
-              <StatNumber>{privateCount}</StatNumber>
-              <StatLabel>Privés</StatLabel>
-            </StatItem>
-            <StatItem>
-              <StatNumber>{thisWeekCount}</StatNumber>
-              <StatLabel>Cette semaine</StatLabel>
-            </StatItem>
-          </StatsBar>
+        <FilterGroup>
+          <FilterTitle>🏥 Spécialités</FilterTitle>
+          {specialties.map(specialty => (
+            <FilterOption key={specialty}>
+              <input
+                type="checkbox"
+                checked={specialtyFilters.includes(specialty)}
+                onChange={() => handleSpecialtyFilter(specialty)}
+              />
+              <span>{specialty}</span>
+            </FilterOption>
+          ))}
+        </FilterGroup>
 
-          {/* GRILLE DES QUESTIONNAIRES */}
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '2rem' }}>
-              <div>Chargement...</div>
-            </div>
-          ) : (
-            <QuestionnairesGrid>
-              {questionnaires.map((questionnaire) => (
-                <QuestionnaireCard key={questionnaire._id}>
-                  {/* Badge copie si applicable */}
-                  {questionnaire.title.toLowerCase().includes('copie') && (
-                    <CopyBadge>COPIE</CopyBadge>
-                  )}
+        <FilterGroup>
+          <FilterTitle>📍 Localisation</FilterTitle>
+          <FilterDropdown>
+            <DropdownButton onClick={() => setLocationDropdownOpen(!locationDropdownOpen)}>
+              <span>Sélectionner</span>
+              {locationDropdownOpen ? <ChevronUp /> : <ChevronDown />}
+            </DropdownButton>
+            {locationDropdownOpen && (
+              <DropdownContent>
+                {locations.map(location => (
+                  <DropdownOption key={location}>
+                    <input
+                      type="checkbox"
+                      checked={locationFilters.includes(location)}
+                      onChange={() => handleLocationFilter(location)}
+                    />
+                    <span>{location}</span>
+                  </DropdownOption>
+                ))}
+              </DropdownContent>
+            )}
+          </FilterDropdown>
+        </FilterGroup>
+      </FilterSection>
 
-                  {/* En-tête de la carte */}
-                  <CardHeader>
-                    <div>
-                      <CardTitle>
-                        <CardIcon>
-                          {getQuestionnaireIcon(questionnaire.tags)}
-                        </CardIcon>
-                        {questionnaire.title}
-                      </CardTitle>
-                    </div>
-                    <StatusBadge isPublic={questionnaire.public}>
-                      {questionnaire.public ? (
-                        <>🌐 Public</>
-                      ) : (
-                        <>🔒 Privé</>
-                      )}
-                    </StatusBadge>
-                  </CardHeader>
+      {/* CONTENU PRINCIPAL */}
+      <ListContainer>
+        {/* BARRE DE RECHERCHE */}
+        <SearchBar
+          type="text"
+          placeholder="🔍 Rechercher un questionnaire..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
 
-                  {/* Tags */}
-                  {questionnaire.tags && questionnaire.tags.length > 0 && (
-                    <TagsContainer>
-                      {questionnaire.tags.map((tag, index) => (
-                        <Tag key={index}>{tag}</Tag>
-                      ))}
-                    </TagsContainer>
-                  )}
+        {/* GRILLE DES QUESTIONNAIRES */}
+        <QuestionnairesGrid>
+          {questionnaires.map((questionnaire) => (
+            <QuestionnaireCard key={questionnaire._id}>
+              <CardHeader>
+                <QuestionnaireTitle>
+                  <QuestionnaireIcon>
+                    {getQuestionnaireIcon(questionnaire.tags)}
+                  </QuestionnaireIcon>
+                  {questionnaire.title}
+                </QuestionnaireTitle>
+              </CardHeader>
 
-                  {/* Métadonnées */}
-                  <CardMeta>
-                    <MetaItem>
-                      <Clock />
-                      <span>{formatDate(questionnaire.updatedAt || questionnaire.createdAt)}</span>
-                    </MetaItem>
-                    <MetaItem>
-                      <Users />
-                      <span>Pas encore utilisé</span> {/* Vous pouvez ajouter un compteur d'utilisation */}
-                    </MetaItem>
-                    <MetaItem>
-                      <Star />
-                      <span>{questionnaire.public ? 'Public' : 'Personnel'}</span>
-                    </MetaItem>
-                    <MetaItem>
-                      <Clock />
-                      <span>{estimateTime(questionnaire)}</span>
-                    </MetaItem>
-                  </CardMeta>
+              {/* Tags */}
+              {questionnaire.tags && questionnaire.tags.length > 0 && (
+                <TagsContainer>
+                  {questionnaire.tags.map((tag, index) => (
+                    <Tag key={index}>{tag}</Tag>
+                  ))}
+                </TagsContainer>
+              )}
 
-                  {/* Actions */}
-                  <CardActions>
-                    <Button 
-                      as={Link} 
-                      to={`/questionnaires/${questionnaire._id}/use`}
-                      variant="primary" 
-                      size="large"
-                    >
-                      ▶️ UTILISER
-                    </Button>
-                    
-                    <Button 
-                      as={Link} 
-                      to={`/questionnaires/${questionnaire._id}/edit`}
-                      variant="secondary"
-                    >
-                      <Edit />
-                      Modifier
-                    </Button>
-                    
-                    <Button 
-                      as={Link} 
-                      to={`/questionnaires/${questionnaire._id}/cr`}
-                      variant="secondary"
-                    >
-                      <FileText />
-                      CR
-                    </Button>
-                    
-                    <Button 
-                      variant="secondary"
-                      onClick={() => {
-                        // Logique de duplication
-                        console.log('Dupliquer:', questionnaire._id);
-                      }}
-                    >
-                      <Copy />
-                      Dupliquer
-                    </Button>
-                    
-                    <Button 
-                      variant="secondary"
-                      onClick={() => toggleVisibility(questionnaire._id, questionnaire.public)}
-                    >
-                      {questionnaire.public ? <EyeOff /> : <Eye />}
-                      {questionnaire.public ? 'Rendre privé' : 'Rendre public'}
-                    </Button>
-                    
-                    <Button 
-                      variant="danger"
-                      onClick={() => deleteQuestionnaire(questionnaire._id)}
-                    >
-                      <Trash2 />
-                    </Button>
-                  </CardActions>
-                </QuestionnaireCard>
-              ))}
-            </QuestionnairesGrid>
-          )}
+              {/* Métadonnées */}
+              <CardMeta>
+                <MetaItem>
+                  <Clock />
+                  <span>{formatDate(questionnaire.updatedAt || questionnaire.createdAt)}</span>
+                </MetaItem>
+                <MetaItem>
+                  <Users />
+                  <span>Personnel</span>
+                </MetaItem>
+                <MetaItem>
+                  <FileText />
+                  <span>{questionnaire.public ? 'Public' : 'Privé'}</span>
+                </MetaItem>
+                <MetaItem>
+                  <Clock />
+                  <span>{estimateTime(questionnaire)}</span>
+                </MetaItem>
+              </CardMeta>
 
-          {/* PAGINATION */}
-          {totalPages > 1 && (
-            <Pagination>
-              <PaginationButton
-                onClick={() => fetchQuestionnaires(currentPage - 1)}
-                disabled={currentPage === 1}
-              >
-                ⬅️ Précédent
-              </PaginationButton>
-              <PaginationInfo>
-                Page {currentPage} sur {totalPages}
-              </PaginationInfo>
-              <PaginationButton
-                onClick={() => fetchQuestionnaires(currentPage + 1)}
-                disabled={currentPage === totalPages}
-              >
-                Suivant ➡️
-              </PaginationButton>
-            </Pagination>
-          )}
+              {/* Actions - LIENS ORIGINAUX CONSERVÉS */}
+              <ActionButtons>
+                <ActionButton 
+                  to={`/use/${questionnaire._id}`}
+                  variant="primary" 
+                  size="large"
+                >
+                  ▶️ UTILISER
+                </ActionButton>
+                
+                <ActionButton 
+                  to={`/edit/${questionnaire._id}`}
+                  variant="secondary"
+                >
+                  <Edit />
+                  MODIFIER
+                </ActionButton>
+                
+                <ActionButton 
+                  to={`/cr/${questionnaire._id}`}
+                  variant="secondary"
+                >
+                  <FileText />
+                  CR
+                </ActionButton>
+                
+                <ActionButton 
+                  to="#"
+                  variant="secondary"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    // TODO: Logique de duplication
+                    console.log('Dupliquer:', questionnaire._id);
+                  }}
+                >
+                  <Copy />
+                  DUPLIQUER
+                </ActionButton>
+                
+                <Button 
+                  variant="secondary"
+                  onClick={() => toggleVisibility(questionnaire._id, questionnaire.public)}
+                >
+                  {questionnaire.public ? <EyeOff /> : <Eye />}
+                  {questionnaire.public ? 'Rendre privé' : 'Rendre public'}
+                </Button>
+                
+                <Button 
+                  variant="danger"
+                  onClick={() => deleteQuestionnaire(questionnaire._id)}
+                >
+                  <Trash2 />
+                  SUPPRIMER
+                </Button>
+              </ActionButtons>
+            </QuestionnaireCard>
+          ))}
+        </QuestionnairesGrid>
 
-          {/* BOUTON TUTORIEL */}
-          <TutorialButton onClick={() => setShowTutorial(true)}>
-            📚 Voir le tutoriel
-          </TutorialButton>
+        {/* PAGINATION */}
+        {totalPages > 1 && (
+          <PaginationContainer>
+            <PaginationButton
+              onClick={() => fetchQuestionnaires(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              Précédent
+            </PaginationButton>
+            <PaginationInfo>
+              Page {currentPage} sur {totalPages}
+            </PaginationInfo>
+            <PaginationButton
+              onClick={() => fetchQuestionnaires(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Suivant
+            </PaginationButton>
+          </PaginationContainer>
+        )}
 
-          {/* TUTORIEL OVERLAY */}
-          {showTutorial && (
-            <TutorialOverlay 
-              steps={tutorialSteps} 
-              onClose={() => setShowTutorial(false)} 
-            />
-          )}
+        {/* BOUTON CRÉER */}
+        <ActionButton 
+          as={Link} 
+          to="/create" 
+          variant="primary"
+          style={{ marginTop: '2rem', padding: '0.75rem 2rem', display: 'inline-flex' }}
+        >
+          CRÉER UN NOUVEAU QUESTIONNAIRE
+        </ActionButton>
 
-          {/* VIDÉOS TUTORIELS */}
-          <VideoContainer>
-            <h3>📺 Tutoriel vidéo</h3>
-            <div className="video-wrapper">
-              <iframe
-                width="560"
-                height="315"
-                src="https://www.youtube.com/embed/h525ujn4jBc"
-                title="Tutoriel questionnaires"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
-            </div>
-          </VideoContainer>
+        {/* BOUTON TUTORIEL */}
+        <TutorialButton onClick={() => setShowTutorial(true)}>
+          📚 Voir le tutoriel
+        </TutorialButton>
 
-          <VideoContainer>
-            <h3>📺 Tutoriel avancé</h3>
-            <div className="video-wrapper">
-              <iframe
-                width="560"
-                height="315"
-                src="https://www.youtube.com/embed/oIC9UXnVnOk"
-                title="Tutoriel avancé questionnaires"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
-            </div>
-          </VideoContainer>
-        </MainContent>
-      </Container>
+        {/* TUTORIEL OVERLAY */}
+        {showTutorial && (
+          <TutorialOverlay 
+            steps={tutorialSteps} 
+            onClose={() => setShowTutorial(false)} 
+          />
+        )}
 
-      {/* BOUTON FLOTTANT DE CRÉATION */}
-      <CreateButton as={Link} to="/create" title="Créer un nouveau questionnaire">
-        <Plus />
-      </CreateButton>
-    </PageWrapper>
+        {/* VIDÉOS TUTORIELS */}
+        <VideoContainer>
+          <h3>📺 Tutoriel vidéo</h3>
+          <div className="video-wrapper">
+            <iframe
+              width="560"
+              height="315"
+              src="https://www.youtube.com/embed/h525ujn4jBc"
+              title="Tutoriel questionnaires"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          </div>
+        </VideoContainer>
+
+        <VideoContainer>
+          <h3>📺 Tutoriel avancé</h3>
+          <div className="video-wrapper">
+            <iframe
+              width="560"
+              height="315"
+              src="https://www.youtube.com/embed/oIC9UXnVnOk"
+              title="Tutoriel avancé questionnaires"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          </div>
+        </VideoContainer>
+      </ListContainer>
+    </PageContainer>
   );
 }
 
