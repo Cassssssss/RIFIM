@@ -377,26 +377,24 @@ return (
       <ModernTitle>{questionnaire?.title || "Questionnaire"}</ModernTitle>
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="lg:w-3/5">
-          <div className="bg-gray-100 p-4 rounded-md">
-            <QuestionnairePreview 
-              questions={questionnaire.questions}
-              selectedOptions={selectedOptions}
-              setSelectedOptions={handleOptionChange}
-              crTexts={crTexts}
-              setCRTexts={setCRTexts}
-              freeTexts={freeTexts}
-              onFreeTextChange={handleFreeTextChange}
-              showCRFields={false}
-              onImageInsert={handleImageInsert}
-              hiddenQuestions={hiddenQuestions}
-              toggleQuestionVisibility={() => {}}
-              questionnaireLinks={questionnaire.links}
-              questionnaireId={id}
-              onOptionUpdate={handleOptionUpdate}
-              questionnaire={questionnaire}
-              handleOpenLinkEditor={() => {}}
-            />
-          </div>
+<QuestionnairePreview 
+  questions={questionnaire.questions}
+  selectedOptions={selectedOptions}
+  setSelectedOptions={handleOptionChange}
+  crTexts={crTexts}
+  setCRTexts={setCRTexts}
+  freeTexts={freeTexts}
+  onFreeTextChange={handleFreeTextChange}
+  showCRFields={false}
+  onImageInsert={handleImageInsert}
+  hiddenQuestions={hiddenQuestions}
+  toggleQuestionVisibility={() => {}}
+  questionnaireLinks={questionnaire.links}
+  questionnaireId={id}
+  onOptionUpdate={handleOptionUpdate}
+  questionnaire={questionnaire}
+  handleOpenLinkEditor={() => {}}
+/>
         </div>
         <div className="lg:w-2/5">
           <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-md whitespace-pre-wrap font-calibri text-base">

@@ -259,26 +259,26 @@ const QuestionnaireCRPage = () => {
       <div className="flex flex-col lg:flex-row gap-6">
         <div className="w-full lg:w-3/5">
           <div>
-            <div className="bg-gray-100 p-4 rounded-md">
-              <QuestionnairePreview 
-                title=""
-                questions={questionnaire.questions}
-                selectedOptions={selectedOptions}
-                setSelectedOptions={handleOptionChange}
-                crTexts={crTexts}
-                setCRTexts={setCRTexts}
-                freeTexts={freeTexts}
-                onFreeTextChange={handleFreeTextChange}
-                showCRFields={true}
-                hiddenQuestions={hiddenQuestions}
-                toggleQuestionVisibility={toggleQuestionVisibility}
-                showAddButton={false}
-                questionnaireLinks={questionnaire.links}
-                questionnaireId={id}
-                onOptionUpdate={handleOptionUpdate}
-                onCRTextChange={handleCRTextChange}
-              />
-            </div>
+
+<QuestionnairePreview 
+  title=""
+  questions={questionnaire.questions}
+  selectedOptions={selectedOptions}
+  setSelectedOptions={handleOptionChange}
+  crTexts={crTexts}
+  setCRTexts={setCRTexts}
+  freeTexts={freeTexts}
+  onFreeTextChange={handleFreeTextChange}
+  showCRFields={true}
+  hiddenQuestions={hiddenQuestions}
+  toggleQuestionVisibility={toggleQuestionVisibility}
+  showAddButton={false}
+  questionnaireLinks={questionnaire.links}
+  questionnaireId={id}
+  onOptionUpdate={handleOptionUpdate}
+  onCRTextChange={handleCRTextChange}
+/>
+       
           </div>
         </div>
         <div className="w-full lg:w-2/4">
