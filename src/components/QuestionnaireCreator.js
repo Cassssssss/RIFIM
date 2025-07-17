@@ -11,83 +11,92 @@ import { AlertTriangle } from 'lucide-react';
 import ImageMapEditor from './ImageMapEditor';
 import { medicalColors } from '../medicalColors';
 
-// Styled components MIS À JOUR avec les nouvelles couleurs médicales
+// Styled components avec thème médical appliqué
 const CreatorWrapper = styled.div`
-  background-color: ${props => props.theme.background};
-  color: ${props => props.theme.text};
-  padding: ${props => props.theme.spacing?.xl || '2rem'};
+  background-color: ${medicalColors.backgrounds.main};
+  color: ${medicalColors.neutral.charcoal};
+  padding: 2rem;
   border-radius: 8px;
+  min-height: 100vh;
 `;
 
 const CreatorCard = styled.div`
-  background-color: ${props => props.theme.card};
-  color: ${props => props.theme.text};
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 8px;
-  padding: ${props => props.theme.spacing?.lg || '1.5rem'};
-  margin-bottom: ${props => props.theme.spacing?.lg || '1.5rem'};
-  box-shadow: 0 2px 4px ${props => props.theme.shadow || 'rgba(0,0,0,0.1)'};
+  background-color: ${medicalColors.cards.background};
+  color: ${medicalColors.neutral.charcoal};
+  border: 1px solid ${medicalColors.borders.light};
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 20px ${medicalColors.shadows.soft};
 `;
 
 const QuestionCard = styled.div`
-  background-color: ${props => props.theme.cardSecondary || props.theme.card};
-  border: 1px solid ${props => props.theme.border};
+  background-color: ${medicalColors.cards.background};
+  border: 1px solid ${medicalColors.borders.light};
   border-radius: 8px;
-  margin-bottom: ${props => props.theme.spacing?.md || '0.75rem'};
-  box-shadow: 0 1px 3px ${props => props.theme.shadow || 'rgba(0,0,0,0.1)'};
+  margin-bottom: 0.75rem;
+  box-shadow: 0 2px 8px ${medicalColors.shadows.soft};
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: ${medicalColors.primary.main};
+    box-shadow: 0 4px 12px ${medicalColors.primary.main}20;
+  }
 `;
 
 const QuestionHeader = styled.div`
   display: flex;
   align-items: center;
-  padding: ${props => props.theme.spacing?.md || '0.75rem'};
-  border-bottom: 1px solid ${props => props.theme.border};
+  padding: 0.75rem;
+  border-bottom: 1px solid ${medicalColors.borders.light};
   background-color: ${props => props.depth === 0 ? 
-    (props.theme.primary + '15') : 
-    (props.theme.questionBackgroundAlt || props.theme.background)};
+    medicalColors.primary.subtle : 
+    medicalColors.backgrounds.alt};
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
 `;
 
 const QuestionContent = styled.div`
-  padding: ${props => props.theme.spacing?.md || '0.75rem'};
+  padding: 0.75rem;
   background-color: ${props => props.depth % 2 === 0 ? 
-    (props.theme.questionBackground || props.theme.background) : 
-    (props.theme.questionBackgroundAlt || props.theme.cardSecondary)};
+    medicalColors.backgrounds.main : 
+    medicalColors.backgrounds.alt};
 `;
 
 const OptionCard = styled.div`
-  background-color: ${props => props.theme.optionBackground || props.theme.cardSecondary};
-  border: 1px solid ${props => props.theme.border};
+  background-color: ${medicalColors.backgrounds.alt};
+  border: 1px solid ${medicalColors.borders.light};
   border-radius: 6px;
-  margin-bottom: ${props => props.theme.spacing?.sm || '0.5rem'};
-  padding: ${props => props.theme.spacing?.sm || '0.5rem'};
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
   transition: all 0.2s ease;
   
   &:hover {
-    background-color: ${props => props.theme.optionHover || props.theme.cardHover};
+    background-color: ${medicalColors.cards.hover};
+    border-color: ${medicalColors.primary.main};
   }
 `;
 
 const SubQuestionWrapper = styled.div`
   margin-left: ${props => Math.min(props.depth * 0.5, 1.5)}rem;
-  border-left: 2px solid ${props => props.theme.primary};
-  padding-left: ${props => props.theme.spacing?.md || '0.75rem'};
-  margin-top: ${props => props.theme.spacing?.sm || '0.5rem'};
+  border-left: 2px solid ${medicalColors.primary.main};
+  padding-left: 0.75rem;
+  margin-top: 0.5rem;
 `;
 
 const StyledSelect = styled.select`
   width: 100%;
-  padding: ${props => props.theme.spacing?.sm || '0.5rem'};
-  margin-bottom: ${props => props.theme.spacing?.md || '1rem'};
-  border-radius: 4px;
-  background-color: ${props => props.theme.inputBackground};
-  color: ${props => props.theme.inputText};
-  border: 1px solid ${props => props.theme.inputBorder || props.theme.border};
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  background-color: ${medicalColors.forms.input.bg};
+  color: ${medicalColors.neutral.charcoal};
+  border: 1px solid ${medicalColors.forms.input.border};
   
   &:focus {
     outline: none;
-    border-color: ${props => props.theme.inputFocus || props.theme.primary};
+    border-color: ${medicalColors.primary.main};
+    box-shadow: 0 0 0 2px ${medicalColors.primary.main}20;
   }
 `;
 
@@ -105,13 +114,14 @@ const Modal = styled.div`
 `;
 
 const ModalContent = styled.div`
-  background-color: ${props => props.theme.card};
-  color: ${props => props.theme.text};
-  padding: ${props => props.theme.spacing?.xl || '2rem'};
-  border-radius: 8px;
+  background-color: ${medicalColors.cards.background};
+  color: ${medicalColors.neutral.charcoal};
+  padding: 2rem;
+  border-radius: 12px;
   width: 80%;
   max-width: 500px;
-  border: 1px solid ${props => props.theme.border};
+  border: 1px solid ${medicalColors.borders.light};
+  box-shadow: 0 10px 40px ${medicalColors.shadows.deep};
 `;
 
 // ============ NOUVEAU: Styled component pour le drag handle ============
@@ -169,10 +179,19 @@ const ImageUpload = memo(({ onImageUpload, currentImage, id, onAddCaption, capti
       />
       <label
         htmlFor={`image-upload-${id}`}
-        className="cursor-pointer inline-flex items-center px-2 py-1 border rounded-md shadow-sm text-sm font-medium bg-white hover:bg-gray-50"
+        className="cursor-pointer inline-flex items-center px-2 py-1 border rounded-md shadow-sm text-sm font-medium transition-colors"
         style={{
-          borderColor: medicalColors.neutral.gray,
+          borderColor: medicalColors.borders.light,
+          backgroundColor: medicalColors.cards.background,
           color: medicalColors.neutral.charcoal
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.backgroundColor = medicalColors.cards.hover;
+          e.target.style.borderColor = medicalColors.primary.main;
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.backgroundColor = medicalColors.cards.background;
+          e.target.style.borderColor = medicalColors.borders.light;
         }}
       >
         {currentImage ? <Camera size={20} /> : <Upload size={20} />}
@@ -490,7 +509,7 @@ function QuestionnaireCreator() {
       formData.append('questionnaireTitle', questionnaire.title);
 
       try {
-        const response = await axios.post('/images/upload-image', formData, {
+        const response = await axios.post('/api/images/upload-image', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
@@ -518,7 +537,7 @@ function QuestionnaireCreator() {
     formData.append('questionnaireTitle', questionnaireTitle);
   
     try {
-      const response = await axios.post('/images/upload-image', formData, {
+      const response = await axios.post('/api/images/upload-image', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
