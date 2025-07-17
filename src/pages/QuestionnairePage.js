@@ -1,46 +1,54 @@
-// pages/QuestionnairePage.js - VERSION COMPLÈTE AVEC BOUTON SUPPRIMER PLUS PETIT
+// pages/QuestionnairePage.js - VERSION COMPLÈTE AVEC STYLE HARMONISÉ
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import axios from '../utils/axiosConfig';
 import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/CasesPage.styles';
-import { ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Trash2, Clock, Users, FileText } from 'lucide-react';
+
+// ==================== STYLED COMPONENTS HARMONISÉS ====================
 
 const PageContainer = styled.div`
   display: flex;
   background-color: ${props => props.theme.background};
   min-height: calc(100vh - 60px);
   padding: 2rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+  }
 `;
 
 const FilterSection = styled.div`
-  width: 250px;
+  width: 280px;
   margin-right: 2rem;
   background-color: ${props => props.theme.card};
   padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px ${props => props.theme.shadow};
+  border: 1px solid ${props => props.theme.border};
+  height: fit-content;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    margin-right: 0;
+  }
 `;
 
 const FilterGroup = styled.div`
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 `;
 
 const FilterTitle = styled.h3`
   margin-bottom: 1rem;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
   color: ${props => props.theme.primary};
-`;
-
-const FilterOption = styled.label`
   display: flex;
   align-items: center;
-  margin-bottom: 0.5rem;
-  cursor: pointer;
-
-  input {
-    margin-right: 0.5rem;
-  }
+  gap: 0.5rem;
 `;
 
 const FilterDropdown = styled.div`
@@ -50,14 +58,22 @@ const FilterDropdown = styled.div`
 
 const DropdownButton = styled.button`
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.75rem;
   background-color: ${props => props.theme.background};
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 4px;
+  border: 2px solid ${props => props.theme.border};
+  border-radius: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
+  color: ${props => props.theme.text};
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: ${props => props.theme.primary};
+    background-color: ${props => props.theme.hover};
+  }
 `;
 
 const DropdownContent = styled.div`
@@ -67,19 +83,35 @@ const DropdownContent = styled.div`
   width: 100%;
   max-height: 200px;
   overflow-y: auto;
-  background-color: ${props => props.theme.background};
-  border: 1px solid ${props => props.theme.border};
+  background-color: ${props => props.theme.card};
+  border: 2px solid ${props => props.theme.border};
   border-top: none;
-  border-radius: 0 0 4px 4px;
-  z-index: 1;
+  border-radius: 0 0 8px 8px;
+  z-index: 10;
+  box-shadow: 0 4px 12px ${props => props.theme.shadow};
 `;
 
 const DropdownOption = styled.label`
-  display: block;
-  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
   cursor: pointer;
+  color: ${props => props.theme.text};
+  transition: background-color 0.2s ease;
+
   &:hover {
     background-color: ${props => props.theme.hover};
+  }
+
+  input {
+    margin-right: 0.75rem;
+    width: 16px;
+    height: 16px;
+    accent-color: ${props => props.theme.primary};
+  }
+
+  span {
+    font-weight: 500;
   }
 `;
 
@@ -93,87 +125,122 @@ const FilterIndicator = styled.div`
 `;
 
 const ListContainer = styled.div`
-  flex-grow: 1;
-  background-color: ${props => props.theme.card};
-  color: ${props => props.theme.text};
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  max-width: calc(100% - 300px);
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+  }
 `;
 
 const SearchBar = styled.input`
   width: 100%;
-  padding: 0.75rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 4px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+  border: 2px solid ${props => props.theme.border};
+  border-radius: 12px;
   font-size: 1rem;
+  background-color: ${props => props.theme.card};
+  color: ${props => props.theme.text};
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary};
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
+  }
+
+  &::placeholder {
+    color: ${props => props.theme.textSecondary};
+  }
 `;
 
-const QuestionnaireItem = styled.li`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  border-bottom: 1px solid ${props => props.theme.border};
-  transition: background-color 0.2s ease;
+// ==================== NOUVELLE GRILLE POUR CARTES ====================
+const QuestionnairesGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+`;
+
+const QuestionnaireCard = styled.div`
+  background-color: ${props => props.theme.card};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px ${props => props.theme.shadow};
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  }
 
   &:hover {
-    background-color: ${props => props.theme.hover};
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px ${props => props.theme.shadow};
+    border-color: ${props => props.theme.primary};
   }
+`;
+
+const CardHeader = styled.div`
+  margin-bottom: 1rem;
 `;
 
 const QuestionnaireTitle = styled(Link)`
   color: ${props => props.theme.text};
-  font-size: 1.1rem;
-  font-weight: 500;
+  font-size: 1.2rem;
+  font-weight: 600;
   text-decoration: none;
-  cursor: pointer;
-  
-  &:hover {
-    text-decoration: underline;
-  }
-`;
-
-const ActionButton = styled(Link)`
-  background-color: ${props => props.theme.primary};
-  color: ${props => props.theme.buttonText};
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  text-decoration: none;
-  
-  &:hover {
-    background-color: ${props => props.theme.secondary};
-  }
-`;
-
-// ========== NOUVEAU STYLED COMPONENT POUR LE BOUTON SUPPRIMER PLUS PETIT ==========
-const DeleteButton = styled.button`
-  background-color: #ef4444;
-  color: white;
-  padding: 0.25rem 0.5rem; // Plus petit padding
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 0.75rem; // Plus petite taille de police
   display: flex;
   align-items: center;
-  gap: 0.25rem; // Plus petit gap
-  transition: all 0.2s ease;
-
+  gap: 0.75rem;
+  line-height: 1.4;
+  
   &:hover {
-    background-color: #dc2626;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    color: ${props => props.theme.primary};
   }
+`;
+
+const QuestionnaireIcon = styled.span`
+  font-size: 1.5rem;
+  flex-shrink: 0;
+`;
+
+const CardMeta = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: ${props => props.theme.backgroundSecondary};
+  border-radius: 8px;
+  border: 1px solid ${props => props.theme.border};
+`;
+
+const MetaItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: ${props => props.theme.textSecondary};
+  font-size: 0.85rem;
+  font-weight: 500;
 
   svg {
-    width: 12px; // Plus petite icône
-    height: 12px;
+    color: ${props => props.theme.primary};
+    flex-shrink: 0;
   }
 `;
 
@@ -181,7 +248,7 @@ const TagsContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-top: 0.5rem;
+  margin-bottom: 1rem;
 `;
 
 const Tag = styled.span`
@@ -190,6 +257,68 @@ const Tag = styled.span`
   padding: 0.25rem 0.5rem;
   border-radius: 9999px;
   font-size: 0.75rem;
+`;
+
+const ActionButtons = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const ActionButton = styled(Link)`
+  background-color: ${props => props.theme.primary};
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px ${props => props.theme.shadow};
+    opacity: 0.9;
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+`;
+
+// ==================== BOUTON SUPPRIMER RÉDUIT À L'ICÔNE SEULEMENT ====================
+const DeleteButton = styled.button`
+  background-color: #ef4444;
+  color: white;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  width: 40px;
+  height: 40px;
+
+  &:hover {
+    background-color: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
 `;
 
 function QuestionnairePage() {
@@ -223,17 +352,18 @@ function QuestionnairePage() {
           location: locationFilters.join(',')
         }
       });
-      if (response.data && response.data.questionnaires) {
-        setQuestionnaires(response.data.questionnaires);
-        setCurrentPage(response.data.currentPage);
-        setTotalPages(response.data.totalPages);
-      } else {
-        setQuestionnaires([]);
-        setCurrentPage(1);
-        setTotalPages(0);
-      }
+      
+      // Vérification de sécurité pour s'assurer que questionnaires est un tableau
+      const questionnaires = response.data?.questionnaires;
+      const safeQuestionnaires = Array.isArray(questionnaires) ? questionnaires : [];
+      
+      setQuestionnaires(safeQuestionnaires);
+      setCurrentPage(response.data?.currentPage || 1);
+      setTotalPages(response.data?.totalPages || 0);
+      
     } catch (error) {
       console.error('Erreur lors de la récupération des questionnaires:', error);
+      // En cas d'erreur, définir des valeurs par défaut sûres
       setQuestionnaires([]);
       setCurrentPage(1);
       setTotalPages(0);
@@ -295,15 +425,40 @@ function QuestionnairePage() {
     }
   };
 
+  // Fonctions utilitaires
+  const getQuestionnaireIcon = (tags) => {
+    if (!tags || tags.length === 0) return '📋';
+    if (tags.includes('IRM') || tags.includes('irm')) return '🧲';
+    if (tags.includes('TDM') || tags.includes('tdm')) return '🔍';
+    if (tags.includes('Rx') || tags.includes('rx')) return '🩻';
+    if (tags.includes('Echo') || tags.includes('echo')) return '📡';
+    return '📋';
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+  const estimateTime = (questionnaire) => {
+    const questionCount = questionnaire.questions ? questionnaire.questions.length : 0;
+    const estimatedMinutes = Math.max(2, Math.ceil(questionCount * 0.5));
+    return `~${estimatedMinutes} min`;
+  };
+
   return (
     <PageContainer>
+      {/* SECTION FILTRES */}
       <FilterSection>
         <FilterGroup>
           <FilterTitle>📊 Modalités</FilterTitle>
           <FilterDropdown>
             <DropdownButton onClick={() => setIsModalityDropdownOpen(!isModalityDropdownOpen)}>
-              Modalités
-              {isModalityDropdownOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              Modalités ({modalityFilters.length})
+              {isModalityDropdownOpen ? <ChevronUp /> : <ChevronDown />}
             </DropdownButton>
             {isModalityDropdownOpen && (
               <DropdownContent>
@@ -311,12 +466,10 @@ function QuestionnairePage() {
                   <DropdownOption key={modality}>
                     <input
                       type="checkbox"
-                      name="modality"
-                      value={modality}
                       checked={modalityFilters.includes(modality)}
                       onChange={() => handleModalityFilter(modality)}
                     />
-                    {modality}
+                    <span>{modality}</span>
                   </DropdownOption>
                 ))}
               </DropdownContent>
@@ -328,8 +481,8 @@ function QuestionnairePage() {
           <FilterTitle>🏥 Spécialités</FilterTitle>
           <FilterDropdown>
             <DropdownButton onClick={() => setIsSpecialtyDropdownOpen(!isSpecialtyDropdownOpen)}>
-              Spécialités
-              {isSpecialtyDropdownOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              Spécialités ({specialtyFilters.length})
+              {isSpecialtyDropdownOpen ? <ChevronUp /> : <ChevronDown />}
             </DropdownButton>
             {isSpecialtyDropdownOpen && (
               <DropdownContent>
@@ -337,12 +490,10 @@ function QuestionnairePage() {
                   <DropdownOption key={specialty}>
                     <input
                       type="checkbox"
-                      name="specialty"
-                      value={specialty}
                       checked={specialtyFilters.includes(specialty)}
                       onChange={() => handleSpecialtyFilter(specialty)}
                     />
-                    {specialty}
+                    <span>{specialty}</span>
                   </DropdownOption>
                 ))}
               </DropdownContent>
@@ -354,8 +505,8 @@ function QuestionnairePage() {
           <FilterTitle>📍 Localisation</FilterTitle>
           <FilterDropdown>
             <DropdownButton onClick={() => setIsLocationDropdownOpen(!isLocationDropdownOpen)}>
-              Localisation
-              {isLocationDropdownOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              Localisation ({locationFilters.length})
+              {isLocationDropdownOpen ? <ChevronUp /> : <ChevronDown />}
             </DropdownButton>
             {isLocationDropdownOpen && (
               <DropdownContent>
@@ -363,18 +514,17 @@ function QuestionnairePage() {
                   <DropdownOption key={location}>
                     <input
                       type="checkbox"
-                      name="location"
-                      value={location}
                       checked={locationFilters.includes(location)}
                       onChange={() => handleLocationFilter(location)}
                     />
-                    {location}
+                    <span>{location}</span>
                   </DropdownOption>
                 ))}
               </DropdownContent>
             )}
           </FilterDropdown>
         </FilterGroup>
+
         {(modalityFilters.length > 0 || specialtyFilters.length > 0 || locationFilters.length > 0) && (
           <FilterIndicator>
             Filtres appliqués : 
@@ -382,47 +532,87 @@ function QuestionnairePage() {
           </FilterIndicator>
         )}
       </FilterSection>
+
+      {/* CONTENU PRINCIPAL */}
       <ListContainer>
+        {/* BARRE DE RECHERCHE */}
         <SearchBar
           type="text"
-          placeholder="Rechercher un questionnaire..."
+          placeholder="🔍 Rechercher un questionnaire..."
           value={searchTerm}
           onChange={handleSearch}
         />
-        <ul>
+
+        {/* GRILLE DES QUESTIONNAIRES */}
+        <QuestionnairesGrid>
           {questionnaires.map((questionnaire) => (
-            <QuestionnaireItem key={questionnaire._id}>
-              <div>
+            <QuestionnaireCard key={questionnaire._id}>
+              <CardHeader>
                 <QuestionnaireTitle to={`/use/${questionnaire._id}`}>
+                  <QuestionnaireIcon>
+                    {getQuestionnaireIcon(questionnaire.tags)}
+                  </QuestionnaireIcon>
                   {questionnaire.title}
                 </QuestionnaireTitle>
-                <TagsContainer>
-                  {questionnaire.tags && questionnaire.tags.map(tag => (
-                    <Tag key={tag}>{tag}</Tag>
-                  ))}
-                </TagsContainer>
-              </div>
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                <ActionButton to={`/use/${questionnaire._id}`}>UTILISER</ActionButton>
+              </CardHeader>
+
+              {/* Tags */}
+              <TagsContainer>
+                {questionnaire.tags && questionnaire.tags.map((tag, index) => (
+                  <Tag key={index}>{tag}</Tag>
+                ))}
+              </TagsContainer>
+
+              {/* Métadonnées */}
+              <CardMeta>
+                <MetaItem>
+                  <Clock />
+                  <span>{formatDate(questionnaire.updatedAt || questionnaire.createdAt)}</span>
+                </MetaItem>
+                <MetaItem>
+                  <Users />
+                  <span>Personnel</span>
+                </MetaItem>
+                <MetaItem>
+                  <FileText />
+                  <span>{questionnaire.public ? 'Public' : 'Privé'}</span>
+                </MetaItem>
+                <MetaItem>
+                  <Clock />
+                  <span>{estimateTime(questionnaire)}</span>
+                </MetaItem>
+              </CardMeta>
+
+              {/* Actions */}
+              <ActionButtons>
+                <ActionButton to={`/use/${questionnaire._id}`}>
+                  ▶️ UTILISER
+                </ActionButton>
                 
-                {/* ========== BOUTON SUPPRIMER PLUS PETIT ========== */}
-                <DeleteButton onClick={() => deleteQuestionnaire(questionnaire._id)}>
+                {/* BOUTON SUPPRIMER RÉDUIT À L'ICÔNE SEULEMENT */}
+                <DeleteButton 
+                  onClick={() => deleteQuestionnaire(questionnaire._id)}
+                  title="Supprimer ce questionnaire"
+                >
                   <Trash2 />
-                  SUPPRIMER
                 </DeleteButton>
-              </div>
-            </QuestionnaireItem>
+              </ActionButtons>
+            </QuestionnaireCard>
           ))}
-        </ul>
-        <PaginationContainer>
-          <PaginationButton onClick={() => fetchQuestionnaires(currentPage - 1)} disabled={currentPage === 1}>
-            Précédent
-          </PaginationButton>
-          <PaginationInfo>Page {currentPage} sur {totalPages}</PaginationInfo>
-          <PaginationButton onClick={() => fetchQuestionnaires(currentPage + 1)} disabled={currentPage === totalPages}>
-            Suivant
-          </PaginationButton>
-        </PaginationContainer>
+        </QuestionnairesGrid>
+
+        {/* PAGINATION */}
+        {totalPages > 1 && (
+          <PaginationContainer>
+            <PaginationButton onClick={() => fetchQuestionnaires(currentPage - 1)} disabled={currentPage === 1}>
+              Précédent
+            </PaginationButton>
+            <PaginationInfo>Page {currentPage} sur {totalPages}</PaginationInfo>
+            <PaginationButton onClick={() => fetchQuestionnaires(currentPage + 1)} disabled={currentPage === totalPages}>
+              Suivant
+            </PaginationButton>
+          </PaginationContainer>
+        )}
       </ListContainer>
     </PageContainer>
   );
