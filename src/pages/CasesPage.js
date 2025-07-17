@@ -1148,10 +1148,7 @@ function CasesPage() {
                   
                   <CaseButton 
                     variant="secondary"
-                    onClick={() => {
-                      // TODO: Logique de modification
-                      console.log('Modifier cas:', cas._id);
-                    }}
+                    onClick={() => loadCaseForEditing(cas)}
                   >
                     <Settings />
                     Modifier
