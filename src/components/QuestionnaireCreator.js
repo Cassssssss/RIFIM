@@ -303,16 +303,16 @@ const CompactButtonGroup = styled.div`
   }
 `;
 
-const CompactDragHandle = styled.div`
-  color: ${props => props.theme.textSecondary};
-  cursor: grab;
+const DragHandle = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 0.25rem;
+  margin-right: 0.5rem;
+  cursor: grab;
   border-radius: 4px;
   transition: all 0.2s ease;
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
+  color: ${props => props.theme.textSecondary};
 
   &:hover {
     color: ${props => props.theme.primary};
@@ -364,21 +364,6 @@ const CompactImageUpload = styled.div`
   align-items: center;
   gap: 0.25rem;
   margin-left: 0.5rem;
-`;
-
-const CompactLinkButton = styled(CompactSecondaryButton)`
-  font-size: 0.75rem;
-  padding: 0.375rem 0.75rem;
-  margin-top: 0.5rem;
-  
-  ${props => !props.enabled && `
-    opacity: 0.5;
-    cursor: not-allowed;
-    &:hover {
-      transform: none;
-      box-shadow: 0 1px 3px ${props.theme.shadow};
-    }
-  `}
 `;
 
 const SubQuestionWrapper = styled.div`
@@ -507,14 +492,13 @@ const ImageUploadComponent = memo(({ onImageUpload, currentImage, id, onAddCapti
   );
 });
 
-// ==================== COMPOSANT DRAG AND DROP ====================
+// ==================== COMPOSANT DRAG AND DROP SIMPLIFIÉ ====================
 
-const DraggableQuestion = memo(({ question, index, moveQuestion, path, children }) => {
+const DraggableQuestionWrapper = memo(({ question, index, moveQuestion, path, children }) => {
   const ref = useRef(null);
-  const dragHandleRef = useRef(null);
   
   const [{ handlerId }, drop] = useDrop({
-    accept: 'question',
+    accept: 'QUESTION',
     collect(monitor) {
       return {
         handlerId: monitor.getHandlerId(),
@@ -522,19 +506,24 @@ const DraggableQuestion = memo(({ question, index, moveQuestion, path, children 
     },
     hover(item, monitor) {
       if (!ref.current) return;
+      
       const dragIndex = item.index;
       const hoverIndex = index;
       const dragPath = item.path;
       const hoverPath = path;
 
+      // Ne pas se déplacer sur soi-même
       if (JSON.stringify(dragPath) === JSON.stringify(hoverPath)) return;
 
-      const hoverBoundingRect = ref.current?.getBoundingClientRect();
+      const hoverBoundingRect = ref.current.getBoundingClientRect();
       const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
       const clientOffset = monitor.getClientOffset();
       const hoverClientY = clientOffset.y - hoverBoundingRect.top;
 
+      // Traîner vers le bas
       if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
+      
+      // Traîner vers le haut
       if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
 
       moveQuestion(dragPath, hoverPath);
@@ -544,22 +533,30 @@ const DraggableQuestion = memo(({ question, index, moveQuestion, path, children 
   });
 
   const [{ isDragging }, drag] = useDrag({
-    type: 'question',
-    item: () => ({ id: question.id, index, path }),
+    type: 'QUESTION',
+    item: () => ({ 
+      id: question.id, 
+      index, 
+      path 
+    }),
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
   });
 
-  const opacity = isDragging ? 0.4 : 1;
-  
-  // Connecter seulement le drag handle
-  drag(dragHandleRef);
-  drop(ref);
+  // Connecter les deux hooks à la même div
+  drag(drop(ref));
 
   return (
-    <div ref={ref} style={{ opacity }} data-handler-id={handlerId}>
-      {React.cloneElement(children, { dragHandleRef })}
+    <div 
+      ref={ref} 
+      style={{ 
+        opacity: isDragging ? 0.5 : 1,
+        cursor: isDragging ? 'grabbing' : 'default'
+      }} 
+      data-handler-id={handlerId}
+    >
+      {children}
     </div>
   );
 });
@@ -679,157 +676,6 @@ const QuestionnaireCreator = () => {
       } else {
         current[path[path.length - 1]][field] = value;
       }
-      return { ...prev, questions: updatedQuestions };
-    });
-  }, []);
-
-  const handleQuestionImageUpload = useCallback(async (e, path) => {
-    const file = e.target.files[0];
-    if (file) {
-      const formData = new FormData();
-      formData.append('image', file);
-      formData.append('questionnaireTitle', questionnaire.title);
-
-      try {
-        const response = await axios.post('upload-image', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-
-        let currentQuestion = questionnaire.questions;
-        for (let i = 0; i < path.length - 1; i++) {
-          currentQuestion = currentQuestion[path[i]];
-        }
-        currentQuestion = currentQuestion[path[path.length - 1]];
-
-        updateQuestion(path, 'questionImage', {
-          src: response.data.imageUrl,
-          areas: currentQuestion?.questionImage?.areas || []
-        });
-      } catch (error) {
-        console.error('Erreur lors du téléchargement de l\'image:', error);
-      }
-    }
-  }, [questionnaire, updateQuestion]);
-
-  const handleImageUpload = useCallback(async (file, elementId, questionnaireTitle) => {
-    const formData = new FormData();
-    formData.append('image', file);
-    formData.append('questionnaireTitle', questionnaireTitle);
-  
-    try {
-      const response = await axios.post('/upload-image', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      const path = elementId.split('-');
-      updateQuestion(path, 'image', { src: response.data.imageUrl, caption: '' });
-    } catch (error) {
-      console.error('Erreur lors du téléchargement de l\'image:', error);
-    }
-  }, [updateQuestion]);
-
-  const handleAddCaption = useCallback((elementId, caption) => {
-    const path = elementId.split('-');
-    updateQuestion(path, 'image', prevImage => ({ ...prevImage, caption: caption }));
-  }, [updateQuestion]);
-
-  const duplicateQuestion = useCallback((question) => {
-    const deepCopy = JSON.parse(JSON.stringify(question));
-    const updateIds = (q) => {
-      q.id = Date.now().toString();
-      if (q.options) {
-        q.options.forEach(option => {
-          option.id = Date.now().toString();
-          if (option.subQuestions) {
-            option.subQuestions.forEach(updateIds);
-          }
-        });
-      }
-    };
-    updateIds(deepCopy);
-    return deepCopy;
-  }, []);
-
-  const addQuestion = useCallback((path = [], duplicatedQuestion = null) => {
-    const newQuestion = duplicatedQuestion || { 
-      id: Date.now().toString(), 
-      text: '', 
-      type: 'single', 
-      options: [] 
-    };
-    
-    setQuestionnaire(prev => {
-      const updatedQuestions = JSON.parse(JSON.stringify(prev.questions));
-      
-      const addRecursive = (questions, currentPath) => {
-        if (currentPath.length === 0) {
-          questions.push(newQuestion);
-          return questions;
-        }
-        
-        const [index, ...restPath] = currentPath;
-        
-        if (restPath[0] === 'options') {
-          if (!questions[index].options) {
-            questions[index].options = [];
-          }
-          questions[index].options = addRecursive(questions[index].options, restPath.slice(1));
-        } else if (restPath[0] === 'subQuestions') {
-          if (!questions[index].subQuestions) {
-            questions[index].subQuestions = [];
-          }
-          questions[index].subQuestions = addRecursive(questions[index].subQuestions, restPath.slice(1));
-        }
-        
-        return questions;
-      };
-      
-      return { ...prev, questions: addRecursive(updatedQuestions, path) };
-    });
-  }, []);
-
-  const addOption = useCallback((path) => {
-    setQuestionnaire(prev => {
-      const updatedQuestions = JSON.parse(JSON.stringify(prev.questions));
-      let current = updatedQuestions;
-      for (let i = 0; i < path.length; i++) {
-        if (path[i] === 'options' || path[i] === 'subQuestions') {
-          current = current[path[i]];
-        } else {
-          current = current[path[i]];
-        }
-      }
-      if (!current.options) {
-        current.options = [];
-      }
-      current.options.push({ id: Date.now().toString(), text: '', subQuestions: [] });
-      return { ...prev, questions: updatedQuestions };
-    });
-  }, []);
-
-  const deleteQuestion = useCallback((path) => {
-    setQuestionnaire(prev => {
-      const updatedQuestions = JSON.parse(JSON.stringify(prev.questions));
-      const parentPath = path.slice(0, -1);
-      const index = path[path.length - 1];
-      
-      if (parentPath.length === 0) {
-        updatedQuestions.splice(index, 1);
-      } else {
-        let current = updatedQuestions;
-        for (let i = 0; i < parentPath.length; i++) {
-          if (parentPath[i] === 'options' || parentPath[i] === 'subQuestions') {
-            current = current[parentPath[i]];
-          } else {
-            current = current[parentPath[i]];
-          }
-        }
-        current.splice(index, 1);
-      }
-      
       return { ...prev, questions: updatedQuestions };
     });
   }, []);
@@ -1005,7 +851,7 @@ const QuestionnaireCreator = () => {
   };
 
   // Rendu des questions
-  const renderQuestion = useCallback((question, path, dragRef) => {
+  const renderQuestion = useCallback((question, path) => {
     const isExpanded = expandedQuestions[path.join('-')] ?? true;
     const questionId = path.join('-');
     const depth = path.length;
@@ -1022,16 +868,9 @@ const QuestionnaireCreator = () => {
             {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </CompactIconButton>
           
-          <CompactDragHandle 
-            ref={(el) => dragRef && dragRef(el)} 
-            className="drag-handle"
-            style={{ 
-              cursor: 'grab',
-              userSelect: 'none'
-            }}
-          >
+          <DragHandle>
             <GripVertical size={14} />
-          </CompactDragHandle>
+          </DragHandle>
           
           <ModernInput
             value={question.text || ''}
@@ -1331,7 +1170,7 @@ const QuestionnaireCreator = () => {
                       {option.subQuestions?.length > 0 && (
                         <SubQuestionWrapper>
                           {option.subQuestions.map((subQuestion, sqIndex) => (
-                            <DraggableQuestion
+                            <DraggableQuestionWrapper
                               key={subQuestion.id || `subquestion-${sqIndex}`}
                               question={subQuestion}
                               index={sqIndex}
@@ -1339,7 +1178,7 @@ const QuestionnaireCreator = () => {
                               path={[...path, 'options', oIndex, 'subQuestions', sqIndex]}
                             >
                               {renderQuestion(subQuestion, [...path, 'options', oIndex, 'subQuestions', sqIndex])}
-                            </DraggableQuestion>
+                            </DraggableQuestionWrapper>
                           ))}
                         </SubQuestionWrapper>
                       )}
@@ -1360,32 +1199,32 @@ const QuestionnaireCreator = () => {
         )}
       </ModernQuestionCard>
     );
-  }, [expandedQuestions, moveQuestion, toggleQuestion, updateQuestion, handleQuestionImageUpload, duplicateQuestion, addQuestion, deleteQuestion, deleteOption, addOption, questionnaire.title, handleOpenLinkEditor, questionLinks, handleImageUpload, handleAddCaption]);
+  }, [expandedQuestions, toggleQuestion, updateQuestion, handleQuestionImageUpload, duplicateQuestion, addQuestion, deleteQuestion, deleteOption, addOption, questionnaire.title, handleOpenLinkEditor, questionLinks, handleImageUpload, handleAddCaption]);
 
   return (
-    <ModernCreatorWrapper>
-      <ModernTitle>
-        {id ? 'Modifier le questionnaire' : 'Créer un nouveau questionnaire'}
-      </ModernTitle>
+    <DndProvider backend={HTML5Backend}>
+      <ModernCreatorWrapper>
+        <ModernTitle>
+          {id ? 'Modifier le questionnaire' : 'Créer un nouveau questionnaire'}
+        </ModernTitle>
 
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'row',
-        gap: '1.5rem'
-      }}>
-        {/* Section principale d'édition - 2/3 de la largeur */}
-        <div style={{ flex: '2', minWidth: '0' }}>
-          <ModernCreatorCard>
-            <ModernTitleInput
-              type="text" 
-              value={questionnaire.title} 
-              onChange={(e) => updateQuestionnaire('title', e.target.value)}
-              placeholder="Titre du questionnaire" 
-            />
-            
-            <DndProvider backend={HTML5Backend}>
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'row',
+          gap: '1.5rem'
+        }}>
+          {/* Section principale d'édition - 2/3 de la largeur */}
+          <div style={{ flex: '2', minWidth: '0' }}>
+            <ModernCreatorCard>
+              <ModernTitleInput
+                type="text" 
+                value={questionnaire.title} 
+                onChange={(e) => updateQuestionnaire('title', e.target.value)}
+                placeholder="Titre du questionnaire" 
+              />
+              
               {questionnaire.questions.map((question, index) => (
-                <DraggableQuestion
+                <DraggableQuestionWrapper
                   key={question.id || `question-${index}`}
                   question={question}
                   index={index}
@@ -1393,140 +1232,291 @@ const QuestionnaireCreator = () => {
                   path={[index]}
                 >
                   {renderQuestion(question, [index])}
-                </DraggableQuestion>
+                </DraggableQuestionWrapper>
               ))}
-            </DndProvider>
-            
-            <CompactButtonGroup>
-              <CompactButton onClick={() => addQuestion()}>
-                <Plus size={14} />
-                Ajouter une question
-              </CompactButton>
               
-              <CompactSuccessButton onClick={handleSave}>
-                Sauvegarder le questionnaire
-              </CompactSuccessButton>
-            </CompactButtonGroup>
-          </ModernCreatorCard>
-        </div>
-        
-        {/* Section aperçu - 1/3 de la largeur, à droite */}
-        <div style={{ flex: '1', minWidth: '300px' }}>
-          <ModernPreviewSection>
-            <ModernPreviewTitle>
-              Aperçu du questionnaire
-            </ModernPreviewTitle>
-            
-            <div style={{ 
-              padding: '0.75rem',
-              backgroundColor: '#f9fafb',
-              borderRadius: '6px',
-              border: '1px solid #e5e7eb',
-              fontSize: '0.9rem'
-            }}>
-              <QuestionnairePreview 
-                questions={questionnaire.questions}
-                selectedOptions={questionnaire.selectedOptions}
-                setSelectedOptions={(questionId, optionIndex, type) => {
-                  setQuestionnaire(prev => ({
-                    ...prev,
-                    selectedOptions: {
-                      ...prev.selectedOptions,
-                      [questionId]: type === 'single' ? [optionIndex] : 
-                        [...(prev.selectedOptions[questionId] || [])].includes(optionIndex) ?
-                        prev.selectedOptions[questionId].filter(i => i !== optionIndex) :
-                        [...(prev.selectedOptions[questionId] || []), optionIndex]
-                    }
-                  }));
-                }}
-                crTexts={questionnaire.crData?.crTexts || {}}
-                setCRTexts={(newCRTexts) => updateQuestionnaire('crData', {
-                  ...questionnaire.crData,
-                  crTexts: newCRTexts
-                })}
-                freeTexts={questionnaire.crData?.freeTexts || {}}
-                onFreeTextChange={handleFreeTextChange}
-                showCRFields={false}
-                questionnaireLinks={questionLinks}
-                questionnaireId={id}
-                questionnaire={questionnaire}
-                setQuestionnaire={setQuestionnaire}
-              />
-            </div>
-          </ModernPreviewSection>
-        </div>
-      </div>
-
-      {/* Modales */}
-      {showLinkEditor && (
-        <LinkEditor
-          onClose={() => setShowLinkEditor(false)}
-          onSave={handleSaveLink}
-          elementId={currentEditingElement.elementId}
-          questionnaireId={id}
-          linkIndex={currentEditingElement.linkIndex}
-          initialContent={
-            currentEditingElement.linkIndex !== undefined
-              ? questionLinks[currentEditingElement.elementId]?.[currentEditingElement.linkIndex]?.content || ""
-              : ""
-          }
-          initialTitle={
-            currentEditingElement.linkIndex !== undefined
-              ? questionLinks[currentEditingElement.elementId]?.[currentEditingElement.linkIndex]?.title || ""
-              : ""
-          }
-        />
-      )}
-
-      {showDeleteConfirm && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            padding: '1.5rem',
-            borderRadius: '8px',
-            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
-            maxWidth: '400px',
-            width: '90%'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
-              <AlertTriangle size={20} style={{ color: '#f59e0b', marginRight: '0.5rem' }} />
-              <h3 style={{ margin: 0, color: '#374151', fontSize: '1.1rem' }}>Confirmer la suppression</h3>
-            </div>
-            
-            <p style={{ marginBottom: '1.5rem', color: '#6b7280', fontSize: '0.9rem' }}>
-              Êtes-vous sûr de vouloir supprimer ce lien ? Cette action est irréversible.
-            </p>
-            
-            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-              <CompactSecondaryButton
-                onClick={() => {
-                  setShowDeleteConfirm(false);
-                  setLinkToDelete(null);
-                }}
-              >
-                Annuler
-              </CompactSecondaryButton>
+              <CompactButtonGroup>
+                <CompactButton onClick={() => addQuestion()}>
+                  <Plus size={14} />
+                  Ajouter une question
+                </CompactButton>
+                
+                <CompactSuccessButton onClick={handleSave}>
+                  Sauvegarder le questionnaire
+                </CompactSuccessButton>
+              </CompactButtonGroup>
+            </ModernCreatorCard>
+          </div>
+          
+          {/* Section aperçu - 1/3 de la largeur, à droite */}
+          <div style={{ flex: '1', minWidth: '300px' }}>
+            <ModernPreviewSection>
+              <ModernPreviewTitle>
+                Aperçu du questionnaire
+              </ModernPreviewTitle>
               
-              <CompactDangerButton onClick={handleDeleteLinkConfirm}>
-                Supprimer
-              </CompactDangerButton>
-            </div>
+              <div style={{ 
+                padding: '0.75rem',
+                backgroundColor: '#f9fafb',
+                borderRadius: '6px',
+                border: '1px solid #e5e7eb',
+                fontSize: '0.9rem'
+              }}>
+                <QuestionnairePreview 
+                  questions={questionnaire.questions}
+                  selectedOptions={questionnaire.selectedOptions}
+                  setSelectedOptions={(questionId, optionIndex, type) => {
+                    setQuestionnaire(prev => ({
+                      ...prev,
+                      selectedOptions: {
+                        ...prev.selectedOptions,
+                        [questionId]: type === 'single' ? [optionIndex] : 
+                          [...(prev.selectedOptions[questionId] || [])].includes(optionIndex) ?
+                          prev.selectedOptions[questionId].filter(i => i !== optionIndex) :
+                          [...(prev.selectedOptions[questionId] || []), optionIndex]
+                      }
+                    }));
+                  }}
+                  crTexts={questionnaire.crData?.crTexts || {}}
+                  setCRTexts={(newCRTexts) => updateQuestionnaire('crData', {
+                    ...questionnaire.crData,
+                    crTexts: newCRTexts
+                  })}
+                  freeTexts={questionnaire.crData?.freeTexts || {}}
+                  onFreeTextChange={handleFreeTextChange}
+                  showCRFields={false}
+                  questionnaireLinks={questionLinks}
+                  questionnaireId={id}
+                  questionnaire={questionnaire}
+                  setQuestionnaire={setQuestionnaire}
+                />
+              </div>
+            </ModernPreviewSection>
           </div>
         </div>
-      )}
-    </ModernCreatorWrapper>
+
+        {/* Modales */}
+        {showLinkEditor && (
+          <LinkEditor
+            onClose={() => setShowLinkEditor(false)}
+            onSave={handleSaveLink}
+            elementId={currentEditingElement.elementId}
+            questionnaireId={id}
+            linkIndex={currentEditingElement.linkIndex}
+            initialContent={
+              currentEditingElement.linkIndex !== undefined
+                ? questionLinks[currentEditingElement.elementId]?.[currentEditingElement.linkIndex]?.content || ""
+                : ""
+            }
+            initialTitle={
+              currentEditingElement.linkIndex !== undefined
+                ? questionLinks[currentEditingElement.elementId]?.[currentEditingElement.linkIndex]?.title || ""
+                : ""
+            }
+          />
+        )}
+
+        {showDeleteConfirm && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000
+          }}>
+            <div style={{
+              backgroundColor: 'white',
+              padding: '1.5rem',
+              borderRadius: '8px',
+              boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
+              maxWidth: '400px',
+              width: '90%'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+                <AlertTriangle size={20} style={{ color: '#f59e0b', marginRight: '0.5rem' }} />
+                <h3 style={{ margin: 0, color: '#374151', fontSize: '1.1rem' }}>Confirmer la suppression</h3>
+              </div>
+              
+              <p style={{ marginBottom: '1.5rem', color: '#6b7280', fontSize: '0.9rem' }}>
+                Êtes-vous sûr de vouloir supprimer ce lien ? Cette action est irréversible.
+              </p>
+              
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                <CompactSecondaryButton
+                  onClick={() => {
+                    setShowDeleteConfirm(false);
+                    setLinkToDelete(null);
+                  }}
+                >
+                  Annuler
+                </CompactSecondaryButton>
+                
+                <CompactDangerButton onClick={handleDeleteLinkConfirm}>
+                  Supprimer
+                </CompactDangerButton>
+              </div>
+            </div>
+          </div>
+        )}
+      </ModernCreatorWrapper>
+    </DndProvider>
   );
 };
 
 export default QuestionnaireCreator;
+    });
+  }, []);
+
+  const handleQuestionImageUpload = useCallback(async (e, path) => {
+    const file = e.target.files[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('questionnaireTitle', questionnaire.title);
+
+      try {
+        const response = await axios.post('upload-image', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+
+        let currentQuestion = questionnaire.questions;
+        for (let i = 0; i < path.length - 1; i++) {
+          currentQuestion = currentQuestion[path[i]];
+        }
+        currentQuestion = currentQuestion[path[path.length - 1]];
+
+        updateQuestion(path, 'questionImage', {
+          src: response.data.imageUrl,
+          areas: currentQuestion?.questionImage?.areas || []
+        });
+      } catch (error) {
+        console.error('Erreur lors du téléchargement de l\'image:', error);
+      }
+    }
+  }, [questionnaire, updateQuestion]);
+
+  const handleImageUpload = useCallback(async (file, elementId, questionnaireTitle) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('questionnaireTitle', questionnaireTitle);
+  
+    try {
+      const response = await axios.post('/upload-image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      const path = elementId.split('-');
+      updateQuestion(path, 'image', { src: response.data.imageUrl, caption: '' });
+    } catch (error) {
+      console.error('Erreur lors du téléchargement de l\'image:', error);
+    }
+  }, [updateQuestion]);
+
+  const handleAddCaption = useCallback((elementId, caption) => {
+    const path = elementId.split('-');
+    updateQuestion(path, 'image', prevImage => ({ ...prevImage, caption: caption }));
+  }, [updateQuestion]);
+
+  const duplicateQuestion = useCallback((question) => {
+    const deepCopy = JSON.parse(JSON.stringify(question));
+    const updateIds = (q) => {
+      q.id = Date.now().toString();
+      if (q.options) {
+        q.options.forEach(option => {
+          option.id = Date.now().toString();
+          if (option.subQuestions) {
+            option.subQuestions.forEach(updateIds);
+          }
+        });
+      }
+    };
+    updateIds(deepCopy);
+    return deepCopy;
+  }, []);
+
+  const addQuestion = useCallback((path = [], duplicatedQuestion = null) => {
+    const newQuestion = duplicatedQuestion || { 
+      id: Date.now().toString(), 
+      text: '', 
+      type: 'single', 
+      options: [] 
+    };
+    
+    setQuestionnaire(prev => {
+      const updatedQuestions = JSON.parse(JSON.stringify(prev.questions));
+      
+      const addRecursive = (questions, currentPath) => {
+        if (currentPath.length === 0) {
+          questions.push(newQuestion);
+          return questions;
+        }
+        
+        const [index, ...restPath] = currentPath;
+        
+        if (restPath[0] === 'options') {
+          if (!questions[index].options) {
+            questions[index].options = [];
+          }
+          questions[index].options = addRecursive(questions[index].options, restPath.slice(1));
+        } else if (restPath[0] === 'subQuestions') {
+          if (!questions[index].subQuestions) {
+            questions[index].subQuestions = [];
+          }
+          questions[index].subQuestions = addRecursive(questions[index].subQuestions, restPath.slice(1));
+        }
+        
+        return questions;
+      };
+      
+      return { ...prev, questions: addRecursive(updatedQuestions, path) };
+    });
+  }, []);
+
+  const addOption = useCallback((path) => {
+    setQuestionnaire(prev => {
+      const updatedQuestions = JSON.parse(JSON.stringify(prev.questions));
+      let current = updatedQuestions;
+      for (let i = 0; i < path.length; i++) {
+        if (path[i] === 'options' || path[i] === 'subQuestions') {
+          current = current[path[i]];
+        } else {
+          current = current[path[i]];
+        }
+      }
+      if (!current.options) {
+        current.options = [];
+      }
+      current.options.push({ id: Date.now().toString(), text: '', subQuestions: [] });
+      return { ...prev, questions: updatedQuestions };
+    });
+  }, []);
+
+  const deleteQuestion = useCallback((path) => {
+    setQuestionnaire(prev => {
+      const updatedQuestions = JSON.parse(JSON.stringify(prev.questions));
+      const parentPath = path.slice(0, -1);
+      const index = path[path.length - 1];
+      
+      if (parentPath.length === 0) {
+        updatedQuestions.splice(index, 1);
+      } else {
+        let current = updatedQuestions;
+        for (let i = 0; i < parentPath.length; i++) {
+          if (parentPath[i] === 'options' || parentPath[i] === 'subQuestions') {
+            current = current[parentPath[i]];
+          } else {
+            current = current[parentPath[i]];
+          }
+        }
+        current.splice(index, 1);
+      }
+      
+      return { ...prev, questions: updatedQuestions };
