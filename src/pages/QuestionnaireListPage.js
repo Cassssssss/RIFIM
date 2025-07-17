@@ -1,4 +1,4 @@
-// pages/QuestionnaireListPage.js - VERSION COMPLÈTE AVEC GESTION DES TAGS
+// pages/QuestionnaireListPage.js - VERSION COMPLÈTE AVEC GESTION DES TAGS ET BOUTON SUPPRIMER RÉDUIT
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
@@ -482,6 +482,33 @@ const CancelTagButton = styled.button`
   }
 `;
 
+// ========== BOUTON SUPPRIMER RÉDUIT À L'ICÔNE SEULEMENT ====================
+const DeleteButton = styled.button`
+  background-color: #ef4444;
+  color: white;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  width: 40px;
+  height: 40px;
+
+  &:hover {
+    background-color: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+`;
+
 const LoadingMessage = styled.div`
   text-align: center;
   padding: 2rem;
@@ -541,37 +568,37 @@ function QuestionnaireListPage() {
   ];
 
   // Fonction de récupération des questionnaires
-const fetchQuestionnaires = useCallback(async (page = 1) => {
-  try {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: '9',
-      search: searchTerm,
-      modality: modalityFilters.join(','),
-      specialty: specialtyFilters.join(','),
-      location: locationFilters.join(',')
-    });
+  const fetchQuestionnaires = useCallback(async (page = 1) => {
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: '9',
+        search: searchTerm,
+        modality: modalityFilters.join(','),
+        specialty: specialtyFilters.join(','),
+        location: locationFilters.join(',')
+      });
 
-    const response = await axios.get(`/questionnaires?${params}`);
-    
-    // Vérification de sécurité pour s'assurer que questionnaires est un tableau
-    const questionnaires = response.data?.questionnaires;
-    const safeQuestionnaires = Array.isArray(questionnaires) ? questionnaires : [];
-    
-    setQuestionnaires(safeQuestionnaires);
-    setCurrentPage(response.data?.currentPage || 1);
-    setTotalPages(response.data?.totalPages || 0);
-    setTotalQuestionnaires(response.data?.total || response.data?.totalQuestionnaires || 0);
-    
-  } catch (error) {
-    console.error('Erreur lors de la récupération des questionnaires:', error);
-    // En cas d'erreur, définir des valeurs par défaut sûres
-    setQuestionnaires([]);
-    setCurrentPage(1);
-    setTotalPages(0);
-    setTotalQuestionnaires(0);
-  }
-}, [searchTerm, modalityFilters, specialtyFilters, locationFilters]);
+      const response = await axios.get(`/questionnaires?${params}`);
+      
+      // Vérification de sécurité pour s'assurer que questionnaires est un tableau
+      const questionnaires = response.data?.questionnaires;
+      const safeQuestionnaires = Array.isArray(questionnaires) ? questionnaires : [];
+      
+      setQuestionnaires(safeQuestionnaires);
+      setCurrentPage(response.data?.currentPage || 1);
+      setTotalPages(response.data?.totalPages || 0);
+      setTotalQuestionnaires(response.data?.total || response.data?.totalQuestionnaires || 0);
+      
+    } catch (error) {
+      console.error('Erreur lors de la récupération des questionnaires:', error);
+      // En cas d'erreur, définir des valeurs par défaut sûres
+      setQuestionnaires([]);
+      setCurrentPage(1);
+      setTotalPages(0);
+      setTotalQuestionnaires(0);
+    }
+  }, [searchTerm, modalityFilters, specialtyFilters, locationFilters]);
 
   // Effet pour charger les questionnaires
   useEffect(() => {
@@ -927,13 +954,12 @@ const fetchQuestionnaires = useCallback(async (page = 1) => {
                   {questionnaire.public ? 'Rendre privé' : 'Rendre public'}
                 </Button>
                 
-                <Button 
-                  variant="danger"
+                <DeleteButton 
                   onClick={() => deleteQuestionnaire(questionnaire._id)}
+                  title="Supprimer ce questionnaire"
                 >
                   <Trash2 />
-                  SUPPRIMER
-                </Button>
+                </DeleteButton>
               </ActionButtons>
             </QuestionnaireCard>
           ))}
