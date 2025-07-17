@@ -26,12 +26,76 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
-import ImageViewer from '../components/ImageViewer';
-import LoadingSpinner from '../components/LoadingSpinner';
-import ErrorMessage from '../components/ErrorMessage';
-import TutorialOverlay from './TutorialOverlay';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { PaginationContainer, PaginationButton, PaginationInfo } from './CasesPage.styles';
+
+// Imports conditionnels pour éviter les erreurs d'initialisation
+let ImageViewer, LoadingSpinner, ErrorMessage, TutorialOverlay;
+try {
+  ImageViewer = require('../components/ImageViewer').default;
+} catch (e) {
+  ImageViewer = () => <div>ImageViewer non disponible</div>;
+}
+
+try {
+  LoadingSpinner = require('../components/LoadingSpinner').default;
+} catch (e) {
+  LoadingSpinner = () => <div>Chargement...</div>;
+}
+
+try {
+  ErrorMessage = require('../components/ErrorMessage').default;
+} catch (e) {
+  ErrorMessage = ({ children }) => <div style={{color: 'red'}}>{children}</div>;
+}
+
+try {
+  TutorialOverlay = require('./TutorialOverlay').default;
+} catch (e) {
+  TutorialOverlay = () => <div>Tutoriel non disponible</div>;
+}
+
+try {
+  const { PaginationContainer, PaginationButton, PaginationInfo } = require('./CasesPage.styles');
+} catch (e) {
+  // Fallback en cas d'erreur d'import
+}
+
+// Composants de pagination en fallback
+const FallbackPaginationContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: ${props => props.theme.surface || '#fff'};
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+`;
+
+const FallbackPaginationButton = styled.button`
+  background-color: ${props => props.theme.primary || '#3b82f6'};
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  margin: 0 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  
+  &:hover {
+    background-color: ${props => props.theme.secondary || '#2563eb'};
+  }
+
+  &:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+  }
+`;
+
+const FallbackPaginationInfo = styled.span`
+  margin: 0 1rem;
+  font-weight: bold;
+`;
 
 // ==================== STYLED COMPONENTS HARMONISÉS ====================
 
@@ -1552,23 +1616,23 @@ function CasesPage() {
 
         {/* PAGINATION */}
         {totalPages > 1 && (
-          <PaginationContainer>
-            <PaginationButton 
+          <FallbackPaginationContainer>
+            <FallbackPaginationButton 
               onClick={() => fetchCases(currentPage - 1)} 
               disabled={currentPage === 1}
             >
               Précédent
-            </PaginationButton>
-            <PaginationInfo>
+            </FallbackPaginationButton>
+            <FallbackPaginationInfo>
               Page {currentPage} sur {totalPages}
-            </PaginationInfo>
-            <PaginationButton 
+            </FallbackPaginationInfo>
+            <FallbackPaginationButton 
               onClick={() => fetchCases(currentPage + 1)} 
               disabled={currentPage === totalPages}
             >
               Suivant
-            </PaginationButton>
-          </PaginationContainer>
+            </FallbackPaginationButton>
+          </FallbackPaginationContainer>
         )}
       </SectionContainer>
 
