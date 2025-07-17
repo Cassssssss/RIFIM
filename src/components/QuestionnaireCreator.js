@@ -511,7 +511,6 @@ const ImageUploadComponent = memo(({ onImageUpload, currentImage, id, onAddCapti
 
 const DraggableQuestion = memo(({ question, index, moveQuestion, path, children }) => {
   const ref = useRef(null);
-  const dragRef = useRef(null);
   
   const [{ handlerId }, drop] = useDrop({
     accept: 'question',
@@ -543,7 +542,7 @@ const DraggableQuestion = memo(({ question, index, moveQuestion, path, children 
     },
   });
 
-  const [{ isDragging }, drag] = useDrag({
+  const [{ isDragging }, drag, dragPreview] = useDrag({
     type: 'question',
     item: () => ({ id: question.id, index, path }),
     collect: (monitor) => ({
@@ -553,13 +552,12 @@ const DraggableQuestion = memo(({ question, index, moveQuestion, path, children 
 
   const opacity = isDragging ? 0.4 : 1;
   
-  // Connecter le drag uniquement à la poignée
-  drag(dragRef);
+  // Connecter le drop à la question entière
   drop(ref);
 
   return (
     <div ref={ref} style={{ opacity }} data-handler-id={handlerId}>
-      {React.cloneElement(children, { dragRef })}
+      {React.cloneElement(children, { dragRef: drag })}
     </div>
   );
 });
