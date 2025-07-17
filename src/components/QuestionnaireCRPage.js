@@ -261,7 +261,7 @@ const QuestionnaireCRPage = () => {
     <ModernCard>
       <ModernTitle>{questionnaire?.title || "Compte rendu"}</ModernTitle>
       <div className="flex flex-col lg:flex-row gap-6">
-        <div className="w-full lg:w-3/5">
+        <div className="w-full lg:w-8/12">
           <div>
 
 <QuestionnairePreview 
@@ -285,7 +285,7 @@ const QuestionnaireCRPage = () => {
        
           </div>
         </div>
-        <div className="w-full lg:w-2/4">
+        <div className="w-full lg:w-4/12">
           <div>
             <h3 className="text-xl font-semibold mb-4">Aperçu du CR</h3>
             <div 

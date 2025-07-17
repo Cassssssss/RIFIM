@@ -356,28 +356,29 @@ const QuestionPreview = ({
                 {question.options?.map((option, optionIndex) => {
                   if (!option) return null;
                   const optionId = `${questionId}-options-${optionIndex}`;
-                  
-                  return (
-                    <div key={option?.id || optionId} className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <div 
-                          className="flex items-center gap-3 w-full cursor-pointer" 
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleOptionChange(optionIndex);
-                          }}
-                        >
-                          <input
-                            type={question.type === 'single' ? 'radio' : 'checkbox'}
-                            checked={isOptionSelected(optionIndex)}
-                            onChange={(e) => handleOptionChange(optionIndex)}
-                            className="w-4 h-4"
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                          <span className="text-gray-700">{option.text}</span>
-                        </div>
+                  const checked = isOptionSelected(optionIndex);
 
-                        <div className="flex items-center gap-2">
+                  return (
+                    <>
+                      <OptionCard
+                        key={option?.id || optionId}
+                        checked={checked}
+                        style={{ width: '100%' }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleOptionChange(optionIndex);
+                        }}
+                      >
+                        <input
+                          type={question.type === 'single' ? 'radio' : 'checkbox'}
+                          checked={checked}
+                          onChange={(e) => handleOptionChange(optionIndex)}
+                          name={`question-${question.id}`}
+                          style={{ pointerEvents: "none" }}
+                          onClick={e => e.stopPropagation()}
+                        />
+                        <span>{option.text}</span>
+                        <div className="flex items-center gap-2 ml-auto">
                           {questionnaireLinks && questionnaireLinks[optionId]?.map((link, index) => (
                             <LinkButton
                               key={index}
@@ -386,7 +387,6 @@ const QuestionPreview = ({
                               {link.title || `Fiche ${index + 1}`}
                             </LinkButton>
                           ))}
-
                           {option.image && (
                             <>
                               <div 
@@ -409,7 +409,6 @@ const QuestionPreview = ({
                               )}
                             </>
                           )}
-
                           <label className="flex items-center gap-2">
                             <input
                               type="checkbox"
@@ -426,10 +425,8 @@ const QuestionPreview = ({
                             />
                             <span className="text-xs text-gray-500">Conclusion</span>
                           </label>
-                          
                         </div>
-                      </div>
-
+                      </OptionCard>
                       {showImage === optionId && option.image && (
                         <ImagePreview 
                           image={option.image}
@@ -440,13 +437,13 @@ const QuestionPreview = ({
 
                       {showCRFields && isOptionSelected(optionIndex) && (
                         <div className="mt-3">
-<TextFormatButtons 
-  onBold={() => handleCRTextChange(optionIndex, `<strong>${crTexts[question.id]?.[optionIndex] || option.text}</strong>`)}
-  onUnderline={() => handleCRTextChange(optionIndex, `<u>${crTexts[question.id]?.[optionIndex] || option.text}</u>`)}
-  onItalic={() => handleCRTextChange(optionIndex, `<em>${crTexts[question.id]?.[optionIndex] || option.text}</em>`)}
-  onSize={(size) => handleCRTextChange(optionIndex, `<span style="font-size: ${size};">${crTexts[question.id]?.[optionIndex] || option.text}</span>`)}
-  onCenter={() => handleCRTextChange(optionIndex, `<div style="text-align: center;">${crTexts[question.id]?.[optionIndex] || option.text}</div>`)}
-/>
+                          <TextFormatButtons 
+                            onBold={() => handleCRTextChange(optionIndex, `<strong>${crTexts[question.id]?.[optionIndex] || option.text}</strong>`)}
+                            onUnderline={() => handleCRTextChange(optionIndex, `<u>${crTexts[question.id]?.[optionIndex] || option.text}</u>`)}
+                            onItalic={() => handleCRTextChange(optionIndex, `<em>${crTexts[question.id]?.[optionIndex] || option.text}</em>`)}
+                            onSize={(size) => handleCRTextChange(optionIndex, `<span style="font-size: ${size};">${crTexts[question.id]?.[optionIndex] || option.text}</span>`)}
+                            onCenter={() => handleCRTextChange(optionIndex, `<div style="text-align: center;">${crTexts[question.id]?.[optionIndex] || option.text}</div>`)}
+                          />
                           <textarea
                             value={crTexts[question.id]?.[optionIndex] || ''}
                             onChange={(e) => handleCRTextChange(optionIndex, e.target.value)}
@@ -467,37 +464,37 @@ const QuestionPreview = ({
                             maxWidth: 'calc(100% - 1rem)'
                           }}
                         >
-<QuestionPreview
-                              question={subQuestion}
-                              path={[...path, 'options', optionIndex, 'subQuestions', sqIndex]}
-                              depth={depth + 1}
-                              selectedOptions={selectedOptions}
-                              setSelectedOptions={setSelectedOptions}
-                              crTexts={crTexts}
-                              setCRTexts={setCRTexts}
-                              freeTexts={freeTexts}
-                              onFreeTextChange={onFreeTextChange}
-                              showCRFields={showCRFields}
-                              onImageInsert={onImageInsert}
-                              hiddenQuestions={hiddenQuestions}
-                              toggleQuestionVisibility={toggleQuestionVisibility}
-                              imageCaptions={imageCaptions}
-                              showAddButton={showAddButton}
-                              questionnaireLinks={questionnaireLinks}
-                              questionnaireId={questionnaireId}
-                              onOptionUpdate={onOptionUpdate}
-                              handleImageUpload={handleImageUpload}
-                              handleAddCaption={handleAddCaption}
-                              handleOpenLinkEditor={handleOpenLinkEditor}
-                              questionnaire={questionnaire}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+                          <QuestionPreview
+                            question={subQuestion}
+                            path={[...path, 'options', optionIndex, 'subQuestions', sqIndex]}
+                            depth={depth + 1}
+                            selectedOptions={selectedOptions}
+                            setSelectedOptions={setSelectedOptions}
+                            crTexts={crTexts}
+                            setCRTexts={setCRTexts}
+                            freeTexts={freeTexts}
+                            onFreeTextChange={onFreeTextChange}
+                            showCRFields={showCRFields}
+                            onImageInsert={onImageInsert}
+                            hiddenQuestions={hiddenQuestions}
+                            toggleQuestionVisibility={toggleQuestionVisibility}
+                            imageCaptions={imageCaptions}
+                            showAddButton={showAddButton}
+                            questionnaireLinks={questionnaireLinks}
+                            questionnaireId={questionnaireId}
+                            onOptionUpdate={onOptionUpdate}
+                            handleImageUpload={handleImageUpload}
+                            handleAddCaption={handleAddCaption}
+                            handleOpenLinkEditor={handleOpenLinkEditor}
+                            questionnaire={questionnaire}
+                          />
+                        </div>
+                      ))}
+                    </>
+                  );
+                })}
+              </div>
+            )}
 
               {question.type === 'text' && (
                 <textarea
