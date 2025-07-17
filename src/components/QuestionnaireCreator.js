@@ -483,6 +483,7 @@ const ImageUploadComponent = memo(({ onImageUpload, currentImage, id, onAddCapti
 
 const DraggableQuestion = memo(({ question, index, moveQuestion, path, children }) => {
   const ref = useRef(null);
+  const dragHandleRef = useRef(null);
   
   const [{ handlerId }, drop] = useDrop({
     accept: 'question',
@@ -523,11 +524,14 @@ const DraggableQuestion = memo(({ question, index, moveQuestion, path, children 
   });
 
   const opacity = isDragging ? 0.4 : 1;
-  drag(drop(ref));
+  
+  // CHANGEMENT CRUCIAL : on connecte seulement le drag handle
+  drag(dragHandleRef);
+  drop(ref);
 
   return (
     <div ref={ref} style={{ opacity }} data-handler-id={handlerId}>
-      {children}
+      {React.cloneElement(children, { dragHandleRef })}
     </div>
   );
 });
@@ -973,10 +977,11 @@ const QuestionnaireCreator = () => {
   };
 
   // Rendu des questions
-  const renderQuestion = useCallback((question, path) => {
+const renderQuestion = useCallback((question, path, dragHandleRef) => {
     const isExpanded = expandedQuestions[path.join('-')] ?? true;
     const questionId = path.join('-');
     const depth = path.length;
+
     const links = questionLinks[questionId] || [];
   
     return (
@@ -997,9 +1002,9 @@ const QuestionnaireCreator = () => {
               {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </CompactIconButton>
             
-            <CompactDragHandle>
-              <GripVertical size={14} />
-            </CompactDragHandle>
+<CompactDragHandle className="drag-handle" style={{ cursor: 'grab' }}>
+  <GripVertical size={14} />
+</CompactDragHandle>
             
             <ModernInput
               value={question.text || ''}
@@ -1343,8 +1348,10 @@ const QuestionnaireCreator = () => {
             />
             
             <DndProvider backend={HTML5Backend}>
-              {questionnaire.questions.map((question, index) => renderQuestion(question, [index]))}
-            </DndProvider>
+{questionnaire.questions.map((question, index) => {
+  const dragHandleRef = useRef(null);
+  return renderQuestion(question, [index], dragHandleRef);
+})}            </DndProvider>
             
             <CompactButtonGroup>
               <CompactButton onClick={() => addQuestion()}>
