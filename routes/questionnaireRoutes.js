@@ -1,4 +1,4 @@
-// routes/questionnaireRoutes.js - VERSION CORRIGÉE
+// routes/questionnaireRoutes.js - VERSION CORRIGÉE COMPLÈTE
 const express = require('express');
 const router = express.Router();
 const Questionnaire = require('../models/Questionnaire');
@@ -13,9 +13,9 @@ router.get('/my', authMiddleware, async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const search = req.query.search || '';
-    const modalities = req.query.modalities ? req.query.modalities.split(',').filter(Boolean) : [];
-    const specialties = req.query.specialties ? req.query.specialties.split(',').filter(Boolean) : [];
-    const locations = req.query.locations ? req.query.locations.split(',').filter(Boolean) : [];
+    const modality = req.query.modality || '';
+    const specialty = req.query.specialty || '';
+    const location = req.query.location || '';
 
     // Construction du filtre de recherche
     let searchFilter = {
@@ -27,10 +27,14 @@ router.get('/my', authMiddleware, async (req, res) => {
       searchFilter.title = { $regex: search, $options: 'i' };
     }
 
-    // Filtres par tags/modalités
-    if (modalities.length > 0 || specialties.length > 0 || locations.length > 0) {
-      const allFilters = [...modalities, ...specialties, ...locations];
-      searchFilter.tags = { $in: allFilters };
+    // Filtres par tags
+    const filters = [];
+    if (modality) filters.push(...modality.split(',').filter(Boolean));
+    if (specialty) filters.push(...specialty.split(',').filter(Boolean));
+    if (location) filters.push(...location.split(',').filter(Boolean));
+    
+    if (filters.length > 0) {
+      searchFilter.tags = { $in: filters };
     }
 
     console.log('Filtre de recherche:', searchFilter);
@@ -46,18 +50,26 @@ router.get('/my', authMiddleware, async (req, res) => {
       .limit(limit)
       .lean();
 
+    // S'assurer que questionnaires est toujours un tableau
+    const safeQuestionnaires = Array.isArray(questionnaires) ? questionnaires : [];
+
     res.json({
-      questionnaires,
+      questionnaires: safeQuestionnaires,
       currentPage: page,
       totalPages,
-      total
+      total,
+      totalQuestionnaires: total // Ajout pour compatibilité
     });
 
   } catch (error) {
     console.error('Erreur lors de la récupération des questionnaires utilisateur:', error);
-    res.status(500).json({ 
-      message: 'Erreur lors de la récupération des questionnaires',
-      error: error.message 
+    // En cas d'erreur, renvoyer une structure avec un tableau vide
+    res.json({
+      questionnaires: [], // Toujours un tableau
+      currentPage: 1,
+      totalPages: 0,
+      total: 0,
+      totalQuestionnaires: 0
     });
   }
 });
@@ -68,9 +80,9 @@ router.get('/public', async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const search = req.query.search || '';
-    const modalities = req.query.modalities ? req.query.modalities.split(',').filter(Boolean) : [];
-    const specialties = req.query.specialties ? req.query.specialties.split(',').filter(Boolean) : [];
-    const locations = req.query.locations ? req.query.locations.split(',').filter(Boolean) : [];
+    const modality = req.query.modality || '';
+    const specialty = req.query.specialty || '';
+    const location = req.query.location || '';
 
     let searchFilter = {
       public: true // Questionnaires publics uniquement
@@ -80,9 +92,14 @@ router.get('/public', async (req, res) => {
       searchFilter.title = { $regex: search, $options: 'i' };
     }
 
-    if (modalities.length > 0 || specialties.length > 0 || locations.length > 0) {
-      const allFilters = [...modalities, ...specialties, ...locations];
-      searchFilter.tags = { $in: allFilters };
+    // Filtres par tags
+    const filters = [];
+    if (modality) filters.push(...modality.split(',').filter(Boolean));
+    if (specialty) filters.push(...specialty.split(',').filter(Boolean));
+    if (location) filters.push(...location.split(',').filter(Boolean));
+    
+    if (filters.length > 0) {
+      searchFilter.tags = { $in: filters };
     }
 
     const total = await Questionnaire.countDocuments(searchFilter);
@@ -94,18 +111,90 @@ router.get('/public', async (req, res) => {
       .limit(limit)
       .lean();
 
+    // S'assurer que questionnaires est toujours un tableau
+    const safeQuestionnaires = Array.isArray(questionnaires) ? questionnaires : [];
+
     res.json({
-      questionnaires,
+      questionnaires: safeQuestionnaires,
       currentPage: page,
       totalPages,
-      total
+      total,
+      totalQuestionnaires: total
     });
 
   } catch (error) {
     console.error('Erreur lors de la récupération des questionnaires publics:', error);
-    res.status(500).json({ 
-      message: 'Erreur lors de la récupération des questionnaires publics',
-      error: error.message 
+    res.json({
+      questionnaires: [], // Toujours un tableau
+      currentPage: 1,
+      totalPages: 0,
+      total: 0,
+      totalQuestionnaires: 0
+    });
+  }
+});
+
+// Route principale pour récupérer les questionnaires
+router.get('/', authMiddleware, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+    const modality = req.query.modality || '';
+    const specialty = req.query.specialty || '';
+    const location = req.query.location || '';
+
+    // Construction du filtre de recherche
+    let searchFilter = {
+      user: req.userId // Questionnaires de l'utilisateur connecté uniquement
+    };
+
+    // Recherche textuelle
+    if (search.trim()) {
+      searchFilter.title = { $regex: search, $options: 'i' };
+    }
+
+    // Filtres par tags
+    const filters = [];
+    if (modality) filters.push(...modality.split(',').filter(Boolean));
+    if (specialty) filters.push(...specialty.split(',').filter(Boolean));
+    if (location) filters.push(...location.split(',').filter(Boolean));
+    
+    if (filters.length > 0) {
+      searchFilter.tags = { $in: filters };
+    }
+
+    // Compter le total
+    const total = await Questionnaire.countDocuments(searchFilter);
+    const totalPages = Math.ceil(total / limit);
+
+    // Récupérer les questionnaires avec pagination
+    const questionnaires = await Questionnaire.find(searchFilter)
+      .sort({ updatedAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
+
+    // S'assurer que questionnaires est toujours un tableau
+    const safeQuestionnaires = Array.isArray(questionnaires) ? questionnaires : [];
+
+    res.json({
+      questionnaires: safeQuestionnaires,
+      currentPage: page,
+      totalPages,
+      total,
+      totalQuestionnaires: total
+    });
+
+  } catch (error) {
+    console.error('Erreur lors de la récupération des questionnaires:', error);
+    // En cas d'erreur, renvoyer une structure avec un tableau vide
+    res.json({
+      questionnaires: [], // Toujours un tableau
+      currentPage: 1,
+      totalPages: 0,
+      total: 0,
+      totalQuestionnaires: 0
     });
   }
 });
@@ -286,6 +375,32 @@ router.patch('/:id', authMiddleware, async (req, res) => {
   } catch (error) {
     console.error('Erreur lors de la modification du questionnaire:', error);
     res.status(500).json({ message: 'Erreur lors de la modification du questionnaire' });
+  }
+});
+
+// Route pour changer la visibilité public/privé
+router.patch('/:id/togglePublic', authMiddleware, async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'ID de questionnaire invalide' });
+    }
+
+    const questionnaire = await Questionnaire.findOne({
+      _id: req.params.id,
+      user: req.userId
+    });
+    
+    if (!questionnaire) {
+      return res.status(404).json({ message: 'Questionnaire non trouvé' });
+    }
+
+    questionnaire.public = !questionnaire.public;
+    await questionnaire.save();
+    
+    res.json(questionnaire);
+  } catch (error) {
+    console.error('Erreur lors du changement de visibilité:', error);
+    res.status(500).json({ message: 'Erreur lors du changement de visibilité' });
   }
 });
 

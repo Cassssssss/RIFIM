@@ -541,26 +541,37 @@ function QuestionnaireListPage() {
   ];
 
   // Fonction de récupération des questionnaires
-  const fetchQuestionnaires = useCallback(async (page = 1) => {
-    try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: '9',
-        search: searchTerm,
-        modality: modalityFilters.join(','),
-        specialty: specialtyFilters.join(','),
-        location: locationFilters.join(',')
-      });
+const fetchQuestionnaires = useCallback(async (page = 1) => {
+  try {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: '9',
+      search: searchTerm,
+      modality: modalityFilters.join(','),
+      specialty: specialtyFilters.join(','),
+      location: locationFilters.join(',')
+    });
 
-      const response = await axios.get(`/questionnaires?${params}`);
-      setQuestionnaires(response.data.questionnaires);
-      setCurrentPage(response.data.currentPage);
-      setTotalPages(response.data.totalPages);
-      setTotalQuestionnaires(response.data.totalQuestionnaires);
-    } catch (error) {
-      console.error('Erreur lors de la récupération des questionnaires:', error);
-    }
-  }, [searchTerm, modalityFilters, specialtyFilters, locationFilters]);
+    const response = await axios.get(`/questionnaires?${params}`);
+    
+    // Vérification de sécurité pour s'assurer que questionnaires est un tableau
+    const questionnaires = response.data?.questionnaires;
+    const safeQuestionnaires = Array.isArray(questionnaires) ? questionnaires : [];
+    
+    setQuestionnaires(safeQuestionnaires);
+    setCurrentPage(response.data?.currentPage || 1);
+    setTotalPages(response.data?.totalPages || 0);
+    setTotalQuestionnaires(response.data?.total || response.data?.totalQuestionnaires || 0);
+    
+  } catch (error) {
+    console.error('Erreur lors de la récupération des questionnaires:', error);
+    // En cas d'erreur, définir des valeurs par défaut sûres
+    setQuestionnaires([]);
+    setCurrentPage(1);
+    setTotalPages(0);
+    setTotalQuestionnaires(0);
+  }
+}, [searchTerm, modalityFilters, specialtyFilters, locationFilters]);
 
   // Effet pour charger les questionnaires
   useEffect(() => {
