@@ -9,7 +9,7 @@ import QuestionnairePreview from './QuestionnairePreview';
 import LinkEditor from './LinkEditor';
 import { AlertTriangle } from 'lucide-react';
 import ImageMapEditor from './ImageMapEditor';
-import { medicalColors } from '../medicalColors';
+import { medicalColors } from './medicalColors';
 
 // Styled components avec thème médical appliqué
 const CreatorWrapper = styled.div`
