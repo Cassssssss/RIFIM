@@ -114,6 +114,30 @@ const ModalContent = styled.div`
   border: 1px solid ${props => props.theme.border};
 `;
 
+// ============ NOUVEAU: Styled component pour le drag handle ============
+const DragHandle = styled.div`
+  color: ${medicalColors.neutral.mediumGray};
+  cursor: grab;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  margin-right: 0.5rem;
+
+  &:hover {
+    color: ${medicalColors.primary.main};
+    background-color: ${medicalColors.primary.subtle};
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+`;
+
 const ImageUpload = memo(({ onImageUpload, currentImage, id, onAddCaption, caption, questionnaireTitle }) => {
   const [showPreview, setShowPreview] = useState(false);
   const [showCaptionModal, setShowCaptionModal] = useState(false);
@@ -215,9 +239,10 @@ const ImageUpload = memo(({ onImageUpload, currentImage, id, onAddCaption, capti
   );
 });
 
+// ============ MODIFICATION: DraggableQuestion avec drag sélectif ============
 const DraggableQuestion = memo(({ question, index, moveQuestion, path, children }) => {
   const ref = useRef(null);
-  const [, drag] = useDrag({
+  const [{ isDragging }, drag] = useDrag({
     type: 'QUESTION',
     item: { index, path },
     collect: monitor => ({
@@ -248,13 +273,21 @@ const DraggableQuestion = memo(({ question, index, moveQuestion, path, children 
     },
   });
   
-  drag(drop(ref));
+  // ============ NOUVEAU: Connecter le drop à toute la zone ============
+  drop(ref);
+
+  // ============ NOUVEAU: Connecter le drag seulement au handle ============
+  useEffect(() => {
+    if (ref.current) {
+      const dragHandle = ref.current.querySelector('.drag-handle');
+      if (dragHandle) {
+        drag(dragHandle);
+      }
+    }
+  }, [drag]);
   
   return (
-    <div ref={ref} className="mb-4 relative">
-      <div className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center cursor-move">
-        <GripVertical size={20} style={{ color: medicalColors.neutral.mediumGray }} />
-      </div>
+    <div ref={ref} className="mb-4 relative" style={{ opacity: isDragging ? 0.5 : 1 }}>
       {children}
     </div>
   );
@@ -457,7 +490,7 @@ function QuestionnaireCreator() {
       formData.append('questionnaireTitle', questionnaire.title);
 
       try {
-        const response = await axios.post('upload-image', formData, {
+        const response = await axios.post('/images/upload-image', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
@@ -485,7 +518,7 @@ function QuestionnaireCreator() {
     formData.append('questionnaireTitle', questionnaireTitle);
   
     try {
-      const response = await axios.post('/upload-image', formData, {
+      const response = await axios.post('/images/upload-image', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -735,6 +768,12 @@ function QuestionnaireCreator() {
             >
               {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
             </button>
+
+            {/* ============ NOUVEAU: Drag handle séparé ============ */}
+            <DragHandle className="drag-handle">
+              <GripVertical size={16} />
+            </DragHandle>
+
             <input 
               className="flex-grow p-2 border-b border-transparent focus:outline-none bg-transparent"
               style={{
