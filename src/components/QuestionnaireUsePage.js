@@ -21,13 +21,17 @@ const ModernPageContainer = styled.div`
 const ModernCard = styled.div`
   background-color: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.border};
-  border-radius: 16px;
-  box-shadow: 0 4px 15px ${props => props.theme.shadow};
+  border-radius: 18px;
+  box-shadow: 0 6px 32px ${props => props.theme.shadow};
   margin: 0 auto;
-  padding: 2rem;
-  max-width: 900px;
-  width: 100%;
+  padding: 2.5rem 2.5rem 2rem 2.5rem;
+  max-width: 1400px;   // <--- augmente la largeur ici
+  width: 95%;
   margin-top: 2rem;
+  @media (max-width: 1200px) {
+    padding: 1rem;
+    max-width: 99vw;
+  }
 `;
 
 const ModernTitle = styled.h1`

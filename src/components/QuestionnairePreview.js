@@ -2,6 +2,57 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { Camera, EyeOff, Eye, ChevronDown, ChevronUp, Plus, Italic } from 'lucide-react';
+import styled from 'styled-components';
+
+// Card d'une question
+export const QuestionCard = styled.div`
+  background: ${props => props.theme.backgroundSecondary || "#f7fafd"};
+  border-radius: 16px;
+  box-shadow: 0 1px 12px rgba(20, 50, 80, 0.08);
+  border: 1px solid ${props => props.theme.border};
+  margin-bottom: 1.5rem;
+  padding: 1.5rem 1.2rem;
+  transition: box-shadow 0.2s;
+  &:hover {
+    box-shadow: 0 4px 24px rgba(20,50,80,0.11);
+    border-color: ${props => props.theme.primary};
+  }
+`;
+
+// Header d'une question
+export const QuestionHeader = styled.div`
+  font-weight: 600;
+  font-size: 1.17rem;
+  margin-bottom: 1rem;
+  color: ${props => props.theme.primary};
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+`;
+
+// Options (radio/checkbox)
+export const OptionCard = styled.label`
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1.5px solid ${props => props.checked ? props.theme.primary : "#e0e6ed"};
+  border-radius: 12px;
+  padding: 0.7rem 1.1rem;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  font-size: 1.08rem;
+  box-shadow: ${props => props.checked ? "0 2px 6px #0066ff22" : "none"};
+  transition: border 0.17s, box-shadow 0.17s;
+  &:hover {
+    border-color: ${props => props.theme.primary};
+    box-shadow: 0 3px 12px #0066ff11;
+  }
+  input {
+    margin-right: 0.9rem;
+    accent-color: ${props => props.theme.primary};
+    transform: scale(1.2);
+  }
+`;
 
 const ImagePreviewWrapper = styled.div`
   position: fixed;
