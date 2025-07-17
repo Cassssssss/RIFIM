@@ -1,5 +1,5 @@
-// pages/CasesPage.js - VERSION STYLISÉE COMPLÈTE
-import React, { useState, useEffect, useCallback } from 'react';
+// pages/CasesPage.js - VERSION STYLISÉE AVEC FONCTIONNALITÉS RESTAURÉES
+import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
 import styled from 'styled-components';
@@ -10,13 +10,27 @@ import {
   Eye, 
   EyeOff, 
   Star, 
+  StarHalf,
   Plus, 
   X, 
   Image as ImageIcon,
   FileText,
   Settings,
-  Download
+  Download,
+  Folder,
+  File,
+  Save,
+  ArrowUp,
+  ChevronDown,
+  ChevronUp,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
+import ImageViewer from '../components/ImageViewer';
+import LoadingSpinner from '../components/LoadingSpinner';
+import ErrorMessage from '../components/ErrorMessage';
+import TutorialOverlay from './TutorialOverlay';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { PaginationContainer, PaginationButton, PaginationInfo } from './CasesPage.styles';
 
 // ==================== STYLED COMPONENTS HARMONISÉS ====================
@@ -293,106 +307,6 @@ const FileInput = styled.input`
   display: none;
 `;
 
-const ImagesGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 1rem;
-  margin-top: 1.5rem;
-
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 0.75rem;
-  }
-`;
-
-const ImageWrapper = styled.div`
-  position: relative;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px ${props => props.theme.shadow};
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background-color: ${props => props.theme.card};
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px ${props => props.theme.shadow};
-  }
-`;
-
-const PreviewImage = styled.img`
-  width: 100%;
-  height: 120px;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-
-  ${ImageWrapper}:hover & {
-    transform: scale(1.05);
-  }
-`;
-
-const RemoveImageButton = styled.button`
-  position: absolute;
-  top: 0.25rem;
-  right: 0.25rem;
-  background-color: rgba(239, 68, 68, 0.9);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 12px;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(4px);
-
-  &:hover {
-    background-color: #dc2626;
-    transform: scale(1.1);
-  }
-
-  svg {
-    width: 12px;
-    height: 12px;
-  }
-`;
-
-const MainImageLabel = styled.div`
-  position: absolute;
-  bottom: 0.25rem;
-  left: 0.25rem;
-  background-color: rgba(16, 185, 129, 0.9);
-  color: white;
-  padding: 0.125rem 0.375rem;
-  font-size: 0.625rem;
-  border-radius: 4px;
-  font-weight: 600;
-  backdrop-filter: blur(4px);
-`;
-
-const SetMainButton = styled.button`
-  position: absolute;
-  bottom: 0.25rem;
-  right: 0.25rem;
-  background-color: rgba(16, 185, 129, 0.9);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.625rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(4px);
-
-  &:hover {
-    background-color: rgba(16, 185, 129, 1);
-  }
-`;
-
 const CasesGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -449,11 +363,22 @@ const CaseTitle = styled.h2`
   font-weight: 600;
 `;
 
-const StarRating = styled.div`
+const StarRatingContainer = styled.div`
   display: flex;
   justify-content: center;
   margin-bottom: 1rem;
   gap: 0.25rem;
+`;
+
+const StarButton = styled.span`
+  cursor: pointer;
+  margin: 0 2px;
+  svg {
+    width: 24px;
+    height: 24px;
+    transition: fill 0.2s ease;
+    fill: ${props => (props.filled ? 'gold' : 'gray')};
+  }
 `;
 
 const CaseActions = styled.div`
@@ -461,6 +386,7 @@ const CaseActions = styled.div`
   justify-content: center;
   gap: 0.75rem;
   flex-wrap: wrap;
+  margin-top: 1rem;
 `;
 
 const CaseButton = styled.button`
@@ -544,44 +470,18 @@ const RemoveTagButton = styled.button`
   }
 `;
 
-const AddTagSection = styled.div`
+const AddTagForm = styled.form`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-top: 0.5rem;
-`;
-
-const AddTagButton = styled.button`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 0.375rem 0.75rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  
-  &:hover {
-    background-color: ${props => props.theme.secondary};
-    transform: translateY(-1px);
-  }
-
-  svg {
-    width: 12px;
-    height: 12px;
-  }
 `;
 
 const TagInput = styled.input`
-  padding: 0.375rem 0.75rem;
-  border: 2px solid ${props => props.theme.border};
-  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 4px;
   font-size: 0.75rem;
-  width: 140px;
+  width: 120px;
   background-color: ${props => props.theme.background};
   color: ${props => props.theme.text};
 
@@ -591,18 +491,12 @@ const TagInput = styled.input`
   }
 `;
 
-const TagForm = styled.form`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-`;
-
-const SubmitTagButton = styled.button`
+const AddTagButton = styled.button`
   background-color: ${props => props.theme.primary};
   color: white;
   border: none;
-  border-radius: 6px;
-  padding: 0.375rem;
+  border-radius: 4px;
+  padding: 0.25rem;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -613,266 +507,386 @@ const SubmitTagButton = styled.button`
   }
 
   svg {
-    width: 12px;
-    height: 12px;
+    width: 16px;
+    height: 16px;
   }
 `;
 
-const CancelTagButton = styled.button`
-  background-color: #6b7280;
+const AnswerSection = styled.div`
+  margin-top: 1rem;
+`;
+
+const AnswerText = styled.p`
+  margin-bottom: 0.5rem;
+  color: ${props => props.theme.text};
+  font-style: italic;
+`;
+
+const AnswerInput = styled.input`
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 4px;
+  background-color: ${props => props.theme.background};
+  color: ${props => props.theme.text};
+`;
+
+const TutorialButton = styled.button`
+  background-color: ${props => props.theme.secondary};
   color: white;
+  padding: 0.5rem 1rem;
   border: none;
-  border-radius: 6px;
-  padding: 0.375rem;
+  border-radius: 4px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  transition: all 0.2s ease;
+  margin-top: 1rem;
   
   &:hover {
-    background-color: #4b5563;
-  }
-
-  svg {
-    width: 12px;
-    height: 12px;
+    background-color: ${props => props.theme.primary};
   }
 `;
 
-const GridContainer = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 1rem;
-  margin-top: 1.5rem;
+const VideoContainer = styled.div`
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: ${props => props.theme.card};
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const LabeledField = styled.div`
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
+  h3 {
+    margin-bottom: 1rem;
     color: ${props => props.theme.text};
   }
+
+  .video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%; /* Ratio 16:9 */
+    height: 0;
+    overflow: hidden;
+    max-width: 100%;
+
+    iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+  }
 `;
+
+// ==================== COMPOSANTS ====================
+
+const StarRating = memo(({ rating, onRatingChange }) => {
+  return (
+    <StarRatingContainer>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <StarButton
+          key={star}
+          onClick={() => onRatingChange(star)}
+          filled={rating >= star}
+        >
+          {rating >= star ? (
+            <Star fill="gold" color="gold" />
+          ) : rating >= star - 0.5 ? (
+            <StarHalf fill="gold" color="gold" />
+          ) : (
+            <Star color="gray" />
+          )}
+        </StarButton>
+      ))}
+    </StarRatingContainer>
+  );
+});
+
+const CaseCardComponent = memo(({ cas, onUpdateDifficulty, onUpdateAnswer, onAddTag, onRemoveTag, onDeleteCase, onLoadCase, onTogglePublic }) => {
+  const [editingAnswer, setEditingAnswer] = useState(null);
+  const [newTag, setNewTag] = useState('');
+
+  const handleAnswerEdit = useCallback(() => {
+    setEditingAnswer({ id: cas._id, value: cas.answer || '' });
+  }, [cas._id, cas.answer]);
+
+  const handleAnswerSave = useCallback(() => {
+    if (editingAnswer) {
+      onUpdateAnswer(editingAnswer.id, editingAnswer.value);
+      setEditingAnswer(null);
+    }
+  }, [editingAnswer, onUpdateAnswer]);
+
+  const handleAddTag = useCallback((e) => {
+    e.preventDefault();
+    if (newTag.trim()) {
+      onAddTag(cas._id, newTag.trim());
+      setNewTag('');
+    }
+  }, [cas._id, newTag, onAddTag]);
+
+  const handleTogglePublic = async () => {
+    try {
+      await onTogglePublic(cas._id);
+    } catch (error) {
+      console.error('Erreur lors du changement de visibilité du cas:', error);
+    }
+  };
+
+  return (
+    <CaseCard>
+      <Link to={`/radiology-viewer/${cas._id}`}>
+        <CaseImage 
+          src={cas.mainImage ? cas.mainImage : (cas.folders && cas.folders[0] && cas.folderMainImages && cas.folderMainImages[cas.folders[0]]) || '/images/default.jpg'}
+          alt={cas.title || 'Image sans titre'} 
+        />
+      </Link>
+      
+      <CaseContent>
+        <Link to={`/radiology-viewer/${cas._id}`} style={{ textDecoration: 'none' }}>
+          <CaseTitle>{cas.title || 'Cas sans titre'}</CaseTitle>
+        </Link>
+        
+        <StarRating
+          rating={cas.difficulty || 1}
+          onRatingChange={(newRating) => onUpdateDifficulty(cas._id, newRating)}
+        />
+        
+        <AnswerSection>
+          {editingAnswer && editingAnswer.id === cas._id ? (
+            <>
+              <AnswerInput
+                value={editingAnswer.value}
+                onChange={(e) => setEditingAnswer({ ...editingAnswer, value: e.target.value })}
+                placeholder="Entrez la réponse..."
+              />
+              <Button variant="success" onClick={handleAnswerSave}>
+                <Save size={16} />
+                Sauvegarder
+              </Button>
+            </>
+          ) : (
+            <>
+              <AnswerText>{cas.answer || 'Pas de réponse'}</AnswerText>
+              <Button variant="secondary" onClick={handleAnswerEdit}>
+                <Edit size={16} />
+                Modifier la réponse
+              </Button>
+            </>
+          )}
+        </AnswerSection>
+        
+        <TagsContainer>
+          {cas.tags && cas.tags.map(tag => (
+            <Tag key={tag}>
+              {tag}
+              <RemoveTagButton onClick={() => onRemoveTag(cas._id, tag)}>
+                <X size={12} />
+              </RemoveTagButton>
+            </Tag>
+          ))}
+          <AddTagForm onSubmit={handleAddTag}>
+            <TagInput
+              type="text"
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              placeholder="Nouveau tag"
+            />
+            <AddTagButton type="submit">
+              <Plus size={16} />
+            </AddTagButton>
+          </AddTagForm>
+        </TagsContainer>
+        
+        <CaseActions>
+          <CaseButton as={Link} to={`/create-sheet/${cas._id}`} variant="secondary">
+            <FileText />
+            Créer fiche
+          </CaseButton>
+          <CaseButton variant="primary" onClick={() => onLoadCase(cas._id)}>
+            <Download />
+            Charger
+          </CaseButton>
+          <CaseButton variant="secondary" onClick={handleTogglePublic}>
+            {cas.public ? <EyeOff /> : <Eye />}
+            {cas.public ? 'Rendre privé' : 'Rendre public'}
+          </CaseButton>
+          <CaseButton variant="danger" onClick={() => onDeleteCase(cas._id)}>
+            <Trash2 />
+            Supprimer
+          </CaseButton>
+        </CaseActions>
+      </CaseContent>
+    </CaseCard>
+  );
+});
 
 // ==================== COMPOSANT PRINCIPAL ====================
 
 function CasesPage() {
-  const [title, setTitle] = useState('');
-  const [folders, setFolders] = useState([]);
-  const [newFolderName, setNewFolderName] = useState('');
-  const [images, setImages] = useState({});
   const [cases, setCases] = useState([]);
+  const [selectedCase, setSelectedCase] = useState(null);
+  const [newCaseTitle, setNewCaseTitle] = useState('');
+  const [newFolderName, setNewFolderName] = useState('');
+  const [newImages, setNewImages] = useState({});
   const [searchTerm, setSearchTerm] = useState('');
+  const [isScrollVisible, setIsScrollVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [difficulty, setDifficulty] = useState(1);
-  const [answer, setAnswer] = useState('');
-  const [tags, setTags] = useState([]);
-  const [newTag, setNewTag] = useState('');
-  const [isAddingTag, setIsAddingTag] = useState(false);
-  const [mainImage, setMainImage] = useState('');
-  const [folderMainImages, setFolderMainImages] = useState({});
+  const [showTutorial, setShowTutorial] = useState(false);
 
-  // États de gestion des tags par cas
-  const [caseNewTags, setCaseNewTags] = useState({});
-  const [caseIsAddingTag, setCaseIsAddingTag] = useState({});
+  const tutorialSteps = [
+    {
+      image: "/tutorials/Screen_Cases1.png",
+      description: "Page de création de cas - Commencez par créer un nouveau cas."
+    }
+  ];
+
+  useEffect(() => {
+    fetchCases();
+  }, []);
+
+  useEffect(() => {
+    const toggleScrollVisibility = () => {
+      setIsScrollVisible(window.pageYOffset > 300);
+    };
+
+    window.addEventListener('scroll', toggleScrollVisibility);
+    return () => window.removeEventListener('scroll', toggleScrollVisibility);
+  }, []);
 
   const fetchCases = useCallback(async (page = 1) => {
+    setIsLoading(true);
+    setError(null);
     try {
-      const response = await axios.get(`/cases?page=${page}&limit=6`);
+      const response = await axios.get(`/cases?page=${page}&limit=10`);
       setCases(response.data.cases);
       setCurrentPage(response.data.currentPage);
       setTotalPages(response.data.totalPages);
     } catch (error) {
       console.error('Erreur lors de la récupération des cas:', error);
+      setError('Erreur lors de la récupération des cas');
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    fetchCases(1);
-  }, [fetchCases]);
+  const loadCase = useCallback(async (id) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get(`/cases/${id}`);
+      setSelectedCase(response.data);
+      setCases(prevCases => prevCases.map(c => c._id === id ? response.data : c));
+    } catch (error) {
+      setError('Erreur lors du chargement du cas');
+      console.error('Erreur lors du chargement du cas:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const addNewCase = useCallback(async () => {
+    let sanitizedTitle = newCaseTitle.trim();
+    if (sanitizedTitle.toLowerCase().startsWith('rifim/')) {
+      sanitizedTitle = sanitizedTitle.substring('rifim/'.length);
+    }
+    if (sanitizedTitle === '') return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await axios.post(`/cases`, { 
+        title: sanitizedTitle,
+        folders: [],
+        images: {},
+        difficulty: 1,
+        answer: ''
+      });
+      setCases(prevCases => [...prevCases, response.data]);
+      setNewCaseTitle('');
+      setSelectedCase(response.data);
+    } catch (error) {
+      setError('Erreur lors de l\'ajout d\'un nouveau cas');
+      console.error('Erreur lors de l\'ajout d\'un nouveau cas:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [newCaseTitle]);
+
+  const deleteCase = useCallback(async (id) => {
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce cas ?')) {
+      setIsLoading(true);
+      setError(null);
+      try {
+        await axios.delete(`/cases/${id}`);
+        setCases(prevCases => prevCases.filter(c => c._id !== id));
+        setSelectedCase(null);
+      } catch (error) {
+        console.error('Erreur lors de la suppression du cas:', error);
+        setError('Erreur lors de la suppression du cas');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  }, []);
+
+  const updateCaseDifficulty = useCallback(async (id, difficulty) => {
+    try {
+      await axios.patch(`/cases/${id}`, { difficulty });
+      setCases(prevCases => prevCases.map(c => 
+        c._id === id ? { ...c, difficulty } : c
+      ));
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de la difficulté:', error);
+    }
+  }, []);
+
+  const updateCaseAnswer = useCallback(async (id, answer) => {
+    try {
+      await axios.patch(`/cases/${id}`, { answer });
+      setCases(prevCases => prevCases.map(c => 
+        c._id === id ? { ...c, answer } : c
+      ));
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de la réponse:', error);
+    }
+  }, []);
+
+  const handleAddTag = useCallback(async (caseId, tag) => {
+    try {
+      const response = await axios.patch(`/cases/${caseId}/tags`, { tagToAdd: tag });
+      setCases(prevCases => prevCases.map(c => c._id === caseId ? response.data : c));
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout du tag:', error);
+    }
+  }, []);
+
+  const handleRemoveTag = useCallback(async (caseId, tagToRemove) => {
+    try {
+      const response = await axios.patch(`/cases/${caseId}/tags`, { tagToRemove });
+      setCases(prevCases => prevCases.map(c => c._id === caseId ? response.data : c));
+    } catch (error) {
+      console.error('Erreur lors de la suppression du tag:', error);
+    }
+  }, []);
+
+  const handleTogglePublic = useCallback(async (id) => {
+    try {
+      const response = await axios.patch(`/cases/${id}/togglePublic`);
+      if (response.data) {
+        setCases(prevCases => 
+          prevCases.map(c => 
+            c._id === id ? { ...c, public: !c.public } : c
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Erreur lors du changement de visibilité du cas:', error);
+    }
+  }, []);
 
   const filteredCases = cases.filter(cas => 
     cas.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const addFolder = () => {
-    if (newFolderName.trim() && !folders.includes(newFolderName.trim())) {
-      setFolders([...folders, newFolderName.trim()]);
-      setNewFolderName('');
-    }
-  };
-
-  const removeFolder = (folderToRemove) => {
-    setFolders(folders.filter(folder => folder !== folderToRemove));
-    const newImages = { ...images };
-    delete newImages[folderToRemove];
-    setImages(newImages);
-  };
-
-  const handleImageUpload = (event, folder) => {
-    const files = Array.from(event.target.files);
-    const imageFiles = files.filter(file => file.type.startsWith('image/'));
-    
-    if (imageFiles.length > 0) {
-      const newImages = { ...images };
-      if (!newImages[folder]) {
-        newImages[folder] = [];
-      }
-      
-      imageFiles.forEach(file => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          newImages[folder] = [...(newImages[folder] || []), e.target.result];
-          setImages({ ...newImages });
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-  };
-
-  const removeImage = (folder, imageIndex) => {
-    const newImages = { ...images };
-    newImages[folder] = newImages[folder].filter((_, index) => index !== imageIndex);
-    setImages(newImages);
-  };
-
-  const setAsMainImage = (folder, imageIndex) => {
-    const imageUrl = images[folder][imageIndex];
-    if (folder === 'principal') {
-      setMainImage(imageUrl);
-    } else {
-      setFolderMainImages({
-        ...folderMainImages,
-        [folder]: imageUrl
-      });
-    }
-  };
-
-  const createCase = async () => {
-    if (!title.trim()) {
-      alert('Veuillez entrer un titre pour le cas');
-      return;
-    }
-
-    try {
-      const caseData = {
-        title: title.trim(),
-        folders,
-        images,
-        mainImage,
-        folderMainImages,
-        difficulty,
-        answer: answer.trim(),
-        tags
-      };
-
-      await axios.post('/cases', caseData);
-      
-      // Réinitialiser le formulaire
-      setTitle('');
-      setFolders([]);
-      setNewFolderName('');
-      setImages({});
-      setDifficulty(1);
-      setAnswer('');
-      setTags([]);
-      setMainImage('');
-      setFolderMainImages({});
-      
-      // Recharger les cas
-      fetchCases(currentPage);
-      
-      alert('Cas créé avec succès !');
-    } catch (error) {
-      console.error('Erreur lors de la création du cas:', error);
-      alert('Erreur lors de la création du cas');
-    }
-  };
-
-  const deleteCase = async (caseId) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce cas ?')) {
-      try {
-        await axios.delete(`/cases/${caseId}`);
-        fetchCases(currentPage);
-      } catch (error) {
-        console.error('Erreur lors de la suppression:', error);
-        alert('Erreur lors de la suppression du cas');
-      }
-    }
-  };
-
-  const addTag = () => {
-    if (newTag.trim() && !tags.includes(newTag.trim())) {
-      setTags([...tags, newTag.trim()]);
-      setNewTag('');
-      setIsAddingTag(false);
-    }
-  };
-
-  const removeTag = (tagToRemove) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
-  };
-
-  const handleTagSubmit = (e) => {
-    e.preventDefault();
-    addTag();
-  };
-
-  // Gestion des tags pour les cas existants
-  const handleCaseAddTag = async (caseId, tag) => {
-    if (!tag || !tag.trim()) return;
-    
-    try {
-      const response = await axios.post(`/cases/${caseId}/tags`, { tag: tag.trim() });
-      
-      setCases(prevCases => 
-        prevCases.map(c => 
-          c._id === caseId 
-            ? { ...c, tags: response.data.tags }
-            : c
-        )
-      );
-      
-      setCaseNewTags(prev => ({ ...prev, [caseId]: '' }));
-      setCaseIsAddingTag(prev => ({ ...prev, [caseId]: false }));
-      
-    } catch (error) {
-      console.error('Erreur lors de l\'ajout du tag:', error);
-      alert('Erreur lors de l\'ajout du tag');
-    }
-  };
-
-  const handleCaseRemoveTag = async (caseId, tagToRemove) => {
-    try {
-      const response = await axios.delete(`/cases/${caseId}/tags/${encodeURIComponent(tagToRemove)}`);
-      
-      setCases(prevCases => 
-        prevCases.map(c => 
-          c._id === caseId 
-            ? { ...c, tags: response.data.tags }
-            : c
-        )
-      );
-      
-    } catch (error) {
-      console.error('Erreur lors de la suppression du tag:', error);
-      alert('Erreur lors de la suppression du tag');
-    }
-  };
-
-  const handleCaseTagSubmit = (e, caseId) => {
-    e.preventDefault();
-    const tag = caseNewTags[caseId];
-    if (tag) {
-      handleCaseAddTag(caseId, tag);
-    }
-  };
 
   return (
     <PageContainer>
@@ -895,158 +909,25 @@ function CasesPage() {
         <InputGroup>
           <Input
             type="text"
-            placeholder="Titre du cas"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            value={newCaseTitle}
+            onChange={(e) => setNewCaseTitle(e.target.value)}
+            placeholder="Titre du nouveau cas"
           />
-          <Button variant="primary" size="large" onClick={createCase}>
+          <Button variant="primary" size="large" onClick={addNewCase}>
             <Plus />
-            Créer le cas
+            Créer un nouveau cas
           </Button>
         </InputGroup>
 
-        {/* GESTION DES TAGS */}
-        <div>
-          <h4 style={{ margin: '0 0 1rem 0', color: 'var(--text-color)' }}>Tags :</h4>
-          <TagsContainer>
-            {tags.map((tag, index) => (
-              <Tag key={index}>
-                {tag}
-                <RemoveTagButton onClick={() => removeTag(tag)}>
-                  <X />
-                </RemoveTagButton>
-              </Tag>
-            ))}
-          </TagsContainer>
-          
-          <AddTagSection>
-            {isAddingTag ? (
-              <TagForm onSubmit={handleTagSubmit}>
-                <TagInput
-                  type="text"
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  placeholder="Nouveau tag"
-                  autoFocus
-                />
-                <SubmitTagButton type="submit">
-                  <Plus />
-                </SubmitTagButton>
-                <CancelTagButton 
-                  type="button"
-                  onClick={() => {
-                    setIsAddingTag(false);
-                    setNewTag('');
-                  }}
-                >
-                  <X />
-                </CancelTagButton>
-              </TagForm>
-            ) : (
-              <AddTagButton onClick={() => setIsAddingTag(true)}>
-                <Plus />
-                Ajouter tag
-              </AddTagButton>
-            )}
-          </AddTagSection>
-        </div>
-
-        {/* DIFFICULTÉ ET RÉPONSE */}
-        <GridContainer>
-          <LabeledField>
-            <label>Difficulté (1-5 étoiles) :</label>
-            <Select
-              value={difficulty}
-              onChange={(e) => setDifficulty(Number(e.target.value))}
-            >
-              {[1,2,3,4,5].map(num => (
-                <option key={num} value={num}>{num} étoile{num > 1 ? 's' : ''}</option>
-              ))}
-            </Select>
-          </LabeledField>
-          <LabeledField>
-            <label>Réponse/Diagnostic :</label>
-            <Input
-              type="text"
-              placeholder="Réponse ou diagnostic"
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-            />
-          </LabeledField>
-        </GridContainer>
-
-        {/* GESTION DES DOSSIERS */}
-        <div style={{ marginTop: '2rem' }}>
-          <h4 style={{ margin: '0 0 1rem 0', color: 'var(--text-color)' }}>Dossiers d'images :</h4>
-          <InputGroup>
-            <Input
-              type="text"
-              placeholder="Nom du nouveau dossier"
-              value={newFolderName}
-              onChange={(e) => setNewFolderName(e.target.value)}
-            />
-            <Button variant="secondary" onClick={addFolder}>
-              <Plus />
-              Ajouter dossier
-            </Button>
-          </InputGroup>
-        </div>
-
-        {/* DOSSIERS D'IMAGES */}
-        {folders.map((folder) => (
-          <FolderContainer key={folder}>
-            <FolderHeader>
-              <FolderTitle>
-                <ImageIcon />
-                {folder}
-              </FolderTitle>
-              <FolderActions>
-                <UploadButton htmlFor={`upload-${folder}`}>
-                  <Upload />
-                  Ajouter images
-                </UploadButton>
-                <FileInput
-                  id={`upload-${folder}`}
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={(e) => handleImageUpload(e, folder)}
-                />
-                <Button 
-                  variant="danger" 
-                  onClick={() => removeFolder(folder)}
-                >
-                  <Trash2 />
-                  Supprimer
-                </Button>
-              </FolderActions>
-            </FolderHeader>
-
-            {images[folder] && images[folder].length > 0 && (
-              <ImagesGrid>
-                {images[folder].map((image, index) => (
-                  <ImageWrapper key={index}>
-                    <PreviewImage src={image} alt={`${folder}-${index}`} />
-                    <RemoveImageButton 
-                      onClick={() => removeImage(folder, index)}
-                    >
-                      <X />
-                    </RemoveImageButton>
-                    {((folder === 'principal' && image === mainImage) || 
-                      (folder !== 'principal' && folderMainImages[folder] === image)) && (
-                      <MainImageLabel>Principal</MainImageLabel>
-                    )}
-                    <SetMainButton
-                      onClick={() => setAsMainImage(folder, index)}
-                    >
-                      Principal
-                    </SetMainButton>
-                  </ImageWrapper>
-                ))}
-              </ImagesGrid>
-            )}
-          </FolderContainer>
-        ))}
+        <Select
+          value={selectedCase?._id || ''}
+          onChange={(e) => loadCase(e.target.value)}
+        >
+          <option value="">Sélectionner un cas</option>
+          {cases.map(cas => (
+            <option key={cas._id} value={cas._id}>{cas.title}</option>
+          ))}
+        </Select>
       </SectionContainer>
 
       {/* SECTION LISTE DES CAS */}
@@ -1057,114 +938,23 @@ function CasesPage() {
         </SectionTitle>
 
         <CasesGrid>
-          {filteredCases.map((cas) => (
-            <CaseCard key={cas._id}>
-              <CaseImage 
-                src={cas.mainImage || (cas.folders && cas.folders[0] && cas.folderMainImages && cas.folderMainImages[cas.folders[0]]) || '/images/default.jpg'}
-                alt={cas.title}
-                loading="lazy"
+          {filteredCases && filteredCases.length > 0 ? (
+            filteredCases.map((cas) => (
+              <CaseCardComponent
+                key={cas._id}
+                cas={cas}
+                onUpdateDifficulty={updateCaseDifficulty}
+                onUpdateAnswer={updateCaseAnswer}
+                onAddTag={handleAddTag}
+                onRemoveTag={handleRemoveTag}
+                onDeleteCase={deleteCase}
+                onLoadCase={loadCase}
+                onTogglePublic={handleTogglePublic}
               />
-              
-              <CaseContent>
-                <CaseTitle>{cas.title}</CaseTitle>
-                
-                <StarRating>
-                  {[...Array(5)].map((_, index) => (
-                    <Star
-                      key={index}
-                      size={20}
-                      fill={index < cas.difficulty ? "gold" : "gray"}
-                      stroke={index < cas.difficulty ? "gold" : "gray"}
-                    />
-                  ))}
-                </StarRating>
-
-                {/* SECTION TAGS AVEC GESTION */}
-                <TagsContainer>
-                  {cas.tags && cas.tags.map((tag, index) => (
-                    <Tag key={index}>
-                      {tag}
-                      <RemoveTagButton 
-                        onClick={() => handleCaseRemoveTag(cas._id, tag)}
-                      >
-                        <X />
-                      </RemoveTagButton>
-                    </Tag>
-                  ))}
-                </TagsContainer>
-                
-                <AddTagSection>
-                  {caseIsAddingTag[cas._id] ? (
-                    <TagForm onSubmit={(e) => handleCaseTagSubmit(e, cas._id)}>
-                      <TagInput
-                        type="text"
-                        value={caseNewTags[cas._id] || ''}
-                        onChange={(e) => setCaseNewTags(prev => ({ 
-                          ...prev, 
-                          [cas._id]: e.target.value 
-                        }))}
-                        placeholder="Nouveau tag"
-                        autoFocus
-                      />
-                      <SubmitTagButton type="submit">
-                        <Plus />
-                      </SubmitTagButton>
-                      <CancelTagButton 
-                        type="button"
-                        onClick={() => {
-                          setCaseIsAddingTag(prev => ({ ...prev, [cas._id]: false }));
-                          setCaseNewTags(prev => ({ ...prev, [cas._id]: '' }));
-                        }}
-                      >
-                        <X />
-                      </CancelTagButton>
-                    </TagForm>
-                  ) : (
-                    <AddTagButton 
-                      onClick={() => setCaseIsAddingTag(prev => ({ ...prev, [cas._id]: true }))}
-                    >
-                      <Plus />
-                      Ajouter tag
-                    </AddTagButton>
-                  )}
-                </AddTagSection>
-
-                <CaseActions>
-                  <CaseButton 
-                    variant="primary"
-                    onClick={() => window.open(`/radiology-viewer/${cas._id}`, '_blank')}
-                  >
-                    <Eye />
-                    Voir
-                  </CaseButton>
-                  
-                  <CaseButton 
-                    variant="secondary"
-                    onClick={() => window.open(`/create-sheet/${cas._id}`, '_blank')}
-                  >
-                    <Edit />
-                    Fiche
-                  </CaseButton>
-                  
-                  <CaseButton 
-                    variant="secondary"
-                    onClick={() => loadCaseForEditing(cas)}
-                  >
-                    <Settings />
-                    Modifier
-                  </CaseButton>
-                  
-                  <CaseButton 
-                    variant="danger"
-                    onClick={() => deleteCase(cas._id)}
-                  >
-                    <Trash2 />
-                    Supprimer
-                  </CaseButton>
-                </CaseActions>
-              </CaseContent>
-            </CaseCard>
-          ))}
+            ))
+          ) : (
+            <p>Aucun cas disponible</p>
+          )}
         </CasesGrid>
 
         {/* PAGINATION */}
@@ -1188,8 +978,65 @@ function CasesPage() {
           </PaginationContainer>
         )}
       </SectionContainer>
+
+      {/* LOADING ET ERREURS */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <LoadingSpinner />
+        </div>
+      )}
+
+      {error && (
+        <div className="fixed bottom-4 right-4 bg-red-500 text-white p-4 rounded shadow-lg">
+          <ErrorMessage>{error}</ErrorMessage>
+        </div>
+      )}
+
+      {/* TUTORIEL */}
+      {showTutorial && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-4xl max-h-[90vh] overflow-y-auto">
+            <TutorialOverlay 
+              steps={tutorialSteps} 
+              onClose={() => setShowTutorial(false)} 
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="fixed bottom-4 right-4">
+        <TutorialButton onClick={() => setShowTutorial(true)}>
+          Voir le tutoriel
+        </TutorialButton>
+      </div>
+
+      {/* BOUTON SCROLL VERS LE HAUT */}
+      {isScrollVisible && (
+        <button
+          className="fixed bottom-20 right-4 bg-primary text-white p-2 rounded-full shadow-lg hover:bg-secondary transition-colors duration-200"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        >
+          <ArrowUp size={24} />
+        </button>
+      )}
+
+      {/* VIDÉO TUTORIEL */}
+      <VideoContainer>
+        <h3>Tutoriel vidéo</h3>
+        <div className="video-wrapper">
+          <iframe
+            width="560"
+            height="315"
+            src="https://www.youtube.com/embed/NerjVRmP7TA"
+            title="Tutoriel vidéo"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
+        </div>
+      </VideoContainer>
     </PageContainer>
   );
 }
 
-export default CasesPage;
+export default memo(CasesPage);
