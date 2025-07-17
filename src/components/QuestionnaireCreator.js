@@ -1,3 +1,4 @@
+// ==================== IMPORTS ====================
 import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -10,17 +11,13 @@ import LinkEditor from './LinkEditor';
 import { AlertTriangle } from 'lucide-react';
 import ImageMapEditor from './ImageMapEditor';
 
-// ==================== STYLED COMPONENTS MODERNISÉS COMPACTS ====================
-
+// ==================== STYLED COMPONENTS ====================
 const ModernCreatorWrapper = styled.div`
   background: linear-gradient(135deg, ${props => props.theme.background} 0%, ${props => props.theme.backgroundSecondary || props.theme.card} 100%);
   color: ${props => props.theme.text};
   padding: 1.5rem;
   min-height: calc(100vh - 60px);
-
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
+  @media (max-width: 768px) { padding: 1rem; }
 `;
 
 const ModernTitle = styled.h1`
@@ -44,7 +41,6 @@ const ModernCreatorCard = styled.div`
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   box-shadow: 0 4px 20px ${props => props.theme.shadow};
-  
   &::before {
     content: '';
     position: absolute;
@@ -64,7 +60,6 @@ const ModernQuestionCard = styled.div`
   box-shadow: 0 2px 8px ${props => props.theme.shadow};
   transition: all 0.2s ease;
   overflow: hidden;
-
   &:hover {
     border-color: ${props => props.theme.primary};
     box-shadow: 0 4px 12px ${props => props.theme.primary}20;
@@ -89,6 +84,7 @@ const ModernQuestionContent = styled.div`
     props.theme.cardSecondary || props.theme.card};
 `;
 
+// Inputs
 const ModernTitleInput = styled.input`
   width: 100%;
   padding: 0.875rem;
@@ -100,16 +96,12 @@ const ModernTitleInput = styled.input`
   background-color: ${props => props.theme.background};
   color: ${props => props.theme.text};
   transition: all 0.2s ease;
-
   &:focus {
     outline: none;
     border-color: ${props => props.theme.primary};
     box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
   }
-
-  &::placeholder {
-    color: ${props => props.theme.textSecondary};
-  }
+  &::placeholder { color: ${props => props.theme.textSecondary}; }
 `;
 
 const ModernInput = styled.input`
@@ -120,16 +112,12 @@ const ModernInput = styled.input`
   color: ${props => props.theme.text};
   transition: all 0.2s ease;
   width: 100%;
-
   &:focus {
     outline: none;
     border-color: ${props => props.theme.primary};
     box-shadow: 0 0 0 2px ${props => props.theme.primary}20;
   }
-
-  &::placeholder {
-    color: ${props => props.theme.textSecondary};
-  }
+  &::placeholder { color: ${props => props.theme.textSecondary}; }
 `;
 
 const ModernTextarea = styled.textarea`
@@ -142,16 +130,12 @@ const ModernTextarea = styled.textarea`
   min-height: 100px;
   width: 100%;
   transition: all 0.2s ease;
-
   &:focus {
     outline: none;
     border-color: ${props => props.theme.primary};
     box-shadow: 0 0 0 2px ${props => props.theme.primary}20;
   }
-
-  &::placeholder {
-    color: ${props => props.theme.textSecondary};
-  }
+  &::placeholder { color: ${props => props.theme.textSecondary}; }
 `;
 
 const ModernSelect = styled.select`
@@ -162,7 +146,6 @@ const ModernSelect = styled.select`
   color: ${props => props.theme.text};
   cursor: pointer;
   transition: all 0.2s ease;
-
   &:focus {
     outline: none;
     border-color: ${props => props.theme.primary};
@@ -170,6 +153,7 @@ const ModernSelect = styled.select`
   }
 `;
 
+// Boutons
 const CompactButton = styled.button`
   background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.primaryHover || props.theme.secondary});
   color: white;
@@ -184,28 +168,21 @@ const CompactButton = styled.button`
   font-weight: 500;
   transition: all 0.2s ease;
   box-shadow: 0 2px 4px ${props => props.theme.primary}30;
-
   &:hover:not(:disabled) {
     transform: translateY(-1px);
     box-shadow: 0 4px 8px ${props => props.theme.primary}40;
   }
-
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
   }
-
-  svg {
-    width: 14px;
-    height: 14px;
-  }
+  svg { width: 14px; height: 14px; }
 `;
 
 const CompactSuccessButton = styled(CompactButton)`
   background: linear-gradient(135deg, ${props => props.theme.success}, ${props => props.theme.successLight || props.theme.secondary});
   box-shadow: 0 2px 4px ${props => props.theme.success}30;
-
   &:hover:not(:disabled) {
     box-shadow: 0 4px 8px ${props => props.theme.success}40;
   }
@@ -214,7 +191,6 @@ const CompactSuccessButton = styled(CompactButton)`
 const CompactDangerButton = styled(CompactButton)`
   background: linear-gradient(135deg, ${props => props.theme.error}, ${props => props.theme.errorLight || '#dc2626'});
   box-shadow: 0 2px 4px ${props => props.theme.error}30;
-
   &:hover:not(:disabled) {
     box-shadow: 0 4px 8px ${props => props.theme.error}40;
   }
@@ -225,7 +201,6 @@ const CompactSecondaryButton = styled(CompactButton)`
   color: ${props => props.theme.text};
   border: 1px solid ${props => props.theme.border};
   box-shadow: 0 1px 3px ${props => props.theme.shadow};
-
   &:hover:not(:disabled) {
     background: ${props => props.theme.hover};
     border-color: ${props => props.theme.primary};
@@ -249,22 +224,16 @@ const CompactIconButton = styled.button`
   justify-content: center;
   transition: all 0.2s ease;
   box-shadow: 0 1px 3px ${props => props.theme.shadow};
-
   &:hover:not(:disabled) {
     transform: translateY(-1px);
     box-shadow: 0 2px 6px ${props => props.theme.shadow};
   }
-
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
   }
-
-  svg {
-    width: 14px;
-    height: 14px;
-  }
+  svg { width: 14px; height: 14px; }
 `;
 
 const CompactButtonGroup = styled.div`
@@ -275,14 +244,12 @@ const CompactButtonGroup = styled.div`
   margin-top: 1rem;
   padding-top: 0.75rem;
   border-top: 1px solid ${props => props.theme.border};
-
   @media (max-width: 768px) {
     flex-direction: column;
     gap: 0.75rem;
   }
 `;
 
-// ============ NOUVEAU STYLED COMPONENT POUR LE DRAG HANDLE SÉPARÉ ============
 const CompactDragHandle = styled.div`
   color: ${props => props.theme.textSecondary};
   cursor: grab;
@@ -294,22 +261,14 @@ const CompactDragHandle = styled.div`
   justify-content: center;
   min-width: 24px;
   height: 24px;
-
   &:hover {
     color: ${props => props.theme.primary};
     background-color: ${props => props.theme.hover};
   }
-
-  &:active {
-    cursor: grabbing;
-  }
-
-  /* Style spécial quand on drag */
-  &.dragging {
-    opacity: 0.5;
-  }
+  &:active { cursor: grabbing; }
 `;
 
+// Autres containers
 const ModernPreviewSection = styled(ModernCreatorCard)`
   background: linear-gradient(135deg, ${props => props.theme.card}, ${props => props.theme.cardSecondary || props.theme.background});
 `;
@@ -322,7 +281,6 @@ const ModernPreviewTitle = styled.h3`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-
   &::before {
     content: '👁️';
     font-size: 1rem;
@@ -336,7 +294,6 @@ const CompactOptionContainer = styled.div`
   border: 1px solid ${props => props.theme.border};
   border-radius: 6px;
   transition: all 0.2s ease;
-
   &:hover {
     border-color: ${props => props.theme.primary};
     background-color: ${props => props.theme.hover};
@@ -354,7 +311,6 @@ const CompactLinkButton = styled(CompactSecondaryButton)`
   font-size: 0.75rem;
   padding: 0.375rem 0.75rem;
   margin-top: 0.5rem;
-  
   ${props => !props.enabled && `
     opacity: 0.5;
     cursor: not-allowed;
@@ -379,7 +335,6 @@ const OptionCard = styled.div`
   margin-bottom: 0.5rem;
   padding: 0.5rem;
   transition: all 0.2s ease;
-
   &:hover {
     border-color: ${props => props.theme.primary};
     background-color: ${props => props.theme.hover};
@@ -387,18 +342,26 @@ const OptionCard = styled.div`
 `;
 
 // ==================== COMPOSANT UPLOAD D'IMAGES ====================
-
-const ImageUpload = memo(({ id, onImageUpload, onAddCaption, caption, showCaptionModal, setShowCaptionModal }) => {
+const ImageUpload = memo(({ id, onImageUpload, onAddCaption, caption, showCaptionModal, setShowCaptionModal, currentImage, questionnaireTitle }) => {
   const fileInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      onImageUpload(file, id);
+      setUploading(true);
+      try {
+        await onImageUpload(file, id, questionnaireTitle);
+      } catch (error) {
+        console.error('Erreur lors de l\'upload:', error);
+      } finally {
+        setUploading(false);
+      }
     }
   };
 
@@ -416,31 +379,51 @@ const ImageUpload = memo(({ id, onImageUpload, onAddCaption, caption, showCaptio
         variant="secondary"
         onClick={handleUploadClick}
         title="Télécharger une image"
+        disabled={uploading}
       >
-        <Upload size={14} />
+        {uploading ? <div>...</div> : (currentImage ? <Camera size={14} /> : <Upload size={14} />)}
       </CompactIconButton>
 
-      {caption ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-          <span style={{ fontSize: '0.75rem', color: '#10b981' }}>📸</span>
+      {currentImage && (
+        <div 
+          style={{ position: 'relative' }}
+          onMouseEnter={() => setShowPreview(true)}
+          onMouseLeave={() => setShowPreview(false)}
+        >
           <CompactIconButton
             variant="secondary"
             onClick={() => setShowCaptionModal(true)}
-            title="Modifier la légende"
+            title="Ajouter/modifier une légende"
           >
             <Camera size={14} />
           </CompactIconButton>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-          <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>📸</span>
-          <CompactIconButton
-            variant="secondary"
-            onClick={() => setShowCaptionModal(true)}
-            title="Ajouter une légende d'image"
-          >
-            <Camera size={14} />
-          </CompactIconButton>
+          
+          {showPreview && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 10,
+              padding: '0.5rem',
+              backgroundColor: 'white',
+              borderRadius: '6px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              border: '1px solid #e5e7eb',
+              maxWidth: '200px'
+            }}>
+              <img
+                src={currentImage}
+                alt="Preview"
+                style={{ maxWidth: '150px', maxHeight: '100px', objectFit: 'contain' }}
+              />
+              {caption && (
+                <p style={{ marginTop: '0.25rem', fontSize: '0.75rem', color: '#6b7280' }}>
+                  {caption}
+                </p>
+              )}
+            </div>
+          )}
         </div>
       )}
       
@@ -464,7 +447,9 @@ const ImageUpload = memo(({ id, onImageUpload, onAddCaption, caption, showCaptio
             width: '90%',
             maxWidth: '400px'
           }}>
-            <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: '600' }}>Ajouter une légende</h3>
+            <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: '600' }}>
+              {caption ? 'Modifier la légende' : 'Ajouter une légende'}
+            </h3>
             <ModernTextarea
               value={caption || ''}
               onChange={(e) => onAddCaption(id, e.target.value)}
@@ -483,8 +468,7 @@ const ImageUpload = memo(({ id, onImageUpload, onAddCaption, caption, showCaptio
   );
 });
 
-// ==================== COMPOSANT DRAG AND DROP MODIFIÉ ====================
-
+// ==================== COMPOSANT DRAG AND DROP ====================
 const DraggableQuestion = memo(({ question, index, moveQuestion, path, children }) => {
   const ref = useRef(null);
   
@@ -549,7 +533,6 @@ const DraggableQuestion = memo(({ question, index, moveQuestion, path, children 
 });
 
 // ==================== COMPOSANT PRINCIPAL ====================
-
 const QuestionnaireCreator = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -567,6 +550,9 @@ const QuestionnaireCreator = () => {
   const [currentEditingElement, setCurrentEditingElement] = useState({ elementId: null, linkIndex: null });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [linkToDelete, setLinkToDelete] = useState(null);
+
+  // État pour les modaux de légendes d'images
+  const [captionModals, setCaptionModals] = useState({});
 
   // Chargement des données si en mode édition
   useEffect(() => {
@@ -672,20 +658,53 @@ const QuestionnaireCreator = () => {
     if (file) {
       const formData = new FormData();
       formData.append('image', file);
-      formData.append('questionnaireTitle', questionnaire.title || 'untitled');
+      formData.append('questionnaireTitle', questionnaire.title);
 
       try {
         const response = await axios.post('/images/upload-image', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
         });
-        
-        updateQuestion(path, 'imageUrl', response.data.imageUrl);
+
+        let currentQuestion = questionnaire.questions;
+        for (let i = 0; i < path.length - 1; i++) {
+          currentQuestion = currentQuestion[path[i]];
+        }
+        currentQuestion = currentQuestion[path[path.length - 1]];
+
+        updateQuestion(path, 'questionImage', {
+          src: response.data.imageUrl,
+          areas: currentQuestion?.questionImage?.areas || []
+        });
       } catch (error) {
-        console.error('Erreur lors de l\'upload:', error);
-        alert('Erreur lors de l\'upload de l\'image');
+        console.error('Erreur lors du téléchargement de l\'image:', error);
       }
     }
-  }, [questionnaire.title, updateQuestion]);
+  }, [questionnaire, updateQuestion]);
+
+  const handleImageUpload = useCallback(async (file, elementId, questionnaireTitle) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('questionnaireTitle', questionnaireTitle);
+  
+    try {
+      const response = await axios.post('/images/upload-image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      const path = elementId.split('-').map(p => isNaN(p) ? p : parseInt(p));
+      updateQuestion(path, 'image', { src: response.data.imageUrl, caption: '' });
+    } catch (error) {
+      console.error('Erreur lors du téléchargement de l\'image:', error);
+    }
+  }, [updateQuestion]);
+
+  const handleAddCaption = useCallback((elementId, caption) => {
+    const path = elementId.split('-').map(p => isNaN(p) ? p : parseInt(p));
+    updateQuestion(path, 'image', prevImage => ({ ...prevImage, caption: caption }));
+  }, [updateQuestion]);
 
   const duplicateQuestion = useCallback((path) => {
     setQuestionnaire(prev => {
@@ -726,9 +745,7 @@ const QuestionnaireCreator = () => {
           return questions;
         }
         
-        const [index, ...restPath] = currentPath;
-        
-        if (restPath[0] === 'options') {
+if (restPath[0] === 'options') {
           if (!questions[index].options) {
             questions[index].options = [];
           }
@@ -960,27 +977,12 @@ const QuestionnaireCreator = () => {
     }
   };
 
-  const handleImageUpload = useCallback(async (file, questionId) => {
-    if (file) {
-      const formData = new FormData();
-      formData.append('image', file);
-      formData.append('questionnaireTitle', questionnaire.title || 'untitled');
-
-      try {
-        const response = await axios.post('/images/upload-image', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        
-        console.log('Image uploadée:', response.data.imageUrl);
-      } catch (error) {
-        console.error('Erreur lors de l\'upload:', error);
-        alert('Erreur lors de l\'upload de l\'image');
-      }
-    }
-  }, [questionnaire.title]);
-
-  const handleAddCaption = useCallback((questionId, caption) => {
-    console.log('Ajout de légende pour la question:', questionId, caption);
+  // Gestion des modaux de légendes
+  const setCaptionModal = useCallback((elementId, show) => {
+    setCaptionModals(prev => ({
+      ...prev,
+      [elementId]: show
+    }));
   }, []);
 
   // Rendu des questions
@@ -1102,9 +1104,11 @@ const QuestionnaireCreator = () => {
                 id={questionId}
                 onImageUpload={handleImageUpload}
                 onAddCaption={handleAddCaption}
-                caption={question.caption}
-                showCaptionModal={false}
-                setShowCaptionModal={() => {}}
+                caption={question.image?.caption}
+                showCaptionModal={captionModals[questionId] || false}
+                setShowCaptionModal={(show) => setCaptionModal(questionId, show)}
+                currentImage={question.image?.src}
+                questionnaireTitle={questionnaire.title}
               />
 
               <CompactLinkButton
@@ -1158,7 +1162,7 @@ const QuestionnaireCreator = () => {
 
                 <CompactIconButton
                   variant="secondary"
-                  onClick={() => addQuestion([...path.slice(0, path.length), 'subQuestions'])}
+                  onClick={() => addQuestion([...path, 'subQuestions'])}
                   title="Ajouter une sous-question"
                   style={{ marginRight: '0.5rem' }}
                 >
@@ -1188,6 +1192,78 @@ const QuestionnaireCreator = () => {
                 </div>
               )}
 
+              {/* Image de question avec zones cliquables */}
+              {depth === 1 && (
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <h4 style={{ fontSize: '0.9rem', fontWeight: '600', marginBottom: '0.5rem' }}>
+                    Image de la question avec zones cliquables
+                  </h4>
+                  {!question.questionImage?.src ? (
+                    <div style={{
+                      border: '2px dashed #d1d5db',
+                      borderRadius: '6px',
+                      padding: '1rem',
+                      textAlign: 'center'
+                    }}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleQuestionImageUpload(e, path)}
+                        className="hidden"
+                        id={`question-image-${questionId}`}
+                      />
+                      <label
+                        htmlFor={`question-image-${questionId}`}
+                        style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+                      >
+                        <Camera size={32} style={{ color: '#9ca3af', marginBottom: '0.5rem' }} />
+                        <span style={{ color: '#6b7280', fontSize: '0.9rem' }}>
+                          Cliquez pour ajouter l'image de la question
+                        </span>
+                      </label>
+                    </div>
+                  ) : (
+                    <div>
+                      <div style={{ position: 'relative' }}>
+                        <img 
+                          src={question.questionImage.src} 
+                          alt="Question" 
+                          style={{ width: '100%', borderRadius: '6px' }}
+                        />
+                        <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem' }}>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleQuestionImageUpload(e, path)}
+                            className="hidden"
+                            id={`question-image-change-${questionId}`}
+                          />
+                          <label
+                            htmlFor={`question-image-change-${questionId}`}
+                            style={{ cursor: 'pointer' }}
+                          >
+                            <CompactIconButton as="span" variant="secondary">
+                              <Camera size={14} />
+                            </CompactIconButton>
+                          </label>
+                        </div>
+                      </div>
+
+                      <ImageMapEditor
+                        image={question.questionImage}
+                        areas={question.questionImage.areas || []}
+                        onAreasChange={(newAreas) => 
+                          updateQuestion(path, 'questionImage', {
+                            ...question.questionImage,
+                            areas: newAreas
+                          })
+                        }
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Options pour choix unique/multiple */}
               {(question.type === 'single' || question.type === 'multiple' || !question.type) && (
                 <div>
@@ -1200,6 +1276,18 @@ const QuestionnaireCreator = () => {
                             onChange={(e) => updateQuestion([...path, 'options', oIndex], 'text', e.target.value)}
                             placeholder="Texte de l'option"
                             style={{ flex: 1, marginBottom: 0 }}
+                          />
+                          
+                          {/* Upload d'image pour l'option */}
+                          <ImageUpload
+                            id={`${questionId}-options-${oIndex}`}
+                            onImageUpload={handleImageUpload}
+                            onAddCaption={handleAddCaption}
+                            caption={option.image?.caption}
+                            showCaptionModal={captionModals[`${questionId}-options-${oIndex}`] || false}
+                            setShowCaptionModal={(show) => setCaptionModal(`${questionId}-options-${oIndex}`, show)}
+                            currentImage={option.image?.src}
+                            questionnaireTitle={questionnaire.title}
                           />
                           
                           <CompactIconButton
@@ -1240,12 +1328,26 @@ const QuestionnaireCreator = () => {
                   </CompactButton>
                 </div>
               )}
+
+              {/* Sous-questions directes */}
+              {question.subQuestions?.length > 0 && (
+                <div style={{ marginTop: '0.75rem' }}>
+                  <h4 style={{ fontSize: '0.9rem', fontWeight: '600', marginBottom: '0.5rem' }}>
+                    Sous-questions
+                  </h4>
+                  <SubQuestionWrapper>
+                    {question.subQuestions.map((subQuestion, sqIndex) => 
+                      renderQuestion(subQuestion, [...path, 'subQuestions', sqIndex])
+                    )}
+                  </SubQuestionWrapper>
+                </div>
+              )}
             </ModernQuestionContent>
           )}
         </ModernQuestionCard>
       </DraggableQuestion>
     );
-  }, [expandedQuestions, moveQuestion, toggleQuestion, updateQuestion, handleQuestionImageUpload, duplicateQuestion, addQuestion, deleteQuestion, deleteOption, addOption, questionnaire.title, handleOpenLinkEditor, questionLinks, handleImageUpload, handleAddCaption]);
+  }, [expandedQuestions, moveQuestion, toggleQuestion, updateQuestion, handleQuestionImageUpload, duplicateQuestion, addQuestion, deleteQuestion, deleteOption, addOption, questionnaire.title, handleOpenLinkEditor, questionLinks, handleImageUpload, handleAddCaption, captionModals, setCaptionModal]);
 
   return (
     <ModernCreatorWrapper>
@@ -1317,6 +1419,8 @@ const QuestionnaireCreator = () => {
                 crData={questionnaire.crData}
                 onFreeTextChange={handleFreeTextChange}
                 onOptionChange={handleOptionChange}
+                questionLinks={questionLinks}
+                questionnaire={questionnaire}
               />
             </div>
           </ModernPreviewSection>
@@ -1388,3 +1492,4 @@ const QuestionnaireCreator = () => {
 };
 
 export default QuestionnaireCreator;
+        
