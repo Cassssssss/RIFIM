@@ -577,6 +577,163 @@ const VideoContainer = styled.div`
 
 // ==================== COMPOSANTS ====================
 
+const CollapsibleImageGallery = memo(({ folder, images, onImageClick, onDeleteImage, caseId, fetchFolderMainImage, onReorderImages }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [imageLoadError, setImageLoadError] = useState({});
+  const [folderMainImage, setFolderMainImage] = useState(null);
+
+  useEffect(() => {
+    const loadFolderMainImage = async () => {
+      const imageUrl = await fetchFolderMainImage(caseId, folder);
+      setFolderMainImage(imageUrl);
+    };
+    loadFolderMainImage();
+  }, [caseId, folder, fetchFolderMainImage]);
+
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
+    
+    const sourceIndex = result.source.index;
+    const destinationIndex = result.destination.index;
+    
+    const reorderedImages = Array.from(images);
+    const [movedImage] = reorderedImages.splice(sourceIndex, 1);
+    reorderedImages.splice(destinationIndex, 0, movedImage);
+    
+    onReorderImages(folder, reorderedImages);
+  };
+
+  return (
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <div style={{
+        marginBottom: '1.5rem',
+        border: '1px solid #e5e7eb',
+        borderRadius: '8px',
+        overflow: 'hidden'
+      }}>
+        <div 
+          onClick={() => setIsOpen(!isOpen)}
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '1rem',
+            backgroundColor: '#f9fafb',
+            cursor: 'pointer',
+            transition: 'background-color 0.3s ease'
+          }}
+        >
+          <h3>{folder}</h3>
+          {folderMainImage && (
+            <img 
+              src={folderMainImage} 
+              alt={`Image principale de ${folder}`}
+              style={{
+                width: '30px',
+                height: '30px',
+                objectFit: 'cover',
+                borderRadius: '4px',
+                marginRight: '10px'
+              }}
+              onError={() => setImageLoadError(prev => ({ ...prev, [folderMainImage]: true }))}
+            />
+          )}
+          {isOpen ? <ChevronUp /> : <ChevronDown />}
+        </div>
+        
+        {isOpen && (
+          <Droppable droppableId={folder} direction="horizontal">
+            {(provided) => (
+              <div
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+                style={{
+                  display: 'flex',
+                  gap: '10px',
+                  padding: '1rem',
+                  minHeight: '120px',
+                  backgroundColor: '#f3f4f6',
+                  overflowX: 'auto',
+                  flexWrap: 'nowrap',
+                  alignItems: 'flex-start'
+                }}
+              >
+                {images.map((image, index) => {
+                  const draggableId = `draggable-${folder}-${index}`;
+                  return (
+                    <Draggable 
+                      key={draggableId}
+                      draggableId={draggableId}
+                      index={index}
+                    >
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          style={{
+                            ...provided.draggableProps.style,
+                            opacity: snapshot.isDragging ? 0.5 : 1,
+                            position: 'relative',
+                            borderRadius: '4px',
+                            overflow: 'hidden',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                            cursor: 'move',
+                            flex: '0 0 auto',
+                            width: '100px',
+                            height: '100px'
+                          }}
+                        >
+                          <img
+                            src={imageLoadError[image] ? '/images/placeholder.jpg' : image}
+                            alt={`${folder} image ${index}`}
+                            onClick={() => onImageClick(folder, index)}
+                            onError={() => setImageLoadError(prev => ({ ...prev, [image]: true }))}
+                            style={{
+                              width: '100%',
+                              height: '100px',
+                              objectFit: 'cover',
+                              cursor: 'pointer',
+                              transition: 'transform 0.3s ease'
+                            }}
+                          />
+                          <button 
+                            onClick={() => onDeleteImage(caseId, folder, image)}
+                            style={{
+                              position: 'absolute',
+                              top: '5px',
+                              right: '5px',
+                              backgroundColor: 'rgba(255, 0, 0, 0.7)',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '50%',
+                              width: '20px',
+                              height: '20px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                              fontSize: '12px',
+                              transition: 'background-color 0.3s ease'
+                            }}
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      )}
+                    </Draggable>
+                  );
+                })}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        )}
+      </div>
+    </DragDropContext>
+  );
+});
+
 const StarRating = memo(({ rating, onRatingChange }) => {
   return (
     <StarRatingContainer>
@@ -733,6 +890,9 @@ function CasesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
+  const [currentFolder, setCurrentFolder] = useState(null);
 
   const tutorialSteps = [
     {
@@ -769,6 +929,221 @@ function CasesPage() {
       setIsLoading(false);
     }
   }, []);
+
+  const handleImageUpload = useCallback((event, folder) => {
+    const files = Array.from(event.target.files);
+    setNewImages(prev => ({
+      ...prev,
+      [folder]: [
+        ...(prev[folder] || []),
+        ...files.map(file => ({
+          file,
+          preview: URL.createObjectURL(file)
+        }))
+      ]
+    }));
+  }, []);
+
+  const removeImage = useCallback((folder, index) => {
+    setNewImages(prev => ({
+      ...prev,
+      [folder]: prev[folder].filter((_, i) => i !== index)
+    }));
+  }, []);
+
+  const addNewFolder = useCallback(async () => {
+    if (!selectedCase || newFolderName.trim() === '') return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await axios.post(`/cases/${selectedCase._id}/folders`, { folderName: newFolderName });
+      setCases(prevCases => prevCases.map(c => c._id === selectedCase._id ? response.data : c));
+      setSelectedCase(response.data);
+      setNewFolderName('');
+    } catch (error) {
+      setError('Erreur lors de l\'ajout d\'un nouveau dossier');
+      console.error('Erreur lors de l\'ajout d\'un nouveau dossier:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedCase, newFolderName]);
+
+  const addImagesToCase = useCallback(async () => {
+    if (!selectedCase) return;
+    setIsLoading(true);
+    setError(null);
+    try {
+      for (const [folder, images] of Object.entries(newImages)) {
+        const formData = new FormData();
+        images.forEach((image, index) => {
+          formData.append('images', image.file);
+        });
+        formData.append('folder', folder);
+
+        const response = await axios.post(`/cases/${selectedCase._id}/images`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      }
+      const updatedCase = await axios.get(`/cases/${selectedCase._id}`);
+      setCases(prevCases => prevCases.map(c => c._id === selectedCase._id ? updatedCase.data : c));
+      setSelectedCase(updatedCase.data);
+      setNewImages({});
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout des images:', error);
+      setError('Erreur lors de l\'ajout des images au cas');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedCase, newImages]);
+
+  const setMainImage = useCallback(async (event) => {
+    const file = event.target.files[0];
+    if (file && selectedCase) {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const formData = new FormData();
+        formData.append('mainImage', file);
+        const response = await axios.post(`/cases/${selectedCase._id}/main-image`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        setCases(prevCases => prevCases.map(c => c._id === selectedCase._id ? response.data : c));
+        setSelectedCase(response.data);
+      } catch (error) {
+        setError('Erreur lors de la définition de l\'image principale');
+        console.error('Erreur lors de la définition de l\'image principale:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  }, [selectedCase]);
+
+  const setFolderMainImage = useCallback(async (event, folder) => {
+    const file = event.target.files[0];
+    if (file && selectedCase) {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const formData = new FormData();
+        formData.append('folderMainImage', file);
+        formData.append('folder', folder);
+        const response = await axios.post(`/cases/${selectedCase._id}/folder-main-image`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        setCases(prevCases => prevCases.map(c => 
+          c._id === selectedCase._id ? response.data : c
+        ));
+        setSelectedCase(response.data);
+      } catch (error) {
+        setError('Erreur lors de la définition de l\'image principale du dossier');
+        console.error('Erreur lors de la définition de l\'image principale du dossier:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  }, [selectedCase]);
+
+  const deleteFolder = useCallback(async (folder) => {
+    if (window.confirm(`Êtes-vous sûr de vouloir supprimer le dossier "${folder}" ?`)) {
+      try {
+        await axios.delete(`/cases/${selectedCase._id}/folders/${folder}`);
+        const updatedCase = await axios.get(`/cases/${selectedCase._id}`);
+        setCases(prevCases => prevCases.map(c => c._id === selectedCase._id ? updatedCase.data : c));
+        setSelectedCase(updatedCase.data);
+      } catch (error) {
+        console.error('Erreur lors de la suppression du dossier:', error);
+        setError('Erreur lors de la suppression du dossier');
+      }
+    }
+  }, [selectedCase]);
+
+  const deleteExistingImage = useCallback(async (caseId, folder, imagePath) => {
+    try {
+      const fileName = imagePath.split('/').pop();
+      await axios.delete(`/cases/${caseId}/images`, {
+        data: { folder, fileName }
+      });
+      const updatedCase = await axios.get(`/cases/${caseId}`);
+      setCases(prevCases => prevCases.map(c => c._id === caseId ? updatedCase.data : c));
+      setSelectedCase(updatedCase.data);
+    } catch (error) {
+      console.error('Erreur lors de la suppression de l\'image:', error);
+      setError('Erreur lors de la suppression de l\'image');
+    }
+  }, []);
+
+  const fetchFolderMainImage = useCallback(async (caseId, folder) => {
+    try {
+      const response = await axios.get(`/cases/${caseId}`);
+      if (response.data && response.data.folderMainImages && response.data.folderMainImages[folder]) {
+        return response.data.folderMainImages[folder];
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des données du cas:', error);
+    }
+    return null;
+  }, []);
+
+  const handleImageClick = useCallback((folder, index) => {
+    setSelectedImage(selectedCase.images[folder][index]);
+    setSelectedImageIndex(index);
+    setCurrentFolder(folder);
+  }, [selectedCase]);
+
+  const closeImage = useCallback(() => {
+    setSelectedImage(null);
+    setSelectedImageIndex(null);
+    setCurrentFolder(null);
+  }, []);
+
+  const navigateImage = useCallback((direction) => {
+    if (!currentFolder || selectedImageIndex === null || !selectedCase || !selectedCase.images) return;
+    const images = selectedCase.images[currentFolder];
+    let newIndex = selectedImageIndex + direction;
+    if (newIndex < 0) newIndex = images.length - 1;
+    if (newIndex >= images.length) newIndex = 0;
+    setSelectedImage(images[newIndex]);
+    setSelectedImageIndex(newIndex);
+  }, [currentFolder, selectedImageIndex, selectedCase]);
+
+  const handleReorderImages = useCallback(async (folder, reorderedImages) => {
+    if (!selectedCase) return;
+    
+    try {
+      setSelectedCase(prevCase => ({
+        ...prevCase,
+        images: {
+          ...prevCase.images,
+          [folder]: reorderedImages
+        }
+      }));
+
+      setCases(prevCases => prevCases.map(c => 
+        c._id === selectedCase._id 
+          ? {
+              ...c,
+              images: {
+                ...c.images,
+                [folder]: reorderedImages
+              }
+            }
+          : c
+      ));
+
+      const response = await axios.patch(`/cases/${selectedCase._id}/reorder-images`, {
+        folder,
+        images: reorderedImages
+      });
+
+      if (!response.data) {
+        throw new Error('Échec de la mise à jour');
+      }
+
+    } catch (error) {
+      console.error('Erreur lors de la réorganisation des images:', error);
+      await loadCase(selectedCase._id);
+    }
+  }, [selectedCase, loadCase]);
 
   const loadCase = useCallback(async (id) => {
     setIsLoading(true);
@@ -929,6 +1304,224 @@ function CasesPage() {
           ))}
         </Select>
       </SectionContainer>
+
+      {/* SECTION GESTION DU CAS SÉLECTIONNÉ - RESTAURÉE */}
+      {selectedCase && (
+        <SectionContainer>
+          <SectionTitle>
+            <Settings />
+            Gestion du cas : {selectedCase.title}
+          </SectionTitle>
+
+          <InputGroup>
+            <UploadButton>
+              <ImageIcon size={20} style={{ marginRight: '10px' }} />
+              Choisir l'image principale du cas
+              <FileInput
+                type="file"
+                accept="image/*"
+                onChange={setMainImage}
+              />
+            </UploadButton>
+          </InputGroup>
+
+          <InputGroup>
+            <Input
+              type="text"
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+              placeholder="Nom du nouveau dossier"
+            />
+            <Button onClick={addNewFolder}>
+              <Folder size={20} style={{ marginRight: '10px' }} />
+              Ajouter un dossier
+            </Button>
+          </InputGroup>
+
+          {selectedCase.folders && selectedCase.folders.map(folder => (
+            <FolderContainer key={folder}>
+              <FolderHeader>
+                <FolderTitle>
+                  <Folder />
+                  {folder}
+                </FolderTitle>
+                <FolderActions>
+                  <UploadButton>
+                    <Upload size={20} style={{ marginRight: '10px' }} />
+                    Ajouter des images {folder}
+                    <FileInput 
+                      type="file" 
+                      accept="image/*" 
+                      multiple
+                      onChange={(e) => handleImageUpload(e, folder)} 
+                    />
+                  </UploadButton>
+                  <UploadButton>
+                    <ImageIcon size={20} style={{ marginRight: '10px' }} />
+                    Image principale du dossier
+                    <FileInput
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setFolderMainImage(e, folder)}
+                    />
+                  </UploadButton>
+                  <Button variant="danger" onClick={() => deleteFolder(folder)}>
+                    <Trash2 size={20} style={{ marginRight: '10px' }} />
+                    Supprimer le dossier
+                  </Button>
+                </FolderActions>
+              </FolderHeader>
+              {newImages[folder] && newImages[folder].length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '1rem' }}>
+                  {newImages[folder].map((img, index) => (
+                    <div key={index} style={{ position: 'relative', width: '100px', height: '100px', borderRadius: '4px', overflow: 'hidden' }}>
+                      <img src={img.preview} alt={`Preview ${index}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <button 
+                        onClick={() => removeImage(folder, index)}
+                        style={{
+                          position: 'absolute',
+                          top: '5px',
+                          right: '5px',
+                          backgroundColor: 'rgba(255, 0, 0, 0.7)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '50%',
+                          width: '20px',
+                          height: '20px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </FolderContainer>
+          ))}
+
+          <Button 
+            onClick={addImagesToCase} 
+            disabled={Object.values(newImages).every(arr => !arr || arr.length === 0)}
+            variant="success"
+            size="large"
+          >
+            <Upload />
+            Ajouter les images au cas
+          </Button>
+        </SectionContainer>
+      )}
+
+      {/* SECTION GALERIES D'IMAGES DU CAS SÉLECTIONNÉ - RESTAURÉE */}
+      {selectedCase && selectedCase.images && (
+        <SectionContainer>
+          <SectionTitle>
+            <ImageIcon />
+            Galeries d'images : {selectedCase.title}
+          </SectionTitle>
+          {selectedCase.folders && selectedCase.folders.map(folder => (
+            selectedCase.images[folder] && (
+              <CollapsibleImageGallery
+                key={folder}
+                folder={folder}
+                images={selectedCase.images[folder]}
+                onImageClick={(image, index) => handleImageClick(folder, index)}
+                onDeleteImage={deleteExistingImage}
+                caseId={selectedCase._id}
+                fetchFolderMainImage={fetchFolderMainImage}
+                onReorderImages={handleReorderImages}
+              />
+            )
+          ))}
+          
+          {selectedImage && (
+            <div 
+              onClick={closeImage}
+              tabIndex={0}
+              style={{ 
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                zIndex: 9999,
+                outline: 'none'
+              }}
+            >
+              <img 
+                src={selectedImage} 
+                alt="Selected" 
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  width: '80vmin',
+                  height: '80vmin',
+                  objectFit: 'contain',
+                  backgroundColor: 'black'
+                }}
+              />
+              <button 
+                onClick={(e) => { e.stopPropagation(); closeImage(); }}
+                style={{
+                  position: 'absolute',
+                  top: '20px',
+                  right: '20px',
+                  backgroundColor: 'transparent',
+                  color: 'white',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  zIndex: 10000
+                }}
+              >
+                <X size={24} />
+              </button>
+              <button 
+                onClick={(e) => { e.stopPropagation(); navigateImage(-1); }} 
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '20px',
+                  transform: 'translateY(-50%)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                  color: 'white',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '10px',
+                  fontSize: '24px',
+                  zIndex: 10000
+                }}
+              >
+                <ChevronLeft size={24} />
+              </button>
+              <button 
+                onClick={(e) => { e.stopPropagation(); navigateImage(1); }} 
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  right: '20px',
+                  transform: 'translateY(-50%)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                  color: 'white',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '10px',
+                  fontSize: '24px',
+                  zIndex: 10000
+                }}
+              >
+                <ChevronRight size={24} />
+              </button>
+            </div>
+          )}
+        </SectionContainer>
+      )}
 
       {/* SECTION LISTE DES CAS */}
       <SectionContainer>
