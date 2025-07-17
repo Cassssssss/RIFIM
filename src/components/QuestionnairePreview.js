@@ -1,57 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, EyeOff, Eye, ChevronDown, ChevronUp, Plus, Italic } from 'lucide-react';
 import styled from 'styled-components';
+import { Camera, EyeOff, Eye, ChevronDown, ChevronUp, Plus, Italic } from 'lucide-react';
 
-// Card d'une question
-export const QuestionCard = styled.div`
-  background: ${props => props.theme.backgroundSecondary || "#f7fafd"};
-  border-radius: 16px;
-  box-shadow: 0 1px 12px rgba(20, 50, 80, 0.08);
-  border: 1px solid ${props => props.theme.border};
-  margin-bottom: 1.5rem;
-  padding: 1.5rem 1.2rem;
-  transition: box-shadow 0.2s;
-  &:hover {
-    box-shadow: 0 4px 24px rgba(20,50,80,0.11);
-    border-color: ${props => props.theme.primary};
-  }
-`;
-
-// Header d'une question
-export const QuestionHeader = styled.div`
-  font-weight: 600;
-  font-size: 1.17rem;
-  margin-bottom: 1rem;
-  color: ${props => props.theme.primary};
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-`;
-
-// Options (radio/checkbox)
-export const OptionCard = styled.label`
-  display: flex;
-  align-items: center;
-  background: #fff;
-  border: 1.5px solid ${props => props.checked ? props.theme.primary : "#e0e6ed"};
-  border-radius: 12px;
-  padding: 0.7rem 1.1rem;
-  margin-bottom: 0.5rem;
-  cursor: pointer;
-  font-size: 1.08rem;
-  box-shadow: ${props => props.checked ? "0 2px 6px #0066ff22" : "none"};
-  transition: border 0.17s, box-shadow 0.17s;
-  &:hover {
-    border-color: ${props => props.theme.primary};
-    box-shadow: 0 3px 12px #0066ff11;
-  }
-  input {
-    margin-right: 0.9rem;
-    accent-color: ${props => props.theme.primary};
-    transform: scale(1.2);
-  }
-`;
+// ==================== STYLED COMPONENTS AVEC MEDICALCOLORS ====================
 
 const ImagePreviewWrapper = styled.div`
   position: fixed;
@@ -66,9 +18,9 @@ const ImagePreviewWrapper = styled.div`
 const FormatButton = styled.button`
   padding: 0.5rem;
   margin-right: 0.25rem;
-  border: 1px solid ${props => props.theme.border};
-  background-color: ${props => props.theme.card};
-  color: ${props => props.theme.text};
+  border: 1px solid ${props => props.theme.border || '#e0e6ed'};
+  background-color: ${props => props.theme.card || '#ffffff'};
+  color: ${props => props.theme.text || '#424242'};
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
@@ -92,7 +44,92 @@ const PreviewWrapper = styled.div`
   }
 `;
 
+// ==================== COMPOSANTS VISUELS RESTAURÉS ====================
 
+// Card principale d'une question - Style médical moderne
+const ModernQuestionCard = styled.div`
+  background: ${props => props.theme.backgroundSecondary || "#f7fafd"};
+  border-radius: 16px;
+  box-shadow: 0 1px 12px rgba(20, 50, 80, 0.08);
+  border: 1px solid ${props => props.theme.border || "#e0e6ed"};
+  margin-bottom: 1.5rem;
+  padding: 0;
+  transition: box-shadow 0.2s;
+  overflow: hidden;
+  
+  &:hover {
+    box-shadow: 0 4px 24px rgba(20,50,80,0.11);
+    border-color: ${props => props.theme.primary || "#005A9C"};
+  }
+`;
+
+// Header d'une question - Style professionnel
+const ModernQuestionHeader = styled.div`
+  font-weight: 600;
+  font-size: 1.17rem;
+  padding: 1.2rem;
+  color: ${props => props.theme.primary || "#005A9C"};
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  background: ${props => {
+    const depth = props.depth || 0;
+    const colors = ['#ffffff', '#fafafa', '#f5f5f5', '#f0f0f0'];
+    return colors[Math.min(depth, colors.length - 1)];
+  }};
+  border-bottom: 1px solid ${props => props.theme.border || "#e0e6ed"};
+`;
+
+// Contenu de la question
+const ModernQuestionContent = styled.div`
+  padding: 1.2rem;
+  background-color: #ffffff;
+`;
+
+// Options avec style médical clair - RESTAURÉ !
+const ModernOptionCard = styled.label`
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1.5px solid ${props => props.checked ? 
+    (props.theme.primary || "#005A9C") : "#e0e6ed"};
+  border-radius: 12px;
+  padding: 0.9rem 1.2rem;
+  margin-bottom: 0.7rem;
+  cursor: pointer;
+  font-size: 1.08rem;
+  box-shadow: ${props => props.checked ? 
+    "0 2px 6px rgba(0, 90, 156, 0.15)" : "0 1px 3px rgba(0,0,0,0.05)"};
+  transition: all 0.17s ease;
+  
+  &:hover {
+    border-color: ${props => props.theme.primary || "#005A9C"};
+    box-shadow: 0 3px 12px rgba(0, 90, 156, 0.1);
+    background-color: #fafbfc;
+  }
+  
+  input {
+    margin-right: 0.9rem;
+    accent-color: ${props => props.theme.primary || "#005A9C"};
+    transform: scale(1.2);
+  }
+  
+  /* Texte de l'option */
+  .option-text {
+    flex-grow: 1;
+    color: ${props => props.theme.text || "#424242"};
+    font-weight: ${props => props.checked ? "500" : "400"};
+  }
+  
+  /* Conteneur des actions à droite */
+  .option-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+    padding-left: 1rem;
+  }
+`;
 
 const ImageMapContainer = styled.div`
   position: relative;
@@ -102,7 +139,7 @@ const ImageMapContainer = styled.div`
   img, svg {
     width: 100%;
     height: auto;
-    display: block; // Important pour éviter les espaces
+    display: block;
   }
   
   svg {
@@ -113,6 +150,31 @@ const ImageMapContainer = styled.div`
     bottom: 0;
   }
 `;
+
+const LinkButton = styled.button`
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  color: ${props => props.theme.primary || "#3b82f6"};
+  background-color: ${props => props.theme.primary ? 
+    `${props.theme.primary}15` : "#eff6ff"};
+  border-radius: 0.375rem;
+  border: 1px solid ${props => props.theme.primary ? 
+    `${props.theme.primary}30` : "#bfdbfe"};
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+  font-weight: 500;
+
+  &:hover {
+    background-color: ${props => props.theme.primary ? 
+      `${props.theme.primary}25` : "#dbeafe"};
+    border-color: ${props => props.theme.primary || "#3b82f6"};
+  }
+`;
+
+// ==================== FONCTIONS UTILITAIRES ====================
+
 const getColorValues = (color) => {
   const colors = {
     blue: '0, 123, 255',
@@ -123,14 +185,16 @@ const getColorValues = (color) => {
   return colors[color] || colors.blue;
 };
 
-const getBackgroundColor = (depth) => {
-  const baseHue = 210;
-  const saturation = 90;
-  const baseLightness = 95;
-  const decrement = 2;
-  const lightness = Math.max(0, baseLightness - depth * decrement);
-  return `hsl(${baseHue}, ${saturation}%, ${lightness}%)`;
+const createPathFromPoints = (points) => {
+  if (!points || points.length < 2) return '';
+  return (
+    points
+      .map((point, i) => `${i === 0 ? 'M' : 'L'} ${point.x} ${point.y}`)
+      .join(' ') + ' Z'
+  );
 };
+
+// ==================== COMPOSANTS UTILITAIRES ====================
 
 const ImagePreview = ({ image, alt, position }) => (
   <ImagePreviewWrapper style={{ left: `${position.x}px`, top: `${position.y}px` }}>
@@ -163,40 +227,7 @@ const TextFormatButtons = ({ onBold, onUnderline, onItalic, onSize, onCenter }) 
   </div>
 );
 
-
-
-const QuestionContent = styled.div`
-  padding: 1rem;
-  padding-right: 0;
-  background-color: white;
-  border-radius: 0 0 8px 8px;
-  border-right: ;
-`;
-
-const LinkButton = styled.button`
-  padding: 0.25rem 0.75rem;
-  font-size: 0.875rem;
-  color: #3b82f6;
-  background-color: #eff6ff;
-  border-radius: 0.375rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.2s;
-
-  &:hover {
-    background-color: #dbeafe;
-  }
-`;
-
-const createPathFromPoints = (points) => {
-  if (!points || points.length < 2) return '';
-  return (
-    points
-      .map((point, i) => `${i === 0 ? 'M' : 'L'} ${point.x} ${point.y}`)
-      .join(' ') + ' Z'
-  );
-};
+// ==================== COMPOSANT PRINCIPAL ====================
 
 const QuestionPreview = ({ 
   question, 
@@ -265,9 +296,9 @@ const QuestionPreview = ({
   };
 
   return (
-    <div className="mb- overflow-hidden">
-      <div className="bg-white rounded-lg shadow border-l-2 border-blue-400" style={{ margin: 0, width: '100%' }}>
-        <QuestionHeader depth={depth}>
+    <div className="mb-4 overflow-hidden">
+      <ModernQuestionCard>
+        <ModernQuestionHeader depth={depth}>
           <div className="flex items-center flex-grow gap-2">
             {showCRFields && toggleQuestionVisibility && (
               <button
@@ -280,7 +311,7 @@ const QuestionPreview = ({
                 {hiddenQuestions?.[question.id] ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             )}
-            <h3 className="text-base text-gray-700">{question.text}</h3>
+            <h3 className="text-base text-gray-700 font-semibold">{question.text}</h3>
             <div className="flex items-center gap-2 ml-auto">
               {questionnaireLinks && questionnaireLinks[questionId]?.map((link, index) => (
                 <LinkButton
@@ -324,7 +355,7 @@ const QuestionPreview = ({
               {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
             </button>
           </div>
-        </QuestionHeader>
+        </ModernQuestionHeader>
 
         {showImage === questionId && question.image && (
           <ImagePreview 
@@ -335,20 +366,19 @@ const QuestionPreview = ({
         )}
 
         {isExpanded && (
-          <QuestionContent>
+          <ModernQuestionContent>
+            {/* OPTIONS AVEC STYLE MÉDICAL CLAIR */}
             {['single', 'multiple'].includes(question.type) && (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {question.options?.map((option, optionIndex) => {
                   if (!option) return null;
                   const optionId = `${questionId}-options-${optionIndex}`;
                   const checked = isOptionSelected(optionIndex);
 
                   return (
-                    <>
-                      <OptionCard
-                        key={option?.id || optionId}
+                    <div key={option?.id || optionId}>
+                      <ModernOptionCard
                         checked={checked}
-                        style={{ width: '100%' }}
                         onClick={(e) => {
                           e.preventDefault();
                           handleOptionChange(optionIndex);
@@ -362,16 +392,22 @@ const QuestionPreview = ({
                           style={{ pointerEvents: "none" }}
                           onClick={e => e.stopPropagation()}
                         />
-                        <span>{option.text}</span>
-                        <div className="flex items-center gap-2 ml-auto">
+                        
+                        <span className="option-text">{option.text}</span>
+                        
+                        <div className="option-actions">
                           {questionnaireLinks && questionnaireLinks[optionId]?.map((link, index) => (
                             <LinkButton
                               key={index}
-                              onClick={() => navigate(`/questionnaire/${questionnaireId}/link/${optionId}/${index}`)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/questionnaire/${questionnaireId}/link/${optionId}/${index}`);
+                              }}
                             >
                               {link.title || `Fiche ${index + 1}`}
                             </LinkButton>
                           ))}
+
                           {option.image && (
                             <>
                               <div 
@@ -394,7 +430,8 @@ const QuestionPreview = ({
                               )}
                             </>
                           )}
-                          <label className="flex items-center gap-2">
+
+                          <label className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                             <input
                               type="checkbox"
                               checked={option.includeInConclusion || false}
@@ -411,7 +448,8 @@ const QuestionPreview = ({
                             <span className="text-xs text-gray-500">Conclusion</span>
                           </label>
                         </div>
-                      </OptionCard>
+                      </ModernOptionCard>
+
                       {showImage === optionId && option.image && (
                         <ImagePreview 
                           image={option.image}
@@ -421,7 +459,7 @@ const QuestionPreview = ({
                       )}
 
                       {showCRFields && isOptionSelected(optionIndex) && (
-                        <div className="mt-3">
+                        <div className="mt-3 p-3 bg-gray-50 rounded-lg">
                           <TextFormatButtons 
                             onBold={() => handleCRTextChange(optionIndex, `<strong>${crTexts[question.id]?.[optionIndex] || option.text}</strong>`)}
                             onUnderline={() => handleCRTextChange(optionIndex, `<u>${crTexts[question.id]?.[optionIndex] || option.text}</u>`)}
@@ -438,15 +476,17 @@ const QuestionPreview = ({
                         </div>
                       )}
 
+                      {/* SOUS-QUESTIONS */}
                       {isOptionSelected(optionIndex) && option?.subQuestions?.map((subQuestion, sqIndex) => (
                         <div 
                           key={subQuestion?.id || `${optionId}-sub-${sqIndex}`} 
                           className="mt-3 overflow-hidden" 
                           style={{ 
-                            marginLeft: '1rem',
+                            marginLeft: '1.5rem',
                             width: '100%',
-                            borderLeft: '2px solid #e5e7eb',
-                            maxWidth: 'calc(100% - 1rem)'
+                            borderLeft: '3px solid #e5e7eb',
+                            paddingLeft: '1rem',
+                            maxWidth: 'calc(100% - 2.5rem)'
                           }}
                         >
                           <QuestionPreview
@@ -475,93 +515,99 @@ const QuestionPreview = ({
                           />
                         </div>
                       ))}
-                    </>
+                    </div>
                   );
                 })}
               </div>
             )}
 
-              {question.type === 'text' && (
-                <textarea
-                  value={freeTexts?.[question.id] || ''}
-                  onChange={(e) => onFreeTextChange(question.id, e.target.value)}
-                  placeholder="Votre réponse..."
-                  className="w-full p-3 border rounded-md min-h-[100px]"
-                />
-              )}
-{question.type === 'imageMap' && question.questionImage && (
-  <div>
-<ImageMapContainer>
-  <img 
-    src={question.questionImage.src} 
-    alt="Question"
-    className="rounded-lg"
-  />
-  <svg
-    viewBox="0 0 100 100"
-    preserveAspectRatio="none"
-    style={{
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      pointerEvents: 'all'
-    }}
-  >
-        {question.questionImage.areas?.map((area, index) => (
-<path
-  key={index}
-  d={createPathFromPoints(area.points)}
-  fill={selectedOptions[question.id]?.includes(index) 
-    ? `rgba(${getColorValues(area.color || 'blue')}, 0.5)` 
-    : `rgba(${getColorValues(area.color || 'blue')}, 0.2)`}
-  stroke={`rgba(${getColorValues(area.color || 'blue')}, 0.5)`}
-  strokeWidth="0.2"
-  onClick={() => {
-    setSelectedOptions(question.id, index, 'multiple');
-              if (showCRFields && area.crText) {
-                handleCRTextChange(index, area.crText);
-              }
-            }}
-            style={{ cursor: 'pointer' }}
-          />
-        ))}
-      </svg>
-    </ImageMapContainer>
-    {showCRFields && (
-      <div className="mt-4 space-y-4">
-        {question.questionImage.areas?.map((area, index) => (
-          <div key={index} className="p-4 bg-white rounded shadow">
-            <h5 className="font-medium mb-2">Zone {index + 1} - {area.text}</h5>
-            <textarea
-              value={crTexts[question.id]?.[index] || ''}
-              onChange={(e) => handleCRTextChange(index, e.target.value)}
-              placeholder="Texte du CR pour cette option"
-              className="w-full p-2 border rounded min-h-[100px]"
-            />
-          </div>
-        ))}
-      </div>
-    )}
-  </div>
-)}
+            {/* CHAMP TEXTE LIBRE */}
+            {question.type === 'text' && (
+              <textarea
+                value={freeTexts?.[question.id] || ''}
+                onChange={(e) => onFreeTextChange(question.id, e.target.value)}
+                placeholder="Votre réponse..."
+                className="w-full p-3 border rounded-md min-h-[100px] focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+              />
+            )}
 
-              {question.type === 'number' && (
-                <input
-                  type="number"
-                  value={freeTexts?.[question.id] || ''}
-                  onChange={(e) => onFreeTextChange(question.id, e.target.value)}
-                  placeholder="Votre réponse..."
-                  className="w-full p-3 border rounded-md"
-                />
-              )}
-            </QuestionContent>
-          )}
-        </div>
-      </div>
-    );
+            {/* IMAGE INTERACTIVE */}
+            {question.type === 'imageMap' && question.questionImage && (
+              <div>
+                <ImageMapContainer>
+                  <img 
+                    src={question.questionImage.src} 
+                    alt="Question"
+                    className="rounded-lg"
+                  />
+                  <svg
+                    viewBox="0 0 100 100"
+                    preserveAspectRatio="none"
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      pointerEvents: 'all'
+                    }}
+                  >
+                    {question.questionImage.areas?.map((area, index) => (
+                      <path
+                        key={index}
+                        d={createPathFromPoints(area.points)}
+                        fill={selectedOptions[question.id]?.includes(index) 
+                          ? `rgba(${getColorValues(area.color || 'blue')}, 0.5)` 
+                          : `rgba(${getColorValues(area.color || 'blue')}, 0.2)`}
+                        stroke={`rgba(${getColorValues(area.color || 'blue')}, 0.5)`}
+                        strokeWidth="0.2"
+                        onClick={() => {
+                          setSelectedOptions(question.id, index, 'multiple');
+                          if (showCRFields && area.crText) {
+                            handleCRTextChange(index, area.crText);
+                          }
+                        }}
+                        style={{ cursor: 'pointer' }}
+                      />
+                    ))}
+                  </svg>
+                </ImageMapContainer>
+                {showCRFields && (
+                  <div className="mt-4 space-y-4">
+                    {question.questionImage.areas?.map((area, index) => (
+                      <div key={index} className="p-4 bg-white rounded shadow">
+                        <h5 className="font-medium mb-2">Zone {index + 1} - {area.text}</h5>
+                        <textarea
+                          value={crTexts[question.id]?.[index] || ''}
+                          onChange={(e) => handleCRTextChange(index, e.target.value)}
+                          placeholder="Texte du CR pour cette option"
+                          className="w-full p-2 border rounded min-h-[100px]"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* CHAMP NUMÉRIQUE */}
+            {question.type === 'number' && (
+              <input
+                type="number"
+                value={freeTexts?.[question.id] || ''}
+                onChange={(e) => onFreeTextChange(question.id, e.target.value)}
+                placeholder="Votre réponse..."
+                className="w-full p-3 border rounded-md focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+              />
+            )}
+          </ModernQuestionContent>
+        )}
+      </ModernQuestionCard>
+    </div>
+  );
 };
+
+// ==================== COMPOSANT PRINCIPAL QUESTIONNAIRE ====================
 
 const QuestionnairePreview = ({ 
   questions,
@@ -595,45 +641,45 @@ const QuestionnairePreview = ({
   const maxPage = Math.max(...questions.map(q => q.page || 1), 1);
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      <div className="flex justify-start gap-2 mb-4">
+    <PreviewWrapper>
+      {/* NAVIGATION PAGES */}
+      <div className="flex justify-start gap-2 mb-6">
         {[...Array(maxPage)].map((_, idx) => (
           <div key={idx} className="relative">
-<button
-  onClick={() => setCurrentPage(idx + 1)}
-  onDoubleClick={() => setEditingPageTitle(idx + 1)}
-  className={`
-    px-4 py-2 rounded-md text-sm font-medium
-    ${currentPage === idx + 1 
-      ? 'bg-blue-500 text-white' 
-      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
-    transition-colors duration-200
-  `}
->
-  {questionnaire?.pageTitles?.[idx + 1] || `Page ${idx + 1}`}
-</button>
-{editingPageTitle === idx + 1 && setQuestionnaire && (
-  <div className="absolute z-10 top-full left-0 mt-1 w-48">
-    <input
-      type="text"
-      className="w-full px-2 py-1 border rounded shadow-lg"
-      value={questionnaire?.pageTitles?.[idx + 1] || `Page ${idx + 1}`}
-      onChange={(e) => {
-        if (!questionnaire) return;
-        const newPageTitles = new Map(questionnaire.pageTitles || new Map());
-        newPageTitles.set(idx + 1, e.target.value);
-        setQuestionnaire(prev => ({
-          ...prev,
-          pageTitles: newPageTitles
-        }));
-      }}
-      onBlur={() => setEditingPageTitle(null)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') {
-          setEditingPageTitle(null);
-        }
-      }}
-      autoFocus
+            <button
+              onClick={() => setCurrentPage(idx + 1)}
+              onDoubleClick={() => setEditingPageTitle(idx + 1)}
+              className={`
+                px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                ${currentPage === idx + 1 
+                  ? 'bg-blue-500 text-white shadow-md' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
+              `}
+            >
+              {questionnaire?.pageTitles?.[idx + 1] || `Page ${idx + 1}`}
+            </button>
+            {editingPageTitle === idx + 1 && setQuestionnaire && (
+              <div className="absolute z-10 top-full left-0 mt-1 w-48">
+                <input
+                  type="text"
+                  className="w-full px-2 py-1 border rounded shadow-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                  value={questionnaire?.pageTitles?.[idx + 1] || `Page ${idx + 1}`}
+                  onChange={(e) => {
+                    if (!questionnaire) return;
+                    const newPageTitles = { ...(questionnaire.pageTitles || {}) };
+                    newPageTitles[idx + 1] = e.target.value;
+                    setQuestionnaire(prev => ({
+                      ...prev,
+                      pageTitles: newPageTitles
+                    }));
+                  }}
+                  onBlur={() => setEditingPageTitle(null)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      setEditingPageTitle(null);
+                    }
+                  }}
+                  autoFocus
                 />
               </div>
             )}
@@ -641,6 +687,7 @@ const QuestionnairePreview = ({
         ))}
       </div>
 
+      {/* QUESTIONS */}
       <div className="space-y-4">
         {currentQuestions.map((question, index) => (
           <QuestionPreview
@@ -669,7 +716,7 @@ const QuestionnairePreview = ({
           />
         ))}
       </div>
-    </div>
+    </PreviewWrapper>
   );
 };
 
