@@ -977,11 +977,10 @@ const QuestionnaireCreator = () => {
   };
 
   // Rendu des questions
-const renderQuestion = useCallback((question, path, dragHandleRef) => {
+  const renderQuestion = useCallback((question, path) => {
     const isExpanded = expandedQuestions[path.join('-')] ?? true;
     const questionId = path.join('-');
     const depth = path.length;
-
     const links = questionLinks[questionId] || [];
   
     return (
@@ -1348,10 +1347,8 @@ const renderQuestion = useCallback((question, path, dragHandleRef) => {
             />
             
             <DndProvider backend={HTML5Backend}>
-{questionnaire.questions.map((question, index) => {
-  const dragHandleRef = useRef(null);
-  return renderQuestion(question, [index], dragHandleRef);
-})}            </DndProvider>
+              {questionnaire.questions.map((question, index) => renderQuestion(question, [index]))}
+            </DndProvider>
             
             <CompactButtonGroup>
               <CompactButton onClick={() => addQuestion()}>
