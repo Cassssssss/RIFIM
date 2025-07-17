@@ -660,13 +660,42 @@ const CaseCard = memo(({ cas, onUpdateDifficulty, onUpdateAnswer, onAddTag, onRe
           </ModernAddTagButton>
         </S.AddTagForm>
       </ModernTagsContainer>
-      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem', alignItems: 'center' }}>
         <SecondaryButton as={Link} to={`/create-sheet/${cas._id}`}>Créer fiche</SecondaryButton>
         <PrimaryButton onClick={() => onLoadCase(cas._id)}>Charger</PrimaryButton>
-        <DangerButton onClick={() => onDeleteCase(cas._id)}>Supprimer</DangerButton>
         <SecondaryButton onClick={handleTogglePublic}>
           {cas.public ? 'Rendre privé' : 'Rendre public'}
         </SecondaryButton>
+        <button
+          onClick={() => onDeleteCase(cas._id)}
+          style={{
+            backgroundColor: '#ef4444',
+            color: 'white',
+            padding: '0.5rem',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.3s ease',
+            width: '40px',
+            height: '40px'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = '#dc2626';
+            e.target.style.transform = 'translateY(-2px)';
+            e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = '#ef4444';
+            e.target.style.transform = 'translateY(0)';
+            e.target.style.boxShadow = 'none';
+          }}
+          title="Supprimer ce cas"
+        >
+          <Trash2 size={18} />
+        </button>
       </div>
     </ModernCaseCard>
   );
