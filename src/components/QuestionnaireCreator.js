@@ -556,27 +556,35 @@ const DraggableQuestion = memo(({ question, index, moveQuestion, path, children 
   drop(ref); // Drop sur la carte
   drag(dragHandleRef); // Drag sur la poignée
 
-  return (
+return (
+  <div
+    ref={ref}
+    style={{ opacity: isDragging ? 0.4 : 1, position: "relative" }}
+    data-handler-id={handlerId}
+  >
+    {/* Drag handle en absolute à gauche */}
     <div
-      ref={ref}
-      style={{ opacity: isDragging ? 0.4 : 1, position: "relative" }}
-      data-handler-id={handlerId}
+      ref={dragHandleRef}
+      className="drag-handle"
+      style={{
+        position: "absolute",
+        left: 0,
+        top: "50%",
+        transform: "translateY(-50%)",
+        zIndex: 2,
+        cursor: "grab",
+        padding: "4px 6px",
+      }}
     >
-      <div style={{ display: "flex", alignItems: "center" }}>
-        {/* La drag handle SEULEMENT ici */}
-        <div
-          ref={dragHandleRef}
-          className="drag-handle"
-          style={{ cursor: "grab", marginRight: 8 }}
-        >
-          <GripVertical size={18} />
-        </div>
-        {/* Le reste de l’entête/question */}
-        {/* Tu peux garder ici ton ModernQuestionHeader ou autres enfants */}
-        {children}
-      </div>
+      <GripVertical size={18} />
     </div>
-  );
+
+    {/* Le contenu de la question, avec padding-left */}
+    <div style={{ paddingLeft: 32 /* adapte la largeur si besoin */ }}>
+      {children}
+    </div>
+  </div>
+);
 });
 
 // ==================== COMPOSANT PRINCIPAL ====================
