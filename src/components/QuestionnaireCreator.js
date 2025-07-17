@@ -977,7 +977,8 @@ const QuestionnaireCreator = () => {
   };
 
   // Rendu des questions
-  const renderQuestion = useCallback((question, path) => {
+const renderQuestion = useCallback((question, path, dragHandleRef) => {
+
     const isExpanded = expandedQuestions[path.join('-')] ?? true;
     const questionId = path.join('-');
     const depth = path.length;
@@ -1001,7 +1002,7 @@ const QuestionnaireCreator = () => {
               {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </CompactIconButton>
             
-<CompactDragHandle className="drag-handle" style={{ cursor: 'grab' }}>
+<CompactDragHandle ref={dragHandleRef} className="drag-handle" style={{ cursor: 'grab' }}>
   <GripVertical size={14} />
 </CompactDragHandle>
             
@@ -1347,8 +1348,20 @@ const QuestionnaireCreator = () => {
             />
             
             <DndProvider backend={HTML5Backend}>
-              {questionnaire.questions.map((question, index) => renderQuestion(question, [index]))}
-            </DndProvider>
+{questionnaire.questions.map((question, index) => {
+  const dragHandleRef = useRef(null);
+  return (
+    <DraggableQuestion
+      key={question.id || `question-${index}`}
+      question={question}
+      index={index}
+      moveQuestion={moveQuestion}
+      path={[index]}
+    >
+      {renderQuestion(question, [index], dragHandleRef)}
+    </DraggableQuestion>
+  );
+})}            </DndProvider>
             
             <CompactButtonGroup>
               <CompactButton onClick={() => addQuestion()}>

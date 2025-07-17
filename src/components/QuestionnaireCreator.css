@@ -107,3 +107,34 @@ input, textarea {
   -moz-user-select: none;
   -ms-user-select: none;
 }
+
+
+/* Permettre la sélection de texte dans les inputs */
+input, textarea {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+}
+
+/* Empêcher la sélection sur les éléments draggables sauf les inputs */
+.drag-handle {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Feedback visuel pour le drag handle */
+.drag-handle:hover {
+  transform: scale(1.1);
+}
+
+.drag-handle:active {
+  transform: scale(0.95);
+}
+
+
+
+
+
