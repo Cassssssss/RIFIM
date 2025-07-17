@@ -1520,3 +1520,5 @@ export default QuestionnaireCreator;
       }
       
       return { ...prev, questions: updatedQuestions };
+    });
+  }, []);
