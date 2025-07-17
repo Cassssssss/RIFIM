@@ -587,7 +587,7 @@ const renderFolderThumbnails = useCallback(() => {
           onMouseEnter={() => setIsShortcutGuideVisible(true)}
           onMouseLeave={() => setIsShortcutGuideVisible(false)}
         >
-          <div className={styles.shortcutIcon}>?</div>
+          <div className={styles.shortcutIcon}>⌨️</div>
           {isShortcutGuideVisible && (
             <div className={`${styles.shortcutPopup} ${styles.visible}`}>
               <h3 className={styles.shortcutTitle}>Guide des raccourcis</h3>
@@ -602,17 +602,27 @@ const renderFolderThumbnails = useCallback(() => {
           )}
         </div>
   
-        <div>
-          <button 
-            className={styles.responseButton}
-            onClick={() => setIsResponseVisible(!isResponseVisible)}
-          >
-            {isResponseVisible ? "Cacher la réponse" : "Réponse"}
-          </button>
-          <Link to={`/sheet/${caseId}`} className={styles.sheetLink}>
-            Voir la fiche récapitulative
-          </Link>
-        </div>
+<div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+  <button 
+    className={styles.responseButton}
+    onClick={() => setIsResponseVisible(!isResponseVisible)}
+  >
+    {isResponseVisible ? (
+      <>
+        <EyeOff size={16} />
+        Cacher la réponse
+      </>
+    ) : (
+      <>
+        <Eye size={16} />
+        Voir la réponse
+      </>
+    )}
+  </button>
+  <Link to={`/sheet/${caseId}`} className={styles.sheetLink}>
+    📋 Fiche récapitulative
+  </Link>
+</div>
       </div>
   
       {isResponseVisible && currentCase && currentCase.answer && (
