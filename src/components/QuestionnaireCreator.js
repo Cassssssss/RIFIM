@@ -487,7 +487,6 @@ const ImageUpload = memo(({ id, onImageUpload, onAddCaption, caption, showCaptio
 
 const DraggableQuestion = memo(({ question, index, moveQuestion, path, children }) => {
   const ref = useRef(null);
-  const dragHandleRef = useRef(null);
   
   const [{ handlerId }, drop] = useDrop({
     accept: 'question',
@@ -529,14 +528,22 @@ const DraggableQuestion = memo(({ question, index, moveQuestion, path, children 
 
   const opacity = isDragging ? 0.4 : 1;
   
-  // IMPORTANT: Connecter le drag SEULEMENT au handle, pas à toute la div
-  drag(dragHandleRef);
+  // Connecter le drop à toute la zone
   drop(ref);
+
+  // Utiliser useEffect pour connecter le drag au handle après le rendu
+  useEffect(() => {
+    if (ref.current) {
+      const dragHandle = ref.current.querySelector('.drag-handle');
+      if (dragHandle) {
+        drag(dragHandle);
+      }
+    }
+  }, [drag]);
 
   return (
     <div ref={ref} style={{ opacity }} data-handler-id={handlerId}>
-      {/* Clone l'enfant et ajoute la ref du drag handle */}
-      {React.cloneElement(children, { dragHandleRef })}
+      {children}
     </div>
   );
 });
@@ -991,7 +998,7 @@ const QuestionnaireCreator = () => {
         moveQuestion={moveQuestion}
         path={path}
       >
-        <ModernQuestionCard dragHandleRef={null}>
+        <ModernQuestionCard>
           <ModernQuestionHeader depth={depth}>
             <CompactIconButton
               variant="secondary"
@@ -1002,14 +1009,7 @@ const QuestionnaireCreator = () => {
             </CompactIconButton>
             
             {/* DRAG HANDLE - SEULEMENT ICI ON PEUT DRAGGER */}
-            <CompactDragHandle 
-              ref={(ref) => {
-                // Cette fonction sera appelée par React.cloneElement dans DraggableQuestion
-                if (arguments[0]?.dragHandleRef) {
-                  arguments[0].dragHandleRef.current = ref;
-                }
-              }}
-            >
+            <CompactDragHandle className="drag-handle">
               <GripVertical size={14} />
             </CompactDragHandle>
             
