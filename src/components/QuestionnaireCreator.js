@@ -511,7 +511,9 @@ const ImageUploadComponent = memo(({ onImageUpload, currentImage, id, onAddCapti
 
 const DraggableQuestion = memo(({ question, index, moveQuestion, path, children }) => {
   const ref = useRef(null);
-  
+  const dragHandleRef = useRef(null);
+
+  // Drop sur tout le conteneur
   const [{ handlerId }, drop] = useDrop({
     accept: 'question',
     collect(monitor) {
@@ -542,6 +544,7 @@ const DraggableQuestion = memo(({ question, index, moveQuestion, path, children 
     },
   });
 
+  // Drag uniquement sur la poignée
   const [{ isDragging }, drag] = useDrag({
     type: 'question',
     item: () => ({ id: question.id, index, path }),
@@ -550,14 +553,28 @@ const DraggableQuestion = memo(({ question, index, moveQuestion, path, children 
     }),
   });
 
-  const opacity = isDragging ? 0.4 : 1;
-  
-  // Connecter le drag à toute la question
-  drag(drop(ref));
+  drop(ref); // Drop sur la carte
+  drag(dragHandleRef); // Drag sur la poignée
 
   return (
-    <div ref={ref} style={{ opacity }} data-handler-id={handlerId}>
-      {children}
+    <div
+      ref={ref}
+      style={{ opacity: isDragging ? 0.4 : 1, position: "relative" }}
+      data-handler-id={handlerId}
+    >
+      <div style={{ display: "flex", alignItems: "center" }}>
+        {/* La drag handle SEULEMENT ici */}
+        <div
+          ref={dragHandleRef}
+          className="drag-handle"
+          style={{ cursor: "grab", marginRight: 8 }}
+        >
+          <GripVertical size={18} />
+        </div>
+        {/* Le reste de l’entête/question */}
+        {/* Tu peux garder ici ton ModernQuestionHeader ou autres enfants */}
+        {children}
+      </div>
     </div>
   );
 });
