@@ -49,11 +49,200 @@ const ModernSectionContainer = styled(S.SectionContainer)`
 `;
 
 const ModernButton = styled(S.Button)`
-  transition: all 0.2s ease;
-  
+  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, ${props => props.theme.secondary}, ${props => props.theme.primary});
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    background: #9ca3af;
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+`;
+
+const SecondaryButton = styled(S.Button)`
+  background: transparent;
+  color: ${props => props.theme.primary};
+  border: 2px solid ${props => props.theme.primary};
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &:hover:not(:disabled) {
+    background: ${props => props.theme.primary};
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+`;
+
+const DangerButton = styled(S.Button)`
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+`;
+
+const UploadButtonStyled = styled(S.UploadButton)`
+  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, ${props => props.theme.secondary}, ${props => props.theme.primary});
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+`;
+
+const MainImageButtonStyled = styled(S.MainImageButton)`
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    background: linear-gradient(135deg, #059669, #047857);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+`;
+
+const AddTagButtonStyled = styled(S.AddTagButton)`
+  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, ${props => props.theme.secondary}, ${props => props.theme.primary});
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
   }
 `;
 
@@ -263,10 +452,10 @@ const CaseCard = memo(({ cas, onUpdateDifficulty, onUpdateAnswer, onAddTag, onRe
         ) : (
           <>
             <S.AnswerText>{cas.answer || 'Pas de réponse'}</S.AnswerText>
-            <ModernButton onClick={handleAnswerEdit}>
+            <SecondaryButton onClick={handleAnswerEdit}>
               <Edit size={16} />
               Modifier la réponse
-            </ModernButton>
+            </SecondaryButton>
           </>
         )}
       </S.AnswerSection>
@@ -286,17 +475,17 @@ const CaseCard = memo(({ cas, onUpdateDifficulty, onUpdateAnswer, onAddTag, onRe
             onChange={(e) => setNewTag(e.target.value)}
             placeholder="Nouveau tag"
           />
-          <S.AddTagButton type="submit">
+          <AddTagButtonStyled type="submit">
             <Plus size={16} />
-          </S.AddTagButton>
+          </AddTagButtonStyled>
         </S.AddTagForm>
       </S.TagsContainer>
-      <ModernButton as={Link} to={`/create-sheet/${cas._id}`}>Créer fiche</ModernButton>
+      <SecondaryButton as={Link} to={`/create-sheet/${cas._id}`}>Créer fiche</SecondaryButton>
       <ModernButton onClick={() => onLoadCase(cas._id)}>Charger</ModernButton>
-      <ModernButton onClick={() => onDeleteCase(cas._id)}>Supprimer</ModernButton>
-      <ModernButton onClick={handleTogglePublic}>
+      <DangerButton onClick={() => onDeleteCase(cas._id)}>Supprimer</DangerButton>
+      <SecondaryButton onClick={handleTogglePublic}>
         {cas.public ? 'Rendre privé' : 'Rendre public'}
-      </ModernButton>
+      </SecondaryButton>
     </ModernCaseCard>
   );
 });
@@ -858,7 +1047,7 @@ const handleReorderImages = useCallback(async (folder, reorderedImages) => {
               <S.FolderHeader>
                 <S.FolderTitle>{folder}</S.FolderTitle>
                 <S.FolderActions>
-                  <S.UploadButton>
+                  <UploadButtonStyled>
                     <Upload size={20} style={{ marginRight: '10px' }} />
                     Ajouter des images {folder}
                     <S.FileInput 
@@ -867,8 +1056,8 @@ const handleReorderImages = useCallback(async (folder, reorderedImages) => {
                       multiple
                       onChange={(e) => handleImageUpload(e, folder)} 
                     />
-                  </S.UploadButton>
-                  <S.MainImageButton as="label">
+                  </UploadButtonStyled>
+                  <MainImageButtonStyled as="label">
                     <ImageIcon size={20} style={{ marginRight: '10px' }} />
                     Image principale du dossier
                     <S.FileInput
@@ -876,11 +1065,11 @@ const handleReorderImages = useCallback(async (folder, reorderedImages) => {
                       accept="image/*"
                       onChange={(e) => setFolderMainImage(e, folder)}
                     />
-                  </S.MainImageButton>
-                  <ModernButton onClick={() => deleteFolder(folder)}>
+                  </MainImageButtonStyled>
+                  <DangerButton onClick={() => deleteFolder(folder)}>
                     <Trash2 size={20} style={{ marginRight: '10px' }} />
                     Supprimer le dossier
-                  </ModernButton>
+                  </DangerButton>
                 </S.FolderActions>
               </S.FolderHeader>
               {newImages[folder] && newImages[folder].length > 0 && (
