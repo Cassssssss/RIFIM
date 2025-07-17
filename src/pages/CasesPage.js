@@ -17,10 +17,16 @@ console.log('API_BASE_URL:', API_BASE_URL);
 const SPACES_URL = process.env.REACT_APP_SPACES_URL || 'https://rifim.lon1.digitaloceanspaces.com';
 const UPLOAD_BASE_URL = process.env.REACT_APP_UPLOAD_URL || 'http://localhost:5002/uploads';
 
-// Styled components améliorés pour le style moderne
+// ==================== STYLED COMPONENTS HARMONISÉS AVEC LE THÈME ====================
+
 const ModernPageContainer = styled(S.PageContainer)`
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background: linear-gradient(135deg, ${props => props.theme.background} 0%, ${props => props.theme.backgroundSecondary || props.theme.card} 100%);
   min-height: calc(100vh - 60px);
+  padding: 2rem;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 `;
 
 const ModernTitle = styled(S.Title)`
@@ -30,12 +36,20 @@ const ModernTitle = styled(S.Title)`
   background-clip: text;
   font-size: 2.5rem;
   font-weight: 700;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-shadow: 0 2px 4px ${props => props.theme.shadow};
+  margin-bottom: 2rem;
+  text-align: center;
 `;
 
 const ModernSectionContainer = styled(S.SectionContainer)`
   position: relative;
   overflow: hidden;
+  background-color: ${props => props.theme.card};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 12px;
+  box-shadow: 0 4px 20px ${props => props.theme.shadow};
+  margin-bottom: 2rem;
+  padding: 1.5rem;
   
   &::before {
     content: '';
@@ -48,23 +62,76 @@ const ModernSectionContainer = styled(S.SectionContainer)`
   }
 `;
 
-const ModernButton = styled(S.Button)`
-  background-color: #6366f1;
-  color: white;
+const ModernInputGroup = styled(S.InputGroup)`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+  }
+`;
+
+const ModernInput = styled(S.Input)`
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 2px solid ${props => props.theme.border};
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: ${props => props.theme.inputBackground || props.theme.background};
+  color: ${props => props.theme.text};
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary};
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
+  }
+
+  &::placeholder {
+    color: ${props => props.theme.textSecondary || props.theme.textLight};
+  }
+`;
+
+const ModernSelect = styled(S.Select)`
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-top: 1rem;
+  border: 2px solid ${props => props.theme.border};
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: ${props => props.theme.inputBackground || props.theme.background};
+  color: ${props => props.theme.text};
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary};
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
+  }
+`;
+
+// Boutons harmonisés avec le thème
+const PrimaryButton = styled.button`
+  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.primaryHover || props.theme.secondary});
+  color: ${props => props.theme.buttonText || 'white'};
   border: none;
-  border-radius: 6px;
-  padding: 10px 16px;
-  font-weight: 500;
-  font-size: 0.875rem;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px ${props => props.theme.primary}30;
 
   &:hover:not(:disabled) {
-    background-color: #5855eb;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px ${props => props.theme.primary}40;
   }
 
   &:active:not(:disabled) {
@@ -75,37 +142,35 @@ const ModernButton = styled(S.Button)`
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
-    background-color: #9ca3af;
+    background: ${props => props.theme.disabled || '#9ca3af'};
+    box-shadow: none;
   }
 
   svg {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
   }
 `;
 
-const SecondaryButton = styled(S.Button)`
-  background-color: #f3f4f6;
-  color: #374151;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  padding: 10px 16px;
+const SecondaryButton = styled.button`
+  background-color: ${props => props.theme.buttonSecondary || props.theme.background};
+  color: ${props => props.theme.buttonSecondaryText || props.theme.text};
+  border: 2px solid ${props => props.theme.border};
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
   font-weight: 500;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
 
   &:hover:not(:disabled) {
-    background-color: #e5e7eb;
-    border-color: #9ca3af;
+    background-color: ${props => props.theme.hover};
+    border-color: ${props => props.theme.primary};
     transform: translateY(-1px);
-  }
-
-  &:active:not(:disabled) {
-    transform: translateY(0);
+    box-shadow: 0 2px 8px ${props => props.theme.shadow};
   }
 
   &:disabled {
@@ -115,118 +180,153 @@ const SecondaryButton = styled(S.Button)`
   }
 
   svg {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
   }
 `;
 
-const DangerButton = styled(S.Button)`
-  background-color: #ef4444;
+const DangerButton = styled.button`
+  background: linear-gradient(135deg, ${props => props.theme.error || '#ef4444'}, ${props => props.theme.buttonDangerHover || '#dc2626'});
   color: white;
   border: none;
-  border-radius: 6px;
-  padding: 10px 16px;
-  font-weight: 500;
-  font-size: 0.875rem;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px ${props => props.theme.error || '#ef4444'}30;
 
   &:hover:not(:disabled) {
-    background-color: #dc2626;
-    transform: translateY(-1px);
-  }
-
-  &:active:not(:disabled) {
-    transform: translateY(0);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px ${props => props.theme.error || '#ef4444'}40;
   }
 
   svg {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
   }
 `;
 
-const UploadButtonStyled = styled(S.UploadButton)`
-  background-color: #6366f1;
+const UploadButtonStyled = styled.label`
+  background: linear-gradient(135deg, ${props => props.theme.secondary}, ${props => props.theme.secondaryHover || props.theme.primary});
   color: white;
   border: none;
-  border-radius: 6px;
-  padding: 10px 16px;
-  font-weight: 500;
-  font-size: 0.875rem;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px ${props => props.theme.secondary}30;
 
   &:hover {
-    background-color: #5855eb;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px ${props => props.theme.secondary}40;
   }
 
   svg {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
   }
 `;
 
-const MainImageButtonStyled = styled(S.MainImageButton)`
-  background-color: #10b981;
+const MainImageButtonStyled = styled.label`
+  background: linear-gradient(135deg, ${props => props.theme.accent || '#f59e0b'}, #d97706);
   color: white;
   border: none;
-  border-radius: 6px;
-  padding: 10px 16px;
-  font-weight: 500;
-  font-size: 0.875rem;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px ${props => props.theme.accent || '#f59e0b'}30;
 
   &:hover {
-    background-color: #059669;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px ${props => props.theme.accent || '#f59e0b'}40;
   }
 
   svg {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
   }
 `;
 
-const AddTagButtonStyled = styled(S.AddTagButton)`
-  background-color: #6366f1;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 6px 10px;
-  font-weight: 500;
-  font-size: 0.75rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  transition: all 0.2s ease;
+const ModernFolderContainer = styled(S.FolderContainer)`
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  background-color: ${props => props.theme.card};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 12px;
+  box-shadow: 0 2px 10px ${props => props.theme.shadow};
+  transition: all 0.3s ease;
 
   &:hover {
-    background-color: #5855eb;
-    transform: translateY(-1px);
+    box-shadow: 0 4px 20px ${props => props.theme.shadow};
+    border-color: ${props => props.theme.primary}50;
   }
+`;
 
-  svg {
-    width: 14px;
-    height: 14px;
+const ModernFolderHeader = styled(S.FolderHeader)`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid ${props => props.theme.border};
+`;
+
+const ModernFolderTitle = styled(S.FolderTitle)`
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: ${props => props.theme.primary};
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &::before {
+    content: '📁';
+    font-size: 1.5rem;
+  }
+`;
+
+const ModernFolderActions = styled(S.FolderActions)`
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.75rem;
+    
+    button, label {
+      width: 100%;
+    }
   }
 `;
 
 const ModernCaseCard = styled(S.CaseCard)`
   position: relative;
   overflow: hidden;
+  background-color: ${props => props.theme.card};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 15px ${props => props.theme.shadow};
+  transition: all 0.3s ease;
   
   &::before {
     content: '';
@@ -234,43 +334,120 @@ const ModernCaseCard = styled(S.CaseCard)`
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
+    height: 4px;
     background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px ${props => props.theme.shadow};
+    border-color: ${props => props.theme.primary}50;
+  }
+`;
+
+const ModernTagsContainer = styled(S.TagsContainer)`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0;
+`;
+
+const ModernTag = styled(S.Tag)`
+  background: linear-gradient(135deg, ${props => props.theme.tagBackground || props.theme.primary}, ${props => props.theme.primary});
+  color: ${props => props.theme.tagText || 'white'};
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  box-shadow: 0 1px 3px ${props => props.theme.shadow};
+`;
+
+const ModernAddTagButton = styled(S.AddTagButton)`
+  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 0.25rem 0.75rem;
+  font-weight: 500;
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px ${props => props.theme.shadow};
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px ${props => props.theme.shadow};
+  }
+
+  svg {
+    width: 12px;
+    height: 12px;
   }
 `;
 
 const TutorialButton = styled.button`
-  background-color: ${props => props.theme.secondary};
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 0.5rem 1rem;
   border: none;
-  border-radius: 4px;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  margin-top: 1rem;
-  
+  margin-top: 2rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+
   &:hover {
-    background-color: ${props => props.theme.primary};
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+  }
+
+  &::before {
+    content: '🎓';
+    font-size: 1.2rem;
   }
 `;
 
 const VideoContainer = styled.div`
   margin-top: 2rem;
-  padding: 1rem;
+  padding: 2rem;
   background-color: ${props => props.theme.card};
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 12px;
+  box-shadow: 0 4px 15px ${props => props.theme.shadow};
 
   h3 {
-    margin-bottom: 1rem;
     color: ${props => props.theme.text};
+    margin-bottom: 1.5rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &::before {
+      content: '🎬';
+      font-size: 1.5rem;
+    }
   }
 
   .video-wrapper {
     position: relative;
-    padding-bottom: 56.25%; /* Ratio 16:9 */
+    padding-bottom: 56.25%;
     height: 0;
     overflow: hidden;
-    max-width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px ${props => props.theme.shadow};
 
     iframe {
       position: absolute;
@@ -278,9 +455,34 @@ const VideoContainer = styled.div`
       left: 0;
       width: 100%;
       height: 100%;
+      border-radius: 8px;
     }
   }
 `;
+
+const ModernSearchInput = styled(S.SearchInput)`
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-bottom: 2rem;
+  border: 2px solid ${props => props.theme.border};
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: ${props => props.theme.inputBackground || props.theme.background};
+  color: ${props => props.theme.text};
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary};
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
+  }
+
+  &::placeholder {
+    color: ${props => props.theme.textSecondary || props.theme.textLight};
+  }
+`;
+
+// ==================== COMPOSANTS EXISTANTS AVEC STYLES HARMONISÉS ====================
 
 const CollapsibleImageGallery = memo(({ folder, images, onImageClick, onDeleteImage, caseId, fetchFolderMainImage, onReorderImages }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -422,10 +624,10 @@ const CaseCard = memo(({ cas, onUpdateDifficulty, onUpdateAnswer, onAddTag, onRe
               onChange={(e) => setEditingAnswer({ ...editingAnswer, value: e.target.value })}
               placeholder="Entrez la réponse..."
             />
-            <ModernButton onClick={handleAnswerSave}>
+            <PrimaryButton onClick={handleAnswerSave}>
               <Save size={16} />
               Sauvegarder
-            </ModernButton>
+            </PrimaryButton>
           </>
         ) : (
           <>
@@ -437,14 +639,14 @@ const CaseCard = memo(({ cas, onUpdateDifficulty, onUpdateAnswer, onAddTag, onRe
           </>
         )}
       </S.AnswerSection>
-      <S.TagsContainer>
+      <ModernTagsContainer>
         {cas.tags && cas.tags.map(tag => (
-          <S.Tag key={tag}>
+          <ModernTag key={tag}>
             {tag}
             <S.RemoveTagButton onClick={() => onRemoveTag(cas._id, tag)}>
               <X size={12} />
             </S.RemoveTagButton>
-          </S.Tag>
+          </ModernTag>
         ))}
         <S.AddTagForm onSubmit={handleAddTag}>
           <S.TagInput
@@ -453,17 +655,19 @@ const CaseCard = memo(({ cas, onUpdateDifficulty, onUpdateAnswer, onAddTag, onRe
             onChange={(e) => setNewTag(e.target.value)}
             placeholder="Nouveau tag"
           />
-          <AddTagButtonStyled type="submit">
+          <ModernAddTagButton type="submit">
             <Plus size={16} />
-          </AddTagButtonStyled>
+          </ModernAddTagButton>
         </S.AddTagForm>
-      </S.TagsContainer>
-      <SecondaryButton as={Link} to={`/create-sheet/${cas._id}`}>Créer fiche</SecondaryButton>
-      <ModernButton onClick={() => onLoadCase(cas._id)}>Charger</ModernButton>
-      <DangerButton onClick={() => onDeleteCase(cas._id)}>Supprimer</DangerButton>
-      <SecondaryButton onClick={handleTogglePublic}>
-        {cas.public ? 'Rendre privé' : 'Rendre public'}
-      </SecondaryButton>
+      </ModernTagsContainer>
+      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+        <SecondaryButton as={Link} to={`/create-sheet/${cas._id}`}>Créer fiche</SecondaryButton>
+        <PrimaryButton onClick={() => onLoadCase(cas._id)}>Charger</PrimaryButton>
+        <DangerButton onClick={() => onDeleteCase(cas._id)}>Supprimer</DangerButton>
+        <SecondaryButton onClick={handleTogglePublic}>
+          {cas.public ? 'Rendre privé' : 'Rendre public'}
+        </SecondaryButton>
+      </div>
     </ModernCaseCard>
   );
 });
@@ -962,27 +1166,30 @@ const handleReorderImages = useCallback(async (folder, reorderedImages) => {
 
   return (
     <ModernPageContainer>
-      <ModernTitle>Création de cas</ModernTitle>
+      <ModernTitle>🎯 Création de cas</ModernTitle>
   
-      <S.SearchInput
+      <ModernSearchInput
         type="text"
-        placeholder="Rechercher un cas..."
+        placeholder="🔍 Rechercher un cas..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
   
       <ModernSectionContainer>
-        <S.InputGroup>
-          <S.Input
+        <ModernInputGroup>
+          <ModernInput
             type="text"
             value={newCaseTitle}
             onChange={(e) => setNewCaseTitle(e.target.value)}
             placeholder="Titre du nouveau cas"
           />
-          <ModernButton onClick={addNewCase}>Créer un nouveau cas</ModernButton>
-        </S.InputGroup>
+          <PrimaryButton onClick={addNewCase}>
+            <Plus size={18} />
+            Créer un nouveau cas
+          </PrimaryButton>
+        </ModernInputGroup>
   
-        <S.Select
+        <ModernSelect
           value={selectedCase?._id || ''}
           onChange={(e) => loadCase(e.target.value)}
         >
@@ -990,44 +1197,44 @@ const handleReorderImages = useCallback(async (folder, reorderedImages) => {
           {cases.map(cas => (
             <option key={cas._id} value={cas._id}>{cas.title}</option>
           ))}
-        </S.Select>
+        </ModernSelect>
       </ModernSectionContainer>
   
       {selectedCase && (
         <ModernSectionContainer>
-          <S.InputGroup>
-            <S.UploadButton>
-              <ImageIcon size={20} style={{ marginRight: '10px' }} />
+          <ModernInputGroup>
+            <UploadButtonStyled>
+              <ImageIcon size={20} />
               Choisir l'image principale du cas
               <S.FileInput
                 type="file"
                 accept="image/*"
                 onChange={setMainImage}
               />
-            </S.UploadButton>
-          </S.InputGroup>
+            </UploadButtonStyled>
+          </ModernInputGroup>
   
-          <S.InputGroup>
-            <S.Input
+          <ModernInputGroup>
+            <ModernInput
               type="text"
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
               placeholder="Nom du nouveau dossier"
             />
-            <ModernButton onClick={addNewFolder}>
-              <Folder size={20} style={{ marginRight: '10px' }} />
+            <PrimaryButton onClick={addNewFolder}>
+              <Folder size={20} />
               Ajouter un dossier
-            </ModernButton>
-          </S.InputGroup>
+            </PrimaryButton>
+          </ModernInputGroup>
   
           {selectedCase.folders.map(folder => (
-            <S.FolderContainer key={folder}>
-              <S.FolderHeader>
-                <S.FolderTitle>{folder}</S.FolderTitle>
-                <S.FolderActions>
+            <ModernFolderContainer key={folder}>
+              <ModernFolderHeader>
+                <ModernFolderTitle>{folder}</ModernFolderTitle>
+                <ModernFolderActions>
                   <UploadButtonStyled>
-                    <Upload size={20} style={{ marginRight: '10px' }} />
-                    Ajouter des images {folder}
+                    <Upload size={20} />
+                    Ajouter des images
                     <S.FileInput 
                       type="file" 
                       accept="image/*" 
@@ -1036,8 +1243,8 @@ const handleReorderImages = useCallback(async (folder, reorderedImages) => {
                     />
                   </UploadButtonStyled>
                   <MainImageButtonStyled as="label">
-                    <ImageIcon size={20} style={{ marginRight: '10px' }} />
-                    Image principale du dossier
+                    <ImageIcon size={20} />
+                    Image principale
                     <S.FileInput
                       type="file"
                       accept="image/*"
@@ -1045,11 +1252,11 @@ const handleReorderImages = useCallback(async (folder, reorderedImages) => {
                     />
                   </MainImageButtonStyled>
                   <DangerButton onClick={() => deleteFolder(folder)}>
-                    <Trash2 size={20} style={{ marginRight: '10px' }} />
-                    Supprimer le dossier
+                    <Trash2 size={20} />
+                    Supprimer
                   </DangerButton>
-                </S.FolderActions>
-              </S.FolderHeader>
+                </ModernFolderActions>
+              </ModernFolderHeader>
               {newImages[folder] && newImages[folder].length > 0 && (
                 <S.ImagePreviewContainer>
                   {newImages[folder].map((img, index) => (
@@ -1062,15 +1269,16 @@ const handleReorderImages = useCallback(async (folder, reorderedImages) => {
                   ))}
                 </S.ImagePreviewContainer>
               )}
-            </S.FolderContainer>
+            </ModernFolderContainer>
           ))}
   
-          <ModernButton 
+          <PrimaryButton 
             onClick={addImagesToCase} 
             disabled={Object.values(newImages).every(arr => !arr || arr.length === 0)}
           >
+            <Upload size={18} />
             Ajouter les images au cas
-          </ModernButton>
+          </PrimaryButton>
         </ModernSectionContainer>
       )}
   
@@ -1097,7 +1305,9 @@ const handleReorderImages = useCallback(async (folder, reorderedImages) => {
       <S.FoldersSection>
       {selectedCase && selectedCase.images && (
   <ModernSectionContainer>
-    <h2>{selectedCase.title}</h2>
+    <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
+      🗂️ {selectedCase.title}
+    </h2>
     {selectedCase.folders.map(folder => (
       selectedCase.images[folder] && (
         <CollapsibleImageGallery
@@ -1140,10 +1350,12 @@ const handleReorderImages = useCallback(async (folder, reorderedImages) => {
 
       {imageDetails && (
         <ModernSectionContainer>
-          <h3>Détails des images :</h3>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            📊 Détails des images
+          </h3>
           {Object.entries(imageDetails).map(([folder, images]) => (
             <div key={folder}>
-              <h4>{folder} :</h4>
+              <h4 style={{ color: 'var(--color-primary)' }}>{folder} :</h4>
               <ul>
                 {images.map((image, index) => (
                   <li key={index}>{image}</li>
@@ -1156,18 +1368,27 @@ const handleReorderImages = useCallback(async (folder, reorderedImages) => {
 
       {selectedCase && (
         <ModernSectionContainer>
-          <h3>Images principales des dossiers :</h3>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            🖼️ Images principales des dossiers
+          </h3>
           {selectedCase.folders.map(folder => (
-            <div key={folder}>
-              <h4>{folder}</h4>
+            <div key={folder} style={{ marginBottom: '1rem' }}>
+              <h4 style={{ color: 'var(--color-primary)' }}>{folder}</h4>
               {selectedCase.folderMainImages && selectedCase.folderMainImages[folder] ? (
                 <img 
                   src={selectedCase.folderMainImages[folder]} 
                   alt={`Image principale de ${folder}`} 
-                  style={{ maxWidth: '200px', maxHeight: '200px' }} 
+                  style={{ 
+                    maxWidth: '200px', 
+                    maxHeight: '200px',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                  }} 
                 />
               ) : (
-                <p>Pas d'image principale définie pour ce dossier</p>
+                <p style={{ color: 'var(--color-text-secondary)' }}>
+                  Pas d'image principale définie pour ce dossier
+                </p>
               )}
             </div>
           ))}
@@ -1228,25 +1449,47 @@ const handleReorderImages = useCallback(async (folder, reorderedImages) => {
         </button>
       )}
 
-      {selectedCase && (
+        {selectedCase && (
         <ModernSectionContainer>
-          <h3>Statistiques du cas :</h3>
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            <div className="bg-gray-100 p-4 rounded">
-              <h4 className="font-bold mb-2">Nombre total d'images :</h4>
-              <p>{Object.values(selectedCase.images || {}).reduce((acc, curr) => acc + curr.length, 0)}</p>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            📈 Statistiques du cas
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
+            <div style={{ 
+              padding: '1rem', 
+              backgroundColor: 'var(--color-background)', 
+              borderRadius: '8px',
+              border: '1px solid var(--color-border)'
+            }}>
+              <h4 style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-primary)' }}>Nombre total d'images :</h4>
+              <p style={{ fontSize: '1.2rem', fontWeight: '600' }}>{Object.values(selectedCase.images || {}).reduce((acc, curr) => acc + curr.length, 0)}</p>
             </div>
-            <div className="bg-gray-100 p-4 rounded">
-              <h4 className="font-bold mb-2">Nombre de dossiers :</h4>
-              <p>{selectedCase.folders?.length || 0}</p>
+            <div style={{ 
+              padding: '1rem', 
+              backgroundColor: 'var(--color-background)', 
+              borderRadius: '8px',
+              border: '1px solid var(--color-border)'
+            }}>
+              <h4 style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-primary)' }}>Nombre de dossiers :</h4>
+              <p style={{ fontSize: '1.2rem', fontWeight: '600' }}>{selectedCase.folders?.length || 0}</p>
             </div>
-            <div className="bg-gray-100 p-4 rounded">
-              <h4 className="font-bold mb-2">Status :</h4>
-              <p>{selectedCase.public ? 'Public' : 'Privé'}</p>
+            <div style={{ 
+              padding: '1rem', 
+              backgroundColor: 'var(--color-background)', 
+              borderRadius: '8px',
+              border: '1px solid var(--color-border)'
+            }}>
+              <h4 style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-primary)' }}>Status :</h4>
+              <p style={{ fontSize: '1.2rem', fontWeight: '600' }}>{selectedCase.public ? 'Public' : 'Privé'}</p>
             </div>
-            <div className="bg-gray-100 p-4 rounded">
-              <h4 className="font-bold mb-2">Difficulté :</h4>
-              <p>{selectedCase.difficulty} / 5</p>
+            <div style={{ 
+              padding: '1rem', 
+              backgroundColor: 'var(--color-background)', 
+              borderRadius: '8px',
+              border: '1px solid var(--color-border)'
+            }}>
+              <h4 style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--color-primary)' }}>Difficulté :</h4>
+              <p style={{ fontSize: '1.2rem', fontWeight: '600' }}>{selectedCase.difficulty} / 5</p>
             </div>
           </div>
         </ModernSectionContainer>
@@ -1254,24 +1497,40 @@ const handleReorderImages = useCallback(async (folder, reorderedImages) => {
 
       {selectedCase && (
         <ModernSectionContainer>
-          <h3>Métadonnées :</h3>
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            <div>
-              <h4>Identifiant :</h4>
-              <p>{selectedCase._id}</p>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            🏷️ Métadonnées
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
+            <div style={{ 
+              padding: '1rem', 
+              backgroundColor: 'var(--color-background)', 
+              borderRadius: '8px',
+              border: '1px solid var(--color-border)'
+            }}>
+              <h4 style={{ color: 'var(--color-primary)', marginBottom: '0.5rem' }}>Identifiant :</h4>
+              <p style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>{selectedCase._id}</p>
             </div>
-            <div>
-              <h4>Titre :</h4>
+            <div style={{ 
+              padding: '1rem', 
+              backgroundColor: 'var(--color-background)', 
+              borderRadius: '8px',
+              border: '1px solid var(--color-border)'
+            }}>
+              <h4 style={{ color: 'var(--color-primary)', marginBottom: '0.5rem' }}>Titre :</h4>
               <p>{selectedCase.title}</p>
             </div>
-            <div>
-              <h4>Tags :</h4>
-              <div className="flex flex-wrap gap-2">
+            <div style={{ 
+              padding: '1rem', 
+              backgroundColor: 'var(--color-background)', 
+              borderRadius: '8px',
+              border: '1px solid var(--color-border)',
+              gridColumn: 'span 2'
+            }}>
+              <h4 style={{ color: 'var(--color-primary)', marginBottom: '0.5rem' }}>Tags :</h4>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                 {selectedCase.tags?.map(tag => (
-                  <span key={tag} className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                    {tag}
-                  </span>
-                ))}
+                  <ModernTag key={tag}>{tag}</ModernTag>
+                )) || <span style={{ color: 'var(--color-text-secondary)' }}>Aucun tag</span>}
               </div>
             </div>
           </div>
@@ -1280,8 +1539,17 @@ const handleReorderImages = useCallback(async (folder, reorderedImages) => {
 
       {process.env.NODE_ENV === 'development' && selectedCase && (
         <ModernSectionContainer>
-          <h3>Debug Info:</h3>
-          <pre className="bg-gray-100 p-4 rounded overflow-x-auto">
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            🐛 Debug Info
+          </h3>
+          <pre style={{ 
+            backgroundColor: 'var(--color-background)', 
+            padding: '1rem', 
+            borderRadius: '8px', 
+            overflowX: 'auto',
+            fontSize: '0.8rem',
+            border: '1px solid var(--color-border)'
+          }}>
             {JSON.stringify(selectedCase, null, 2)}
           </pre>
         </ModernSectionContainer>
