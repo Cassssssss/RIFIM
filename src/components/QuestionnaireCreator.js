@@ -511,6 +511,7 @@ const ImageUploadComponent = memo(({ onImageUpload, currentImage, id, onAddCapti
 
 const DraggableQuestion = memo(({ question, index, moveQuestion, path, children }) => {
   const ref = useRef(null);
+  const dragRef = useRef(null);
   
   const [{ handlerId }, drop] = useDrop({
     accept: 'question',
@@ -552,12 +553,13 @@ const DraggableQuestion = memo(({ question, index, moveQuestion, path, children 
 
   const opacity = isDragging ? 0.4 : 1;
   
-  // Connecter le drag à toute la question
-  drag(drop(ref));
+  // Connecter le drag uniquement à la poignée
+  drag(dragRef);
+  drop(ref);
 
   return (
     <div ref={ref} style={{ opacity }} data-handler-id={handlerId}>
-      {children}
+      {React.cloneElement(children, { dragRef })}
     </div>
   );
 });
@@ -1003,7 +1005,7 @@ const QuestionnaireCreator = () => {
   };
 
   // Rendu des questions
-const renderQuestion = useCallback((question, path) => {
+  const renderQuestion = useCallback((question, path, dragRef) => {
     const isExpanded = expandedQuestions[path.join('-')] ?? true;
     const questionId = path.join('-');
     const depth = path.length;
@@ -1020,9 +1022,9 @@ const renderQuestion = useCallback((question, path) => {
             {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </CompactIconButton>
           
-<CompactDragHandle className="drag-handle">
-  <GripVertical size={14} />
-</CompactDragHandle>
+          <CompactDragHandle ref={dragRef} className="drag-handle">
+            <GripVertical size={14} />
+          </CompactDragHandle>
           
           <ModernInput
             value={question.text || ''}
@@ -1321,9 +1323,17 @@ const renderQuestion = useCallback((question, path) => {
                       {/* Sous-questions */}
                       {option.subQuestions?.length > 0 && (
                         <SubQuestionWrapper>
-                          {option.subQuestions.map((subQuestion, sqIndex) => 
-                            renderQuestion(subQuestion, [...path, 'options', oIndex, 'subQuestions', sqIndex])
-                          )}
+                          {option.subQuestions.map((subQuestion, sqIndex) => (
+                            <DraggableQuestion
+                              key={subQuestion.id || `subquestion-${sqIndex}`}
+                              question={subQuestion}
+                              index={sqIndex}
+                              moveQuestion={moveQuestion}
+                              path={[...path, 'options', oIndex, 'subQuestions', sqIndex]}
+                            >
+                              {renderQuestion(subQuestion, [...path, 'options', oIndex, 'subQuestions', sqIndex])}
+                            </DraggableQuestion>
+                          ))}
                         </SubQuestionWrapper>
                       )}
                     </CompactOptionContainer>
