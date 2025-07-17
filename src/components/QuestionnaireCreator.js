@@ -80,6 +80,16 @@ const ModernQuestionHeader = styled.div`
     `linear-gradient(90deg, ${props.theme.primary}10, ${props.theme.secondary}10)` : 
     props.theme.background};
   transition: background-color 0.2s ease;
+  
+  /* Empêcher la sélection sur l'en-tête sauf les inputs */
+  user-select: none;
+  
+  input, textarea {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+  }
 `;
 
 const ModernQuestionContent = styled.div`
@@ -99,6 +109,12 @@ const ModernInput = styled.input`
   color: ${props => props.theme.text};
   transition: all 0.2s ease;
   margin-bottom: ${props => props.marginBottom || '0'};
+  
+  /* Force la sélection de texte */
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
 
   &:focus {
     outline: none;
@@ -139,6 +155,12 @@ const ModernTextarea = styled.textarea`
   resize: vertical;
   min-height: 60px;
   transition: all 0.2s ease;
+  
+  /* Force la sélection de texte */
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
 
   &:focus {
     outline: none;
@@ -287,14 +309,20 @@ const CompactDragHandle = styled.div`
   padding: 0.25rem;
   border-radius: 4px;
   transition: all 0.2s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 
   &:hover {
     color: ${props => props.theme.primary};
     background-color: ${props => props.theme.hover};
+    transform: scale(1.1);
   }
 
   &:active {
     cursor: grabbing;
+    transform: scale(0.95);
   }
 `;
 
@@ -483,6 +511,7 @@ const ImageUploadComponent = memo(({ onImageUpload, currentImage, id, onAddCapti
 
 const DraggableQuestion = memo(({ question, index, moveQuestion, path, children }) => {
   const ref = useRef(null);
+  const dragHandleRef = useRef(null);
   
   const [{ handlerId }, drop] = useDrop({
     accept: 'question',
@@ -523,11 +552,14 @@ const DraggableQuestion = memo(({ question, index, moveQuestion, path, children 
   });
 
   const opacity = isDragging ? 0.4 : 1;
-  drag(drop(ref));
+  
+  // Connecter le drag uniquement à la poignée
+  drag(dragHandleRef);
+  drop(ref);
 
   return (
     <div ref={ref} style={{ opacity }} data-handler-id={handlerId}>
-      {children}
+      {React.cloneElement(children, { dragHandleRef })}
     </div>
   );
 });
@@ -973,352 +1005,345 @@ const QuestionnaireCreator = () => {
   };
 
   // Rendu des questions
-const renderQuestion = useCallback((question, path) => {
-
+  const renderQuestion = useCallback((question, path, dragHandleRef) => {
     const isExpanded = expandedQuestions[path.join('-')] ?? true;
     const questionId = path.join('-');
     const depth = path.length;
     const links = questionLinks[questionId] || [];
   
     return (
-      <DraggableQuestion
-        key={question.id || `question-${questionId}`}
-        question={question}
-        index={path[path.length - 1]}
-        moveQuestion={moveQuestion}
-        path={path}
-      >
-        <ModernQuestionCard>
-          <ModernQuestionHeader depth={depth}>
+      <ModernQuestionCard>
+        <ModernQuestionHeader depth={depth}>
+          <CompactIconButton
+            variant="secondary"
+            onClick={() => toggleQuestion(path)}
+            style={{ marginRight: '0.5rem' }}
+          >
+            {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </CompactIconButton>
+          
+          <CompactDragHandle ref={dragHandleRef} className="drag-handle">
+            <GripVertical size={14} />
+          </CompactDragHandle>
+          
+          <ModernInput
+            value={question.text || ''}
+            onChange={(e) => updateQuestion(path, 'text', e.target.value)}
+            placeholder="Tapez votre question ici..."
+            style={{ 
+              marginLeft: '0.5rem', 
+              flex: 1,
+              marginBottom: 0,
+              fontSize: '0.9rem'
+            }}
+          />
+
+          {/* Gestion de la page et "Important?" pour les questions de niveau 1 */}
+          {depth === 1 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '0.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                <input
+                  type="checkbox"
+                  checked={question.isImportantToCheck || false}
+                  onChange={(e) => updateQuestion(path, 'isImportantToCheck', e.target.checked)}
+                  style={{ width: '16px', height: '16px' }}
+                />
+                <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Important?</span>
+              </div>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Page:</span>
+                <input
+                  type="number"
+                  min="1"
+                  value={question.page || 1}
+                  onChange={(e) => updateQuestion(path, 'page', Math.max(1, parseInt(e.target.value) || 1))}
+                  style={{
+                    width: '50px',
+                    padding: '0.25rem',
+                    fontSize: '0.75rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '4px',
+                    userSelect: 'text'
+                  }}
+                />
+                <input
+                  type="text"
+                  value={questionnaire.pageTitles[question.page] ?? ''}
+                  onChange={(e) => {
+                    const pageNumber = question.page || 1;
+                    setQuestionnaire(prev => ({
+                      ...prev,
+                      pageTitles: {
+                        ...prev.pageTitles,
+                        [pageNumber]: e.target.value || ''
+                      }
+                    }));
+                  }}
+                  placeholder={`Titre page ${question.page || 1}`}
+                  style={{
+                    width: '120px',
+                    padding: '0.25rem',
+                    fontSize: '0.75rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '4px',
+                    userSelect: 'text'
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Images pour les questions */}
+          <ImageUploadComponent
+            onImageUpload={handleImageUpload}
+            currentImage={question.image?.src}
+            id={questionId}
+            onAddCaption={handleAddCaption}
+            caption={question.image?.caption}
+            questionnaireTitle={questionnaire.title}
+          />
+
+          {/* Boutons des liens existants */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginLeft: '0.5rem' }}>
+            {links.map((link, index) => (
+              <div key={index} style={{ display: 'flex', alignItems: 'center' }}>
+                <CompactSecondaryButton
+                  onClick={() => handleOpenLinkEditor(questionId, index)}
+                  style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem' }}
+                  title={`Éditer: ${link.title || `Fiche ${index + 1}`}`}
+                >
+                  {link.title || `Fiche ${index + 1}`}
+                  <CompactIconButton
+                    variant="danger"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLinkToDelete({ elementId: questionId, index });
+                      setShowDeleteConfirm(true);
+                    }}
+                    style={{ marginLeft: '0.25rem', padding: '0.125rem' }}
+                    title="Supprimer la fiche"
+                  >
+                    <Trash2 size={10} />
+                  </CompactIconButton>
+                </CompactSecondaryButton>
+              </div>
+            ))}
+            
             <CompactIconButton
               variant="secondary"
-              onClick={() => toggleQuestion(path)}
-              style={{ marginRight: '0.5rem' }}
+              onClick={() => handleOpenLinkEditor(questionId)}
+              title={!id ? "Sauvegardez d'abord le questionnaire" : "Ajouter une nouvelle fiche"}
+              disabled={!id}
             >
-              {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+              <Plus size={12} />
+            </CompactIconButton>
+          </div>
+
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.25rem' }}>
+            <CompactIconButton
+              variant="secondary"
+              onClick={() => {
+                const duplicated = duplicateQuestion(question);
+                addQuestion(path.slice(0, -1), duplicated);
+              }}
+              title="Dupliquer"
+            >
+              <Copy size={14} />
             </CompactIconButton>
             
-<CompactDragHandle className="drag-handle" style={{ cursor: 'grab' }}>
-  <GripVertical size={14} />
-</CompactDragHandle>
-            
-            <ModernInput
-              value={question.text || ''}
-              onChange={(e) => updateQuestion(path, 'text', e.target.value)}
-              placeholder="Tapez votre question ici..."
-              style={{ 
-                marginLeft: '0.5rem', 
-                flex: 1,
-                marginBottom: 0,
-                fontSize: '0.9rem'
-              }}
-            />
+            <CompactIconButton
+              variant="danger"
+              onClick={() => deleteQuestion(path)}
+              title="Supprimer"
+            >
+              <Trash2 size={14} />
+            </CompactIconButton>
+          </div>
+        </ModernQuestionHeader>
 
-            {/* Gestion de la page et "Important?" pour les questions de niveau 1 */}
-            {depth === 1 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '0.5rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                  <input
-                    type="checkbox"
-                    checked={question.isImportantToCheck || false}
-                    onChange={(e) => updateQuestion(path, 'isImportantToCheck', e.target.checked)}
-                    style={{ width: '16px', height: '16px' }}
-                  />
-                  <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Important?</span>
-                </div>
-                
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                  <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Page:</span>
-                  <input
-                    type="number"
-                    min="1"
-                    value={question.page || 1}
-                    onChange={(e) => updateQuestion(path, 'page', Math.max(1, parseInt(e.target.value) || 1))}
-                    style={{
-                      width: '50px',
-                      padding: '0.25rem',
-                      fontSize: '0.75rem',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '4px'
-                    }}
-                  />
-                  <input
-                    type="text"
-                    value={questionnaire.pageTitles[question.page] ?? ''}
-                    onChange={(e) => {
-                      const pageNumber = question.page || 1;
-                      setQuestionnaire(prev => ({
-                        ...prev,
-                        pageTitles: {
-                          ...prev.pageTitles,
-                          [pageNumber]: e.target.value || ''
-                        }
-                      }));
-                    }}
-                    placeholder={`Titre page ${question.page || 1}`}
-                    style={{
-                      width: '120px',
-                      padding: '0.25rem',
-                      fontSize: '0.75rem',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '4px'
-                    }}
-                  />
-                </div>
+        {isExpanded && (
+          <ModernQuestionContent depth={depth}>
+            <ModernSelect
+              value={question.type || 'single'}
+              onChange={(e) => updateQuestion(path, 'type', e.target.value)}
+              style={{ marginBottom: '0.75rem' }}
+            >
+              <option value="single">Choix unique</option>
+              <option value="multiple">Choix multiple</option>
+              <option value="text">Texte libre</option>
+              <option value="number">Numérique</option>
+              <option value="imageMap">Image interactive</option>
+            </ModernSelect>
+
+            {/* Gestion des images pour les questions imageMap */}
+            {question.type === 'imageMap' && (
+              <div style={{ marginBottom: '0.75rem' }}>
+                {!question.questionImage?.src ? (
+                  <div style={{
+                    border: '2px dashed #d1d5db',
+                    borderRadius: '6px',
+                    padding: '1rem',
+                    textAlign: 'center'
+                  }}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleQuestionImageUpload(e, path)}
+                      className="hidden"
+                      id={`question-image-${questionId}`}
+                    />
+                    <label
+                      htmlFor={`question-image-${questionId}`}
+                      style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+                    >
+                      <Camera size={32} style={{ color: '#9ca3af', marginBottom: '0.5rem' }} />
+                      <span style={{ color: '#6b7280', fontSize: '0.9rem' }}>
+                        Cliquez pour ajouter l'image de la question
+                      </span>
+                    </label>
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ position: 'relative' }}>
+                      <img 
+                        src={question.questionImage.src} 
+                        alt="Question" 
+                        style={{ width: '100%', borderRadius: '6px' }}
+                      />
+                      <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem' }}>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleQuestionImageUpload(e, path)}
+                          className="hidden"
+                          id={`question-image-change-${questionId}`}
+                        />
+                        <label
+                          htmlFor={`question-image-change-${questionId}`}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <CompactIconButton as="span" variant="secondary">
+                            <Camera size={14} />
+                          </CompactIconButton>
+                        </label>
+                      </div>
+                    </div>
+
+                    <ImageMapEditor
+                      image={question.questionImage}
+                      areas={question.questionImage.areas || []}
+                      onAreasChange={(newAreas) => 
+                        updateQuestion(path, 'questionImage', {
+                          ...question.questionImage,
+                          areas: newAreas
+                        })
+                      }
+                    />
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Images pour les questions */}
-            <ImageUploadComponent
-              onImageUpload={handleImageUpload}
-              currentImage={question.image?.src}
-              id={questionId}
-              onAddCaption={handleAddCaption}
-              caption={question.image?.caption}
-              questionnaireTitle={questionnaire.title}
-            />
-
-            {/* Boutons des liens existants */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginLeft: '0.5rem' }}>
-              {links.map((link, index) => (
-                <div key={index} style={{ display: 'flex', alignItems: 'center' }}>
-                  <CompactSecondaryButton
-                    onClick={() => handleOpenLinkEditor(questionId, index)}
-                    style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem' }}
-                    title={`Éditer: ${link.title || `Fiche ${index + 1}`}`}
-                  >
-                    {link.title || `Fiche ${index + 1}`}
-                    <CompactIconButton
-                      variant="danger"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setLinkToDelete({ elementId: questionId, index });
-                        setShowDeleteConfirm(true);
-                      }}
-                      style={{ marginLeft: '0.25rem', padding: '0.125rem' }}
-                      title="Supprimer la fiche"
-                    >
-                      <Trash2 size={10} />
-                    </CompactIconButton>
-                  </CompactSecondaryButton>
-                </div>
-              ))}
-              
-              <CompactIconButton
-                variant="secondary"
-                onClick={() => handleOpenLinkEditor(questionId)}
-                title={!id ? "Sauvegardez d'abord le questionnaire" : "Ajouter une nouvelle fiche"}
-                disabled={!id}
-              >
-                <Plus size={12} />
-              </CompactIconButton>
-            </div>
-
-            <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.25rem' }}>
-              <CompactIconButton
-                variant="secondary"
-                onClick={() => {
-                  const duplicated = duplicateQuestion(question);
-                  addQuestion(path.slice(0, -1), duplicated);
-                }}
-                title="Dupliquer"
-              >
-                <Copy size={14} />
-              </CompactIconButton>
-              
-              <CompactIconButton
-                variant="danger"
-                onClick={() => deleteQuestion(path)}
-                title="Supprimer"
-              >
-                <Trash2 size={14} />
-              </CompactIconButton>
-            </div>
-          </ModernQuestionHeader>
-
-          {isExpanded && (
-            <ModernQuestionContent depth={depth}>
-              <ModernSelect
-                value={question.type || 'single'}
-                onChange={(e) => updateQuestion(path, 'type', e.target.value)}
-                style={{ marginBottom: '0.75rem' }}
-              >
-                <option value="single">Choix unique</option>
-                <option value="multiple">Choix multiple</option>
-                <option value="text">Texte libre</option>
-                <option value="number">Numérique</option>
-                <option value="imageMap">Image interactive</option>
-              </ModernSelect>
-
-              {/* Gestion des images pour les questions imageMap */}
-              {question.type === 'imageMap' && (
-                <div style={{ marginBottom: '0.75rem' }}>
-                  {!question.questionImage?.src ? (
-                    <div style={{
-                      border: '2px dashed #d1d5db',
-                      borderRadius: '6px',
-                      padding: '1rem',
-                      textAlign: 'center'
-                    }}>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleQuestionImageUpload(e, path)}
-                        className="hidden"
-                        id={`question-image-${questionId}`}
-                      />
-                      <label
-                        htmlFor={`question-image-${questionId}`}
-                        style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
-                      >
-                        <Camera size={32} style={{ color: '#9ca3af', marginBottom: '0.5rem' }} />
-                        <span style={{ color: '#6b7280', fontSize: '0.9rem' }}>
-                          Cliquez pour ajouter l'image de la question
-                        </span>
-                      </label>
-                    </div>
-                  ) : (
-                    <div>
-                      <div style={{ position: 'relative' }}>
-                        <img 
-                          src={question.questionImage.src} 
-                          alt="Question" 
-                          style={{ width: '100%', borderRadius: '6px' }}
+            {/* Options pour choix unique/multiple */}
+            {['single', 'multiple'].includes(question.type) && (
+              <div style={{ marginTop: '0.75rem' }}>
+                {question.options?.map((option, oIndex) => (
+                  <OptionCard key={option.id || `${questionId}-option-${oIndex}`}>
+                    <CompactOptionContainer>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <ModernInput
+                          value={option.text || ''}
+                          onChange={(e) => updateQuestion([...path, 'options', oIndex], 'text', e.target.value)}
+                          placeholder={`Option ${oIndex + 1}`}
+                          style={{ flex: 1, marginBottom: 0 }}
                         />
-                        <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem' }}>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => handleQuestionImageUpload(e, path)}
-                            className="hidden"
-                            id={`question-image-change-${questionId}`}
-                          />
-                          <label
-                            htmlFor={`question-image-change-${questionId}`}
-                            style={{ cursor: 'pointer' }}
-                          >
-                            <CompactIconButton as="span" variant="secondary">
-                              <Camera size={14} />
-                            </CompactIconButton>
-                          </label>
-                        </div>
-                      </div>
+                        
+                        {/* Images pour les options */}
+                        <ImageUploadComponent
+                          onImageUpload={handleImageUpload}
+                          currentImage={option.image?.src}
+                          id={`${questionId}-options-${oIndex}`}
+                          onAddCaption={handleAddCaption}
+                          caption={option.image?.caption}
+                          questionnaireTitle={questionnaire.title}
+                        />
 
-                      <ImageMapEditor
-                        image={question.questionImage}
-                        areas={question.questionImage.areas || []}
-                        onAreasChange={(newAreas) => 
-                          updateQuestion(path, 'questionImage', {
-                            ...question.questionImage,
-                            areas: newAreas
-                          })
-                        }
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Options pour choix unique/multiple */}
-              {['single', 'multiple'].includes(question.type) && (
-                <div style={{ marginTop: '0.75rem' }}>
-                  {question.options?.map((option, oIndex) => (
-                    <OptionCard key={option.id || `${questionId}-option-${oIndex}`}>
-                      <CompactOptionContainer>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <ModernInput
-                            value={option.text || ''}
-                            onChange={(e) => updateQuestion([...path, 'options', oIndex], 'text', e.target.value)}
-                            placeholder={`Option ${oIndex + 1}`}
-                            style={{ flex: 1, marginBottom: 0 }}
-                          />
-                          
-                          {/* Images pour les options */}
-                          <ImageUploadComponent
-                            onImageUpload={handleImageUpload}
-                            currentImage={option.image?.src}
-                            id={`${questionId}-options-${oIndex}`}
-                            onAddCaption={handleAddCaption}
-                            caption={option.image?.caption}
-                            questionnaireTitle={questionnaire.title}
-                          />
-
-                          {/* Fiches pour les options */}
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                            {(questionLinks[`${questionId}-options-${oIndex}`] || []).map((link, index) => (
-                              <CompactSecondaryButton
-                                key={index}
-                                onClick={() => handleOpenLinkEditor(`${questionId}-options-${oIndex}`, index)}
-                                style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem' }}
-                                title={`Éditer: ${link.title || `Fiche ${index + 1}`}`}
-                              >
-                                {link.title || `Fiche ${index + 1}`}
-                                <CompactIconButton
-                                  variant="danger"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setLinkToDelete({ elementId: `${questionId}-options-${oIndex}`, index });
-                                    setShowDeleteConfirm(true);
-                                  }}
-                                  style={{ marginLeft: '0.25rem', padding: '0.125rem' }}
-                                  title="Supprimer la fiche"
-                                >
-                                  <Trash2 size={10} />
-                                </CompactIconButton>
-                              </CompactSecondaryButton>
-                            ))}
-                            
-                            <CompactIconButton
-                              variant="secondary"
-                              onClick={() => handleOpenLinkEditor(`${questionId}-options-${oIndex}`)}
-                              title="Ajouter une fiche"
+                        {/* Fiches pour les options */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                          {(questionLinks[`${questionId}-options-${oIndex}`] || []).map((link, index) => (
+                            <CompactSecondaryButton
+                              key={index}
+                              onClick={() => handleOpenLinkEditor(`${questionId}-options-${oIndex}`, index)}
+                              style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem' }}
+                              title={`Éditer: ${link.title || `Fiche ${index + 1}`}`}
                             >
-                              <Plus size={12} />
-                            </CompactIconButton>
-                          </div>
-                          
-                          <CompactIconButton
-                            variant="danger"
-                            onClick={() => deleteOption([...path, 'options', oIndex])}
-                            title="Supprimer l'option"
-                          >
-                            <Trash2 size={14} />
-                          </CompactIconButton>
+                              {link.title || `Fiche ${index + 1}`}
+                              <CompactIconButton
+                                variant="danger"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setLinkToDelete({ elementId: `${questionId}-options-${oIndex}`, index });
+                                  setShowDeleteConfirm(true);
+                                }}
+                                style={{ marginLeft: '0.25rem', padding: '0.125rem' }}
+                                title="Supprimer la fiche"
+                              >
+                                <Trash2 size={10} />
+                              </CompactIconButton>
+                            </CompactSecondaryButton>
+                          ))}
                           
                           <CompactIconButton
                             variant="secondary"
-                            onClick={() => addQuestion([...path, 'options', oIndex, 'subQuestions'])}
-                            title="Ajouter une sous-question"
+                            onClick={() => handleOpenLinkEditor(`${questionId}-options-${oIndex}`)}
+                            title="Ajouter une fiche"
                           >
-                            <Plus size={14} />
+                            <Plus size={12} />
                           </CompactIconButton>
                         </div>
+                        
+                        <CompactIconButton
+                          variant="danger"
+                          onClick={() => deleteOption([...path, 'options', oIndex])}
+                          title="Supprimer l'option"
+                        >
+                          <Trash2 size={14} />
+                        </CompactIconButton>
+                        
+                        <CompactIconButton
+                          variant="secondary"
+                          onClick={() => addQuestion([...path, 'options', oIndex, 'subQuestions'])}
+                          title="Ajouter une sous-question"
+                        >
+                          <Plus size={14} />
+                        </CompactIconButton>
+                      </div>
 
-                        {/* Sous-questions */}
-                        {option.subQuestions?.length > 0 && (
-                          <SubQuestionWrapper>
-                            {option.subQuestions.map((subQuestion, sqIndex) => 
-                              renderQuestion(subQuestion, [...path, 'options', oIndex, 'subQuestions', sqIndex])
-                            )}
-                          </SubQuestionWrapper>
-                        )}
-                      </CompactOptionContainer>
-                    </OptionCard>
-                  ))}
+                      {/* Sous-questions */}
+                      {option.subQuestions?.length > 0 && (
+                        <SubQuestionWrapper>
+                          {option.subQuestions.map((subQuestion, sqIndex) => 
+                            renderQuestion(subQuestion, [...path, 'options', oIndex, 'subQuestions', sqIndex])
+                          )}
+                        </SubQuestionWrapper>
+                      )}
+                    </CompactOptionContainer>
+                  </OptionCard>
+                ))}
 
-                  <CompactButton
-                    onClick={() => addOption(path)}
-                    style={{ marginTop: '0.5rem' }}
-                  >
-                    <Plus size={14} />
-                    Ajouter une option
-                  </CompactButton>
-                </div>
-              )}
-            </ModernQuestionContent>
-          )}
-        </ModernQuestionCard>
-      </DraggableQuestion>
+                <CompactButton
+                  onClick={() => addOption(path)}
+                  style={{ marginTop: '0.5rem' }}
+                >
+                  <Plus size={14} />
+                  Ajouter une option
+                </CompactButton>
+              </div>
+            )}
+          </ModernQuestionContent>
+        )}
+      </ModernQuestionCard>
     );
   }, [expandedQuestions, moveQuestion, toggleQuestion, updateQuestion, handleQuestionImageUpload, duplicateQuestion, addQuestion, deleteQuestion, deleteOption, addOption, questionnaire.title, handleOpenLinkEditor, questionLinks, handleImageUpload, handleAddCaption]);
 
@@ -1330,10 +1355,10 @@ const renderQuestion = useCallback((question, path) => {
 
       <div style={{ 
         display: 'flex', 
-        flexDirection: window.innerWidth > 1024 ? 'row' : 'column',
+        flexDirection: 'row',
         gap: '1.5rem'
       }}>
-        {/* Section principale d'édition */}
+        {/* Section principale d'édition - 2/3 de la largeur */}
         <div style={{ flex: '2', minWidth: '0' }}>
           <ModernCreatorCard>
             <ModernTitleInput
@@ -1344,11 +1369,18 @@ const renderQuestion = useCallback((question, path) => {
             />
             
             <DndProvider backend={HTML5Backend}>
-
-{questionnaire.questions.map((question, index) => renderQuestion(question, [index]))}
-
-
-           </DndProvider>
+              {questionnaire.questions.map((question, index) => (
+                <DraggableQuestion
+                  key={question.id || `question-${index}`}
+                  question={question}
+                  index={index}
+                  moveQuestion={moveQuestion}
+                  path={[index]}
+                >
+                  {renderQuestion(question, [index])}
+                </DraggableQuestion>
+              ))}
+            </DndProvider>
             
             <CompactButtonGroup>
               <CompactButton onClick={() => addQuestion()}>
@@ -1363,7 +1395,7 @@ const renderQuestion = useCallback((question, path) => {
           </ModernCreatorCard>
         </div>
         
-        {/* Section aperçu */}
+        {/* Section aperçu - 1/3 de la largeur, à droite */}
         <div style={{ flex: '1', minWidth: '300px' }}>
           <ModernPreviewSection>
             <ModernPreviewTitle>
