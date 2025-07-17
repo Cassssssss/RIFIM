@@ -49,67 +49,59 @@ const ModernSectionContainer = styled(S.SectionContainer)`
 `;
 
 const ModernButton = styled(S.Button)`
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  background-color: #6366f1;
   color: white;
   border: none;
-  border-radius: 8px;
-  padding: 12px 24px;
-  font-weight: 600;
-  font-size: 0.9rem;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-weight: 500;
+  font-size: 0.875rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  gap: 6px;
+  transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-    background: linear-gradient(135deg, ${props => props.theme.secondary}, ${props => props.theme.primary});
+    background-color: #5855eb;
+    transform: translateY(-1px);
   }
 
   &:active:not(:disabled) {
     transform: translateY(0);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
     transform: none;
-    background: #9ca3af;
+    background-color: #9ca3af;
   }
 
   svg {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
   }
 `;
 
 const SecondaryButton = styled(S.Button)`
-  background: transparent;
-  color: ${props => props.theme.primary};
-  border: 2px solid ${props => props.theme.primary};
-  border-radius: 8px;
-  padding: 10px 20px;
-  font-weight: 600;
-  font-size: 0.9rem;
+  background-color: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-weight: 500;
+  font-size: 0.875rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  gap: 6px;
+  transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
-    background: ${props => props.theme.primary};
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    background-color: #e5e7eb;
+    border-color: #9ca3af;
+    transform: translateY(-1px);
   }
 
   &:active:not(:disabled) {
@@ -123,32 +115,28 @@ const SecondaryButton = styled(S.Button)`
   }
 
   svg {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
   }
 `;
 
 const DangerButton = styled(S.Button)`
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+  background-color: #ef4444;
   color: white;
   border: none;
-  border-radius: 8px;
-  padding: 10px 20px;
-  font-weight: 600;
-  font-size: 0.9rem;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-weight: 500;
+  font-size: 0.875rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  gap: 6px;
+  transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
-    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    background-color: #dc2626;
+    transform: translateY(-1px);
   }
 
   &:active:not(:disabled) {
@@ -156,88 +144,78 @@ const DangerButton = styled(S.Button)`
   }
 
   svg {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
   }
 `;
 
 const UploadButtonStyled = styled(S.UploadButton)`
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  background-color: #6366f1;
   color: white;
   border: none;
-  border-radius: 8px;
-  padding: 12px 20px;
-  font-weight: 600;
-  font-size: 0.9rem;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-weight: 500;
+  font-size: 0.875rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  gap: 6px;
+  transition: all 0.2s ease;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-    background: linear-gradient(135deg, ${props => props.theme.secondary}, ${props => props.theme.primary});
+    background-color: #5855eb;
+    transform: translateY(-1px);
   }
 
   svg {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
   }
 `;
 
 const MainImageButtonStyled = styled(S.MainImageButton)`
-  background: linear-gradient(135deg, #10b981, #059669);
+  background-color: #10b981;
   color: white;
   border: none;
-  border-radius: 8px;
-  padding: 12px 20px;
-  font-weight: 600;
-  font-size: 0.9rem;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-weight: 500;
+  font-size: 0.875rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  gap: 6px;
+  transition: all 0.2s ease;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
-    background: linear-gradient(135deg, #059669, #047857);
+    background-color: #059669;
+    transform: translateY(-1px);
   }
 
   svg {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
   }
 `;
 
 const AddTagButtonStyled = styled(S.AddTagButton)`
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  background-color: #6366f1;
   color: white;
   border: none;
-  border-radius: 6px;
-  padding: 8px 12px;
-  font-weight: 600;
-  font-size: 0.8rem;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-weight: 500;
+  font-size: 0.75rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
 
   &:hover {
+    background-color: #5855eb;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    background: linear-gradient(135deg, ${props => props.theme.secondary}, ${props => props.theme.primary});
   }
 
   svg {
