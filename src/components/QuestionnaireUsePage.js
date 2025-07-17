@@ -13,7 +13,6 @@ const ModernPageContainer = styled.div`
   background: linear-gradient(135deg, ${props => props.theme.background} 0%, ${props => props.theme.backgroundSecondary || props.theme.card} 100%);
   color: ${props => props.theme.text};
   min-height: calc(100vh - 60px);
-
   @media (max-width: 768px) {
     padding: 1rem;
   }
@@ -29,6 +28,18 @@ const ModernCard = styled.div`
   max-width: 900px;
   width: 100%;
   margin-top: 2rem;
+`;
+
+const ModernTitle = styled.h1`
+  font-size: 2.2rem;
+  margin-bottom: 2rem;
+  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-align: center;
+  font-weight: 700;
+  text-shadow: 0 2px 4px ${props => props.theme.shadow};
 `;
 
 
