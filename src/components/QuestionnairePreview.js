@@ -163,15 +163,7 @@ const TextFormatButtons = ({ onBold, onUnderline, onItalic, onSize, onCenter }) 
   </div>
 );
 
-const QuestionHeader = styled.div`
-  background-color: ${({ depth }) => getBackgroundColor(depth)};
-  padding: 1rem;
-  border-radius: 8px 8px 0 0;
-  border-bottom: 1px solid #e2e8f0;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-`;
+
 
 const QuestionContent = styled.div`
   padding: 1rem;
