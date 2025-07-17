@@ -9,112 +9,364 @@ import QuestionnairePreview from './QuestionnairePreview';
 import LinkEditor from './LinkEditor';
 import { AlertTriangle } from 'lucide-react';
 import ImageMapEditor from './ImageMapEditor';
-import { medicalColors } from '../medicalColors';
 
-// Styled components MIS À JOUR avec les nouvelles couleurs médicales
-const CreatorWrapper = styled.div`
-  background-color: ${props => props.theme.background};
+// ==================== STYLED COMPONENTS MODERNISÉS COMPACTS ====================
+
+const ModernCreatorWrapper = styled.div`
+  background: linear-gradient(135deg, ${props => props.theme.background} 0%, ${props => props.theme.backgroundSecondary || props.theme.card} 100%);
   color: ${props => props.theme.text};
-  padding: ${props => props.theme.spacing?.xl || '2rem'};
-  border-radius: 8px;
+  padding: 1.5rem;
+  min-height: calc(100vh - 60px);
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 `;
 
-const CreatorCard = styled.div`
+const ModernTitle = styled.h1`
+  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2rem;
+  font-weight: 700;
+  text-shadow: 0 2px 4px ${props => props.theme.shadow};
+  margin-bottom: 1.5rem;
+  text-align: center;
+`;
+
+const ModernCreatorCard = styled.div`
+  position: relative;
+  overflow: hidden;
   background-color: ${props => props.theme.card};
-  color: ${props => props.theme.text};
   border: 1px solid ${props => props.theme.border};
-  border-radius: 8px;
-  padding: ${props => props.theme.spacing?.lg || '1.5rem'};
-  margin-bottom: ${props => props.theme.spacing?.lg || '1.5rem'};
-  box-shadow: 0 2px 4px ${props => props.theme.shadow || 'rgba(0,0,0,0.1)'};
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 20px ${props => props.theme.shadow};
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  }
 `;
 
-const QuestionCard = styled.div`
+const ModernQuestionCard = styled.div`
   background-color: ${props => props.theme.cardSecondary || props.theme.card};
   border: 1px solid ${props => props.theme.border};
   border-radius: 8px;
-  margin-bottom: ${props => props.theme.spacing?.md || '0.75rem'};
-  box-shadow: 0 1px 3px ${props => props.theme.shadow || 'rgba(0,0,0,0.1)'};
+  margin-bottom: 0.75rem;
+  box-shadow: 0 2px 8px ${props => props.theme.shadow};
+  transition: all 0.2s ease;
+  overflow: hidden;
+
+  &:hover {
+    border-color: ${props => props.theme.primary};
+    box-shadow: 0 4px 12px ${props => props.theme.primary}20;
+  }
 `;
 
-const QuestionHeader = styled.div`
+const ModernQuestionHeader = styled.div`
   display: flex;
   align-items: center;
-  padding: ${props => props.theme.spacing?.md || '0.75rem'};
+  padding: 0.75rem;
   border-bottom: 1px solid ${props => props.theme.border};
-  background-color: ${props => props.depth === 0 ? 
-    (props.theme.primary + '15') : 
-    (props.theme.questionBackgroundAlt || props.theme.background)};
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
+  background: ${props => props.depth === 0 ? 
+    `linear-gradient(90deg, ${props.theme.primary}10, ${props.theme.secondary}10)` : 
+    props.theme.background};
+  transition: background-color 0.2s ease;
 `;
 
-const QuestionContent = styled.div`
-  padding: ${props => props.theme.spacing?.md || '0.75rem'};
+const ModernQuestionContent = styled.div`
+  padding: 0.75rem;
   background-color: ${props => props.depth % 2 === 0 ? 
-    (props.theme.questionBackground || props.theme.background) : 
-    (props.theme.questionBackgroundAlt || props.theme.cardSecondary)};
+    props.theme.card : 
+    props.theme.cardSecondary || props.theme.background};
 `;
 
-const OptionCard = styled.div`
-  background-color: ${props => props.theme.optionBackground || props.theme.cardSecondary};
+const ModernInput = styled.input`
+  width: 100%;
+  padding: 0.5rem 0.75rem;
   border: 1px solid ${props => props.theme.border};
   border-radius: 6px;
-  margin-bottom: ${props => props.theme.spacing?.sm || '0.5rem'};
-  padding: ${props => props.theme.spacing?.sm || '0.5rem'};
+  font-size: 0.9rem;
+  background-color: ${props => props.theme.card};
+  color: ${props => props.theme.text};
   transition: all 0.2s ease;
-  
-  &:hover {
-    background-color: ${props => props.theme.optionHover || props.theme.cardHover};
+  margin-bottom: ${props => props.marginBottom || '0'};
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary};
+    box-shadow: 0 0 0 2px ${props => props.theme.primary}20;
   }
+
+  &::placeholder {
+    color: ${props => props.theme.textSecondary || props.theme.textLight};
+    font-size: 0.85rem;
+  }
+`;
+
+const ModernTitleInput = styled(ModernInput)`
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  border: none;
+  border-bottom: 2px solid ${props => props.theme.border};
+  border-radius: 0;
+  background: transparent;
+  padding: 0.75rem 0;
+
+  &:focus {
+    border-bottom-color: ${props => props.theme.primary};
+    box-shadow: none;
+  }
+`;
+
+const ModernTextarea = styled.textarea`
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background-color: ${props => props.theme.card};
+  color: ${props => props.theme.text};
+  resize: vertical;
+  min-height: 60px;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary};
+    box-shadow: 0 0 0 2px ${props => props.theme.primary}20;
+  }
+
+  &::placeholder {
+    color: ${props => props.theme.textSecondary || props.theme.textLight};
+    font-size: 0.85rem;
+  }
+`;
+
+const ModernSelect = styled.select`
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background-color: ${props => props.theme.card};
+  color: ${props => props.theme.text};
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary};
+    box-shadow: 0 0 0 2px ${props => props.theme.primary}20;
+  }
+`;
+
+const CompactButton = styled.button`
+  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.primaryHover || props.theme.secondary});
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px ${props => props.theme.primary}30;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px ${props => props.theme.primary}40;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+`;
+
+const CompactSuccessButton = styled(CompactButton)`
+  background: linear-gradient(135deg, ${props => props.theme.success}, ${props => props.theme.successLight || props.theme.secondary});
+  box-shadow: 0 2px 4px ${props => props.theme.success}30;
+
+  &:hover:not(:disabled) {
+    box-shadow: 0 4px 8px ${props => props.theme.success}40;
+  }
+`;
+
+const CompactDangerButton = styled(CompactButton)`
+  background: linear-gradient(135deg, ${props => props.theme.error}, ${props => props.theme.errorLight || '#dc2626'});
+  box-shadow: 0 2px 4px ${props => props.theme.error}30;
+
+  &:hover:not(:disabled) {
+    box-shadow: 0 4px 8px ${props => props.theme.error}40;
+  }
+`;
+
+const CompactSecondaryButton = styled(CompactButton)`
+  background: ${props => props.theme.buttonSecondary || props.theme.background};
+  color: ${props => props.theme.text};
+  border: 1px solid ${props => props.theme.border};
+  box-shadow: 0 1px 3px ${props => props.theme.shadow};
+
+  &:hover:not(:disabled) {
+    background: ${props => props.theme.hover};
+    border-color: ${props => props.theme.primary};
+  }
+`;
+
+const CompactIconButton = styled.button`
+  background: ${props => props.variant === 'danger' ? 
+    `linear-gradient(135deg, ${props.theme.error}, ${props.theme.errorLight || '#dc2626'})` :
+    props.variant === 'secondary' ?
+    props.theme.background :
+    `linear-gradient(135deg, ${props.theme.primary}, ${props.theme.primaryHover || props.theme.secondary})`
+  };
+  color: ${props => props.variant === 'secondary' ? props.theme.text : 'white'};
+  border: ${props => props.variant === 'secondary' ? `1px solid ${props.theme.border}` : 'none'};
+  border-radius: 6px;
+  padding: 0.375rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px ${props => props.theme.shadow};
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px ${props => props.theme.shadow};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+`;
+
+const CompactButtonGroup = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid ${props => props.theme.border};
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+`;
+
+const CompactDragHandle = styled.div`
+  color: ${props => props.theme.textSecondary};
+  cursor: grab;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: ${props => props.theme.primary};
+    background-color: ${props => props.theme.hover};
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+`;
+
+const ModernPreviewSection = styled(ModernCreatorCard)`
+  background: linear-gradient(135deg, ${props => props.theme.card}, ${props => props.theme.cardSecondary || props.theme.background});
+`;
+
+const ModernPreviewTitle = styled.h3`
+  color: ${props => props.theme.primary};
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &::before {
+    content: '👁️';
+    font-size: 1rem;
+  }
+`;
+
+const CompactOptionContainer = styled.div`
+  margin: 0.375rem 0;
+  padding: 0.5rem;
+  background-color: ${props => props.theme.background};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 6px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: ${props => props.theme.primary};
+    background-color: ${props => props.theme.hover};
+  }
+`;
+
+const CompactImageUpload = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: 0.5rem;
+`;
+
+const CompactLinkButton = styled(CompactSecondaryButton)`
+  font-size: 0.75rem;
+  padding: 0.375rem 0.75rem;
+  margin-top: 0.5rem;
+  
+  ${props => !props.enabled && `
+    opacity: 0.5;
+    cursor: not-allowed;
+    &:hover {
+      transform: none;
+      box-shadow: 0 1px 3px ${props.theme.shadow};
+    }
+  `}
 `;
 
 const SubQuestionWrapper = styled.div`
-  margin-left: ${props => Math.min(props.depth * 0.5, 1.5)}rem;
-  border-left: 2px solid ${props => props.theme.primary};
-  padding-left: ${props => props.theme.spacing?.md || '0.75rem'};
-  margin-top: ${props => props.theme.spacing?.sm || '0.5rem'};
+  margin-left: 1rem;
+  margin-top: 0.5rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid ${props => props.theme.border};
 `;
 
-const StyledSelect = styled.select`
-  width: 100%;
-  padding: ${props => props.theme.spacing?.sm || '0.5rem'};
-  margin-bottom: ${props => props.theme.spacing?.md || '1rem'};
-  border-radius: 4px;
-  background-color: ${props => props.theme.inputBackground};
-  color: ${props => props.theme.inputText};
-  border: 1px solid ${props => props.theme.inputBorder || props.theme.border};
-  
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.inputFocus || props.theme.primary};
-  }
+const OptionCard = styled.div`
+  margin-bottom: 0.5rem;
 `;
 
-const Modal = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-`;
+// ==================== COMPOSANT IMAGE UPLOAD INTÉGRÉ ====================
 
-const ModalContent = styled.div`
-  background-color: ${props => props.theme.card};
-  color: ${props => props.theme.text};
-  padding: ${props => props.theme.spacing?.xl || '2rem'};
-  border-radius: 8px;
-  width: 80%;
-  max-width: 500px;
-  border: 1px solid ${props => props.theme.border};
-`;
-
-const ImageUpload = memo(({ onImageUpload, currentImage, id, onAddCaption, caption, questionnaireTitle }) => {
+const ImageUploadComponent = memo(({ onImageUpload, currentImage, id, onAddCaption, caption, questionnaireTitle }) => {
   const [showPreview, setShowPreview] = useState(false);
   const [showCaptionModal, setShowCaptionModal] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -134,7 +386,7 @@ const ImageUpload = memo(({ onImageUpload, currentImage, id, onAddCaption, capti
   };
 
   return (
-    <div className="relative inline-block">
+    <CompactImageUpload>
       <input
         type="file"
         accept="image/*"
@@ -143,124 +395,148 @@ const ImageUpload = memo(({ onImageUpload, currentImage, id, onAddCaption, capti
         id={`image-upload-${id}`}
         disabled={uploading}
       />
-      <label
-        htmlFor={`image-upload-${id}`}
-        className="cursor-pointer inline-flex items-center px-2 py-1 border rounded-md shadow-sm text-sm font-medium bg-white hover:bg-gray-50"
-        style={{
-          borderColor: medicalColors.neutral.gray,
-          color: medicalColors.neutral.charcoal
-        }}
-      >
-        {currentImage ? <Camera size={20} /> : <Upload size={20} />}
+      <label htmlFor={`image-upload-${id}`} style={{ cursor: 'pointer' }}>
+        <CompactIconButton as="span" variant="secondary">
+          {currentImage ? <Camera size={14} /> : <Upload size={14} />}
+        </CompactIconButton>
       </label>
-      {uploading && <span className="ml-2">Téléchargement en cours...</span>}
+      
+      {uploading && <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>...</span>}
+      
       {currentImage && (
         <div 
-          className="inline-block ml-2"
+          style={{ position: 'relative' }}
           onMouseEnter={() => setShowPreview(true)}
           onMouseLeave={() => setShowPreview(false)}
         >
-          <Camera 
-            size={20} 
-            className="cursor-pointer"
-            style={{ color: medicalColors.primary.main }}
+          <CompactIconButton 
+            variant="secondary"
             onClick={() => setShowCaptionModal(true)}
-          />
+          >
+            <Camera size={14} />
+          </CompactIconButton>
+          
           {showPreview && (
-            <div className="absolute z-10 p-2 bg-white rounded-lg shadow-xl" style={{ top: '100%', left: '50%', transform: 'translateX(-50%)' }}>
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 10,
+              padding: '0.5rem',
+              backgroundColor: 'white',
+              borderRadius: '6px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              border: '1px solid #e5e7eb'
+            }}>
               <img
                 src={currentImage}
                 alt="Preview"
-                className="max-w-xs max-h-64 object-contain"
+                style={{ maxWidth: '150px', maxHeight: '100px', objectFit: 'contain' }}
               />
-              {caption && <p className="mt-2 text-sm text-gray-500">{caption}</p>}
+              {caption && <p style={{ marginTop: '0.25rem', fontSize: '0.75rem', color: '#6b7280' }}>{caption}</p>}
             </div>
           )}
         </div>
       )}
+      
       {showCaptionModal && (
-        <Modal>
-          <ModalContent>
-            <h2 className="text-xl font-semibold mb-4">Ajouter une légende</h2>
-            <textarea
-              className="w-full p-2 border rounded mb-4"
-              value={caption}
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '1.5rem',
+            borderRadius: '8px',
+            width: '90%',
+            maxWidth: '400px'
+          }}>
+            <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: '600' }}>Ajouter une légende</h3>
+            <ModernTextarea
+              value={caption || ''}
               onChange={(e) => onAddCaption(id, e.target.value)}
               placeholder="Entrez la légende de l'image"
-              style={{
-                borderColor: medicalColors.forms.input.border,
-                backgroundColor: medicalColors.forms.input.bg
-              }}
+              style={{ marginBottom: '1rem' }}
             />
-            <div className="flex justify-end">
-              <button
-                className="text-white py-2 px-4 rounded transition-colors text-sm"
-                style={{
-                  backgroundColor: medicalColors.buttons.primary.bg,
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontWeight: '500'
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = medicalColors.buttons.primary.hover}
-                onMouseLeave={(e) => e.target.style.backgroundColor = medicalColors.buttons.primary.bg}
-                onClick={() => setShowCaptionModal(false)}
-              >
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <CompactButton onClick={() => setShowCaptionModal(false)}>
                 Fermer
-              </button>
+              </CompactButton>
             </div>
-          </ModalContent>
-        </Modal>
+          </div>
+        </div>
       )}
-    </div>
+    </CompactImageUpload>
   );
 });
 
+// ==================== COMPOSANT DRAG AND DROP ====================
+
 const DraggableQuestion = memo(({ question, index, moveQuestion, path, children }) => {
   const ref = useRef(null);
-  const [, drag] = useDrag({
-    type: 'QUESTION',
-    item: { index, path },
-    collect: monitor => ({
-      isDragging: monitor.isDragging(),
-    }),
-  });
   
-  const [, drop] = useDrop({
-    accept: 'QUESTION',
-    hover: (item, monitor) => {
+  const [{ handlerId }, drop] = useDrop({
+    accept: 'question',
+    collect(monitor) {
+      return {
+        handlerId: monitor.getHandlerId(),
+      };
+    },
+    hover(item, monitor) {
       if (!ref.current) return;
+      const dragIndex = item.index;
+      const hoverIndex = index;
       const dragPath = item.path;
       const hoverPath = path;
-      
-      if (dragPath.join('-') === hoverPath.join('-')) return;
-      if (dragPath.includes('options') !== hoverPath.includes('options')) return;
-      
-      const hoverBoundingRect = ref.current.getBoundingClientRect();
+
+      if (JSON.stringify(dragPath) === JSON.stringify(hoverPath)) return;
+
+      const hoverBoundingRect = ref.current?.getBoundingClientRect();
       const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
       const clientOffset = monitor.getClientOffset();
       const hoverClientY = clientOffset.y - hoverBoundingRect.top;
-      
-      if (dragPath[dragPath.length - 1] < hoverPath[hoverPath.length - 1] && hoverClientY < hoverMiddleY) return;
-      if (dragPath[dragPath.length - 1] > hoverPath[hoverPath.length - 1] && hoverClientY > hoverMiddleY) return;
-      
+
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
+
       moveQuestion(dragPath, hoverPath);
+      item.index = hoverIndex;
       item.path = hoverPath;
     },
   });
-  
+
+  const [{ isDragging }, drag] = useDrag({
+    type: 'question',
+    item: () => ({ id: question.id, index, path }),
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  const opacity = isDragging ? 0.4 : 1;
   drag(drop(ref));
-  
+
   return (
-    <div ref={ref} className="mb-4 relative">
-      <div className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center cursor-move">
-        <GripVertical size={20} style={{ color: medicalColors.neutral.mediumGray }} />
-      </div>
+    <div ref={ref} style={{ opacity }} data-handler-id={handlerId}>
       {children}
     </div>
   );
 });
 
-function QuestionnaireCreator() {
+// ==================== COMPOSANT PRINCIPAL ====================
+
+const QuestionnaireCreator = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [questionnaire, setQuestionnaire] = useState({
     title: '',
     questions: [],
@@ -268,121 +544,47 @@ function QuestionnaireCreator() {
     crData: { crTexts: {}, freeTexts: {} },
     pageTitles: {}
   });
+  
   const [expandedQuestions, setExpandedQuestions] = useState({});
+  const [questionLinks, setQuestionLinks] = useState({});
   const [showLinkEditor, setShowLinkEditor] = useState(false);
-  const [currentEditingElement, setCurrentEditingElement] = useState(null);
+  const [currentEditingElement, setCurrentEditingElement] = useState({ elementId: null, linkIndex: null });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [linkToDelete, setLinkToDelete] = useState(null);
-  const [questionLinks, setQuestionLinks] = useState({});
-  const { id } = useParams();
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!id) {
-      alert("Veuillez créer et sauvegarder votre questionnaire avant d'ajouter des liens");
-    }
-  }, []);
-
+  // Chargement des données si en mode édition
   useEffect(() => {
     if (id) {
       const fetchQuestionnaire = async () => {
         try {
           const response = await axios.get(`/questionnaires/${id}`);
-          const loadedQuestionnaire = response.data;
-  
-          console.log('loadedQuestionnaire:', loadedQuestionnaire);
-          
-          const linksObject = {};
-          if (loadedQuestionnaire.links && typeof loadedQuestionnaire.links === 'object') {
-            for (let [key, value] of Object.entries(loadedQuestionnaire.links)) {
-              linksObject[key] = value;
-            }
-          }
-          
-          setQuestionLinks(linksObject);
+          const data = response.data;
           setQuestionnaire({
-            ...loadedQuestionnaire,
-            selectedOptions: loadedQuestionnaire.selectedOptions || {},
-            crData: {
-              crTexts: loadedQuestionnaire.crData?.crTexts || {},
-              freeTexts: loadedQuestionnaire.crData?.freeTexts || {}
-            },
-            pageTitles: loadedQuestionnaire.pageTitles || {}
+            title: data.title || '',
+            questions: data.questions || [],
+            selectedOptions: data.selectedOptions || {},
+            crData: data.crData || { crTexts: {}, freeTexts: {} },
+            pageTitles: data.pageTitles || {}
           });
           
-          console.log('questionnaire après setQuestionnaire:', questionnaire);
+          if (data.links) {
+            setQuestionLinks(data.links);
+          }
         } catch (error) {
-          console.error('Erreur lors du chargement du questionnaire:', error);
+          console.error('Erreur lors du chargement:', error);
+          alert('Erreur lors du chargement du questionnaire');
         }
       };
       fetchQuestionnaire();
     }
   }, [id]);
-  
-  const handleOpenLinkEditor = (elementId, linkIndex) => {
-    if (!id) {
-      alert('Veuillez d\'abord sauvegarder le questionnaire avant d\'ajouter des liens');
-      return;
-    }
-    
-    setCurrentEditingElement({
-      elementId,
-      linkIndex: typeof linkIndex === 'undefined' ? undefined : linkIndex
-    });
-    setShowLinkEditor(true);
-  };
 
-  const handleSaveLink = async (elementId, content, linkIndex, title) => {
-    try {
-      const updatedLinks = { ...questionLinks };
-      
-      if (!updatedLinks[elementId]) {
-        updatedLinks[elementId] = [];
-      }
-      
-      const newLink = { content, title, date: new Date() };
-      
-      if (typeof linkIndex !== 'undefined') {
-        updatedLinks[elementId][linkIndex] = newLink;
-      } else {
-        updatedLinks[elementId].push(newLink);
-      }
-      
-      setQuestionLinks(updatedLinks);
-      
-      await axios.post(`/questionnaires/${id}/links`, {
-        elementId,
-        content,
-        linkIndex,
-        title
-      });
-      
-    } catch (error) {
-      console.error('Erreur lors de la sauvegarde du lien:', error);
-    }
-  };
-
-  const handleDeleteLink = async (elementId, linkIndex) => {
-    try {
-      await axios.delete(`/questionnaires/${id}/links/${elementId}/${linkIndex}`);
-      
-      setQuestionLinks(prev => {
-        const updated = { ...prev };
-        if (updated[elementId]) {
-          updated[elementId] = updated[elementId].filter((_, index) => index !== linkIndex);
-          if (updated[elementId].length === 0) {
-            delete updated[elementId];
-          }
-        }
-        return updated;
-      });
-    } catch (error) {
-      console.error('Erreur lors de la suppression du lien:', error);
-    }
-  };
-
+  // Fonctions de gestion des questions
   const updateQuestionnaire = useCallback((field, value) => {
-    setQuestionnaire(prev => ({ ...prev, [field]: value }));
+    setQuestionnaire(prev => ({
+      ...prev,
+      [field]: value
+    }));
   }, []);
 
   const moveQuestion = useCallback((dragPath, hoverPath) => {
@@ -590,7 +792,7 @@ function QuestionnaireCreator() {
           if (parentPath[i] === 'options' || parentPath[i] === 'subQuestions') {
             current = current[parentPath[i]];
           } else {
-            current = current[path[i]];
+            current = current[parentPath[i]];
           }
         }
         current.splice(index, 1);
@@ -607,10 +809,10 @@ function QuestionnaireCreator() {
       const index = path[path.length - 1];
       let current = updatedQuestions;
       for (let i = 0; i < parentPath.length; i++) {
-        if (parentPath[i] === 'options' || path[i] === 'subQuestions') {
+        if (parentPath[i] === 'options' || parentPath[i] === 'subQuestions') {
           current = current[parentPath[i]];
         } else {
-          current = current[path[i]];
+          current = current[parentPath[i]];
         }
       }
       current.splice(index, 1);
@@ -703,6 +905,65 @@ function QuestionnaireCreator() {
     });
   }, []);
 
+  // Gestion des liens
+  const handleOpenLinkEditor = useCallback((elementId, linkIndex) => {
+    if (!id) {
+      alert("Vous devez d'abord sauvegarder le questionnaire avant d'ajouter des liens.");
+      return;
+    }
+    setCurrentEditingElement({ elementId, linkIndex });
+    setShowLinkEditor(true);
+  }, [id]);
+
+  const handleSaveLink = useCallback(async (elementId, content, linkIndex, title) => {
+    try {
+      const updatedLinks = { ...questionLinks };
+      
+      if (!updatedLinks[elementId]) {
+        updatedLinks[elementId] = [];
+      }
+      
+      const newLink = { content, title, date: new Date() };
+      
+      if (typeof linkIndex !== 'undefined') {
+        updatedLinks[elementId][linkIndex] = newLink;
+      } else {
+        updatedLinks[elementId].push(newLink);
+      }
+      
+      setQuestionLinks(updatedLinks);
+      
+      await axios.post(`/questionnaires/${id}/links`, {
+        elementId,
+        content,
+        linkIndex,
+        title
+      });
+      
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde du lien:', error);
+    }
+  }, [questionLinks, id]);
+
+  const handleDeleteLink = useCallback(async (elementId, linkIndex) => {
+    try {
+      await axios.delete(`/questionnaires/${id}/links/${elementId}/${linkIndex}`);
+      
+      setQuestionLinks(prev => {
+        const updated = { ...prev };
+        if (updated[elementId]) {
+          updated[elementId] = updated[elementId].filter((_, index) => index !== linkIndex);
+          if (updated[elementId].length === 0) {
+            delete updated[elementId];
+          }
+        }
+        return updated;
+      });
+    } catch (error) {
+      console.error('Erreur lors de la suppression du lien:', error);
+    }
+  }, [id]);
+
   const handleDeleteLinkConfirm = async () => {
     if (linkToDelete) {
       await handleDeleteLink(linkToDelete.elementId, linkToDelete.index);
@@ -711,13 +972,13 @@ function QuestionnaireCreator() {
     }
   };
 
+  // Rendu des questions
   const renderQuestion = useCallback((question, path) => {
     const isExpanded = expandedQuestions[path.join('-')] ?? true;
     const questionId = path.join('-');
     const depth = path.length;
     const links = questionLinks[questionId] || [];
   
-    console.log('question.questionImage:', question.questionImage);
     return (
       <DraggableQuestion
         key={question.id || `question-${questionId}`}
@@ -726,195 +987,178 @@ function QuestionnaireCreator() {
         moveQuestion={moveQuestion}
         path={path}
       >
-        <QuestionCard>
-          <QuestionHeader depth={depth}>
-            <button
-              className="mr-2 p-1 rounded-full hover:bg-opacity-20 hover:bg-gray-500"
+        <ModernQuestionCard>
+          <ModernQuestionHeader depth={depth}>
+            <CompactIconButton
+              variant="secondary"
               onClick={() => toggleQuestion(path)}
-              style={{ color: medicalColors.primary.main }}
+              style={{ marginRight: '0.5rem' }}
             >
-              {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-            </button>
-            <input 
-              className="flex-grow p-2 border-b border-transparent focus:outline-none bg-transparent"
-              style={{
-                borderBottomColor: 'transparent',
-                color: medicalColors.neutral.charcoal
-              }}
-              onFocus={(e) => e.target.style.borderBottomColor = medicalColors.primary.main}
-              onBlur={(e) => e.target.style.borderBottomColor = 'transparent'}
-              type="text" 
-              value={question.text || ''} 
+              {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            </CompactIconButton>
+            
+            <CompactDragHandle>
+              <GripVertical size={14} />
+            </CompactDragHandle>
+            
+            <ModernInput
+              value={question.text || ''}
               onChange={(e) => updateQuestion(path, 'text', e.target.value)}
-              placeholder="Texte de la question"
+              placeholder="Tapez votre question ici..."
+              style={{ 
+                marginLeft: '0.5rem', 
+                flex: 1,
+                marginBottom: 0,
+                fontSize: '0.9rem'
+              }}
             />
 
+            {/* Gestion de la page et "Important?" pour les questions de niveau 1 */}
             {depth === 1 && (
-              <div className="flex items-center ml-4">
-                <input
-                  type="checkbox"
-                  checked={question.isImportantToCheck || false}
-                  onChange={(e) => updateQuestion(path, 'isImportantToCheck', e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300"
-                  style={{ accentColor: medicalColors.primary.main }}
-                />
-                <span className="ml-2 text-sm" style={{ color: medicalColors.neutral.darkGray }}>
-                  Important ?
-                </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '0.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <input
+                    type="checkbox"
+                    checked={question.isImportantToCheck || false}
+                    onChange={(e) => updateQuestion(path, 'isImportantToCheck', e.target.checked)}
+                    style={{ width: '16px', height: '16px' }}
+                  />
+                  <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Important?</span>
+                </div>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Page:</span>
+                  <input
+                    type="number"
+                    min="1"
+                    value={question.page || 1}
+                    onChange={(e) => updateQuestion(path, 'page', Math.max(1, parseInt(e.target.value) || 1))}
+                    style={{
+                      width: '50px',
+                      padding: '0.25rem',
+                      fontSize: '0.75rem',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '4px'
+                    }}
+                  />
+                  <input
+                    type="text"
+                    value={questionnaire.pageTitles[question.page] ?? ''}
+                    onChange={(e) => {
+                      const pageNumber = question.page || 1;
+                      setQuestionnaire(prev => ({
+                        ...prev,
+                        pageTitles: {
+                          ...prev.pageTitles,
+                          [pageNumber]: e.target.value || ''
+                        }
+                      }));
+                    }}
+                    placeholder={`Titre page ${question.page || 1}`}
+                    style={{
+                      width: '120px',
+                      padding: '0.25rem',
+                      fontSize: '0.75rem',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '4px'
+                    }}
+                  />
+                </div>
               </div>
             )}
 
-            {depth === 1 && (
-              <div className="flex items-center mx-2 gap-2">
-                <label className="text-sm mr-2" style={{ color: medicalColors.neutral.darkGray }}>Page:</label>
-                <input
-                  type="number"
-                  min="1"
-                  value={question.page || 1}
-                  onChange={(e) => updateQuestion(path, 'page', Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-16 p-1 text-sm border rounded"
-                  style={{
-                    borderColor: medicalColors.forms.input.border,
-                    backgroundColor: medicalColors.forms.input.bg
-                  }}
-                />
-                <input
-                  type="text"
-                  value={questionnaire.pageTitles[question.page] ?? ''}
-                  onChange={(e) => {
-                    const pageNumber = question.page || 1;
-                    setQuestionnaire(prev => ({
-                      ...prev,
-                      pageTitles: {
-                        ...prev.pageTitles,
-                        [pageNumber]: e.target.value || ''
-                      }
-                    }));
-                  }}
-                  placeholder={`Page ${question.page || 1}`}
-                  className="w-48 p-1 text-sm border rounded"
-                  style={{
-                    borderColor: medicalColors.forms.input.border,
-                    backgroundColor: medicalColors.forms.input.bg
-                  }}
-                />
-              </div>
-            )}
-            <div className="flex items-center">
-              <ImageUpload
-                onImageUpload={handleImageUpload}
-                currentImage={question.image?.src}
-                id={questionId}
-                onAddCaption={handleAddCaption}
-                caption={question.image?.caption}
-                questionnaireTitle={questionnaire.title}
-              />
-              <div className="flex items-center gap-2 ml-auto">
-                {links.map((link, index) => (
-                  <div key={index} className="flex items-center">
-                    <button
-                      className="px-3 py-1 rounded flex items-center"
-                      style={{
-                        color: medicalColors.primary.main,
-                        backgroundColor: medicalColors.primary.subtle
+            {/* Images pour les questions */}
+            <ImageUploadComponent
+              onImageUpload={handleImageUpload}
+              currentImage={question.image?.src}
+              id={questionId}
+              onAddCaption={handleAddCaption}
+              caption={question.image?.caption}
+              questionnaireTitle={questionnaire.title}
+            />
+
+            {/* Boutons des liens existants */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginLeft: '0.5rem' }}>
+              {links.map((link, index) => (
+                <div key={index} style={{ display: 'flex', alignItems: 'center' }}>
+                  <CompactSecondaryButton
+                    onClick={() => handleOpenLinkEditor(questionId, index)}
+                    style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem' }}
+                    title={`Éditer: ${link.title || `Fiche ${index + 1}`}`}
+                  >
+                    {link.title || `Fiche ${index + 1}`}
+                    <CompactIconButton
+                      variant="danger"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setLinkToDelete({ elementId: questionId, index });
+                        setShowDeleteConfirm(true);
                       }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = medicalColors.cards.hover}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = medicalColors.primary.subtle}
-                      onClick={() => handleOpenLinkEditor(questionId, index)}
-                      title={`Éditer la fiche ${index + 1}`}
+                      style={{ marginLeft: '0.25rem', padding: '0.125rem' }}
+                      title="Supprimer la fiche"
                     >
-                      {link.title || `Fiche ${index + 1}`}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setLinkToDelete({ elementId: questionId, index });
-                          setShowDeleteConfirm(true);
-                        }}
-                        className="ml-2"
-                        style={{ color: medicalColors.status.error }}
-                        title="Supprimer la fiche"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </button>
-                  </div>
-                ))}
-                <button
-                  className={`ml-2 p-1 rounded-full ${!id ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  style={{
-                    color: medicalColors.primary.main,
-                    backgroundColor: medicalColors.primary.subtle
-                  }}
-                  onMouseEnter={(e) => !e.target.disabled && (e.target.style.backgroundColor = medicalColors.cards.hover)}
-                  onMouseLeave={(e) => !e.target.disabled && (e.target.style.backgroundColor = medicalColors.primary.subtle)}
-                  onClick={() => handleOpenLinkEditor(questionId)}
-                  title={!id ? "Sauvegardez d'abord le questionnaire" : "Ajouter une nouvelle fiche"}
-                  disabled={!id}
-                >
-                  <Plus size={14} />
-                </button>
-              </div>
-              <button
-                className="ml-2 p-1 rounded-full"
-                style={{
-                  color: medicalColors.primary.main,
-                  backgroundColor: medicalColors.primary.subtle
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = medicalColors.cards.hover}
-                onMouseLeave={(e) => e.target.style.backgroundColor = medicalColors.primary.subtle}
+                      <Trash2 size={10} />
+                    </CompactIconButton>
+                  </CompactSecondaryButton>
+                </div>
+              ))}
+              
+              <CompactIconButton
+                variant="secondary"
+                onClick={() => handleOpenLinkEditor(questionId)}
+                title={!id ? "Sauvegardez d'abord le questionnaire" : "Ajouter une nouvelle fiche"}
+                disabled={!id}
+              >
+                <Plus size={12} />
+              </CompactIconButton>
+            </div>
+
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.25rem' }}>
+              <CompactIconButton
+                variant="secondary"
                 onClick={() => {
                   const duplicated = duplicateQuestion(question);
                   addQuestion(path.slice(0, -1), duplicated);
                 }}
-                title="Dupliquer la question"
+                title="Dupliquer"
               >
-                <Copy size={16} />
-              </button>
-              <button
-                className="ml-2 p-1 rounded-full"
-                style={{
-                  color: medicalColors.status.error,
-                  backgroundColor: medicalColors.accent.subtle
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = medicalColors.cards.hover}
-                onMouseLeave={(e) => e.target.style.backgroundColor = medicalColors.accent.subtle}
+                <Copy size={14} />
+              </CompactIconButton>
+              
+              <CompactIconButton
+                variant="danger"
                 onClick={() => deleteQuestion(path)}
+                title="Supprimer"
               >
-                <Trash2 size={16} />
-              </button>
+                <Trash2 size={14} />
+              </CompactIconButton>
             </div>
-          </QuestionHeader>
+          </ModernQuestionHeader>
+
           {isExpanded && (
-            <QuestionContent depth={depth}>
-              <StyledSelect
+            <ModernQuestionContent depth={depth}>
+              <ModernSelect
                 value={question.type || 'single'}
                 onChange={(e) => updateQuestion(path, 'type', e.target.value)}
+                style={{ marginBottom: '0.75rem' }}
               >
                 <option value="single">Choix unique</option>
                 <option value="multiple">Choix multiple</option>
                 <option value="text">Texte libre</option>
                 <option value="number">Numérique</option>
                 <option value="imageMap">Image interactive</option>
-              </StyledSelect>
+              </ModernSelect>
 
-              {question.type !== 'imageMap' && (
-                <div className="flex items-center mb-4">
-                  <ImageUpload
-                    onImageUpload={handleImageUpload}
-                    currentImage={question.image?.src}
-                    id={questionId}
-                    onAddCaption={handleAddCaption}
-                    caption={question.image?.caption}
-                    questionnaireTitle={questionnaire.title}
-                  />
-                </div>
-              )}
-
+              {/* Gestion des images pour les questions imageMap */}
               {question.type === 'imageMap' && (
-                <div className="mt-4">
+                <div style={{ marginBottom: '0.75rem' }}>
                   {!question.questionImage?.src ? (
-                    <div className="border-2 border-dashed rounded-lg p-6 text-center"
-                         style={{ borderColor: medicalColors.neutral.gray }}>
+                    <div style={{
+                      border: '2px dashed #d1d5db',
+                      borderRadius: '6px',
+                      padding: '1rem',
+                      textAlign: 'center'
+                    }}>
                       <input
                         type="file"
                         accept="image/*"
@@ -924,23 +1168,23 @@ function QuestionnaireCreator() {
                       />
                       <label
                         htmlFor={`question-image-${questionId}`}
-                        className="cursor-pointer flex flex-col items-center"
+                        style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
                       >
-                        <Camera size={48} style={{ color: medicalColors.neutral.mediumGray }} className="mb-2" />
-                        <span style={{ color: medicalColors.neutral.darkGray }}>
+                        <Camera size={32} style={{ color: '#9ca3af', marginBottom: '0.5rem' }} />
+                        <span style={{ color: '#6b7280', fontSize: '0.9rem' }}>
                           Cliquez pour ajouter l'image de la question
                         </span>
                       </label>
                     </div>
                   ) : (
                     <div>
-                      <div className="relative">
+                      <div style={{ position: 'relative' }}>
                         <img 
                           src={question.questionImage.src} 
                           alt="Question" 
-                          className="w-full rounded-lg"
+                          style={{ width: '100%', borderRadius: '6px' }}
                         />
-                        <div className="absolute top-2 right-2">
+                        <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem' }}>
                           <input
                             type="file"
                             accept="image/*"
@@ -950,13 +1194,14 @@ function QuestionnaireCreator() {
                           />
                           <label
                             htmlFor={`question-image-change-${questionId}`}
-                            className="cursor-pointer p-2 bg-white rounded-full shadow hover:bg-gray-100"
+                            style={{ cursor: 'pointer' }}
                           >
-                            <Camera size={20} style={{ color: medicalColors.neutral.darkGray }} />
+                            <CompactIconButton as="span" variant="secondary">
+                              <Camera size={14} />
+                            </CompactIconButton>
                           </label>
                         </div>
                       </div>
-                      {console.log('Areas passées à ImageMapEditor:', question.questionImage.areas)}
 
                       <ImageMapEditor
                         image={question.questionImage}
@@ -973,196 +1218,161 @@ function QuestionnaireCreator() {
                 </div>
               )}
 
+              {/* Options pour choix unique/multiple */}
               {['single', 'multiple'].includes(question.type) && (
-                <div className="space-y-2">
-                  {question.options && question.options.map((option, oIndex) => (
+                <div style={{ marginTop: '0.75rem' }}>
+                  {question.options?.map((option, oIndex) => (
                     <OptionCard key={option.id || `${questionId}-option-${oIndex}`}>
-                      <div className="flex items-center p-1 rounded">
-                        <input
-                          className="flex-grow p-1 bg-transparent border-b border-transparent focus:outline-none text-sm"
-                          style={{
-                            borderBottomColor: 'transparent',
-                            color: medicalColors.neutral.charcoal
-                          }}
-                          onFocus={(e) => e.target.style.borderBottomColor = medicalColors.primary.main}
-                          onBlur={(e) => e.target.style.borderBottomColor = 'transparent'}
-                          type="text"
-                          value={option.text || ''}
-                          onChange={(e) => updateQuestion([...path, 'options', oIndex], 'text', e.target.value)}
-                          placeholder="Texte de l'option"
-                        />
-                        <ImageUpload
-                          onImageUpload={handleImageUpload}
-                          currentImage={option.image?.src}
-                          id={`${questionId}-options-${oIndex}`}
-                          onAddCaption={handleAddCaption}
-                          caption={option.image?.caption}
-                          questionnaireTitle={questionnaire.title}
-                        />
-                        <div className="flex">
-                          {(questionLinks[`${questionId}-options-${oIndex}`] || []).map((link, index) => (
-                            <button
-                              key={index}
-                              className="ml-2 px-3 py-1 rounded flex items-center"
-                              style={{
-                                color: medicalColors.primary.main,
-                                backgroundColor: medicalColors.primary.subtle
-                              }}
-                              onMouseEnter={(e) => e.target.style.backgroundColor = medicalColors.cards.hover}
-                              onMouseLeave={(e) => e.target.style.backgroundColor = medicalColors.primary.subtle}
-                              onClick={() => handleOpenLinkEditor(`${questionId}-options-${oIndex}`, index)}
-                              title={`Éditer la fiche ${index + 1}`}
-                            >
-                              {link.title || `Fiche ${index + 1}`}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setLinkToDelete({ elementId: `${questionId}-options-${oIndex}`, index });
-                                  setShowDeleteConfirm(true);
-                                }}
-                                className="ml-2"
-                                style={{ color: medicalColors.status.error }}
-                                title="Supprimer la fiche"
+                      <CompactOptionContainer>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <ModernInput
+                            value={option.text || ''}
+                            onChange={(e) => updateQuestion([...path, 'options', oIndex], 'text', e.target.value)}
+                            placeholder={`Option ${oIndex + 1}`}
+                            style={{ flex: 1, marginBottom: 0 }}
+                          />
+                          
+                          {/* Images pour les options */}
+                          <ImageUploadComponent
+                            onImageUpload={handleImageUpload}
+                            currentImage={option.image?.src}
+                            id={`${questionId}-options-${oIndex}`}
+                            onAddCaption={handleAddCaption}
+                            caption={option.image?.caption}
+                            questionnaireTitle={questionnaire.title}
+                          />
+
+                          {/* Fiches pour les options */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            {(questionLinks[`${questionId}-options-${oIndex}`] || []).map((link, index) => (
+                              <CompactSecondaryButton
+                                key={index}
+                                onClick={() => handleOpenLinkEditor(`${questionId}-options-${oIndex}`, index)}
+                                style={{ fontSize: '0.7rem', padding: '0.25rem 0.5rem' }}
+                                title={`Éditer: ${link.title || `Fiche ${index + 1}`}`}
                               >
-                                <Trash2 size={14} />
-                              </button>
-                            </button>
-                          ))}
-                          <button
-                            className="ml-2 p-1 rounded-full"
-                            style={{
-                              color: medicalColors.primary.main,
-                              backgroundColor: medicalColors.primary.subtle
-                            }}
-                            onMouseEnter={(e) => e.target.style.backgroundColor = medicalColors.cards.hover}
-                            onMouseLeave={(e) => e.target.style.backgroundColor = medicalColors.primary.subtle}
-                            onClick={() => handleOpenLinkEditor(`${questionId}-options-${oIndex}`)}
-                            title="Ajouter une nouvelle fiche"
+                                {link.title || `Fiche ${index + 1}`}
+                                <CompactIconButton
+                                  variant="danger"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setLinkToDelete({ elementId: `${questionId}-options-${oIndex}`, index });
+                                    setShowDeleteConfirm(true);
+                                  }}
+                                  style={{ marginLeft: '0.25rem', padding: '0.125rem' }}
+                                  title="Supprimer la fiche"
+                                >
+                                  <Trash2 size={10} />
+                                </CompactIconButton>
+                              </CompactSecondaryButton>
+                            ))}
+                            
+                            <CompactIconButton
+                              variant="secondary"
+                              onClick={() => handleOpenLinkEditor(`${questionId}-options-${oIndex}`)}
+                              title="Ajouter une fiche"
+                            >
+                              <Plus size={12} />
+                            </CompactIconButton>
+                          </div>
+                          
+                          <CompactIconButton
+                            variant="danger"
+                            onClick={() => deleteOption([...path, 'options', oIndex])}
+                            title="Supprimer l'option"
+                          >
+                            <Trash2 size={14} />
+                          </CompactIconButton>
+                          
+                          <CompactIconButton
+                            variant="secondary"
+                            onClick={() => addQuestion([...path, 'options', oIndex, 'subQuestions'])}
+                            title="Ajouter une sous-question"
                           >
                             <Plus size={14} />
-                          </button>
+                          </CompactIconButton>
                         </div>
-                        <button
-                          className="ml-1 p-1 rounded-full"
-                          style={{
-                            color: medicalColors.status.error,
-                            backgroundColor: medicalColors.accent.subtle
-                          }}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = medicalColors.cards.hover}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = medicalColors.accent.subtle}
-                          onClick={() => deleteOption([...path, 'options', oIndex])}
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                        <button 
-                          className="ml-1 p-1 rounded-full"
-                          style={{
-                            color: medicalColors.primary.main,
-                            backgroundColor: medicalColors.primary.subtle
-                          }}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = medicalColors.cards.hover}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = medicalColors.primary.subtle}
-                          onClick={() => addQuestion([...path, 'options', oIndex, 'subQuestions'])}
-                        >
-                          <Plus size={14} />
-                        </button>
-                      </div>
-                      {option.subQuestions && option.subQuestions.map((subQuestion, sqIndex) => (
-                        <SubQuestionWrapper key={subQuestion.id || `${questionId}-option-${oIndex}-subquestion-${sqIndex}`} depth={depth + 1}>
-                          {renderQuestion(subQuestion, [...path, 'options', oIndex, 'subQuestions', sqIndex])}
-                        </SubQuestionWrapper>
-                      ))}
+
+                        {/* Sous-questions */}
+                        {option.subQuestions?.length > 0 && (
+                          <SubQuestionWrapper>
+                            {option.subQuestions.map((subQuestion, sqIndex) => 
+                              renderQuestion(subQuestion, [...path, 'options', oIndex, 'subQuestions', sqIndex])
+                            )}
+                          </SubQuestionWrapper>
+                        )}
+                      </CompactOptionContainer>
                     </OptionCard>
                   ))}
-                  <button 
-                    className="w-full p-2 mt-2 text-white rounded transition-colors text-sm"
-                    style={{
-                      backgroundColor: medicalColors.buttons.primary.bg,
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontWeight: '500'
-                    }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = medicalColors.buttons.primary.hover}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = medicalColors.buttons.primary.bg}
+
+                  <CompactButton
                     onClick={() => addOption(path)}
+                    style={{ marginTop: '0.5rem' }}
                   >
-                    <Plus size={14} className="inline mr-1" /> Ajouter une option
-                  </button>
+                    <Plus size={14} />
+                    Ajouter une option
+                  </CompactButton>
                 </div>
               )}
-            </QuestionContent>
+            </ModernQuestionContent>
           )}
-        </QuestionCard>
+        </ModernQuestionCard>
       </DraggableQuestion>
     );
-  }, [expandedQuestions, moveQuestion, toggleQuestion, updateQuestion, handleImageUpload, duplicateQuestion, addQuestion, deleteQuestion, deleteOption, addOption, questionnaire.title, handleOpenLinkEditor]);
-
-  console.log('questionLinks dans Creator:', questionLinks);
-  console.log('id dans Creator:', id);
+  }, [expandedQuestions, moveQuestion, toggleQuestion, updateQuestion, handleQuestionImageUpload, duplicateQuestion, addQuestion, deleteQuestion, deleteOption, addOption, questionnaire.title, handleOpenLinkEditor, questionLinks, handleImageUpload, handleAddCaption]);
 
   return (
-    <CreatorWrapper>
-      <div className="flex flex-col lg:flex-row gap-8">
-        <div className="lg:w-2/3">
-          <CreatorCard>
-            <input 
-              className="w-full p-2 text-xl border-b-2 focus:outline-none mb-6"
-              style={{
-                borderBottomColor: medicalColors.primary.main,
-                backgroundColor: 'transparent',
-                color: medicalColors.neutral.charcoal
-              }}
-              onFocus={(e) => e.target.style.borderBottomColor = medicalColors.primary.dark}
-              onBlur={(e) => e.target.style.borderBottomColor = medicalColors.primary.main}
+    <ModernCreatorWrapper>
+      <ModernTitle>
+        {id ? 'Modifier le questionnaire' : 'Créer un nouveau questionnaire'}
+      </ModernTitle>
+
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: window.innerWidth > 1024 ? 'row' : 'column',
+        gap: '1.5rem'
+      }}>
+        {/* Section principale d'édition */}
+        <div style={{ flex: '2', minWidth: '0' }}>
+          <ModernCreatorCard>
+            <ModernTitleInput
               type="text" 
               value={questionnaire.title} 
               onChange={(e) => updateQuestionnaire('title', e.target.value)}
               placeholder="Titre du questionnaire" 
             />
+            
             <DndProvider backend={HTML5Backend}>
               {questionnaire.questions.map((question, index) => renderQuestion(question, [index]))}
             </DndProvider>
-            <div className="flex justify-between mt-6">
-              <button 
-                className="text-white py-2 px-4 rounded transition-colors text-sm"
-                style={{
-                  backgroundColor: medicalColors.buttons.primary.bg,
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontWeight: '500'
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = medicalColors.buttons.primary.hover}
-                onMouseLeave={(e) => e.target.style.backgroundColor = medicalColors.buttons.primary.bg}
-                onClick={() => addQuestion()}
-              >
-                <Plus size={14} className="inline mr-1" /> Ajouter une question
-              </button>
-              
-              <button 
-                className="text-white py-2 px-4 rounded transition-colors text-sm"
-                style={{
-                  backgroundColor: medicalColors.buttons.success.bg,
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontWeight: '500'
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = medicalColors.buttons.success.hover}
-                onMouseLeave={(e) => e.target.style.backgroundColor = medicalColors.buttons.success.bg}
-                onClick={handleSave}
-              >
-                Sauvegarder le questionnaire
-              </button>
-            </div>
             
-          </CreatorCard>
+            <CompactButtonGroup>
+              <CompactButton onClick={() => addQuestion()}>
+                <Plus size={14} />
+                Ajouter une question
+              </CompactButton>
+              
+              <CompactSuccessButton onClick={handleSave}>
+                Sauvegarder le questionnaire
+              </CompactSuccessButton>
+            </CompactButtonGroup>
+          </ModernCreatorCard>
         </div>
         
-        <div className="lg:w-2/4">
-          <CreatorCard>
-            <h3 className="text-xl font-semibold mb-4" style={{ color: medicalColors.primary.main }}>
+        {/* Section aperçu */}
+        <div style={{ flex: '1', minWidth: '300px' }}>
+          <ModernPreviewSection>
+            <ModernPreviewTitle>
               Aperçu du questionnaire
-            </h3>
-            <div className="p-4 rounded-md" style={{ backgroundColor: medicalColors.neutral.lightGray, opacity: 0.9 }}>
+            </ModernPreviewTitle>
+            
+            <div style={{ 
+              padding: '0.75rem',
+              backgroundColor: '#f9fafb',
+              borderRadius: '6px',
+              border: '1px solid #e5e7eb',
+              fontSize: '0.9rem'
+            }}>
               <QuestionnairePreview 
                 questions={questionnaire.questions}
                 selectedOptions={questionnaire.selectedOptions}
@@ -1173,8 +1383,8 @@ function QuestionnaireCreator() {
                       ...prev.selectedOptions,
                       [questionId]: type === 'single' ? [optionIndex] : 
                         [...(prev.selectedOptions[questionId] || [])].includes(optionIndex) ?
-                          [...(prev.selectedOptions[questionId] || [])].filter(i => i !== optionIndex) :
-                          [...(prev.selectedOptions[questionId] || []), optionIndex]
+                        prev.selectedOptions[questionId].filter(i => i !== optionIndex) :
+                        [...(prev.selectedOptions[questionId] || []), optionIndex]
                     }
                   }));
                 }}
@@ -1192,9 +1402,11 @@ function QuestionnaireCreator() {
                 setQuestionnaire={setQuestionnaire}
               />
             </div>
-          </CreatorCard>
+          </ModernPreviewSection>
         </div>
       </div>
+
+      {/* Modales */}
       {showLinkEditor && (
         <LinkEditor
           onClose={() => setShowLinkEditor(false)}
@@ -1214,52 +1426,56 @@ function QuestionnaireCreator() {
           }
         />
       )}
+
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-sm" style={{ backgroundColor: medicalColors.cards.background }}>
-            <h3 className="text-lg font-semibold mb-4" style={{ color: medicalColors.neutral.charcoal }}>
-              Confirmation
-            </h3>
-            <p className="mb-4" style={{ color: medicalColors.neutral.darkGray }}>
-              Êtes-vous sûr de vouloir supprimer ce lien ?
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '1.5rem',
+            borderRadius: '8px',
+            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
+            maxWidth: '400px',
+            width: '90%'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+              <AlertTriangle size={20} style={{ color: '#f59e0b', marginRight: '0.5rem' }} />
+              <h3 style={{ margin: 0, color: '#374151', fontSize: '1.1rem' }}>Confirmer la suppression</h3>
+            </div>
+            
+            <p style={{ marginBottom: '1.5rem', color: '#6b7280', fontSize: '0.9rem' }}>
+              Êtes-vous sûr de vouloir supprimer ce lien ? Cette action est irréversible.
             </p>
-            <div className="flex justify-end gap-4">
-              <button
-                className="px-4 py-2 rounded transition-colors"
-                style={{
-                  backgroundColor: medicalColors.neutral.gray,
-                  color: medicalColors.neutral.charcoal,
-                  border: 'none',
-                  cursor: 'pointer'
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = medicalColors.neutral.mediumGray}
-                onMouseLeave={(e) => e.target.style.backgroundColor = medicalColors.neutral.gray}
+            
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+              <CompactSecondaryButton
                 onClick={() => {
                   setShowDeleteConfirm(false);
                   setLinkToDelete(null);
                 }}
               >
                 Annuler
-              </button>
-              <button
-                className="px-4 py-2 text-white rounded transition-colors"
-                style={{
-                  backgroundColor: medicalColors.buttons.danger.bg,
-                  border: 'none',
-                  cursor: 'pointer'
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = medicalColors.buttons.danger.hover}
-                onMouseLeave={(e) => e.target.style.backgroundColor = medicalColors.buttons.danger.bg}
-                onClick={handleDeleteLinkConfirm}
-              >
+              </CompactSecondaryButton>
+              
+              <CompactDangerButton onClick={handleDeleteLinkConfirm}>
                 Supprimer
-              </button>
+              </CompactDangerButton>
             </div>
           </div>
         </div>
       )}
-    </CreatorWrapper>
+    </ModernCreatorWrapper>
   );
-}
+};
 
 export default QuestionnaireCreator;
