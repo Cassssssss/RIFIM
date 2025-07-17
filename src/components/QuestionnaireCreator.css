@@ -136,5 +136,29 @@ input, textarea {
 
 
 
+/* Permettre la sélection de texte dans les inputs */
+input, textarea {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
 
+/* Drag handle uniquement sur l'icône */
+.drag-handle {
+  user-select: none;
+  cursor: grab;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Empêcher le drag sur tout le reste */
+[data-handler-id] {
+  user-select: none;
+}
+
+[data-handler-id] input,
+[data-handler-id] textarea {
+  user-select: text !important;
+}
 

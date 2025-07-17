@@ -483,7 +483,6 @@ const ImageUploadComponent = memo(({ onImageUpload, currentImage, id, onAddCapti
 
 const DraggableQuestion = memo(({ question, index, moveQuestion, path, children }) => {
   const ref = useRef(null);
-  const dragHandleRef = useRef(null);
   
   const [{ handlerId }, drop] = useDrop({
     accept: 'question',
@@ -524,14 +523,11 @@ const DraggableQuestion = memo(({ question, index, moveQuestion, path, children 
   });
 
   const opacity = isDragging ? 0.4 : 1;
-  
-  // CHANGEMENT CRUCIAL : on connecte seulement le drag handle
-  drag(dragHandleRef);
-  drop(ref);
+  drag(drop(ref));
 
   return (
     <div ref={ref} style={{ opacity }} data-handler-id={handlerId}>
-      {React.cloneElement(children, { dragHandleRef })}
+      {children}
     </div>
   );
 });
@@ -977,7 +973,7 @@ const QuestionnaireCreator = () => {
   };
 
   // Rendu des questions
-const renderQuestion = useCallback((question, path, dragHandleRef) => {
+const renderQuestion = useCallback((question, path) => {
 
     const isExpanded = expandedQuestions[path.join('-')] ?? true;
     const questionId = path.join('-');
@@ -1002,7 +998,7 @@ const renderQuestion = useCallback((question, path, dragHandleRef) => {
               {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </CompactIconButton>
             
-<CompactDragHandle ref={dragHandleRef} className="drag-handle" style={{ cursor: 'grab' }}>
+<CompactDragHandle className="drag-handle" style={{ cursor: 'grab' }}>
   <GripVertical size={14} />
 </CompactDragHandle>
             
@@ -1348,20 +1344,11 @@ const renderQuestion = useCallback((question, path, dragHandleRef) => {
             />
             
             <DndProvider backend={HTML5Backend}>
-{questionnaire.questions.map((question, index) => {
-  const dragHandleRef = useRef(null);
-  return (
-    <DraggableQuestion
-      key={question.id || `question-${index}`}
-      question={question}
-      index={index}
-      moveQuestion={moveQuestion}
-      path={[index]}
-    >
-      {renderQuestion(question, [index], dragHandleRef)}
-    </DraggableQuestion>
-  );
-})}            </DndProvider>
+
+{questionnaire.questions.map((question, index) => renderQuestion(question, [index]))}
+
+
+           </DndProvider>
             
             <CompactButtonGroup>
               <CompactButton onClick={() => addQuestion()}>
