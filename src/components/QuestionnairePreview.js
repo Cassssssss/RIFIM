@@ -92,13 +92,7 @@ const PreviewWrapper = styled.div`
   }
 `;
 
-const QuestionCard = styled.div`
-  margin-bottom: 1rem;
-  
-  @media (max-width: 768px) {
-    margin-bottom: 0.5rem;
-  }
-`;
+
 
 const ImageMapContainer = styled.div`
   position: relative;
