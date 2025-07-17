@@ -511,6 +511,7 @@ const ImageUploadComponent = memo(({ onImageUpload, currentImage, id, onAddCapti
 
 const DraggableQuestion = memo(({ question, index, moveQuestion, path, children }) => {
   const ref = useRef(null);
+  const dragHandleRef = useRef(null);
   
   const [{ handlerId }, drop] = useDrop({
     accept: 'question',
@@ -542,7 +543,7 @@ const DraggableQuestion = memo(({ question, index, moveQuestion, path, children 
     },
   });
 
-  const [{ isDragging }, drag, dragPreview] = useDrag({
+  const [{ isDragging }, drag] = useDrag({
     type: 'question',
     item: () => ({ id: question.id, index, path }),
     collect: (monitor) => ({
@@ -552,12 +553,13 @@ const DraggableQuestion = memo(({ question, index, moveQuestion, path, children 
 
   const opacity = isDragging ? 0.4 : 1;
   
-  // Connecter le drop à la question entière
+  // Connecter seulement le drag handle
+  drag(dragHandleRef);
   drop(ref);
 
   return (
     <div ref={ref} style={{ opacity }} data-handler-id={handlerId}>
-      {React.cloneElement(children, { dragRef: drag })}
+      {React.cloneElement(children, { dragHandleRef })}
     </div>
   );
 });
@@ -1020,7 +1022,14 @@ const QuestionnaireCreator = () => {
             {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </CompactIconButton>
           
-          <CompactDragHandle ref={dragRef} className="drag-handle">
+          <CompactDragHandle 
+            ref={(el) => dragRef && dragRef(el)} 
+            className="drag-handle"
+            style={{ 
+              cursor: 'grab',
+              userSelect: 'none'
+            }}
+          >
             <GripVertical size={14} />
           </CompactDragHandle>
           
