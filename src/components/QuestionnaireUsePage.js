@@ -8,21 +8,29 @@ import { X } from 'lucide-react';
 import set from 'lodash/set';
 import styled from 'styled-components';
 
-const PreviewWrapper = styled.div`
-  background-color: ${props => props.theme.background};
-  color: ${props => props.theme.text};
+const ModernPageContainer = styled.div`
   padding: 2rem;
-  border-radius: 8px;
+  background: linear-gradient(135deg, ${props => props.theme.background} 0%, ${props => props.theme.backgroundSecondary || props.theme.card} 100%);
+  color: ${props => props.theme.text};
+  min-height: calc(100vh - 60px);
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 `;
 
-const PreviewCard = styled.div`
+const ModernCard = styled.div`
   background-color: ${props => props.theme.card};
-  color: ${props => props.theme.text};
   border: 1px solid ${props => props.theme.border};
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px ${props => props.theme.shadow};
+  margin: 0 auto;
+  padding: 2rem;
+  max-width: 900px;
+  width: 100%;
+  margin-top: 2rem;
 `;
+
 
 const QuestionnaireUsePage = () => {
   const { id } = useParams();
@@ -352,83 +360,81 @@ const QuestionnaireUsePage = () => {
 
   if (!questionnaire) return <div>Chargement...</div>;
 
-  return (
-    <PreviewWrapper>
+return (
+  <ModernPageContainer>
+    <ModernCard>
+      <ModernTitle>{questionnaire?.title || "Questionnaire"}</ModernTitle>
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="lg:w-3/5">
-          <PreviewCard>
-            <div className="bg-gray-100 p-4 rounded-md">
-              <QuestionnairePreview 
-                questions={questionnaire.questions}
-                selectedOptions={selectedOptions}
-                setSelectedOptions={handleOptionChange}
-                crTexts={crTexts}
-                setCRTexts={setCRTexts}
-                freeTexts={freeTexts}
-                onFreeTextChange={handleFreeTextChange}
-                showCRFields={false}
-                onImageInsert={handleImageInsert}
-                hiddenQuestions={hiddenQuestions}
-                toggleQuestionVisibility={() => {}}
-                questionnaireLinks={questionnaire.links}
-                questionnaireId={id}
-                onOptionUpdate={handleOptionUpdate}
-                questionnaire={questionnaire}
-                handleOpenLinkEditor={() => {}}
-              />
-            </div>
-          </PreviewCard>
+          <div className="bg-gray-100 p-4 rounded-md">
+            <QuestionnairePreview 
+              questions={questionnaire.questions}
+              selectedOptions={selectedOptions}
+              setSelectedOptions={handleOptionChange}
+              crTexts={crTexts}
+              setCRTexts={setCRTexts}
+              freeTexts={freeTexts}
+              onFreeTextChange={handleFreeTextChange}
+              showCRFields={false}
+              onImageInsert={handleImageInsert}
+              hiddenQuestions={hiddenQuestions}
+              toggleQuestionVisibility={() => {}}
+              questionnaireLinks={questionnaire.links}
+              questionnaireId={id}
+              onOptionUpdate={handleOptionUpdate}
+              questionnaire={questionnaire}
+              handleOpenLinkEditor={() => {}}
+            />
+          </div>
         </div>
-  
         <div className="lg:w-2/5">
-          <PreviewCard>
-            <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-md whitespace-pre-wrap font-calibri text-base">
-              <div
-                ref={crRef}
-                contentEditable={true}
-                onBlur={(e) => setEditableCR(e.target.innerHTML)}
-                dangerouslySetInnerHTML={{ __html: editableCR }}
-                className="focus:outline-none"
-              />
-              {insertedImages.length > 0 && <br />}
-              <div className="flex flex-wrap">
-                {insertedImages.map((src, index) => (
-                  <div key={index} className="relative" style={{maxWidth: '200px', maxHeight: '200px', margin: '0 10px 10px 0'}}>
-                    <img 
-                      src={src} 
-                      alt={`Image insérée ${index + 1}`} 
-                      style={{
-                        maxWidth: '100%', 
-                        maxHeight: '100%', 
-                        objectFit: 'contain',
-                        backgroundColor: '#f0f0f0',
-                      }} 
-                    />
-                    <button 
-                      onClick={() => handleImageRemove(index)}
-                      className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                      title="Supprimer l'image"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ))}
-              </div>
+          <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-md whitespace-pre-wrap font-calibri text-base">
+            <div
+              ref={crRef}
+              contentEditable={true}
+              onBlur={(e) => setEditableCR(e.target.innerHTML)}
+              dangerouslySetInnerHTML={{ __html: editableCR }}
+              className="focus:outline-none"
+            />
+            {insertedImages.length > 0 && <br />}
+            <div className="flex flex-wrap">
+              {insertedImages.map((src, index) => (
+                <div key={index} className="relative" style={{maxWidth: '200px', maxHeight: '200px', margin: '0 10px 10px 0'}}>
+                  <img 
+                    src={src} 
+                    alt={`Image insérée ${index + 1}`} 
+                    style={{
+                      maxWidth: '100%', 
+                      maxHeight: '100%', 
+                      objectFit: 'contain',
+                      backgroundColor: '#f0f0f0',
+                    }} 
+                  />
+                  <button 
+                    onClick={() => handleImageRemove(index)}
+                    className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                    title="Supprimer l'image"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ))}
             </div>
-            <div className="mt-4 flex justify-center">
-              <button 
-                onClick={copyToClipboard}
-                className="bg-green-500 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
-              >
-                Copier
-              </button>
-              {copySuccess && <span className="text-green-600">{copySuccess}</span>}
-            </div>
-          </PreviewCard>
+          </div>
+          <div className="mt-4 flex justify-center">
+            <button 
+              onClick={copyToClipboard}
+              className="bg-green-500 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
+            >
+              Copier
+            </button>
+            {copySuccess && <span className="text-green-600">{copySuccess}</span>}
+          </div>
         </div>
       </div>
-    </PreviewWrapper>
-  );
+    </ModernCard>
+  </ModernPageContainer>
+);
 };
 
 export default QuestionnaireUsePage;

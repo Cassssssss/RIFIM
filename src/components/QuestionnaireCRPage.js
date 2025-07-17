@@ -7,25 +7,42 @@ import rehypeRaw from 'rehype-raw';
 import set from 'lodash/set';
 import styled from 'styled-components';
 
-const ViewerContainer = styled.div`
-  max-width: 1000px;
-  margin: 20px auto;
-  padding: 20px;
-  background-color: ${props => props.theme.background};
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-`;
-
-const Content = styled.div`
-  background-color: white;
+const ModernPageContainer = styled.div`
   padding: 2rem;
-  border-radius: 8px;
-  
-  img {
-    max-width: 100%;
-    height: auto;
+  background: linear-gradient(135deg, ${props => props.theme.background} 0%, ${props => props.theme.backgroundSecondary || props.theme.card} 100%);
+  color: ${props => props.theme.text};
+  min-height: calc(100vh - 60px);
+
+  @media (max-width: 768px) {
+    padding: 1rem;
   }
 `;
+
+const ModernCard = styled.div`
+  background-color: ${props => props.theme.card};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 16px;
+  box-shadow: 0 4px 15px ${props => props.theme.shadow};
+  margin: 0 auto;
+  padding: 2rem;
+  max-width: 900px;
+  width: 100%;
+  margin-top: 2rem;
+`;
+
+const ModernTitle = styled.h1`
+  font-size: 2.2rem;
+  margin-bottom: 2rem;
+  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-align: center;
+  font-weight: 700;
+  text-shadow: 0 2px 4px ${props => props.theme.shadow};
+`;
+
+
 
 const QuestionnaireCRPage = () => {
   const { id } = useParams();
@@ -235,55 +252,56 @@ const QuestionnaireCRPage = () => {
 
   if (!questionnaire) return <div>Chargement...</div>;
 
-  return (
-    <div className="container mx-auto p-4">
+ return (
+  <ModernPageContainer>
+    <ModernCard>
+      <ModernTitle>{questionnaire?.title || "Compte rendu"}</ModernTitle>
       <div className="flex flex-col lg:flex-row gap-6">
         <div className="w-full lg:w-3/5">
-          <div className="rounded-lg p-0">
-            <h3 className="text-xl font-semibold mb-4">Questionnaire</h3>
+          <div>
             <div className="bg-gray-100 p-4 rounded-md">
-            <QuestionnairePreview 
-  title=""
-  questions={questionnaire.questions}
-  selectedOptions={selectedOptions}
-  setSelectedOptions={handleOptionChange}
-  crTexts={crTexts}
-  setCRTexts={setCRTexts}
-  freeTexts={freeTexts}
-  onFreeTextChange={handleFreeTextChange}
-  showCRFields={true}
-  hiddenQuestions={hiddenQuestions}
-  toggleQuestionVisibility={toggleQuestionVisibility}
-  showAddButton={false}
-  questionnaireLinks={questionnaire.links}
-  questionnaireId={id}
-  onOptionUpdate={handleOptionUpdate}
-  onCRTextChange={handleCRTextChange}  // Assurez-vous que cette ligne est présente
-/>
+              <QuestionnairePreview 
+                title=""
+                questions={questionnaire.questions}
+                selectedOptions={selectedOptions}
+                setSelectedOptions={handleOptionChange}
+                crTexts={crTexts}
+                setCRTexts={setCRTexts}
+                freeTexts={freeTexts}
+                onFreeTextChange={handleFreeTextChange}
+                showCRFields={true}
+                hiddenQuestions={hiddenQuestions}
+                toggleQuestionVisibility={toggleQuestionVisibility}
+                showAddButton={false}
+                questionnaireLinks={questionnaire.links}
+                questionnaireId={id}
+                onOptionUpdate={handleOptionUpdate}
+                onCRTextChange={handleCRTextChange}
+              />
             </div>
           </div>
         </div>
         <div className="w-full lg:w-2/4">
-        <div className="rounded-lg p-0">
-  <h3 className="text-xl font-semibold mb-4">Aperçu du CR</h3>
-  <div 
-    className="bg-gray-100 p-4 rounded-md whitespace-pre-wrap font-calibri text-base"
-    contentEditable={true}
-    onBlur={(e) => setEditableCR(e.target.innerHTML)}
-    dangerouslySetInnerHTML={{ __html: editableCR }}
-  />
-</div>
-
-<button 
-  onClick={handleSave}
-  className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
->
-  Enregistrer
-</button>
+          <div>
+            <h3 className="text-xl font-semibold mb-4">Aperçu du CR</h3>
+            <div 
+              className="bg-gray-100 p-4 rounded-md whitespace-pre-wrap font-calibri text-base"
+              contentEditable={true}
+              onBlur={(e) => setEditableCR(e.target.innerHTML)}
+              dangerouslySetInnerHTML={{ __html: editableCR }}
+            />
+          </div>
+          <button 
+            onClick={handleSave}
+            className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+          >
+            Enregistrer
+          </button>
         </div>
       </div>
-    </div>
-  );
+    </ModernCard>
+  </ModernPageContainer>
+);
 };
 
 export default QuestionnaireCRPage;
