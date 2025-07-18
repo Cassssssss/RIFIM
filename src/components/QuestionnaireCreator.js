@@ -556,35 +556,35 @@ const DraggableQuestion = memo(({ question, index, moveQuestion, path, children 
   drop(ref); // Drop sur la carte
   drag(dragHandleRef); // Drag sur la poignée
 
-return (
-  <div
-    ref={ref}
-    style={{ opacity: isDragging ? 0.4 : 1, position: "relative" }}
-    data-handler-id={handlerId}
-  >
-    {/* Drag handle en absolute à gauche */}
+  return (
     <div
-      ref={dragHandleRef}
-      className="drag-handle"
-      style={{
-        position: "absolute",
-        left: 0,
-        top: "50%",
-        transform: "translateY(-50%)",
-        zIndex: 2,
-        cursor: "grab",
-        padding: "4px 6px",
-      }}
+      ref={ref}
+      style={{ opacity: isDragging ? 0.4 : 1, position: "relative" }}
+      data-handler-id={handlerId}
     >
-      <GripVertical size={18} />
-    </div>
+      {/* Drag handle en absolute à gauche */}
+      <div
+        ref={dragHandleRef}
+        className="drag-handle"
+        style={{
+          position: "absolute",
+          left: 0,
+          top: "50%",
+          transform: "translateY(-50%)",
+          zIndex: 2,
+          cursor: "grab",
+          padding: "4px 6px",
+        }}
+      >
+        <GripVertical size={18} />
+      </div>
 
-    {/* Le contenu de la question, avec padding-left */}
-    <div style={{ paddingLeft: 32 /* adapte la largeur si besoin */ }}>
-      {children}
+      {/* Le contenu de la question, avec padding-left */}
+      <div style={{ paddingLeft: 32 }}>
+        {children}
+      </div>
     </div>
-  </div>
-);
+  );
 });
 
 // ==================== COMPOSANT PRINCIPAL ====================
@@ -714,7 +714,7 @@ const QuestionnaireCreator = () => {
       formData.append('questionnaireTitle', questionnaire.title);
 
       try {
-        const response = await axios.post('upload-image', formData, {
+        const response = await axios.post('/upload-image', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
@@ -1028,7 +1028,7 @@ const QuestionnaireCreator = () => {
   };
 
   // Rendu des questions
-const renderQuestion = useCallback((question, path) => {
+  const renderQuestion = useCallback((question, path) => {
     const isExpanded = expandedQuestions[path.join('-')] ?? true;
     const questionId = path.join('-');
     const depth = path.length;
@@ -1045,9 +1045,9 @@ const renderQuestion = useCallback((question, path) => {
             {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </CompactIconButton>
           
-<CompactDragHandle className="drag-handle">
-  <GripVertical size={14} />
-</CompactDragHandle>
+          <CompactDragHandle className="drag-handle">
+            <GripVertical size={14} />
+          </CompactDragHandle>
           
           <ModernInput
             value={question.text || ''}
