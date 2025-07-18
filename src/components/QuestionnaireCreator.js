@@ -1,9 +1,7 @@
-import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
+import React, { useState, useEffect, useCallback, memo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { DndProvider, useDrag, useDrop } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import { ChevronDown, ChevronUp, Plus, Trash2, GripVertical, Copy, Camera, Upload, Link } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus, Trash2, Copy, Camera, Upload, ArrowUp, ArrowDown } from 'lucide-react';
 import axios from '../utils/axiosConfig';
 import QuestionnairePreview from './QuestionnairePreview';
 import LinkEditor from './LinkEditor';
@@ -238,6 +236,8 @@ const CompactIconButton = styled.button`
     `linear-gradient(135deg, ${props.theme.error}, ${props.theme.errorLight || '#dc2626'})` :
     props.variant === 'secondary' ?
     props.theme.background :
+    props.variant === 'move' ?
+    `linear-gradient(135deg, ${props.theme.secondary}, ${props.theme.primary})` :
     `linear-gradient(135deg, ${props.theme.primary}, ${props.theme.primaryHover || props.theme.secondary})`
   };
   color: ${props => props.variant === 'secondary' ? props.theme.text : 'white'};
@@ -283,24 +283,11 @@ const CompactButtonGroup = styled.div`
   }
 `;
 
-const CompactDragHandle = styled.div`
-  color: ${props => props.theme.textSecondary};
-  cursor: grab;
-  padding: 0.25rem;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  user-select: none;
-
-  &:hover {
-    color: ${props => props.theme.primary};
-    background-color: ${props => props.theme.hover};
-    transform: scale(1.1);
-  }
-
-  &:active {
-    cursor: grabbing;
-    transform: scale(0.95);
-  }
+const MoveButtonGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-right: 0.5rem;
 `;
 
 const ModernPreviewSection = styled(ModernCreatorCard)`
@@ -469,67 +456,6 @@ const ImageUploadComponent = memo(({ onImageUpload, currentImage, id, onAddCapti
   );
 });
 
-// ==================== COMPOSANT DRAG AND DROP SIMPLIFIÉ ====================
-
-const DraggableQuestion = memo(({ question, index, moveQuestion, path, children }) => {
-  const ref = useRef(null);
-
-  const [{ handlerId }, drop] = useDrop({
-    accept: 'question',
-    collect(monitor) {
-      return {
-        handlerId: monitor.getHandlerId(),
-      };
-    },
-    hover(item, monitor) {
-      if (!ref.current) return;
-      
-      const dragIndex = item.index;
-      const hoverIndex = index;
-      const dragPath = item.path;
-      const hoverPath = path;
-
-      // Ne pas se déplacer sur soi-même
-      if (JSON.stringify(dragPath) === JSON.stringify(hoverPath)) return;
-
-      const hoverBoundingRect = ref.current.getBoundingClientRect();
-      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-      const clientOffset = monitor.getClientOffset();
-      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
-
-      // Déplacer seulement quand la souris a suffisamment bougé
-      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
-      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
-
-      moveQuestion(dragPath, hoverPath);
-      item.index = hoverIndex;
-      item.path = hoverPath;
-    },
-  });
-
-  const [{ isDragging }, drag, dragPreview] = useDrag({
-    type: 'question',
-    item: () => ({ id: question.id, index, path }),
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
-  });
-
-  // Connecter le drag à la référence principale
-  const opacity = isDragging ? 0.4 : 1;
-  
-  // Utiliser useEffect pour connecter les refs de manière propre
-  useEffect(() => {
-    dragPreview(drop(ref));
-  }, [dragPreview, drop]);
-
-  return (
-    <div ref={ref} style={{ opacity }} data-handler-id={handlerId}>
-      {React.cloneElement(children, { dragRef: drag })}
-    </div>
-  );
-});
-
 // ==================== COMPOSANT PRINCIPAL ====================
 
 const QuestionnaireCreator = () => {
@@ -585,14 +511,15 @@ const QuestionnaireCreator = () => {
     }));
   }, []);
 
-  const moveQuestion = useCallback((dragPath, hoverPath) => {
+  // Fonction pour déplacer une question vers le haut ou le bas
+  const moveQuestion = useCallback((path, direction) => {
     setQuestionnaire(prev => {
       const newQuestions = JSON.parse(JSON.stringify(prev.questions));
       
-      const getParentArray = (questions, path) => {
+      const getParentArray = (questions, questionPath) => {
         let current = questions;
-        for (let i = 0; i < path.length - 1; i++) {
-          const pathPart = path[i];
+        for (let i = 0; i < questionPath.length - 1; i++) {
+          const pathPart = questionPath[i];
           if (pathPart === 'options' || pathPart === 'subQuestions') {
             current = current[pathPart];
           } else {
@@ -602,15 +529,17 @@ const QuestionnaireCreator = () => {
         return current;
       };
 
-      // Supprimer l'élément de sa position actuelle
-      const dragParent = getParentArray(newQuestions, dragPath);
-      const dragIndex = dragPath[dragPath.length - 1];
-      const movedQuestion = dragParent.splice(dragIndex, 1)[0];
+      const parentArray = getParentArray(newQuestions, path);
+      const currentIndex = path[path.length - 1];
+      const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
 
-      // L'insérer à sa nouvelle position
-      const hoverParent = getParentArray(newQuestions, hoverPath);
-      const hoverIndex = hoverPath[hoverPath.length - 1];
-      hoverParent.splice(hoverIndex, 0, movedQuestion);
+      // Vérifier si le déplacement est valide
+      if (newIndex >= 0 && newIndex < parentArray.length) {
+        // Échanger les éléments
+        const temp = parentArray[currentIndex];
+        parentArray[currentIndex] = parentArray[newIndex];
+        parentArray[newIndex] = temp;
+      }
 
       return { ...prev, questions: newQuestions };
     });
@@ -964,16 +893,59 @@ const QuestionnaireCreator = () => {
     }
   };
 
+  // Fonction pour déterminer si les boutons de déplacement doivent être actifs
+  const canMoveUp = useCallback((path) => {
+    const currentIndex = path[path.length - 1];
+    return currentIndex > 0;
+  }, []);
+
+  const canMoveDown = useCallback((path) => {
+    const currentIndex = path[path.length - 1];
+    
+    // Obtenir la longueur du tableau parent
+    let parentArray = questionnaire.questions;
+    for (let i = 0; i < path.length - 1; i++) {
+      const pathPart = path[i];
+      if (pathPart === 'options' || pathPart === 'subQuestions') {
+        parentArray = parentArray[pathPart];
+      } else {
+        parentArray = parentArray[pathPart];
+      }
+    }
+    
+    return currentIndex < parentArray.length - 1;
+  }, [questionnaire.questions]);
+
   // Rendu des questions
-  const renderQuestion = useCallback((question, path, dragRef) => {
+  const renderQuestion = useCallback((question, path) => {
     const isExpanded = expandedQuestions[path.join('-')] ?? true;
     const questionId = path.join('-');
     const depth = path.length;
     const links = questionLinks[questionId] || [];
   
     return (
-      <ModernQuestionCard>
+      <ModernQuestionCard key={question.id || questionId}>
         <ModernQuestionHeader depth={depth}>
+          {/* Boutons de déplacement */}
+          <MoveButtonGroup>
+            <CompactIconButton
+              variant="move"
+              onClick={() => moveQuestion(path, 'up')}
+              disabled={!canMoveUp(path)}
+              title="Déplacer vers le haut"
+            >
+              <ArrowUp size={12} />
+            </CompactIconButton>
+            <CompactIconButton
+              variant="move"
+              onClick={() => moveQuestion(path, 'down')}
+              disabled={!canMoveDown(path)}
+              title="Déplacer vers le bas"
+            >
+              <ArrowDown size={12} />
+            </CompactIconButton>
+          </MoveButtonGroup>
+
           <CompactIconButton
             variant="secondary"
             onClick={() => toggleQuestion(path)}
@@ -981,10 +953,6 @@ const QuestionnaireCreator = () => {
           >
             {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </CompactIconButton>
-          
-          <CompactDragHandle ref={dragRef}>
-            <GripVertical size={14} />
-          </CompactDragHandle>
           
           <ModernInput
             value={question.text || ''}
@@ -1280,20 +1248,12 @@ const QuestionnaireCreator = () => {
                         </CompactIconButton>
                       </div>
 
-                      {/* Sous-questions avec drag and drop */}
+                      {/* Sous-questions */}
                       {option.subQuestions?.length > 0 && (
                         <SubQuestionWrapper>
-                          {option.subQuestions.map((subQuestion, sqIndex) => (
-                            <DraggableQuestion
-                              key={subQuestion.id || `sub-${questionId}-${oIndex}-${sqIndex}`}
-                              question={subQuestion}
-                              index={sqIndex}
-                              moveQuestion={moveQuestion}
-                              path={[...path, 'options', oIndex, 'subQuestions', sqIndex]}
-                            >
-                              {renderQuestion(subQuestion, [...path, 'options', oIndex, 'subQuestions', sqIndex])}
-                            </DraggableQuestion>
-                          ))}
+                          {option.subQuestions.map((subQuestion, sqIndex) => 
+                            renderQuestion(subQuestion, [...path, 'options', oIndex, 'subQuestions', sqIndex])
+                          )}
                         </SubQuestionWrapper>
                       )}
                     </CompactOptionContainer>
@@ -1313,7 +1273,7 @@ const QuestionnaireCreator = () => {
         )}
       </ModernQuestionCard>
     );
-  }, [expandedQuestions, moveQuestion, toggleQuestion, updateQuestion, handleQuestionImageUpload, duplicateQuestion, addQuestion, deleteQuestion, deleteOption, addOption, questionnaire.title, handleOpenLinkEditor, questionLinks, handleImageUpload, handleAddCaption, questionnaire.pageTitles, setQuestionnaire]);
+  }, [expandedQuestions, moveQuestion, toggleQuestion, updateQuestion, handleQuestionImageUpload, duplicateQuestion, addQuestion, deleteQuestion, deleteOption, addOption, questionnaire.title, handleOpenLinkEditor, questionLinks, handleImageUpload, handleAddCaption, questionnaire.pageTitles, setQuestionnaire, canMoveUp, canMoveDown]);
 
   return (
     <ModernCreatorWrapper>
@@ -1336,19 +1296,9 @@ const QuestionnaireCreator = () => {
               placeholder="Titre du questionnaire" 
             />
             
-            <DndProvider backend={HTML5Backend}>
-              {questionnaire.questions.map((question, index) => (
-                <DraggableQuestion
-                  key={question.id || `question-${index}`}
-                  question={question}
-                  index={index}
-                  moveQuestion={moveQuestion}
-                  path={[index]}
-                >
-                  {renderQuestion(question, [index])}
-                </DraggableQuestion>
-              ))}
-            </DndProvider>
+            {questionnaire.questions.map((question, index) => 
+              renderQuestion(question, [index])
+            )}
             
             <CompactButtonGroup>
               <CompactButton onClick={() => addQuestion()}>
