@@ -91,31 +91,37 @@ const QuestionnaireUsePage = () => {
   const progressPercentage = useMemo(() => {
     if (!questionnaire?.questions) return 0;
     
-    // Fonction pour compter toutes les questions (y compris sous-questions)
-    const countAllQuestions = (questions) => {
+    // Fonction pour compter toutes les questions visibles (y compris sous-questions qui apparaissent)
+    const countAllVisibleQuestions = (questions, parentAnswered = true) => {
       let count = 0;
+      
       questions.forEach(question => {
-        if (['single', 'multiple', 'text', 'number'].includes(question.type)) {
+        // Ne compter que si la question parent est répondue (pour les sous-questions)
+        if (parentAnswered && ['single', 'multiple', 'text', 'number', 'imageMap'].includes(question.type)) {
           count++;
         }
-        // Compter les sous-questions des options sélectionnées
-        if (question.options && selectedOptions[question.id]) {
+        
+        // Compter les sous-questions qui deviennent visibles quand une option est sélectionnée
+        if (question.options && selectedOptions[question.id] && selectedOptions[question.id].length > 0) {
           const selectedIndices = selectedOptions[question.id] || [];
           selectedIndices.forEach(index => {
             const option = question.options[index];
-            if (option?.subQuestions) {
-              count += countAllQuestions(option.subQuestions);
+            if (option?.subQuestions && option.subQuestions.length > 0) {
+              count += countAllVisibleQuestions(option.subQuestions, true);
             }
           });
         }
       });
+      
       return count;
     };
 
     // Fonction pour compter les questions répondues
     const countAnsweredQuestions = (questions) => {
       let answered = 0;
+      
       questions.forEach(question => {
+        // Une question est considérée comme répondue si elle a au moins une réponse
         const hasAnswer = 
           (selectedOptions[question.id] && selectedOptions[question.id].length > 0) ||
           (freeTexts[question.id] && freeTexts[question.id].trim() !== '');
@@ -124,22 +130,28 @@ const QuestionnaireUsePage = () => {
           answered++;
         }
         
-        // Compter les sous-questions répondues
-        if (question.options && selectedOptions[question.id]) {
+        // Compter récursivement les sous-questions répondues
+        if (question.options && selectedOptions[question.id] && selectedOptions[question.id].length > 0) {
           const selectedIndices = selectedOptions[question.id] || [];
           selectedIndices.forEach(index => {
             const option = question.options[index];
-            if (option?.subQuestions) {
+            if (option?.subQuestions && option.subQuestions.length > 0) {
               answered += countAnsweredQuestions(option.subQuestions);
             }
           });
         }
       });
+      
       return answered;
     };
 
-    const totalQuestions = countAllQuestions(questionnaire.questions);
+    const totalQuestions = countAllVisibleQuestions(questionnaire.questions);
     const answeredQuestions = countAnsweredQuestions(questionnaire.questions);
+    
+    // Debug pour vérifier les calculs
+    console.log('Total questions visibles:', totalQuestions);
+    console.log('Questions répondues:', answeredQuestions);
+    console.log('Pourcentage:', totalQuestions > 0 ? Math.round((answeredQuestions / totalQuestions) * 100) : 0);
     
     return totalQuestions > 0 ? Math.round((answeredQuestions / totalQuestions) * 100) : 0;
   }, [questionnaire, selectedOptions, freeTexts]);
