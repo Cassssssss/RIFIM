@@ -153,10 +153,48 @@ const QuestionnaireUsePage = () => {
         const response = await axios.get(`/questionnaires/${id}`);
         const loadedQuestionnaire = response.data;
         setQuestionnaire(loadedQuestionnaire);
-        setSelectedOptions({}); // TOUJOURS vide au début
+        
+        // Séparer les options des questions visibles et masquées
+        const originalSelectedOptions = loadedQuestionnaire.selectedOptions || {};
+        const hiddenQuestionsData = loadedQuestionnaire.hiddenQuestions || {};
+        
+        // Créer un objet pour ne garder QUE les sélections des questions masquées
+        const hiddenQuestionsSelections = {};
+        
+        // Fonction récursive pour trouver toutes les questions masquées et garder leurs sélections
+        const preserveHiddenSelections = (questions) => {
+          questions.forEach(question => {
+            if (hiddenQuestionsData[question.id] && originalSelectedOptions[question.id]) {
+              // Cette question est masquée ET a des sélections -> les conserver
+              hiddenQuestionsSelections[question.id] = originalSelectedOptions[question.id];
+            }
+            
+            // Vérifier les sous-questions
+            if (question.options) {
+              question.options.forEach(option => {
+                if (option.subQuestions) {
+                  preserveHiddenSelections(option.subQuestions);
+                }
+              });
+            }
+          });
+        };
+        
+        if (loadedQuestionnaire.questions) {
+          preserveHiddenSelections(loadedQuestionnaire.questions);
+        }
+        
+        // Initialiser selectedOptions avec SEULEMENT les questions masquées précochées
+        setSelectedOptions(hiddenQuestionsSelections);
+        
         setCRTexts(loadedQuestionnaire.crData?.crTexts || {});
         setFreeTexts(loadedQuestionnaire.crData?.freeTexts || {});
-        setHiddenQuestions(loadedQuestionnaire.hiddenQuestions || {});
+        setHiddenQuestions(hiddenQuestionsData);
+        
+        console.log('=== INITIALISATION ===');
+        console.log('Questions masquées précochées:', Object.keys(hiddenQuestionsSelections));
+        console.log('Sélections conservées:', hiddenQuestionsSelections);
+        
       } catch (error) {
         console.error('Erreur lors du chargement du questionnaire:', error);
       }
