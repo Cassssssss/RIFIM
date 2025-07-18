@@ -80,16 +80,6 @@ const ModernQuestionHeader = styled.div`
     `linear-gradient(90deg, ${props.theme.primary}10, ${props.theme.secondary}10)` : 
     props.theme.background};
   transition: background-color 0.2s ease;
-  
-  /* Empêcher la sélection sur l'en-tête sauf les inputs */
-  user-select: none;
-  
-  input, textarea {
-    user-select: text !important;
-    -webkit-user-select: text !important;
-    -moz-user-select: text !important;
-    -ms-user-select: text !important;
-  }
 `;
 
 const ModernQuestionContent = styled.div`
@@ -109,12 +99,7 @@ const ModernInput = styled.input`
   color: ${props => props.theme.text};
   transition: all 0.2s ease;
   margin-bottom: ${props => props.marginBottom || '0'};
-  
-  /* Force la sélection de texte */
-  user-select: text !important;
-  -webkit-user-select: text !important;
-  -moz-user-select: text !important;
-  -ms-user-select: text !important;
+  user-select: text;
 
   &:focus {
     outline: none;
@@ -155,12 +140,7 @@ const ModernTextarea = styled.textarea`
   resize: vertical;
   min-height: 60px;
   transition: all 0.2s ease;
-  
-  /* Force la sélection de texte */
-  user-select: text !important;
-  -webkit-user-select: text !important;
-  -moz-user-select: text !important;
-  -ms-user-select: text !important;
+  user-select: text;
 
   &:focus {
     outline: none;
@@ -310,9 +290,6 @@ const CompactDragHandle = styled.div`
   border-radius: 4px;
   transition: all 0.2s ease;
   user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
 
   &:hover {
     color: ${props => props.theme.primary};
@@ -364,21 +341,6 @@ const CompactImageUpload = styled.div`
   align-items: center;
   gap: 0.25rem;
   margin-left: 0.5rem;
-`;
-
-const CompactLinkButton = styled(CompactSecondaryButton)`
-  font-size: 0.75rem;
-  padding: 0.375rem 0.75rem;
-  margin-top: 0.5rem;
-  
-  ${props => !props.enabled && `
-    opacity: 0.5;
-    cursor: not-allowed;
-    &:hover {
-      transform: none;
-      box-shadow: 0 1px 3px ${props.theme.shadow};
-    }
-  `}
 `;
 
 const SubQuestionWrapper = styled.div`
@@ -507,11 +469,10 @@ const ImageUploadComponent = memo(({ onImageUpload, currentImage, id, onAddCapti
   );
 });
 
-// ==================== COMPOSANT DRAG AND DROP ====================
+// ==================== COMPOSANT DRAG AND DROP SIMPLIFIÉ ====================
 
 const DraggableQuestion = memo(({ question, index, moveQuestion, path, children }) => {
   const ref = useRef(null);
-  const dragHandleRef = useRef(null);
 
   const [{ handlerId }, drop] = useDrop({
     accept: 'question',
@@ -522,18 +483,21 @@ const DraggableQuestion = memo(({ question, index, moveQuestion, path, children 
     },
     hover(item, monitor) {
       if (!ref.current) return;
+      
       const dragIndex = item.index;
       const hoverIndex = index;
       const dragPath = item.path;
       const hoverPath = path;
 
+      // Ne pas se déplacer sur soi-même
       if (JSON.stringify(dragPath) === JSON.stringify(hoverPath)) return;
 
-      const hoverBoundingRect = ref.current?.getBoundingClientRect();
+      const hoverBoundingRect = ref.current.getBoundingClientRect();
       const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
       const clientOffset = monitor.getClientOffset();
       const hoverClientY = clientOffset.y - hoverBoundingRect.top;
 
+      // Déplacer seulement quand la souris a suffisamment bougé
       if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
       if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
 
@@ -543,7 +507,7 @@ const DraggableQuestion = memo(({ question, index, moveQuestion, path, children 
     },
   });
 
-  const [{ isDragging }, drag] = useDrag({
+  const [{ isDragging }, drag, dragPreview] = useDrag({
     type: 'question',
     item: () => ({ id: question.id, index, path }),
     collect: (monitor) => ({
@@ -551,14 +515,17 @@ const DraggableQuestion = memo(({ question, index, moveQuestion, path, children 
     }),
   });
 
+  // Connecter le drag à la référence principale
   const opacity = isDragging ? 0.4 : 1;
-  drag(dragHandleRef);
-  drop(ref);
+  
+  // Utiliser useEffect pour connecter les refs de manière propre
+  useEffect(() => {
+    dragPreview(drop(ref));
+  }, [dragPreview, drop]);
 
   return (
     <div ref={ref} style={{ opacity }} data-handler-id={handlerId}>
-      <div ref={dragHandleRef} style={{ display: 'none' }}></div>
-      {children}
+      {React.cloneElement(children, { dragRef: drag })}
     </div>
   );
 });
@@ -622,34 +589,28 @@ const QuestionnaireCreator = () => {
     setQuestionnaire(prev => {
       const newQuestions = JSON.parse(JSON.stringify(prev.questions));
       
-      const getQuestionAt = (questions, path) => {
+      const getParentArray = (questions, path) => {
         let current = questions;
-        for (let i = 0; i < path.length; i++) {
-          if (path[i] === 'options' || path[i] === 'subQuestions') {
-            current = current[path[i]];
+        for (let i = 0; i < path.length - 1; i++) {
+          const pathPart = path[i];
+          if (pathPart === 'options' || pathPart === 'subQuestions') {
+            current = current[pathPart];
           } else {
-            current = current[path[i]];
+            current = current[pathPart];
           }
         }
         return current;
       };
 
-      const removeQuestionAt = (questions, path) => {
-        const parentPath = path.slice(0, -1);
-        const index = path[path.length - 1];
-        const parent = getQuestionAt(questions, parentPath);
-        return parent.splice(index, 1)[0];
-      };
+      // Supprimer l'élément de sa position actuelle
+      const dragParent = getParentArray(newQuestions, dragPath);
+      const dragIndex = dragPath[dragPath.length - 1];
+      const movedQuestion = dragParent.splice(dragIndex, 1)[0];
 
-      const insertQuestionAt = (questions, path, question) => {
-        const parentPath = path.slice(0, -1);
-        const index = path[path.length - 1];
-        const parent = getQuestionAt(questions, parentPath);
-        parent.splice(index, 0, question);
-      };
-
-      const movedQuestion = removeQuestionAt(newQuestions, dragPath);
-      insertQuestionAt(newQuestions, hoverPath, movedQuestion);
+      // L'insérer à sa nouvelle position
+      const hoverParent = getParentArray(newQuestions, hoverPath);
+      const hoverIndex = hoverPath[hoverPath.length - 1];
+      hoverParent.splice(hoverIndex, 0, movedQuestion);
 
       return { ...prev, questions: newQuestions };
     });
@@ -1003,15 +964,8 @@ const QuestionnaireCreator = () => {
     }
   };
 
-  // Fonction pour connecter la drag handle
-  const connectDragHandle = useCallback((element, dragRef) => {
-    if (element && dragRef) {
-      dragRef(element);
-    }
-  }, []);
-
   // Rendu des questions
-  const renderQuestion = useCallback((question, path) => {
+  const renderQuestion = useCallback((question, path, dragRef) => {
     const isExpanded = expandedQuestions[path.join('-')] ?? true;
     const questionId = path.join('-');
     const depth = path.length;
@@ -1028,15 +982,7 @@ const QuestionnaireCreator = () => {
             {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </CompactIconButton>
           
-          <CompactDragHandle 
-            ref={(el) => {
-              const dragQuestion = path.length > 0 ? 
-                document.querySelector(`[data-question-path="${path.join('-')}"]`) : null;
-              if (dragQuestion && dragQuestion._dragRef) {
-                connectDragHandle(el, dragQuestion._dragRef);
-              }
-            }}
-          >
+          <CompactDragHandle ref={dragRef}>
             <GripVertical size={14} />
           </CompactDragHandle>
           
@@ -1345,9 +1291,7 @@ const QuestionnaireCreator = () => {
                               moveQuestion={moveQuestion}
                               path={[...path, 'options', oIndex, 'subQuestions', sqIndex]}
                             >
-                              <div data-question-path={[...path, 'options', oIndex, 'subQuestions', sqIndex].join('-')}>
-                                {renderQuestion(subQuestion, [...path, 'options', oIndex, 'subQuestions', sqIndex])}
-                              </div>
+                              {renderQuestion(subQuestion, [...path, 'options', oIndex, 'subQuestions', sqIndex])}
                             </DraggableQuestion>
                           ))}
                         </SubQuestionWrapper>
@@ -1369,7 +1313,7 @@ const QuestionnaireCreator = () => {
         )}
       </ModernQuestionCard>
     );
-  }, [expandedQuestions, moveQuestion, toggleQuestion, updateQuestion, handleQuestionImageUpload, duplicateQuestion, addQuestion, deleteQuestion, deleteOption, addOption, questionnaire.title, handleOpenLinkEditor, questionLinks, handleImageUpload, handleAddCaption, connectDragHandle]);
+  }, [expandedQuestions, moveQuestion, toggleQuestion, updateQuestion, handleQuestionImageUpload, duplicateQuestion, addQuestion, deleteQuestion, deleteOption, addOption, questionnaire.title, handleOpenLinkEditor, questionLinks, handleImageUpload, handleAddCaption, questionnaire.pageTitles, setQuestionnaire]);
 
   return (
     <ModernCreatorWrapper>
@@ -1401,23 +1345,7 @@ const QuestionnaireCreator = () => {
                   moveQuestion={moveQuestion}
                   path={[index]}
                 >
-                  <div 
-                    data-question-path={[index].join('-')}
-                    ref={(el) => {
-                      if (el) {
-                        el._dragRef = (dragRef) => {
-                          if (dragRef) {
-                            const dragHandle = el.querySelector('.drag-handle');
-                            if (dragHandle) {
-                              dragRef(dragHandle);
-                            }
-                          }
-                        };
-                      }
-                    }}
-                  >
-                    {renderQuestion(question, [index])}
-                  </div>
+                  {renderQuestion(question, [index])}
                 </DraggableQuestion>
               ))}
             </DndProvider>
