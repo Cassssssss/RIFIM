@@ -91,70 +91,61 @@ const QuestionnaireUsePage = () => {
   const progressPercentage = useMemo(() => {
     if (!questionnaire?.questions) return 0;
     
-    // Fonction pour compter toutes les questions visibles (y compris sous-questions qui apparaissent)
-    const countAllVisibleQuestions = (questions, parentAnswered = true) => {
+    // Compter UNIQUEMENT les questions principales visibles (pas cachées, pas les sous-questions)
+    const countMainVisibleQuestions = (questions) => {
       let count = 0;
       
       questions.forEach(question => {
-        // Ne compter que si la question parent est répondue (pour les sous-questions)
-        if (parentAnswered && ['single', 'multiple', 'text', 'number', 'imageMap'].includes(question.type)) {
+        // Ne compter que si la question N'EST PAS cachée ET est une question principale
+        const isHidden = hiddenQuestions && hiddenQuestions[question.id];
+        const isAnswerableQuestion = ['single', 'multiple', 'text', 'number', 'imageMap'].includes(question.type);
+        
+        if (!isHidden && isAnswerableQuestion) {
           count++;
         }
-        
-        // Compter les sous-questions qui deviennent visibles quand une option est sélectionnée
-        if (question.options && selectedOptions[question.id] && selectedOptions[question.id].length > 0) {
-          const selectedIndices = selectedOptions[question.id] || [];
-          selectedIndices.forEach(index => {
-            const option = question.options[index];
-            if (option?.subQuestions && option.subQuestions.length > 0) {
-              count += countAllVisibleQuestions(option.subQuestions, true);
-            }
-          });
-        }
+        // NE PAS compter les sous-questions du tout
       });
       
       return count;
     };
 
-    // Fonction pour compter les questions répondues
-    const countAnsweredQuestions = (questions) => {
+    // Compter UNIQUEMENT les questions principales visibles qui sont répondues
+    const countAnsweredMainQuestions = (questions) => {
       let answered = 0;
       
       questions.forEach(question => {
-        // Une question est considérée comme répondue si elle a au moins une réponse
-        const hasAnswer = 
-          (selectedOptions[question.id] && selectedOptions[question.id].length > 0) ||
-          (freeTexts[question.id] && freeTexts[question.id].trim() !== '');
+        // Ne compter que si la question N'EST PAS cachée ET est répondue
+        const isHidden = hiddenQuestions && hiddenQuestions[question.id];
+        const isAnswerableQuestion = ['single', 'multiple', 'text', 'number', 'imageMap'].includes(question.type);
         
-        if (hasAnswer) {
-          answered++;
+        if (!isHidden && isAnswerableQuestion) {
+          // Une question est considérée comme répondue si elle a au moins une réponse
+          const hasAnswer = 
+            (selectedOptions[question.id] && selectedOptions[question.id].length > 0) ||
+            (freeTexts[question.id] && freeTexts[question.id].trim() !== '');
+          
+          if (hasAnswer) {
+            answered++;
+          }
         }
-        
-        // Compter récursivement les sous-questions répondues
-        if (question.options && selectedOptions[question.id] && selectedOptions[question.id].length > 0) {
-          const selectedIndices = selectedOptions[question.id] || [];
-          selectedIndices.forEach(index => {
-            const option = question.options[index];
-            if (option?.subQuestions && option.subQuestions.length > 0) {
-              answered += countAnsweredQuestions(option.subQuestions);
-            }
-          });
-        }
+        // NE PAS compter les sous-questions du tout
       });
       
       return answered;
     };
 
-    const totalQuestions = countAllVisibleQuestions(questionnaire.questions);
-    const answeredQuestions = countAnsweredQuestions(questionnaire.questions);
+    const totalMainQuestions = countMainVisibleQuestions(questionnaire.questions);
+    const answeredMainQuestions = countAnsweredMainQuestions(questionnaire.questions);
     
     // Debug pour vérifier les calculs
-    console.log('Total questions visibles:', totalQuestions);
-    console.log('Questions répondues:', answeredQuestions);
-    console.log('Pourcentage:', totalQuestions > 0 ? Math.round((answeredQuestions / totalQuestions) * 100) : 0);
+    console.log('=== CALCUL PROGRESSION ===');
+    console.log('Questions principales visibles:', totalMainQuestions);
+    console.log('Questions principales répondues:', answeredMainQuestions);
+    console.log('Questions cachées:', Object.keys(hiddenQuestions || {}).length);
+    console.log('Pourcentage:', totalMainQuestions > 0 ? Math.round((answeredMainQuestions / totalMainQuestions) * 100) : 0);
     
-    return totalQuestions > 0 ? Math.round((answeredQuestions / totalQuestions) * 100) : 0;
-  }, [questionnaire, selectedOptions, freeTexts]);
+    return totalMainQuestions > 0 ? Math.round((answeredMainQuestions / totalMainQuestions) * 100) : 0;
+  }, [questionnaire, selectedOptions, freeTexts, hiddenQuestions]);
 
   useEffect(() => {
     const fetchQuestionnaire = async () => {
