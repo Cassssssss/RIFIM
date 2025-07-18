@@ -509,9 +509,10 @@ const ImageUploadComponent = memo(({ onImageUpload, currentImage, id, onAddCapti
 
 // ==================== COMPOSANT DRAG AND DROP ====================
 
-const DraggableQuestion = memo(({ question, index, moveQuestion, path, children, depth = 0 }) => {
+const DraggableQuestion = memo(({ question, index, moveQuestion, path, children }) => {
   const ref = useRef(null);
-  
+  const dragHandleRef = useRef(null);
+
   const [{ handlerId }, drop] = useDrop({
     accept: 'question',
     collect(monitor) {
@@ -526,13 +527,7 @@ const DraggableQuestion = memo(({ question, index, moveQuestion, path, children,
       const dragPath = item.path;
       const hoverPath = path;
 
-      // Ne pas se déplacer sur soi-même
       if (JSON.stringify(dragPath) === JSON.stringify(hoverPath)) return;
-
-      // Vérifier que les deux éléments sont au même niveau (même parent)
-      const dragParentPath = dragPath.slice(0, -1);
-      const hoverParentPath = hoverPath.slice(0, -1);
-      if (JSON.stringify(dragParentPath) !== JSON.stringify(hoverParentPath)) return;
 
       const hoverBoundingRect = ref.current?.getBoundingClientRect();
       const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
@@ -550,17 +545,19 @@ const DraggableQuestion = memo(({ question, index, moveQuestion, path, children,
 
   const [{ isDragging }, drag] = useDrag({
     type: 'question',
-    item: () => ({ id: question.id, index, path, depth }),
+    item: () => ({ id: question.id, index, path }),
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
   });
 
   const opacity = isDragging ? 0.4 : 1;
-  drag(drop(ref));
+  drag(dragHandleRef);
+  drop(ref);
 
   return (
     <div ref={ref} style={{ opacity }} data-handler-id={handlerId}>
+      <div ref={dragHandleRef} style={{ display: 'none' }}></div>
       {children}
     </div>
   );
@@ -625,17 +622,11 @@ const QuestionnaireCreator = () => {
     setQuestionnaire(prev => {
       const newQuestions = JSON.parse(JSON.stringify(prev.questions));
       
-      const getQuestionByPath = (questions, path) => {
+      const getQuestionAt = (questions, path) => {
         let current = questions;
         for (let i = 0; i < path.length; i++) {
-          if (path[i] === 'subQuestions') {
-            current = current.subQuestions;
-          } else if (path[i] === 'options') {
-            current = current.options;
-            i++; // Skip next index as it's the option index
-            if (i < path.length) {
-              current = current[path[i]];
-            }
+          if (path[i] === 'options' || path[i] === 'subQuestions') {
+            current = current[path[i]];
           } else {
             current = current[path[i]];
           }
@@ -643,54 +634,24 @@ const QuestionnaireCreator = () => {
         return current;
       };
 
-      const getParentArray = (questions, path) => {
-        if (path.length === 1) return questions;
-        
-        let current = questions;
-        for (let i = 0; i < path.length - 1; i++) {
-          if (path[i] === 'subQuestions') {
-            current = current.subQuestions;
-          } else if (path[i] === 'options') {
-            current = current.options;
-            i++; // Skip next index
-            if (i < path.length - 1) {
-              current = current[path[i]];
-            }
-          } else {
-            current = current[path[i]];
-          }
-        }
-        
-        // Get the final array
-        const lastKey = path[path.length - 2];
-        if (lastKey === 'subQuestions') {
-          return current.subQuestions;
-        } else {
-          return current;
-        }
+      const removeQuestionAt = (questions, path) => {
+        const parentPath = path.slice(0, -1);
+        const index = path[path.length - 1];
+        const parent = getQuestionAt(questions, parentPath);
+        return parent.splice(index, 1)[0];
       };
 
-      const dragQuestion = getQuestionByPath(newQuestions, dragPath);
-      const dragParentArray = getParentArray(newQuestions, dragPath);
-      const hoverParentArray = getParentArray(newQuestions, hoverPath);
-
-      // Vérifier que les deux éléments sont dans le même array parent
-      if (dragParentArray === hoverParentArray) {
-        const dragIndex = dragPath[dragPath.length - 1];
-        const hoverIndex = hoverPath[hoverPath.length - 1];
-
-        // Supprimer l'élément de sa position originale
-        dragParentArray.splice(dragIndex, 1);
-        
-        // L'insérer à la nouvelle position
-        const adjustedHoverIndex = dragIndex < hoverIndex ? hoverIndex - 1 : hoverIndex;
-        dragParentArray.splice(adjustedHoverIndex, 0, dragQuestion);
-      }
-
-      return {
-        ...prev,
-        questions: newQuestions
+      const insertQuestionAt = (questions, path, question) => {
+        const parentPath = path.slice(0, -1);
+        const index = path[path.length - 1];
+        const parent = getQuestionAt(questions, parentPath);
+        parent.splice(index, 0, question);
       };
+
+      const movedQuestion = removeQuestionAt(newQuestions, dragPath);
+      insertQuestionAt(newQuestions, hoverPath, movedQuestion);
+
+      return { ...prev, questions: newQuestions };
     });
   }, []);
 
@@ -1042,8 +1003,15 @@ const QuestionnaireCreator = () => {
     }
   };
 
-  // Rendu des questions - fonction sans DraggableQuestion car il sera ajouté dans le JSX principal
-  const renderQuestionContent = useCallback((question, path) => {
+  // Fonction pour connecter la drag handle
+  const connectDragHandle = useCallback((element, dragRef) => {
+    if (element && dragRef) {
+      dragRef(element);
+    }
+  }, []);
+
+  // Rendu des questions
+  const renderQuestion = useCallback((question, path) => {
     const isExpanded = expandedQuestions[path.join('-')] ?? true;
     const questionId = path.join('-');
     const depth = path.length;
@@ -1060,7 +1028,15 @@ const QuestionnaireCreator = () => {
             {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </CompactIconButton>
           
-          <CompactDragHandle className="drag-handle">
+          <CompactDragHandle 
+            ref={(el) => {
+              const dragQuestion = path.length > 0 ? 
+                document.querySelector(`[data-question-path="${path.join('-')}"]`) : null;
+              if (dragQuestion && dragQuestion._dragRef) {
+                connectDragHandle(el, dragQuestion._dragRef);
+              }
+            }}
+          >
             <GripVertical size={14} />
           </CompactDragHandle>
           
@@ -1368,9 +1344,10 @@ const QuestionnaireCreator = () => {
                               index={sqIndex}
                               moveQuestion={moveQuestion}
                               path={[...path, 'options', oIndex, 'subQuestions', sqIndex]}
-                              depth={depth + 1}
                             >
-                              {renderQuestionContent(subQuestion, [...path, 'options', oIndex, 'subQuestions', sqIndex])}
+                              <div data-question-path={[...path, 'options', oIndex, 'subQuestions', sqIndex].join('-')}>
+                                {renderQuestion(subQuestion, [...path, 'options', oIndex, 'subQuestions', sqIndex])}
+                              </div>
                             </DraggableQuestion>
                           ))}
                         </SubQuestionWrapper>
@@ -1392,12 +1369,7 @@ const QuestionnaireCreator = () => {
         )}
       </ModernQuestionCard>
     );
-  }, [expandedQuestions, moveQuestion, toggleQuestion, updateQuestion, handleQuestionImageUpload, duplicateQuestion, addQuestion, deleteQuestion, deleteOption, addOption, questionnaire.title, handleOpenLinkEditor, questionLinks, handleImageUpload, handleAddCaption]);
-
-  // Fonction wrapper pour ajouter DraggableQuestion aux questions principales
-  const renderQuestion = useCallback((question, path) => {
-    return renderQuestionContent(question, path);
-  }, [renderQuestionContent]);
+  }, [expandedQuestions, moveQuestion, toggleQuestion, updateQuestion, handleQuestionImageUpload, duplicateQuestion, addQuestion, deleteQuestion, deleteOption, addOption, questionnaire.title, handleOpenLinkEditor, questionLinks, handleImageUpload, handleAddCaption, connectDragHandle]);
 
   return (
     <ModernCreatorWrapper>
@@ -1429,7 +1401,23 @@ const QuestionnaireCreator = () => {
                   moveQuestion={moveQuestion}
                   path={[index]}
                 >
-                  {renderQuestion(question, [index])}
+                  <div 
+                    data-question-path={[index].join('-')}
+                    ref={(el) => {
+                      if (el) {
+                        el._dragRef = (dragRef) => {
+                          if (dragRef) {
+                            const dragHandle = el.querySelector('.drag-handle');
+                            if (dragHandle) {
+                              dragRef(dragHandle);
+                            }
+                          }
+                        };
+                      }
+                    }}
+                  >
+                    {renderQuestion(question, [index])}
+                  </div>
                 </DraggableQuestion>
               ))}
             </DndProvider>
