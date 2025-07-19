@@ -290,15 +290,17 @@ function RadiologyViewer() {
     applyImageTransforms(side);
   }, [applyImageTransforms]);
 
-  const handlePan = useCallback((side, deltaX, deltaY) => {
-    setImageControls(prev => {
-      const newControls = {...prev};
-      newControls[side].translateX += deltaX;
-      newControls[side].translateY += deltaY;
-      return newControls;
-    });
-    applyImageTransforms(side);
-  }, [applyImageTransforms]);
+const handlePan = useCallback((side, deltaX, deltaY) => {
+  setImageControls(prev => {
+    const newControls = {...prev};
+    // Diviser par le facteur d'échelle pour compenser le zoom
+    const scale = newControls[side].scale;
+    newControls[side].translateX += deltaX / scale;
+    newControls[side].translateY += deltaY / scale;
+    return newControls;
+  });
+  applyImageTransforms(side);
+}, [applyImageTransforms]);
 
 const toggleViewMode = useCallback(() => {
   setIsSingleViewMode(prev => {
