@@ -365,7 +365,7 @@ function ProtocolsPublicPage() {
 
   // Options pour les filtres
   const imagingTypes = ['IRM', 'Scanner', 'Échographie', 'Radiographie', 'Mammographie', 'Médecine Nucléaire', 'Angiographie'];
-  const anatomicalRegions = ['Céphalée', 'Cervical', 'Thorax', 'Abdomen', 'Pelvis', 'Rachis', 'Membre Supérieur', 'Membre Inférieur', 'Vaisseaux', 'Cœur', 'Sein', 'Autre'];
+  const anatomicalRegions = ['Cerveau', 'Thorax', 'Abdomen', 'Pelvis', 'Rachis', 'Membre Supérieur', 'Membre Inférieur', 'Vaisseaux', 'Cœur', 'Sein', 'Uro, Pédiatrie, ORL'];
 
   const fetchProtocols = useCallback(async () => {
     try {

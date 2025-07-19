@@ -369,7 +369,7 @@ function ProtocolCreatorPage() {
 
   // Options pour les selects
   const imagingTypes = ['IRM', 'Scanner', 'Échographie', 'Radiographie', 'Mammographie', 'Médecine Nucléaire', 'Angiographie'];
-  const anatomicalRegions = ['Cerveau', 'Thorax', 'Abdomen', 'Pelvis', 'Rachis', 'Membre Supérieur', 'Membre Inférieur', 'Vaisseaux', 'Cœur', 'Sein', 'Uro, Pédiatrie, ORL,'];
+  const anatomicalRegions = ['Cerveau', 'Thorax', 'Abdomen', 'Pelvis', 'Rachis', 'Membre Supérieur', 'Membre Inférieur', 'Vaisseaux', 'Cœur', 'Sein', 'Uro, Pédiatrie, ORL'];
 
   // Charger le protocole existant en mode édition
   useEffect(() => {
