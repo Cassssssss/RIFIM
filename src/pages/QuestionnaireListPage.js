@@ -1,4 +1,4 @@
-// pages/QuestionnaireListPage.js - VERSION COMPLÈTE AVEC GESTION DES TAGS ET BOUTON SUPPRIMER RÉDUIT
+// pages/QuestionnaireListPage.js - VERSION COMPLÈTE AVEC GESTION DES TAGS ET BOUTONS REPOSITIONNÉS
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
@@ -113,6 +113,18 @@ const DropdownOption = styled.label`
 
   span {
     font-weight: 500;
+  }
+`;
+
+const TopActionsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-top: 1rem;
+
+  @media (max-width: 768px) {
+    align-items: center;
   }
 `;
 
@@ -329,14 +341,14 @@ const TutorialButton = styled.button`
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  padding: 1rem 2rem;
+  padding: 0.75rem 1.5rem;
   border-radius: 12px;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  margin-top: 2rem;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  text-align: center;
 
   &:hover {
     transform: translateY(-2px);
@@ -804,6 +816,22 @@ function QuestionnaireListPage() {
             )}
           </FilterDropdown>
         </FilterGroup>
+
+        {/* BOUTONS D'ACTIONS PRINCIPAUX */}
+        <TopActionsContainer>
+          <ActionButton 
+            as={Link} 
+            to="/create" 
+            variant="primary"
+            style={{ padding: '1rem 1.5rem', fontSize: '1rem', fontWeight: '600', textAlign: 'center' }}
+          >
+            ➕ CRÉER UN NOUVEAU QUESTIONNAIRE
+          </ActionButton>
+
+          <TutorialButton onClick={() => setShowTutorial(true)}>
+            📚 Voir le tutoriel
+          </TutorialButton>
+        </TopActionsContainer>
       </FilterSection>
 
       {/* CONTENU PRINCIPAL */}
@@ -985,21 +1013,6 @@ function QuestionnaireListPage() {
             </PaginationButton>
           </PaginationContainer>
         )}
-
-        {/* BOUTON CRÉER */}
-        <ActionButton 
-          as={Link} 
-          to="/create" 
-          variant="primary"
-          style={{ marginTop: '2rem', padding: '0.75rem 2rem', display: 'inline-flex' }}
-        >
-          CRÉER UN NOUVEAU QUESTIONNAIRE
-        </ActionButton>
-
-        {/* BOUTON TUTORIEL */}
-        <TutorialButton onClick={() => setShowTutorial(true)}>
-          📚 Voir le tutoriel
-        </TutorialButton>
 
         {/* TUTORIEL OVERLAY */}
         {showTutorial && (
