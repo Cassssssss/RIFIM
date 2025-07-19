@@ -318,7 +318,7 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
                 Questionnaires
               </SectionTitle>
               <MenuItem to="/questionnaires" onClick={handleMenuItemClick}>
-                <span>➕</span> Créer un Questionnaire
+                <span>➕</span> Gérer les questionnaires
               </MenuItem>
               <MenuItem to="/questionnaires-list" onClick={handleMenuItemClick}>
                 <span>📋</span> Mes Questionnaires
@@ -337,7 +337,7 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
                 Cas Cliniques
               </SectionTitle>
               <MenuItem to="/cases" onClick={handleMenuItemClick}>
-                <span>➕</span> Créer un Cas
+                <span>➕</span> Gérer les Cas
               </MenuItem>
               <MenuItem to="/cases-list" onClick={handleMenuItemClick}>
                 <span>📁</span> Mes Cas
