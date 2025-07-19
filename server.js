@@ -58,7 +58,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/cases', caseRoutes);
 app.use('/api/questionnaires', questionnaireRoutes);
 app.use('/api/protocols', protocolRoutes); // ← AJOUT ICI
-// Et ajoutez juste après pour déboguer :
+app.use('/api/cases', sheetRoutes);
+app.use('/api', imageRoutes.router);
+
+// Debug des routes disponibles
 console.log('Routes disponibles :');
 app._router.stack.forEach((middleware) => {
   if (middleware.route) {
@@ -69,16 +72,6 @@ app._router.stack.forEach((middleware) => {
         console.log(handler.route.path, handler.route.methods);
       }
     });
-  }
-});
-app.use('/api/cases', sheetRoutes);
-app.use('/api', imageRoutes.router);
-
-// Après avoir défini vos routes
-console.log('Routes enregistrées :');
-app._router.stack.forEach(function(r){
-  if (r.route && r.route.path){
-    console.log(r.route.path)
   }
 });
 
