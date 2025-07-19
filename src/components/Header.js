@@ -9,8 +9,13 @@ const HeaderWrapper = styled.header`
   padding: 1rem 0;
   width: 100%;
   transition: background-color 0.3s ease, color 0.3s ease;
-  position: relative;
-  z-index: 100;
+  position: fixed; /* ← CHANGEMENT : fixed au lieu de relative */
+  top: 0; /* ← AJOUT : Collé en haut */
+  left: 0; /* ← AJOUT : Collé à gauche */
+  right: 0; /* ← AJOUT : Collé à droite */
+  z-index: 1000; /* ← AJOUT : Au-dessus de tout le contenu */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* ← AJOUT : Ombre pour le séparer du contenu */
+  backdrop-filter: blur(8px); /* ← AJOUT : Effet de flou d'arrière-plan moderne */
 `;
 
 const HeaderContent = styled.div`
@@ -88,7 +93,7 @@ const DropdownMenu = styled.div`
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   padding: 0.75rem 0;
   display: ${props => props.isOpen ? 'block' : 'none'};
-  z-index: 1000;
+  z-index: 1001; /* ← AUGMENTÉ : Au-dessus du header */
   min-width: 280px;
   backdrop-filter: blur(8px);
   animation: ${props => props.isOpen ? 'dropdownSlideIn' : 'dropdownSlideOut'} 0.2s ease;

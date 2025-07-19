@@ -101,7 +101,7 @@ function App() {
               user={user}
               onLogout={handleLogout}
             />
-            <main className="container mt-8">
+            <main className="container mt-8" style={{ paddingTop: '80px' }}> {/* ← AJOUT : paddingTop pour compenser le header fixe */}
               <Suspense fallback={<LoadingSpinner />}>
                 <Routes>
                   <Route path="/login" element={<Auth onLogin={handleLogin} />} />
