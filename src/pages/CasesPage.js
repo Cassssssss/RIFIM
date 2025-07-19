@@ -20,8 +20,7 @@ const UPLOAD_BASE_URL = process.env.REACT_APP_UPLOAD_URL || 'http://localhost:50
 // ==================== STYLED COMPONENTS HARMONISÉS AVEC LE THÈME ====================
 
 const ModernPageContainer = styled(S.PageContainer)`
-  background: linear-gradient(135deg, ${props => props.theme.background} 0%, ${props => props.theme.backgroundSecondary || props.theme.card} 100%);
-  min-height: calc(100vh - 60px);
+  background: ${props => props.theme.background};  min-height: calc(100vh - 60px);
   padding: 2rem;
 
   @media (max-width: 768px) {
