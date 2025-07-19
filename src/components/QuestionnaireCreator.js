@@ -309,6 +309,14 @@ const ModernPreviewTitle = styled.h3`
   }
 `;
 
+const PreviewContainer = styled.div`
+  padding: 0.75rem;
+  background-color: ${props => props.theme.backgroundSecondary || props.theme.card};
+  border-radius: 6px;
+  border: 1px solid ${props => props.theme.border};
+  fontSize: 0.9rem;
+`;
+
 const CompactOptionContainer = styled.div`
   margin: 0.375rem 0;
   padding: 0.5rem;
@@ -1320,13 +1328,7 @@ const QuestionnaireCreator = () => {
               Aperçu du questionnaire
             </ModernPreviewTitle>
             
-            <div style={{ 
-              padding: '0.75rem',
-              backgroundColor: '#f9fafb',
-              borderRadius: '6px',
-              border: '1px solid #e5e7eb',
-              fontSize: '0.9rem'
-            }}>
+<PreviewContainer>
               <QuestionnairePreview 
                 questions={questionnaire.questions}
                 selectedOptions={questionnaire.selectedOptions}
@@ -1355,7 +1357,7 @@ const QuestionnaireCreator = () => {
                 questionnaire={questionnaire}
                 setQuestionnaire={setQuestionnaire}
               />
-            </div>
+            </PreviewContainer>
           </ModernPreviewSection>
         </div>
       </div>
