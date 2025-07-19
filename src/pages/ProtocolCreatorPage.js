@@ -377,7 +377,7 @@ function ProtocolCreatorPage() {
       const fetchProtocol = async () => {
         try {
           setLoading(true);
-          const response = await axios.get(`/api/protocols/${id}`);
+          const response = await axios.get(`/protocols/${id}`);
           setFormData(response.data);
         } catch (err) {
           console.error('Erreur lors du chargement du protocole:', err);
@@ -531,9 +531,9 @@ function ProtocolCreatorPage() {
       };
 
       if (isEditing) {
-        await axios.put(`/api/protocols/${id}`, dataToSave);
+        await axios.put(`/protocols/${id}`, dataToSave);
       } else {
-        await axios.post('/api/protocols', dataToSave);
+        await axios.post('/protocols', dataToSave);
       }
 
       navigate('/protocols/personal');

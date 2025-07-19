@@ -372,7 +372,7 @@ function ProtocolsPersonalPage() {
         anatomicalRegion: filterRegion
       });
 
-      const response = await axios.get(`/api/protocols/my?${params}`);
+      const response = await axios.get(`/protocols/my?${params}`);
       setProtocols(response.data.protocols || []);
       setTotalPages(response.data.totalPages || 0);
     } catch (err) {
@@ -394,7 +394,7 @@ function ProtocolsPersonalPage() {
   const handleDelete = async (protocolId) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce protocole ?')) {
       try {
-        await axios.delete(`/api/protocols/${protocolId}`);
+        await axios.delete(`/protocols/${protocolId}`);
         fetchProtocols();
       } catch (err) {
         console.error('Erreur lors de la suppression:', err);
@@ -405,7 +405,7 @@ function ProtocolsPersonalPage() {
 
   const handleToggleVisibility = async (protocolId, currentVisibility) => {
     try {
-      await axios.patch(`/api/protocols/${protocolId}/visibility`, {
+      await axios.patch(`/protocols/${protocolId}/visibility`, {
         public: !currentVisibility
       });
       fetchProtocols();
@@ -417,7 +417,7 @@ function ProtocolsPersonalPage() {
 
   const handleCopy = async (protocolId) => {
     try {
-      await axios.post(`/api/protocols/${protocolId}/copy`);
+      await axios.post(`/protocols/${protocolId}/copy`);
       fetchProtocols();
     } catch (err) {
       console.error('Erreur lors de la copie:', err);

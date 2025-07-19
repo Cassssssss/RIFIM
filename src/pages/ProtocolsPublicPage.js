@@ -370,7 +370,7 @@ function ProtocolsPublicPage() {
         sortBy: sortBy
       });
 
-      const response = await axios.get(`/api/protocols/public?${params}`);
+      const response = await axios.get(`/protocols/public?${params}`);
       setProtocols(response.data.protocols || []);
       setTotalPages(response.data.totalPages || 0);
     } catch (err) {
@@ -391,7 +391,7 @@ function ProtocolsPublicPage() {
 
   const handleCopy = async (protocolId) => {
     try {
-      await axios.post(`/api/protocols/${protocolId}/copy`);
+      await axios.post(`/protocols/${protocolId}/copy`);
       alert('Protocole copié dans vos protocoles personnels !');
     } catch (err) {
       console.error('Erreur lors de la copie:', err);
