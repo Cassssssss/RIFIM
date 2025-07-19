@@ -1,3 +1,20 @@
+import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+import { Camera, EyeOff, Eye, ChevronDown, ChevronUp, Plus, Italic } from 'lucide-react';
+
+// ==================== STYLED COMPONENTS AVEC SUPPORT MODE SOMBRE ====================
+
+const ImagePreviewWrapper = styled.div`
+  position: fixed;
+  z-index: 9999;
+  background-color: ${props => props.theme.card || 'white'};
+  border: 1px solid ${props => props.theme.border || '#ccc'};
+  border-radius: 4px;
+  padding: 4px;
+  box-shadow: 0 2px 10px ${props => props.theme.shadow || 'rgba(0,0,0,0.1)'};
+`;
+
 const FormatButton = styled.button`
   padding: 0.5rem;
   margin-right: 0.25rem;
@@ -18,60 +35,13 @@ const FormatButton = styled.button`
   }
 `;
 
-// Input de texte libre avec styles adaptatifs
-const FreeTextInput = styled.textarea`
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid ${props => props.theme.border || '#d1d5db'};
-  border-radius: 8px;
-  min-height: 100px;
-  background-color: ${props => props.theme.card || 'white'};
-  color: ${props => props.theme.text || '#000'};
+const PreviewWrapper = styled.div`
+  max-width: 100%;
+  overflow-x: hidden;
   
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.primary || '#3b82f6'};
-    box-shadow: 0 0 0 3px ${props => props.theme.primary || '#3b82f6'}20;
+  @media (max-width: 768px) {
+    padding: 0.5rem;
   }
-  
-  &::placeholder {
-    color: ${props => props.theme.textSecondary || '#6b7280'};
-  }
-`;
-
-// Input numérique avec styles adaptatifs
-const NumberInput = styled.input`
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid ${props => props.theme.border || '#d1d5db'};
-  border-radius: 8px;
-  background-color: ${props => props.theme.card || 'white'};
-  color: ${props => props.theme.text || '#000'};
-  
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.primary || '#3b82f6'};
-    box-shadow: 0 0 0 3px ${props => props.theme.primary || '#3b82f6'}20;
-  }
-  
-  &::placeholder {
-    color: ${props => props.theme.textSecondary || '#6b7280'};
-  }
-`;import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
-import { Camera, EyeOff, Eye, ChevronDown, ChevronUp, Plus, Italic } from 'lucide-react';
-
-// ==================== STYLED COMPONENTS AVEC SUPPORT MODE SOMBRE ====================
-
-const ImagePreviewWrapper = styled.div`
-  position: fixed;
-  z-index: 9999;
-  background-color: ${props => props.theme.card || 'white'};
-  border: 1px solid ${props => props.theme.border || '#ccc'};
-  border-radius: 4px;
-  padding: 4px;
-  box-shadow: 0 2px 10px ${props => props.theme.shadow || 'rgba(0,0,0,0.1)'};
 `;
 
 // Boutons de navigation des pages avec support mode sombre
@@ -152,15 +122,6 @@ const NumberInput = styled.input`
   
   &::placeholder {
     color: ${props => props.theme.textSecondary || '#6b7280'};
-  }
-`;
-
-const PreviewWrapper = styled.div`
-  max-width: 100%;
-  overflow-x: hidden;
-  
-  @media (max-width: 768px) {
-    padding: 0.5rem;
   }
 `;
 
@@ -646,11 +607,10 @@ const QuestionPreview = ({
                             onSize={(size) => handleCRTextChange(optionIndex, `<span style="font-size: ${size};">${crTexts[question.id]?.[optionIndex] || option.text}</span>`)}
                             onCenter={() => handleCRTextChange(optionIndex, `<div style="text-align: center;">${crTexts[question.id]?.[optionIndex] || option.text}</div>`)}
                           />
-                          <textarea
+                          <FreeTextInput
                             value={crTexts[question.id]?.[optionIndex] || ''}
                             onChange={(e) => handleCRTextChange(optionIndex, e.target.value)}
                             placeholder="Texte du CR pour cette option"
-                            className="w-full p-2 border rounded-md text-sm min-h-[100px]"
                           />
                         </CRFieldContainer>
                       )}
@@ -702,11 +662,10 @@ const QuestionPreview = ({
 
             {/* CHAMP TEXTE LIBRE */}
             {question.type === 'text' && (
-              <textarea
+              <FreeTextInput
                 value={freeTexts?.[question.id] || ''}
                 onChange={(e) => onFreeTextChange(question.id, e.target.value)}
                 placeholder="Votre réponse..."
-                className="w-full p-3 border rounded-md focus:border-blue-500 focus:ring-2 focus:ring-blue-200 min-h-[100px]"
               />
             )}
 
@@ -727,11 +686,10 @@ const QuestionPreview = ({
                     
                     {showCRFields && selectedOptions?.[question.id]?.includes(index) && (
                       <CRFieldContainer>
-                        <textarea
+                        <FreeTextInput
                           value={crTexts[question.id]?.[index] || ''}
                           onChange={(e) => handleCRTextChange(index, e.target.value)}
                           placeholder="Texte du CR pour cette option"
-                          className="w-full p-2 border rounded min-h-[100px]"
                         />
                       </CRFieldContainer>
                     )}
@@ -742,12 +700,11 @@ const QuestionPreview = ({
 
             {/* CHAMP NUMÉRIQUE */}
             {question.type === 'number' && (
-              <input
+              <NumberInput
                 type="number"
                 value={freeTexts?.[question.id] || ''}
                 onChange={(e) => onFreeTextChange(question.id, e.target.value)}
                 placeholder="Votre réponse..."
-                className="w-full p-3 border rounded-md focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
               />
             )}
           </ModernQuestionContent>
