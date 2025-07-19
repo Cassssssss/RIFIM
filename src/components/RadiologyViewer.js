@@ -300,34 +300,32 @@ function RadiologyViewer() {
     applyImageTransforms(side);
   }, [applyImageTransforms]);
 
-  const toggleViewMode = useCallback(() => {
-    setIsSingleViewMode(prev => {
-      if (!prev) {
-        setTimeout(() => {
-          if (singleViewerRef.current && leftViewerRef.current) {
-            singleViewerRef.current.src = leftViewerRef.current.src;
-            setImageControls(prevControls => ({
-              ...prevControls,
-              single: {...prevControls.left}
-            }));
-          }
-        }, 0);
-      } else {
-        setTimeout(() => {
-          if (leftViewerRef.current && singleViewerRef.current) {
-            leftViewerRef.current.src = singleViewerRef.current.src;
-            rightViewerRef.current.src = singleViewerRef.current.src;
-            setImageControls(prevControls => ({
-              ...prevControls,
-              left: {...prevControls.single},
-              right: {...prevControls.single}
-            }));
-          }
-        }, 0);
+const toggleViewMode = useCallback(() => {
+  setIsSingleViewMode(prev => {
+    if (!prev) {
+      // Suppression du setTimeout - transition immédiate
+      if (singleViewerRef.current && leftViewerRef.current) {
+        singleViewerRef.current.src = leftViewerRef.current.src;
+        setImageControls(prevControls => ({
+          ...prevControls,
+          single: {...prevControls.left}
+        }));
       }
-      return !prev;
-    });
-  }, []);
+    } else {
+      // Suppression du setTimeout - transition immédiate
+      if (leftViewerRef.current && singleViewerRef.current) {
+        leftViewerRef.current.src = singleViewerRef.current.src;
+        rightViewerRef.current.src = singleViewerRef.current.src;
+        setImageControls(prevControls => ({
+          ...prevControls,
+          left: {...prevControls.single},
+          right: {...prevControls.single}
+        }));
+      }
+    }
+    return !prev;
+  });
+}, []);
 
   const handleDragStart = useCallback((event, folder) => {
     event.dataTransfer.setData('text/plain', folder);
