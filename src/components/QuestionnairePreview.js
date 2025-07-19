@@ -51,19 +51,24 @@ const PageNavigationButton = styled.button`
   font-size: 0.875rem;
   font-weight: 500;
   transition: all 0.2s ease;
-  border: none;
   cursor: pointer;
   
   ${props => props.isActive ? `
     background-color: ${props.theme.primary || '#3b82f6'};
     color: white;
+    border: 2px solid ${props.theme.primary || '#3b82f6'};
     box-shadow: 0 4px 12px ${props.theme.shadow || 'rgba(0,0,0,0.1)'};
   ` : `
-    background-color: ${props.theme.backgroundSecondary || props.theme.card || '#e5e7eb'};
+    background-color: ${props.theme.card || '#ffffff'};
     color: ${props.theme.text || '#374151'};
+    border: 2px solid ${props.theme.border || '#d1d5db'};
+    box-shadow: 0 2px 4px ${props.theme.shadow || 'rgba(0,0,0,0.05)'};
     
     &:hover {
-      background-color: ${props.theme.hover || props.theme.cardSecondary || '#d1d5db'};
+      background-color: ${props.theme.backgroundSecondary || '#f3f4f6'};
+      border-color: ${props.theme.primary || '#3b82f6'};
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px ${props.theme.shadow || 'rgba(0,0,0,0.1)'};
     }
   `}
 `;
