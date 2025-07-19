@@ -12,6 +12,7 @@ dotenv.config({ path: path.resolve(__dirname, envFile) });
 const authRoutes = require('./routes/authRoutes');
 const caseRoutes = require('./routes/caseRoutes');
 const questionnaireRoutes = require('./routes/questionnaireRoutes');
+const protocolRoutes = require('./routes/protocolRoutes'); // ← AJOUT ICI
 const sheetRoutes = require('./routes/sheetRoutes');
 const imageRoutes = require('./routes/imageRoutes');
 
@@ -56,6 +57,7 @@ connectDB();
 app.use('/api/auth', authRoutes);
 app.use('/api/cases', caseRoutes);
 app.use('/api/questionnaires', questionnaireRoutes);
+app.use('/api/protocols', protocolRoutes); // ← AJOUT ICI
 // Et ajoutez juste après pour déboguer :
 console.log('Routes disponibles :');
 app._router.stack.forEach((middleware) => {
