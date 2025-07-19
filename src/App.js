@@ -15,7 +15,7 @@ import SessionManager from './components/SessionManager';
   //mais j'ai l'impression que si on ouvre plusieurs fenetre en meme temps, 
   // si on est inactif sur une fenetre, on sera deconnecté sur toutes les fenetres.
 
-
+// Pages existantes
 const Home = lazy(() => import('./pages/Home'));
 const QuestionnairePage = lazy(() => import('./pages/QuestionnairePage'));
 const QuestionnaireListPage = lazy(() => import('./pages/QuestionnaireListPage'));
@@ -30,52 +30,57 @@ const TestUpload = lazy(() => import('./components/TestUpload'));
 const SheetViewer = lazy(() => import('./components/SheetViewer'));
 const LinkView = lazy(() => import('./components/LinkView'));
 
+// NOUVELLES PAGES PROTOCOLES
+const ProtocolsPersonalPage = lazy(() => import('./pages/ProtocolsPersonalPage'));
+const ProtocolsPublicPage = lazy(() => import('./pages/ProtocolsPublicPage'));
+const ProtocolCreatorPage = lazy(() => import('./pages/ProtocolCreatorPage'));
+
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [user, setUser] = useState(null);
   const theme = isDarkMode ? darkTheme : lightTheme;
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const username = localStorage.getItem('username');
-    if (token && username) {
-      setUser({ token, username });
+    const savedTheme = localStorage.getItem('darkMode');
+    if (savedTheme) {
+      setIsDarkMode(JSON.parse(savedTheme));
     }
   }, []);
 
   useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    const token = localStorage.getItem('token');
+    const savedUser = localStorage.getItem('user');
+    if (token && savedUser) {
+      setUser(JSON.parse(savedUser));
     }
-    
-    document.documentElement.style.setProperty('--header-background', theme.headerBackground);
-    document.documentElement.style.setProperty('--header-text', theme.headerText);
-  }, [isDarkMode, theme]);
+  }, []);
 
   const toggleDarkMode = () => {
-    setIsDarkMode(prevMode => !prevMode);
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    localStorage.setItem('darkMode', JSON.stringify(newMode));
   };
 
-  const handleLogin = (token, username) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('username', username);
-    setUser({ token, username });
+  const handleLogin = (userData) => {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
     setUser(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  };
+
+  const onDragEnd = (result) => {
+    // Logique de drag and drop si nécessaire
   };
 
   return (
     <ThemeProvider theme={theme}>
-    <GlobalStyle />
-    <SessionManager /> 
-      <DragDropContext onDragEnd={() => {}}>
+      <DragDropContext onDragEnd={onDragEnd}>
         <Router>
+          <GlobalStyle />
           <div className={`app ${isDarkMode ? 'dark' : ''}`}>
             <Header 
               isDarkMode={isDarkMode} 
@@ -89,22 +94,35 @@ function App() {
                   <Route path="/login" element={<Auth onLogin={handleLogin} />} />
                   <Route path="/" element={<PrivateRoute />}>
                     <Route index element={<Home />} />
+                    
+                    {/* Routes Questionnaires */}
                     <Route path="questionnaires" element={<QuestionnaireListPage />} />
                     <Route path="questionnaires-list" element={<QuestionnairePage />} />
                     <Route path="create" element={<QuestionnaireCreator />} />
                     <Route path="edit/:id" element={<QuestionnaireCreator />} />
                     <Route path="cr/:id" element={<QuestionnaireCRPage />} />
                     <Route path="use/:id" element={<QuestionnaireUsePage />} />
+                    
+                    {/* Routes Cas */}
                     <Route path="radiology-viewer/:caseId" element={<RadiologyViewer />} />
                     <Route path="cases" element={<CasesPage />} />
                     <Route path="cases-list" element={<CasesListPage />} />
+                    
+                    {/* NOUVELLES ROUTES PROTOCOLES */}
+                    <Route path="protocols/personal" element={<ProtocolsPersonalPage />} />
+                    <Route path="protocols/create" element={<ProtocolCreatorPage />} />
+                    <Route path="protocols/edit/:id" element={<ProtocolCreatorPage />} />
                   </Route>
-                  <Route path="*" element={<Navigate to="/" replace />} />
+                  
+                  {/* Routes publiques */}
+                  <Route path="/public-questionnaires" element={<PublicQuestionnairesPage />} />
+                  <Route path="/public-cases" element={<PublicCasesPage />} />
+                  <Route path="/protocols/public" element={<ProtocolsPublicPage />} />
+                  
+                  {/* Routes spéciales */}
                   <Route path="/sheet/:caseId" element={<SheetViewer />} />
                   <Route path="/create-sheet/:caseId" element={<SheetEditor />} />
                   <Route path="/test-upload" element={<TestUpload />} />
-                  <Route path="/public-questionnaires" element={<PublicQuestionnairesPage />} />
-                  <Route path="/public-cases" element={<PublicCasesPage />} />
                   <Route 
                     path="questionnaire/:questionnaireId/link/:elementId/:linkIndex" 
                     element={
@@ -113,6 +131,9 @@ function App() {
                       </Suspense>
                     } 
                   />
+                  
+                  {/* Redirection par défaut */}
+                  <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </Suspense>
             </main>
