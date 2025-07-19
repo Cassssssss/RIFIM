@@ -10,7 +10,7 @@ import ErrorMessage from '../components/ErrorMessage';
 
 const PageContainer = styled.div`
   padding: 2rem;
-  background: linear-gradient(135deg, ${props => props.theme.background} 0%, ${props => props.theme.backgroundSecondary || props.theme.card} 100%);
+  background-color: ${props => props.theme.background};
   color: ${props => props.theme.text};
   min-height: calc(100vh - 60px);
 
