@@ -338,17 +338,6 @@ const PaginationButton = styled.button`
   }
 `;
 
-const DebugInfo = styled.div`
-  background-color: ${props => props.theme.card};
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 2rem;
-  font-family: monospace;
-  font-size: 0.875rem;
-  color: ${props => props.theme.text};
-`;
-
 // ==================== COMPOSANT PRINCIPAL ====================
 
 function ProtocolsPublicPage() {
@@ -361,7 +350,6 @@ function ProtocolsPublicPage() {
   const [sortBy, setSortBy] = useState('popular');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [debugInfo, setDebugInfo] = useState('');
 
   // Options pour les filtres
   const imagingTypes = ['IRM', 'Scanner', 'Échographie', 'Radiographie', 'Mammographie', 'Médecine Nucléaire', 'Angiographie'];
@@ -370,9 +358,6 @@ function ProtocolsPublicPage() {
   const fetchProtocols = useCallback(async () => {
     try {
       setLoading(true);
-      setError('');
-      console.log('🔍 Fetching public protocols...'); // DEBUG
-      
       const params = new URLSearchParams({
         page: currentPage.toString(),
         limit: '12',
@@ -382,22 +367,12 @@ function ProtocolsPublicPage() {
         sortBy: sortBy
       });
 
-      console.log('📤 Request URL:', `/protocols/public?${params}`); // DEBUG
-      setDebugInfo(`Requête: /protocols/public?${params}`);
-
       const response = await axios.get(`/protocols/public?${params}`);
-      
-      console.log('📥 Response received:', response.data); // DEBUG
-      setDebugInfo(prev => prev + `\nRéponse: ${JSON.stringify(response.data, null, 2)}`);
-      
       setProtocols(response.data.protocols || []);
       setTotalPages(response.data.totalPages || 0);
-      
-      console.log('✅ Protocols set:', response.data.protocols?.length || 0, 'protocols'); // DEBUG
     } catch (err) {
-      console.error('❌ Erreur lors du chargement des protocoles publics:', err); // DEBUG
-      setError('Erreur lors du chargement des protocoles publics: ' + err.message);
-      setDebugInfo(prev => prev + `\nErreur: ${err.message}\nStatus: ${err.response?.status}\nData: ${JSON.stringify(err.response?.data)}`);
+      console.error('Erreur lors du chargement des protocoles publics:', err);
+      setError('Erreur lors du chargement des protocoles publics');
     } finally {
       setLoading(false);
     }
@@ -413,11 +388,10 @@ function ProtocolsPublicPage() {
 
   const handleCopy = async (protocolId) => {
     try {
-      console.log('📋 Copying protocol:', protocolId); // DEBUG
       await axios.post(`/protocols/${protocolId}/copy`);
       alert('Protocole copié dans vos protocoles personnels !');
     } catch (err) {
-      console.error('❌ Erreur lors de la copie:', err); // DEBUG
+      console.error('Erreur lors de la copie:', err);
       setError('Erreur lors de la copie du protocole');
     }
   };
@@ -427,21 +401,11 @@ function ProtocolsPublicPage() {
   };
 
   if (loading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage message={error} />;
 
   return (
     <PageContainer>
       <PageTitle>Protocoles Publics</PageTitle>
-
-      {/* AFFICHAGE DEBUG - À SUPPRIMER APRÈS DÉBOGAGE */}
-      <DebugInfo>
-        <strong>🐛 Informations de débogage :</strong>
-        <pre>{debugInfo}</pre>
-        <div>Nombre de protocoles: {protocols.length}</div>
-        <div>Total pages: {totalPages}</div>
-        <div>Page actuelle: {currentPage}</div>
-      </DebugInfo>
-
-      {error && <ErrorMessage message={error} />}
 
       <ActionBar>
         <SearchContainer>
