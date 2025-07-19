@@ -10,7 +10,7 @@ import styled from 'styled-components';
 
 const ModernPageContainer = styled.div`
   padding: 2rem;
-  background: linear-gradient(135deg, ${props => props.theme.background} 0%, ${props => props.theme.backgroundSecondary || props.theme.card} 100%);
+  background: ${props => props.theme.background};
   color: ${props => props.theme.text};
   min-height: calc(100vh - 60px);
   @media (max-width: 768px) {

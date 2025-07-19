@@ -9,7 +9,7 @@ import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/
 
 const ModernPageContainer = styled.div`
   padding: 2rem;
-nst ModernPageContain  color: ${props => props.theme.text};
+  background: ${props => props.theme.background};
   min-height: calc(100vh - 60px);
 
   @media (max-width: 768px) {
