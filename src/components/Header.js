@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
-import { Moon, Sun, Menu, X, User, LogOut, ChevronDown } from 'lucide-react';
+import { Moon, Sun, Menu, X, User, LogOut, ChevronDown, ChevronRight, FileText, FolderOpen, Stethoscope } from 'lucide-react';
 
 const HeaderWrapper = styled.header`
   background-color: ${props => props.theme.headerBackground};
@@ -9,6 +9,8 @@ const HeaderWrapper = styled.header`
   padding: 1rem 0;
   width: 100%;
   transition: background-color 0.3s ease, color 0.3s ease;
+  position: relative;
+  z-index: 100;
 `;
 
 const HeaderContent = styled.div`
@@ -35,44 +37,6 @@ const Logo = styled(Link)`
   }
 `;
 
-const Nav = styled.nav`
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-`;
-
-const NavLink = styled(Link)`
-  color: ${props => props.theme.headerText};
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-  
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-`;
-
-const ThemeToggle = styled.button`
-  background: none;
-  border: none;
-  color: ${props => props.theme.headerText};
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-  
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-`;
-
 const CenterTitle = styled.h2`
   font-size: 1.25rem;
   font-weight: bold;
@@ -83,6 +47,13 @@ const CenterTitle = styled.h2`
   gap: 0.5rem;
 `;
 
+const RightSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+`;
+
 const MenuButton = styled.button`
   background: none;
   border: none;
@@ -91,105 +62,192 @@ const MenuButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
+  padding: 0.75rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  gap: 0.5rem;
   
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
-const MenuDropdown = styled.div`
+const DropdownMenu = styled.div`
   position: absolute;
-  right: 2rem;
-  top: 4rem;
-  background-color: ${props => props.theme.headerBackground};
-  border: 1px solid ${props => props.theme.headerText};
-  border-radius: 8px;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background-color: ${props => props.theme.card || '#ffffff'};
+  border: 1px solid ${props => props.theme.border || '#e0e6ed'};
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  padding: 0.75rem 0;
+  display: ${props => props.isOpen ? 'block' : 'none'};
   z-index: 1000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  min-width: 200px;
+  min-width: 280px;
+  backdrop-filter: blur(8px);
+  animation: ${props => props.isOpen ? 'dropdownSlideIn' : 'dropdownSlideOut'} 0.2s ease;
+
+  @keyframes dropdownSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes dropdownSlideOut {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+  }
+`;
+
+const MenuSection = styled.div`
+  margin-bottom: 0.5rem;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+const SectionTitle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: ${props => props.theme.primary || '#3b82f6'};
+  background-color: ${props => props.theme.backgroundSecondary || '#f8fafc'};
+  margin: 0 0.5rem;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+
+const MenuDivider = styled.div`
+  height: 1px;
+  background-color: ${props => props.theme.border || '#e0e6ed'};
+  margin: 0.5rem 0;
+`;
+
+const MenuItem = styled(Link)`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: ${props => props.theme.text || '#374151'};
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  margin: 0 0.5rem;
+  border-radius: 8px;
+  
+  &:hover {
+    background-color: ${props => props.theme.backgroundSecondary || '#f1f5f9'};
+    color: ${props => props.theme.primary || '#3b82f6'};
+    transform: translateX(4px);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+    opacity: 0.7;
+  }
+`;
+
+const ThemeToggleItem = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  color: ${props => props.theme.text || '#374151'};
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  width: 100%;
+  text-align: left;
+  margin: 0 0.5rem;
+  border-radius: 8px;
+  
+  &:hover {
+    background-color: ${props => props.theme.backgroundSecondary || '#f1f5f9'};
+    color: ${props => props.theme.primary || '#3b82f6'};
+    transform: translateX(4px);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+    opacity: 0.7;
+  }
 `;
 
 const UserInfo = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  color: ${props => props.theme.headerText};
-  margin-right: 1rem;
-  padding: 0.5rem;
-  border-radius: 4px;
-  background-color: rgba(255, 255, 255, 0.1);
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: ${props => props.theme.text || '#374151'};
+  background-color: ${props => props.theme.backgroundSecondary || '#f8fafc'};
+  margin: 0 0.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  border: 1px solid ${props => props.theme.border || '#e0e6ed'};
 `;
 
-const LogoutButton = styled.button`
+const LogoutItem = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
   background: none;
   border: none;
-  color: ${props => props.theme.headerText};
+  color: #ef4444;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  width: 100%;
+  text-align: left;
+  margin: 0 0.5rem;
+  border-radius: 8px;
   
   &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: #fef2f2;
+    transform: translateX(4px);
   }
-`;
 
-const MobileMenu = styled.div`
-  display: none;
-  
-  @media (max-width: 768px) {
-    display: block;
-  }
-`;
-
-const NavLinks = styled.div`
-  @media (max-width: 768px) {
-    display: ${props => props.isOpen ? 'flex' : 'none'};
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background-color: ${props => props.theme.headerBackground};
-    flex-direction: column;
-    padding: 1rem;
-    border-top: 1px solid ${props => props.theme.headerText};
-  }
-`;
-
-const DropdownItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  color: ${props => props.theme.headerText};
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-  
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+  svg {
+    width: 18px;
+    height: 18px;
   }
 `;
 
 function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
   const location = useLocation();
 
   useEffect(() => {
     function handleClickOutside(event) {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setShowUserMenu(false);
+        setShowMenu(false);
       }
     }
 
@@ -213,6 +271,10 @@ function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
     if (path === '/cases-list') return 'Liste des Cas';
     if (path === '/public-questionnaires') return 'Questionnaires Publics';
     if (path === '/public-cases') return 'Cas Publics';
+    if (path === '/protocols') return 'Protocoles';
+    if (path === '/protocols/personal') return 'Mes Protocoles';
+    if (path === '/protocols/public') return 'Protocoles Publics';
+    if (path === '/protocols/create') return 'Créer un Protocole';
     return 'RIFIM';
   };
 
@@ -232,6 +294,10 @@ function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
 
   const userName = getUserName();
 
+  const handleMenuItemClick = () => {
+    setShowMenu(false);
+  };
+
   return (
     <HeaderWrapper>
       <HeaderContent>
@@ -245,111 +311,110 @@ function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
           {getPageTitle()}
         </CenterTitle>
 
-        {/* Navigation principale pour desktop */}
-        <Nav className="hidden md:flex">
-          <NavLink to="/questionnaires">
-            ➕ Créer CR
-          </NavLink>
-          
-          <NavLink to="/questionnaires-list">
-            📋 Mes CR
-          </NavLink>
-          
-          <NavLink to="/cases-list">
-            📁 Mes Cas
-          </NavLink>
-          
-          <NavLink to="/cases">
-            ➕ Créer Cas
-          </NavLink>
-          
-          <NavLink to="/public-questionnaires">
-            📖 CR Publics
-          </NavLink>
-          
-          <NavLink to="/public-cases">
-            📂 Cas Publics
-          </NavLink>
-
-          {/* Toggle du mode sombre */}
-          <ThemeToggle onClick={toggleDarkMode} title="Basculer le thème">
-            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-          </ThemeToggle>
-
-          {/* Menu utilisateur */}
-          {userName && (
-            <div ref={menuRef} style={{ position: 'relative' }}>
-              <MenuButton onClick={() => setShowUserMenu(!showUserMenu)}>
-                <User size={20} />
-                <ChevronDown size={16} />
-              </MenuButton>
-              
-              {showUserMenu && (
-                <MenuDropdown>
-                  <DropdownItem>
-                    <User size={16} />
-                    {userName}
-                  </DropdownItem>
-                  
-                  <DropdownItem>
-                    ⚙️ Paramètres
-                  </DropdownItem>
-                  
-                  <LogoutButton onClick={onLogout}>
-                    <LogOut size={16} />
-                    Déconnexion
-                  </LogoutButton>
-                </MenuDropdown>
-              )}
-            </div>
-          )}
-        </Nav>
-
-        {/* Menu mobile */}
-        <MobileMenu>
-          <MenuButton onClick={() => setShowMobileMenu(!showMobileMenu)}>
-            {showMobileMenu ? <X size={20} /> : <Menu size={20} />}
+        {/* Section droite avec menu déroulant */}
+        <RightSection ref={menuRef}>
+          <MenuButton onClick={() => setShowMenu(!showMenu)}>
+            {userName && (
+              <>
+                <User size={18} />
+                {userName}
+              </>
+            )}
+            <ChevronDown 
+              size={16} 
+              style={{ 
+                transform: showMenu ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.2s ease'
+              }} 
+            />
           </MenuButton>
-          
-          <NavLinks isOpen={showMobileMenu}>
-            <NavLink to="/questionnaires" onClick={() => setShowMobileMenu(false)}>
-              ➕ Créer CR
-            </NavLink>
-            
-            <NavLink to="/questionnaires-list" onClick={() => setShowMobileMenu(false)}>
-              📋 Mes CR
-            </NavLink>
-            
-            <NavLink to="/cases-list" onClick={() => setShowMobileMenu(false)}>
-              📁 Mes Cas
-            </NavLink>
-            
-            <NavLink to="/cases" onClick={() => setShowMobileMenu(false)}>
-              ➕ Créer Cas
-            </NavLink>
-            
-            <NavLink to="/public-questionnaires" onClick={() => setShowMobileMenu(false)}>
-              📖 CR Publics
-            </NavLink>
-            
-            <NavLink to="/public-cases" onClick={() => setShowMobileMenu(false)}>
-              📂 Cas Publics
-            </NavLink>
 
-            <div style={{ padding: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.2)', marginTop: '0.5rem' }}>
-              <ThemeToggle onClick={toggleDarkMode}>
-                {isDarkMode ? '☀️ Mode Clair' : '🌙 Mode Sombre'}
-              </ThemeToggle>
-              
-              {userName && (
-                <LogoutButton onClick={onLogout} style={{ width: '100%', justifyContent: 'flex-start', marginTop: '0.5rem' }}>
-                  <LogOut size={16} />
-                  Déconnexion ({userName})
-                </LogoutButton>
-              )}
-            </div>
-          </NavLinks>
-        </MobileMenu>
+          <DropdownMenu isOpen={showMenu}>
+            {/* Informations utilisateur */}
+            {userName && (
+              <>
+                <UserInfo>
+                  <User size={18} />
+                  Connecté en tant que <strong>{userName}</strong>
+                </UserInfo>
+                <MenuDivider />
+              </>
+            )}
+
+            {/* Section Questionnaires */}
+            <MenuSection>
+              <SectionTitle>
+                <FileText size={18} />
+                Questionnaires
+              </SectionTitle>
+              <MenuItem to="/questionnaires" onClick={handleMenuItemClick}>
+                <span>➕</span> Créer un Questionnaire
+              </MenuItem>
+              <MenuItem to="/questionnaires-list" onClick={handleMenuItemClick}>
+                <span>📋</span> Mes Questionnaires
+              </MenuItem>
+              <MenuItem to="/public-questionnaires" onClick={handleMenuItemClick}>
+                <span>📖</span> Questionnaires Publics
+              </MenuItem>
+            </MenuSection>
+
+            <MenuDivider />
+
+            {/* Section Cas Cliniques */}
+            <MenuSection>
+              <SectionTitle>
+                <FolderOpen size={18} />
+                Cas Cliniques
+              </SectionTitle>
+              <MenuItem to="/cases" onClick={handleMenuItemClick}>
+                <span>➕</span> Créer un Cas
+              </MenuItem>
+              <MenuItem to="/cases-list" onClick={handleMenuItemClick}>
+                <span>📁</span> Mes Cas
+              </MenuItem>
+              <MenuItem to="/public-cases" onClick={handleMenuItemClick}>
+                <span>📂</span> Cas Publics
+              </MenuItem>
+            </MenuSection>
+
+            <MenuDivider />
+
+            {/* Section Protocoles - NOUVELLE ! */}
+            <MenuSection>
+              <SectionTitle>
+                <Stethoscope size={18} />
+                Protocoles
+              </SectionTitle>
+              <MenuItem to="/protocols/create" onClick={handleMenuItemClick}>
+                <span>➕</span> Créer un Protocole
+              </MenuItem>
+              <MenuItem to="/protocols/personal" onClick={handleMenuItemClick}>
+                <span>🔒</span> Mes Protocoles
+              </MenuItem>
+              <MenuItem to="/protocols/public" onClick={handleMenuItemClick}>
+                <span>🌍</span> Protocoles Publics
+              </MenuItem>
+            </MenuSection>
+
+            <MenuDivider />
+
+            {/* Paramètres */}
+            <MenuSection>
+              <ThemeToggleItem onClick={toggleDarkMode}>
+                {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+                {isDarkMode ? 'Mode Clair' : 'Mode Sombre'}
+              </ThemeToggleItem>
+            </MenuSection>
+
+            <MenuDivider />
+
+            {/* Déconnexion */}
+            <LogoutItem onClick={onLogout}>
+              <LogOut size={18} />
+              Déconnexion
+            </LogoutItem>
+          </DropdownMenu>
+        </RightSection>
       </HeaderContent>
     </HeaderWrapper>
   );
