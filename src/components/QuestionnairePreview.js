@@ -3,16 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { Camera, EyeOff, Eye, ChevronDown, ChevronUp, Plus, Italic } from 'lucide-react';
 
-// ==================== STYLED COMPONENTS AVEC MEDICALCOLORS ====================
+// ==================== STYLED COMPONENTS AVEC SUPPORT MODE SOMBRE ====================
 
 const ImagePreviewWrapper = styled.div`
   position: fixed;
   z-index: 9999;
-  background-color: white;
-  border: 1px solid #ccc;
+  background-color: ${props => props.theme.card || 'white'};
+  border: 1px solid ${props => props.theme.border || '#ccc'};
   border-radius: 4px;
   padding: 4px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px ${props => props.theme.shadow || 'rgba(0,0,0,0.1)'};
 `;
 
 const FormatButton = styled.button`
@@ -31,7 +31,7 @@ const FormatButton = styled.button`
   justify-content: center;
 
   &:hover {
-    background-color: #f3f4f6;
+    background-color: ${props => props.theme.backgroundSecondary || props.theme.hover || '#f3f4f6'};
   }
 `;
 
@@ -44,11 +44,11 @@ const PreviewWrapper = styled.div`
   }
 `;
 
-// ==================== COMPOSANTS VISUELS RESTAURÉS ====================
+// ==================== COMPOSANTS VISUELS CORRIGÉS ====================
 
-// Card principale d'une question - Style médical moderne
+// Card principale d'une question - Style médical moderne avec support mode sombre
 const ModernQuestionCard = styled.div`
-  background: ${props => props.theme.backgroundSecondary || "#f7fafd"};
+  background: ${props => props.theme.card || "#f7fafd"};
   border-radius: 16px;
   box-shadow: 0 1px 12px rgba(20, 50, 80, 0.08);
   border: 1px solid ${props => props.theme.border || "#e0e6ed"};
@@ -63,7 +63,7 @@ const ModernQuestionCard = styled.div`
   }
 `;
 
-// Header d'une question - Style professionnel
+// Header d'une question - Style professionnel avec support mode sombre
 const ModernQuestionHeader = styled.div`
   font-weight: 600;
   font-size: 1.17rem;
@@ -73,39 +73,47 @@ const ModernQuestionHeader = styled.div`
   align-items: center;
   gap: 0.7rem;
   background: ${props => {
-    const depth = props.depth || 0;
-    const colors = ['#ffffff', '#fafafa', '#f5f5f5', '#f0f0f0'];
-    return colors[Math.min(depth, colors.length - 1)];
+    if (props.theme.background === '#1a202c') {
+      // Mode sombre
+      const depth = props.depth || 0;
+      const colors = ['#2d3748', '#4a5568', '#718096', '#a0aec0'];
+      return colors[Math.min(depth, colors.length - 1)];
+    } else {
+      // Mode clair
+      const depth = props.depth || 0;
+      const colors = ['#ffffff', '#fafafa', '#f5f5f5', '#f0f0f0'];
+      return colors[Math.min(depth, colors.length - 1)];
+    }
   }};
   border-bottom: 1px solid ${props => props.theme.border || "#e0e6ed"};
 `;
 
-// Contenu de la question
+// Contenu de la question avec support mode sombre
 const ModernQuestionContent = styled.div`
   padding: 1.2rem;
-  background-color: #ffffff;
+  background-color: ${props => props.theme.card || '#ffffff'};
 `;
 
-// Options avec style médical clair - RESTAURÉ !
+// Options avec style médical clair - CORRIGÉ POUR MODE SOMBRE !
 const ModernOptionCard = styled.label`
   display: flex;
   align-items: center;
-  background: #fff;
+  background: ${props => props.theme.card || '#fff'};
   border: 1.5px solid ${props => props.checked ? 
-    (props.theme.primary || "#005A9C") : "#e0e6ed"};
+    (props.theme.primary || "#005A9C") : (props.theme.border || "#e0e6ed")};
   border-radius: 12px;
   padding: 0.9rem 1.2rem;
   margin-bottom: 0.7rem;
   cursor: pointer;
   font-size: 1.08rem;
   box-shadow: ${props => props.checked ? 
-    "0 2px 6px rgba(0, 90, 156, 0.15)" : "0 1px 3px rgba(0,0,0,0.05)"};
+    `0 2px 6px ${props.theme.primary || "#005A9C"}25` : `0 1px 3px ${props.theme.shadow || "rgba(0,0,0,0.05)"}`};
   transition: all 0.17s ease;
   
   &:hover {
     border-color: ${props => props.theme.primary || "#005A9C"};
-    box-shadow: 0 3px 12px rgba(0, 90, 156, 0.1);
-    background-color: #fafbfc;
+    box-shadow: 0 3px 12px ${props => props.theme.primary || "#005A9C"}25;
+    background-color: ${props => props.theme.backgroundSecondary || props.theme.hover || "#fafbfc"};
   }
   
   input {
@@ -129,6 +137,15 @@ const ModernOptionCard = styled.label`
     margin-left: auto;
     padding-left: 1rem;
   }
+`;
+
+// Conteneur pour les champs CR avec support mode sombre
+const CRFieldContainer = styled.div`
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background-color: ${props => props.theme.backgroundSecondary || props.theme.background};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 8px;
 `;
 
 const ImageMapContainer = styled.div`
@@ -280,15 +297,16 @@ const QuestionPreview = ({
 
   const isOptionSelected = (optionIndex) => {
     if (!selectedOptions?.[question.id]) return false;
-    return Array.isArray(selectedOptions[question.id])
-      ? selectedOptions[question.id].includes(optionIndex)
-      : selectedOptions[question.id][optionIndex];
+    return selectedOptions[question.id].includes(optionIndex);
   };
 
-  const handleMouseEnter = (event, imageId) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    setImagePosition({ x: rect.right + 10, y: rect.top });
-    setShowImage(imageId);
+  const handleMouseEnter = (e, optionId) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setImagePosition({
+      x: rect.right + 10,
+      y: rect.top
+    });
+    setShowImage(optionId);
   };
 
   const handleMouseLeave = () => {
@@ -296,61 +314,51 @@ const QuestionPreview = ({
   };
 
   return (
-    <div className="mb-4 overflow-hidden">
+    <div className="question-preview" style={{ width: '100%', maxWidth: '100%' }}>
       <ModernQuestionCard>
         <ModernQuestionHeader depth={depth}>
-          <div className="flex items-center flex-grow gap-2">
+          <span style={{ flexGrow: 1 }}>
+            {question.text}
+            {question.important && <span style={{ color: '#ef4444', marginLeft: '0.5rem' }}>*</span>}
+          </span>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             {showCRFields && toggleQuestionVisibility && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleQuestionVisibility(question.id);
                 }}
-                className="text-gray-500 hover:text-gray-700"
+                style={{
+                  padding: '0.25rem',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: hiddenQuestions[question.id] ? '#ef4444' : '#10b981'
+                }}
               >
-                {hiddenQuestions?.[question.id] ? <EyeOff size={18} /> : <Eye size={18} />}
+                {hiddenQuestions[question.id] ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             )}
-            <h3 className="text-base text-gray-700 font-semibold">{question.text}</h3>
-            <div className="flex items-center gap-2 ml-auto">
-              {questionnaireLinks && questionnaireLinks[questionId]?.map((link, index) => (
-                <LinkButton
-                  key={index}
-                  onClick={() => navigate(`/questionnaire/${questionnaireId}/link/${questionId}/${index}`)}
-                >
-                  {link.title || `Fiche ${index + 1}`}
-                </LinkButton>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
+            
             {question.image && (
-              <div className="flex items-center">
-                <div 
-                  className="relative cursor-pointer"
-                  onMouseEnter={(e) => handleMouseEnter(e, questionId)}
-                  onMouseLeave={handleMouseLeave}
-                >
-                  <Camera size={18} className="text-blue-500" />
-                </div>
-                {showAddButton && onImageInsert && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onImageInsert(question.image);
-                    }}
-                    className="ml-1 text-blue-500 hover:text-blue-600"
-                  >
-                    <Plus size={16} />
-                  </button>
-                )}
+              <div
+                className="relative cursor-pointer"
+                onMouseEnter={(e) => handleMouseEnter(e, questionId)}
+                onMouseLeave={handleMouseLeave}
+              >
+                <Camera size={18} className="text-blue-500" />
               </div>
             )}
-
+            
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="p-1 text-gray-500 hover:text-gray-700"
+              style={{
+                padding: '0.25rem',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer'
+              }}
             >
               {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
             </button>
@@ -367,6 +375,57 @@ const QuestionPreview = ({
 
         {isExpanded && (
           <ModernQuestionContent>
+            {/* IMAGE MAP */}
+            {question.type === 'imageMap' && question.questionImage && (
+              <ImageMapContainer>
+                <img 
+                  src={question.questionImage.src} 
+                  alt={question.questionImage.alt || "Image interactive"} 
+                  style={{ 
+                    width: '100%', 
+                    height: 'auto',
+                    maxWidth: '600px'
+                  }}
+                />
+                {question.questionImage.areas && (
+                  <svg style={{ width: '100%', height: '100%' }}>
+                    {question.questionImage.areas.map((area, areaIndex) => {
+                      const isSelected = selectedOptions?.[question.id]?.includes(areaIndex);
+                      
+                      if (area.shape === 'circle') {
+                        return (
+                          <circle
+                            key={areaIndex}
+                            cx={area.coords[0]}
+                            cy={area.coords[1]}
+                            r={area.coords[2]}
+                            fill={isSelected ? `rgba(${getColorValues(area.color || 'blue')}, 0.3)` : 'transparent'}
+                            stroke={`rgb(${getColorValues(area.color || 'blue')})`}
+                            strokeWidth="2"
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => handleOptionChange(areaIndex)}
+                          />
+                        );
+                      } else if (area.shape === 'polygon' && area.points) {
+                        return (
+                          <path
+                            key={areaIndex}
+                            d={createPathFromPoints(area.points)}
+                            fill={isSelected ? `rgba(${getColorValues(area.color || 'blue')}, 0.3)` : 'transparent'}
+                            stroke={`rgb(${getColorValues(area.color || 'blue')})`}
+                            strokeWidth="2"
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => handleOptionChange(areaIndex)}
+                          />
+                        );
+                      }
+                      return null;
+                    })}
+                  </svg>
+                )}
+              </ImageMapContainer>
+            )}
+
             {/* OPTIONS AVEC STYLE MÉDICAL CLAIR */}
             {['single', 'multiple'].includes(question.type) && (
               <div className="space-y-2">
@@ -459,7 +518,7 @@ const QuestionPreview = ({
                       )}
 
                       {showCRFields && isOptionSelected(optionIndex) && (
-                        <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                        <CRFieldContainer>
                           <TextFormatButtons 
                             onBold={() => handleCRTextChange(optionIndex, `<strong>${crTexts[question.id]?.[optionIndex] || option.text}</strong>`)}
                             onUnderline={() => handleCRTextChange(optionIndex, `<u>${crTexts[question.id]?.[optionIndex] || option.text}</u>`)}
@@ -473,7 +532,7 @@ const QuestionPreview = ({
                             placeholder="Texte du CR pour cette option"
                             className="w-full p-2 border rounded-md text-sm min-h-[100px]"
                           />
-                        </div>
+                        </CRFieldContainer>
                       )}
 
                       {/* SOUS-QUESTIONS */}
@@ -527,66 +586,37 @@ const QuestionPreview = ({
                 value={freeTexts?.[question.id] || ''}
                 onChange={(e) => onFreeTextChange(question.id, e.target.value)}
                 placeholder="Votre réponse..."
-                className="w-full p-3 border rounded-md min-h-[100px] focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                className="w-full p-3 border rounded-md focus:border-blue-500 focus:ring-2 focus:ring-blue-200 min-h-[100px]"
               />
             )}
 
-            {/* IMAGE INTERACTIVE */}
-            {question.type === 'imageMap' && question.questionImage && (
-              <div>
-                <ImageMapContainer>
-                  <img 
-                    src={question.questionImage.src} 
-                    alt="Question"
-                    className="rounded-lg"
-                  />
-                  <svg
-                    viewBox="0 0 100 100"
-                    preserveAspectRatio="none"
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '100%',
-                      pointerEvents: 'all'
-                    }}
-                  >
-                    {question.questionImage.areas?.map((area, index) => (
-                      <path
-                        key={index}
-                        d={createPathFromPoints(area.points)}
-                        fill={selectedOptions[question.id]?.includes(index) 
-                          ? `rgba(${getColorValues(area.color || 'blue')}, 0.5)` 
-                          : `rgba(${getColorValues(area.color || 'blue')}, 0.2)`}
-                        stroke={`rgba(${getColorValues(area.color || 'blue')}, 0.5)`}
-                        strokeWidth="0.2"
-                        onClick={() => {
-                          setSelectedOptions(question.id, index, 'multiple');
-                          if (showCRFields && area.crText) {
-                            handleCRTextChange(index, area.crText);
-                          }
-                        }}
-                        style={{ cursor: 'pointer' }}
+            {/* CHAMPS POUR LA TECHNIQUE */}
+            {question.text === 'TECHNIQUE' && question.options && (
+              <div className="space-y-3">
+                {question.options.map((option, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedOptions?.[question.id]?.includes(index) || false}
+                        onChange={() => handleOptionChange(index)}
+                        className="mr-3 h-4 w-4"
                       />
-                    ))}
-                  </svg>
-                </ImageMapContainer>
-                {showCRFields && (
-                  <div className="mt-4 space-y-4">
-                    {question.questionImage.areas?.map((area, index) => (
-                      <div key={index} className="p-4 bg-white rounded shadow">
-                        <h5 className="font-medium mb-2">Zone {index + 1} - {area.text}</h5>
+                      <span>{option.text}</span>
+                    </div>
+                    
+                    {showCRFields && selectedOptions?.[question.id]?.includes(index) && (
+                      <CRFieldContainer>
                         <textarea
                           value={crTexts[question.id]?.[index] || ''}
                           onChange={(e) => handleCRTextChange(index, e.target.value)}
                           placeholder="Texte du CR pour cette option"
                           className="w-full p-2 border rounded min-h-[100px]"
                         />
-                      </div>
-                    ))}
+                      </CRFieldContainer>
+                    )}
                   </div>
-                )}
+                ))}
               </div>
             )}
 
@@ -665,17 +695,17 @@ const QuestionnairePreview = ({
                   className="w-full px-2 py-1 border rounded shadow-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                   value={questionnaire?.pageTitles?.[idx + 1] || `Page ${idx + 1}`}
                   onChange={(e) => {
-                    if (!questionnaire) return;
-                    const newPageTitles = { ...(questionnaire.pageTitles || {}) };
-                    newPageTitles[idx + 1] = e.target.value;
                     setQuestionnaire(prev => ({
                       ...prev,
-                      pageTitles: newPageTitles
+                      pageTitles: {
+                        ...prev.pageTitles,
+                        [idx + 1]: e.target.value
+                      }
                     }));
                   }}
                   onBlur={() => setEditingPageTitle(null)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
+                    if (e.key === 'Enter' || e.key === 'Escape') {
                       setEditingPageTitle(null);
                     }
                   }}
@@ -687,13 +717,13 @@ const QuestionnairePreview = ({
         ))}
       </div>
 
-      {/* QUESTIONS */}
+      {/* QUESTIONS DE LA PAGE COURANTE */}
       <div className="space-y-4">
         {currentQuestions.map((question, index) => (
           <QuestionPreview
-            key={question?.id || `question-${index}`}
+            key={question?.id || index}
             question={question}
-            path={[questions.indexOf(question)]}
+            path={[questions.findIndex(q => q.id === question.id)]}
             selectedOptions={selectedOptions}
             setSelectedOptions={setSelectedOptions}
             crTexts={crTexts}
