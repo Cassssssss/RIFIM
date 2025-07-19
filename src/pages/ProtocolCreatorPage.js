@@ -378,7 +378,33 @@ function ProtocolCreatorPage() {
         try {
           setLoading(true);
           const response = await axios.get(`/protocols/${id}`);
-          setFormData(response.data);
+          
+          // Normaliser les données pour éviter les erreurs undefined
+          const protocolData = {
+            ...response.data,
+            sequences: response.data.sequences?.map(seq => ({
+              ...seq,
+              technicalParameters: seq.technicalParameters || {}, // S'assurer que c'est un objet
+              justification: seq.justification || '',
+              description: seq.description || '',
+              duration: seq.duration || ''
+            })) || [],
+            acquisitionParameters: {
+              fieldStrength: '',
+              coil: '',
+              position: '',
+              contrast: {
+                used: false,
+                agent: '',
+                dose: '',
+                injectionProtocol: ''
+              },
+              preparation: '',
+              ...response.data.acquisitionParameters
+            }
+          };
+          
+          setFormData(protocolData);
         } catch (err) {
           console.error('Erreur lors du chargement du protocole:', err);
           setError('Erreur lors du chargement du protocole');
@@ -431,7 +457,14 @@ function ProtocolCreatorPage() {
       name: '',
       description: '',
       justification: '',
-      technicalParameters: {},
+      technicalParameters: {
+        TR: '',
+        TE: '',
+        thickness: '',
+        spacing: '',
+        FOV: '',
+        matrix: ''
+      }, // Initialiser avec tous les champs
       order: formData.sequences.length + 1,
       duration: ''
     };
@@ -809,7 +842,7 @@ function ProtocolCreatorPage() {
                   <ParameterField
                     type="text"
                     placeholder="ex: 2000"
-                    value={sequence.technicalParameters.TR || ''}
+                    value={(sequence.technicalParameters && sequence.technicalParameters.TR) || ''}
                     onChange={(e) => updateSequenceParameter(sequence.id, 'TR', e.target.value)}
                   />
                 </ParameterInput>
@@ -819,7 +852,7 @@ function ProtocolCreatorPage() {
                   <ParameterField
                     type="text"
                     placeholder="ex: 30"
-                    value={sequence.technicalParameters.TE || ''}
+                    value={(sequence.technicalParameters && sequence.technicalParameters.TE) || ''}
                     onChange={(e) => updateSequenceParameter(sequence.id, 'TE', e.target.value)}
                   />
                 </ParameterInput>
@@ -829,7 +862,7 @@ function ProtocolCreatorPage() {
                   <ParameterField
                     type="text"
                     placeholder="ex: 5"
-                    value={sequence.technicalParameters.thickness || ''}
+                    value={(sequence.technicalParameters && sequence.technicalParameters.thickness) || ''}
                     onChange={(e) => updateSequenceParameter(sequence.id, 'thickness', e.target.value)}
                   />
                 </ParameterInput>
@@ -839,7 +872,7 @@ function ProtocolCreatorPage() {
                   <ParameterField
                     type="text"
                     placeholder="ex: 1"
-                    value={sequence.technicalParameters.spacing || ''}
+                    value={(sequence.technicalParameters && sequence.technicalParameters.spacing) || ''}
                     onChange={(e) => updateSequenceParameter(sequence.id, 'spacing', e.target.value)}
                   />
                 </ParameterInput>
@@ -849,7 +882,7 @@ function ProtocolCreatorPage() {
                   <ParameterField
                     type="text"
                     placeholder="ex: 256x256"
-                    value={sequence.technicalParameters.FOV || ''}
+                    value={(sequence.technicalParameters && sequence.technicalParameters.FOV) || ''}
                     onChange={(e) => updateSequenceParameter(sequence.id, 'FOV', e.target.value)}
                   />
                 </ParameterInput>
@@ -859,7 +892,7 @@ function ProtocolCreatorPage() {
                   <ParameterField
                     type="text"
                     placeholder="ex: 512x512"
-                    value={sequence.technicalParameters.matrix || ''}
+                    value={(sequence.technicalParameters && sequence.technicalParameters.matrix) || ''}
                     onChange={(e) => updateSequenceParameter(sequence.id, 'matrix', e.target.value)}
                   />
                 </ParameterInput>
