@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
-import { Search, Filter, Eye, Copy, Star, Clock, User, TrendingUp } from 'lucide-react';
+import { Search, Filter, Eye, Copy, Star, Clock, User, TrendingUp, Globe } from 'lucide-react';
 import styled from 'styled-components';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
@@ -83,15 +83,13 @@ const SearchInput = styled.input`
   }
 
   &::placeholder {
-    color: ${props => props.theme.textSecondary || props.theme.textLight};
+    color: ${props => props.theme.textSecondary};
   }
 `;
 
-const SearchIconWrapper = styled.div`
+const SearchIcon = styled(Search)`
   position: absolute;
   left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
   color: ${props => props.theme.textSecondary};
   pointer-events: none;
 `;
@@ -102,43 +100,53 @@ const SearchWrapper = styled.div`
 `;
 
 const FilterSelect = styled.select`
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
   border: 2px solid ${props => props.theme.border};
-  border-radius: 8px;
+  border-radius: 12px;
   background-color: ${props => props.theme.card};
   color: ${props => props.theme.text};
-  font-size: 0.9rem;
+  font-size: 1rem;
   cursor: pointer;
+  transition: all 0.3s ease;
 
   &:focus {
     outline: none;
     border-color: ${props => props.theme.primary};
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
   }
 `;
 
-const SortSelect = styled.select`
-  padding: 0.75rem;
-  border: 2px solid ${props => props.theme.border};
-  border-radius: 8px;
-  background-color: ${props => props.theme.card};
-  color: ${props => props.theme.text};
-  font-size: 0.9rem;
-  cursor: pointer;
+const SortContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
 
-  &:focus {
-    outline: none;
+const SortButton = styled.button`
+  padding: 0.75rem 1rem;
+  border: 2px solid ${props => props.isActive ? props.theme.primary : props.theme.border};
+  border-radius: 12px;
+  background-color: ${props => props.isActive ? props.theme.primary : props.theme.card};
+  color: ${props => props.isActive ? 'white' : props.theme.text};
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+
+  &:hover {
     border-color: ${props => props.theme.primary};
+    background-color: ${props => props.isActive ? props.theme.primaryHover : props.theme.backgroundSecondary};
   }
 `;
 
 const ProtocolsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-  gap: 1.5rem;
-  margin-top: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
 `;
 
@@ -241,58 +249,43 @@ const StatsContainer = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
-  padding: 0.75rem;
-  background-color: ${props => props.theme.backgroundSecondary || '#f8fafc'};
-  border-radius: 8px;
-  font-size: 0.875rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid ${props => props.theme.border};
 `;
 
 const StatItem = styled.div`
   display: flex;
   align-items: center;
   gap: 0.25rem;
+  font-size: 0.875rem;
   color: ${props => props.theme.textSecondary};
 `;
 
 const ActionsContainer = styled.div`
   display: flex;
   gap: 0.5rem;
-  justify-content: flex-end;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid ${props => props.theme.border};
 `;
 
 const ActionButton = styled.button`
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
   border: 1px solid ${props => props.theme.border};
   border-radius: 8px;
   background-color: ${props => props.theme.card};
-  color: ${props => props.theme.text};
+  color: ${props => props.theme.textSecondary};
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0.875rem;
-  font-weight: 500;
+  text-decoration: none;
 
   &:hover {
     background-color: ${props => props.theme.primary};
+    border-color: ${props => props.theme.primary};
     color: white;
     transform: translateY(-1px);
-  }
-
-  &.primary {
-    background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-    color: white;
-    border: none;
-    
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px ${props => props.theme.primary}40;
-    }
   }
 `;
 
@@ -308,8 +301,12 @@ const EmptyState = styled.div`
   }
 
   p {
-    margin-bottom: 2rem;
+    font-size: 1.1rem;
     line-height: 1.6;
+    margin-bottom: 2rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
   }
 `;
 
@@ -318,7 +315,7 @@ const PaginationContainer = styled.div`
   justify-content: center;
   align-items: center;
   gap: 1rem;
-  margin-top: 3rem;
+  margin-top: 2rem;
 `;
 
 const PaginationButton = styled.button`
@@ -400,7 +397,7 @@ function ProtocolsPublicPage() {
   };
 
   const isPopular = (protocol) => {
-    return protocol.stats && protocol.stats.views > 50;
+    return protocol.copies > 10 || protocol.views > 100;
   };
 
   if (loading) return <LoadingSpinner />;
@@ -409,13 +406,11 @@ function ProtocolsPublicPage() {
   return (
     <PageContainer>
       <PageTitle>Protocoles Publics</PageTitle>
-      
+
       <ActionBar>
         <SearchContainer>
           <SearchWrapper>
-            <SearchIconWrapper>
-              <Search size={20} />
-            </SearchIconWrapper>
+            <SearchIcon size={20} />
             <SearchInput
               type="text"
               placeholder="Rechercher un protocole public..."
@@ -423,7 +418,6 @@ function ProtocolsPublicPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </SearchWrapper>
-          
           <FilterSelect
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
@@ -433,7 +427,6 @@ function ProtocolsPublicPage() {
               <option key={type} value={type}>{type}</option>
             ))}
           </FilterSelect>
-          
           <FilterSelect
             value={filterRegion}
             onChange={(e) => setFilterRegion(e.target.value)}
@@ -444,16 +437,28 @@ function ProtocolsPublicPage() {
             ))}
           </FilterSelect>
         </SearchContainer>
-        
-        <SortSelect
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-        >
-          <option value="popular">Plus populaires</option>
-          <option value="recent">Plus récents</option>
-          <option value="rating">Mieux notés</option>
-          <option value="alphabetical">Alphabétique</option>
-        </SortSelect>
+
+        <SortContainer>
+          <SortButton
+            isActive={sortBy === 'popular'}
+            onClick={() => setSortBy('popular')}
+          >
+            <TrendingUp size={16} style={{ marginRight: '0.5rem' }} />
+            Populaires
+          </SortButton>
+          <SortButton
+            isActive={sortBy === 'recent'}
+            onClick={() => setSortBy('recent')}
+          >
+            Récents
+          </SortButton>
+          <SortButton
+            isActive={sortBy === 'alphabetical'}
+            onClick={() => setSortBy('alphabetical')}
+          >
+            A-Z
+          </SortButton>
+        </SortContainer>
       </ActionBar>
 
       {protocols.length === 0 ? (
@@ -503,8 +508,9 @@ function ProtocolsPublicPage() {
                   )}
                   {protocol.complexity && (
                     <MetaItem>
-                      <Star size={14} />
-                      Niveau {protocol.complexity}/5
+                      {Array.from({ length: protocol.complexity }, (_, i) => (
+                        <Star key={i} size={12} fill="currentColor" />
+                      ))}
                     </MetaItem>
                   )}
                 </ProtocolMeta>
@@ -514,39 +520,34 @@ function ProtocolsPublicPage() {
                 </ProtocolDescription>
                 
                 <StatsContainer>
-                  <StatItem>
-                    <Eye size={16} />
-                    {protocol.stats?.views || 0} vues
-                  </StatItem>
-                  <StatItem>
-                    <Copy size={16} />
-                    {protocol.stats?.copies || 0} copies
-                  </StatItem>
-                  {protocol.reviews && protocol.reviews.length > 0 && (
+                  <div style={{ display: 'flex', gap: '1rem' }}>
                     <StatItem>
-                      <Star size={16} />
-                      {(protocol.reviews.reduce((acc, r) => acc + r.rating, 0) / protocol.reviews.length).toFixed(1)}/5
+                      <Eye size={14} />
+                      {protocol.views || 0} vues
                     </StatItem>
-                  )}
-                </StatsContainer>
-                
-                <ActionsContainer>
-                  <ActionButton
-                    as={Link}
-                    to={`/protocols/view/${protocol._id}`}
-                    className="primary"
-                  >
-                    <Eye size={16} />
-                    Voir le détail
-                  </ActionButton>
+                    <StatItem>
+                      <Copy size={14} />
+                      {protocol.copies || 0} copies
+                    </StatItem>
+                  </div>
                   
-                  <ActionButton
-                    onClick={() => handleCopy(protocol._id)}
-                  >
-                    <Copy size={16} />
-                    Copier
-                  </ActionButton>
-                </ActionsContainer>
+                  <ActionsContainer>
+                    <ActionButton
+                      as={Link}
+                      to={`/protocols/view/${protocol._id}`}
+                      title="Voir"
+                    >
+                      <Eye size={16} />
+                    </ActionButton>
+                    
+                    <ActionButton
+                      onClick={() => handleCopy(protocol._id)}
+                      title="Copier dans mes protocoles"
+                    >
+                      <Copy size={16} />
+                    </ActionButton>
+                  </ActionsContainer>
+                </StatsContainer>
               </ProtocolCard>
             ))}
           </ProtocolsGrid>

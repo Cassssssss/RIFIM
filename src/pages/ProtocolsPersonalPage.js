@@ -75,7 +75,6 @@ const SearchInput = styled.input`
   background-color: ${props => props.theme.card};
   color: ${props => props.theme.text};
   transition: all 0.3s ease;
-  position: relative;
 
   &:focus {
     outline: none;
@@ -84,15 +83,13 @@ const SearchInput = styled.input`
   }
 
   &::placeholder {
-    color: ${props => props.theme.textSecondary || props.theme.textLight};
+    color: ${props => props.theme.textSecondary};
   }
 `;
 
-const SearchIconWrapper = styled.div`
+const SearchIcon = styled(Search)`
   position: absolute;
   left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
   color: ${props => props.theme.textSecondary};
   pointer-events: none;
 `;
@@ -103,17 +100,19 @@ const SearchWrapper = styled.div`
 `;
 
 const FilterSelect = styled.select`
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
   border: 2px solid ${props => props.theme.border};
-  border-radius: 8px;
+  border-radius: 12px;
   background-color: ${props => props.theme.card};
   color: ${props => props.theme.text};
-  font-size: 0.9rem;
+  font-size: 1rem;
   cursor: pointer;
+  transition: all 0.3s ease;
 
   &:focus {
     outline: none;
     border-color: ${props => props.theme.primary};
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
   }
 `;
 
@@ -121,29 +120,31 @@ const CreateButton = styled(Link)`
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
   background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
   color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 12px;
   text-decoration: none;
+  border-radius: 12px;
   font-weight: 600;
+  font-size: 1rem;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px ${props => props.theme.primary}40;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px ${props => props.theme.primary}50;
+    box-shadow: 0 8px 25px ${props => props.theme.primary}60;
   }
 `;
 
 const ProtocolsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1.5rem;
-  margin-top: 2rem;
+  gap: 2rem;
+  margin-bottom: 3rem;
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
 `;
 
@@ -190,6 +191,7 @@ const ProtocolTitle = styled.h3`
   flex: 1;
 `;
 
+// StatusBadge CORRIGÉ avec les nouvelles couleurs du thème
 const StatusBadge = styled.span`
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
@@ -202,18 +204,18 @@ const StatusBadge = styled.span`
     switch (props.status) {
       case 'Validé':
         return `
-          background-color: #10b981;
+          background-color: ${props.theme.success};
           color: white;
         `;
       case 'En révision':
         return `
-          background-color: #f59e0b;
+          background-color: ${props.theme.warning};
           color: white;
         `;
       default: // Brouillon
         return `
-          background-color: ${props.theme.textSecondary};
-          color: white;
+          background-color: ${props.theme.statusDraft || props.theme.textSecondary};
+          color: ${props.theme.statusDraftText || 'white'};
         `;
     }
   }}
@@ -246,13 +248,32 @@ const ProtocolDescription = styled.p`
   overflow: hidden;
 `;
 
+const VisibilityToggle = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: none;
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 8px;
+  color: ${props => props.theme.textSecondary};
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+
+  &:hover {
+    background-color: ${props => props.theme.backgroundSecondary};
+    border-color: ${props => props.theme.primary};
+    color: ${props => props.theme.primary};
+  }
+`;
+
 const ActionsContainer = styled.div`
   display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 0.5rem;
-  justify-content: flex-end;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid ${props => props.theme.border};
 `;
 
 const ActionButton = styled.button`
@@ -264,39 +285,21 @@ const ActionButton = styled.button`
   border: 1px solid ${props => props.theme.border};
   border-radius: 8px;
   background-color: ${props => props.theme.card};
-  color: ${props => props.theme.text};
+  color: ${props => props.theme.textSecondary};
   cursor: pointer;
   transition: all 0.2s ease;
+  text-decoration: none;
 
   &:hover {
     background-color: ${props => props.theme.primary};
+    border-color: ${props => props.theme.primary};
     color: white;
     transform: translateY(-1px);
   }
 
-  &.danger {
-    &:hover {
-      background-color: #ef4444;
-      border-color: #ef4444;
-    }
-  }
-`;
-
-const VisibilityToggle = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 8px;
-  background-color: ${props => props.theme.card};
-  color: ${props => props.theme.text};
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.75rem;
-
-  &:hover {
-    background-color: ${props => props.theme.backgroundSecondary};
+  &.danger:hover {
+    background-color: ${props => props.theme.error};
+    border-color: ${props => props.theme.error};
   }
 `;
 
@@ -312,8 +315,12 @@ const EmptyState = styled.div`
   }
 
   p {
-    margin-bottom: 2rem;
+    font-size: 1.1rem;
     line-height: 1.6;
+    margin-bottom: 2rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
   }
 `;
 
@@ -322,7 +329,7 @@ const PaginationContainer = styled.div`
   justify-content: center;
   align-items: center;
   gap: 1rem;
-  margin-top: 3rem;
+  margin-top: 2rem;
 `;
 
 const PaginationButton = styled.button`
@@ -403,25 +410,26 @@ function ProtocolsPersonalPage() {
     }
   };
 
-  const handleToggleVisibility = async (protocolId, currentVisibility) => {
-    try {
-      await axios.patch(`/protocols/${protocolId}/visibility`, {
-        public: !currentVisibility
-      });
-      fetchProtocols();
-    } catch (err) {
-      console.error('Erreur lors du changement de visibilité:', err);
-      setError('Erreur lors du changement de visibilité');
-    }
-  };
-
   const handleCopy = async (protocolId) => {
     try {
       await axios.post(`/protocols/${protocolId}/copy`);
+      alert('Protocole copié avec succès !');
       fetchProtocols();
     } catch (err) {
       console.error('Erreur lors de la copie:', err);
       setError('Erreur lors de la copie du protocole');
+    }
+  };
+
+  const handleToggleVisibility = async (protocolId, currentPublicState) => {
+    try {
+      await axios.patch(`/protocols/${protocolId}`, {
+        public: !currentPublicState
+      });
+      fetchProtocols();
+    } catch (err) {
+      console.error('Erreur lors de la modification de la visibilité:', err);
+      setError('Erreur lors de la modification de la visibilité');
     }
   };
 
@@ -431,13 +439,11 @@ function ProtocolsPersonalPage() {
   return (
     <PageContainer>
       <PageTitle>Mes Protocoles</PageTitle>
-      
+
       <ActionBar>
         <SearchContainer>
           <SearchWrapper>
-            <SearchIconWrapper>
-              <Search size={20} />
-            </SearchIconWrapper>
+            <SearchIcon size={20} />
             <SearchInput
               type="text"
               placeholder="Rechercher un protocole..."
@@ -445,7 +451,6 @@ function ProtocolsPersonalPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </SearchWrapper>
-          
           <FilterSelect
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
@@ -455,7 +460,6 @@ function ProtocolsPersonalPage() {
               <option key={type} value={type}>{type}</option>
             ))}
           </FilterSelect>
-          
           <FilterSelect
             value={filterRegion}
             onChange={(e) => setFilterRegion(e.target.value)}
@@ -466,7 +470,7 @@ function ProtocolsPersonalPage() {
             ))}
           </FilterSelect>
         </SearchContainer>
-        
+
         <CreateButton to="/protocols/create">
           <Plus size={20} />
           Créer un Protocole

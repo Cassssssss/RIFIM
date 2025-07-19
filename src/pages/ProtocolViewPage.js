@@ -118,6 +118,41 @@ const MetaValue = styled.span`
   color: ${props => props.theme.text};
 `;
 
+const ParameterValue = styled.span`
+  font-weight: 600;
+  color: ${props => props.theme.text};
+`;
+
+// StatusBadge CORRIGÉ avec les nouvelles couleurs du thème
+const StatusBadge = styled.span`
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  
+  ${props => {
+    switch (props.status) {
+      case 'Validé':
+        return `
+          background-color: ${props.theme.success};
+          color: white;
+        `;
+      case 'En révision':
+        return `
+          background-color: ${props.theme.warning};
+          color: white;
+        `;
+      default: // Brouillon
+        return `
+          background-color: ${props.theme.statusDraft || props.theme.textSecondary};
+          color: ${props.theme.statusDraftText || 'white'};
+        `;
+    }
+  }}
+`;
+
 const SectionTitle = styled.h3`
   font-size: 1.25rem;
   margin: 2rem 0 1rem 0;
@@ -133,6 +168,7 @@ const Description = styled.p`
   line-height: 1.6;
   color: ${props => props.theme.text};
   margin-bottom: 1.5rem;
+  font-size: 1rem;
 `;
 
 const SequenceCard = styled.div`
@@ -164,76 +200,34 @@ const SequenceNumber = styled.div`
 `;
 
 const SequenceName = styled.h4`
-  margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
   color: ${props => props.theme.text};
+  margin: 0;
   flex: 1;
-`;
-
-const SequenceDuration = styled.span`
-  padding: 0.25rem 0.75rem;
-  background-color: ${props => props.theme.primary}20;
-  color: ${props => props.theme.primary};
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 500;
 `;
 
 const ParametersGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
   margin-top: 1rem;
-  padding: 1rem;
-  background-color: ${props => props.theme.card};
-  border-radius: 8px;
 `;
 
 const ParameterItem = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  background-color: ${props => props.theme.card};
+  border-radius: 6px;
+  border: 1px solid ${props => props.theme.borderLight};
 `;
 
 const ParameterLabel = styled.span`
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   color: ${props => props.theme.textSecondary};
   font-weight: 500;
-`;
-
-const ParameterValue = styled.span`
-  font-weight: 600;
-  color: ${props => props.theme.text};
-`;
-
-const StatusBadge = styled.span`
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  
-  ${props => {
-    switch (props.status) {
-      case 'Validé':
-        return `
-          background-color: #10b981;
-          color: white;
-        `;
-      case 'En révision':
-        return `
-          background-color: #f59e0b;
-          color: white;
-        `;
-      default: // Brouillon
-        return `
-          background-color: ${props.theme.textSecondary};
-          color: white;
-        `;
-    }
-  }}
 `;
 
 // ==================== COMPOSANT PRINCIPAL ====================
@@ -269,7 +263,7 @@ function ProtocolViewPage() {
       navigate('/protocols/personal');
     } catch (err) {
       console.error('Erreur lors de la copie:', err);
-      alert('Erreur lors de la copie du protocole');
+      setError('Erreur lors de la copie du protocole');
     }
   };
 
@@ -281,32 +275,24 @@ function ProtocolViewPage() {
     <PageContainer>
       <Header>
         <PageTitle>{protocol.title}</PageTitle>
-        
         <ActionButtons>
-          <ActionButton onClick={() => navigate(-1)}>
+          <ActionButton as={Link} to="/protocols/personal">
             <ArrowLeft size={16} />
             Retour
           </ActionButton>
-          
-          {/* Afficher le bouton modifier seulement si c'est notre protocole */}
-          <ActionButton 
-            as={Link}
-            to={`/protocols/edit/${protocol._id}`}
-            className="primary"
-          >
-            <Edit size={16} />
-            Modifier
-          </ActionButton>
-          
           <ActionButton onClick={handleCopy}>
             <Copy size={16} />
             Copier
+          </ActionButton>
+          <ActionButton as={Link} to={`/protocols/edit/${protocol._id}`} className="primary">
+            <Edit size={16} />
+            Modifier
           </ActionButton>
         </ActionButtons>
       </Header>
 
       <ContentContainer>
-        {/* Informations générales */}
+        {/* Métadonnées du protocole */}
         <MetaInfo>
           <MetaItem>
             <MetaLabel>Type d'imagerie</MetaLabel>
@@ -380,31 +366,44 @@ function ProtocolViewPage() {
                   <SequenceNumber>{index + 1}</SequenceNumber>
                   <SequenceName>{sequence.name}</SequenceName>
                   {sequence.duration && (
-                    <SequenceDuration>{sequence.duration}</SequenceDuration>
+                    <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>
+                      <Clock size={14} style={{ display: 'inline', marginRight: '0.25rem' }} />
+                      {sequence.duration}
+                    </span>
                   )}
                 </SequenceHeader>
                 
                 {sequence.description && (
                   <Description>{sequence.description}</Description>
                 )}
-                
-                {sequence.justification && (
-                  <div style={{ marginBottom: '1rem' }}>
-                    <strong>Justification :</strong> {sequence.justification}
-                  </div>
-                )}
-                
+
+                {/* Paramètres techniques */}
                 {sequence.technicalParameters && Object.keys(sequence.technicalParameters).length > 0 && (
-                  <ParametersGrid>
-                    {Object.entries(sequence.technicalParameters).map(([key, value]) => (
-                      value && (
-                        <ParameterItem key={key}>
-                          <ParameterLabel>{key}</ParameterLabel>
-                          <ParameterValue>{value}</ParameterValue>
-                        </ParameterItem>
-                      )
-                    ))}
-                  </ParametersGrid>
+                  <>
+                    <h5 style={{ margin: '1rem 0 0.5rem 0', color: 'var(--color-text)' }}>
+                      Paramètres techniques :
+                    </h5>
+                    <ParametersGrid>
+                      {Object.entries(sequence.technicalParameters).map(([key, value]) => (
+                        value && (
+                          <ParameterItem key={key}>
+                            <ParameterLabel>{key}</ParameterLabel>
+                            <ParameterValue>{value}</ParameterValue>
+                          </ParameterItem>
+                        )
+                      ))}
+                    </ParametersGrid>
+                  </>
+                )}
+
+                {/* Justification */}
+                {sequence.justification && (
+                  <>
+                    <h5 style={{ margin: '1rem 0 0.5rem 0', color: 'var(--color-text)' }}>
+                      Justification :
+                    </h5>
+                    <Description>{sequence.justification}</Description>
+                  </>
                 )}
               </SequenceCard>
             ))}
@@ -417,56 +416,111 @@ function ProtocolViewPage() {
             <SectionTitle>
               ⚙️ Paramètres d'Acquisition
             </SectionTitle>
-            <MetaInfo>
+            <ParametersGrid>
               {protocol.acquisitionParameters.fieldStrength && (
-                <MetaItem>
-                  <MetaLabel>Force du champ</MetaLabel>
-                  <MetaValue>{protocol.acquisitionParameters.fieldStrength}</MetaValue>
-                </MetaItem>
+                <ParameterItem>
+                  <ParameterLabel>Intensité du champ</ParameterLabel>
+                  <ParameterValue>{protocol.acquisitionParameters.fieldStrength}</ParameterValue>
+                </ParameterItem>
               )}
               {protocol.acquisitionParameters.coil && (
-                <MetaItem>
-                  <MetaLabel>Antenne</MetaLabel>
-                  <MetaValue>{protocol.acquisitionParameters.coil}</MetaValue>
-                </MetaItem>
+                <ParameterItem>
+                  <ParameterLabel>Antenne</ParameterLabel>
+                  <ParameterValue>{protocol.acquisitionParameters.coil}</ParameterValue>
+                </ParameterItem>
               )}
               {protocol.acquisitionParameters.position && (
-                <MetaItem>
-                  <MetaLabel>Position</MetaLabel>
-                  <MetaValue>{protocol.acquisitionParameters.position}</MetaValue>
-                </MetaItem>
+                <ParameterItem>
+                  <ParameterLabel>Position</ParameterLabel>
+                  <ParameterValue>{protocol.acquisitionParameters.position}</ParameterValue>
+                </ParameterItem>
               )}
-            </MetaInfo>
-            
+            </ParametersGrid>
+
+            {/* Produit de contraste */}
             {protocol.acquisitionParameters.contrast?.used && (
               <>
-                <h4>Produit de contraste</h4>
-                <MetaInfo>
+                <h4 style={{ margin: '1.5rem 0 1rem 0', color: 'var(--color-primary)' }}>
+                  Produit de contraste :
+                </h4>
+                <ParametersGrid>
                   {protocol.acquisitionParameters.contrast.agent && (
-                    <MetaItem>
-                      <MetaLabel>Agent</MetaLabel>
-                      <MetaValue>{protocol.acquisitionParameters.contrast.agent}</MetaValue>
-                    </MetaItem>
+                    <ParameterItem>
+                      <ParameterLabel>Agent</ParameterLabel>
+                      <ParameterValue>{protocol.acquisitionParameters.contrast.agent}</ParameterValue>
+                    </ParameterItem>
                   )}
                   {protocol.acquisitionParameters.contrast.dose && (
-                    <MetaItem>
-                      <MetaLabel>Dosage</MetaLabel>
-                      <MetaValue>{protocol.acquisitionParameters.contrast.dose}</MetaValue>
-                    </MetaItem>
+                    <ParameterItem>
+                      <ParameterLabel>Dose</ParameterLabel>
+                      <ParameterValue>{protocol.acquisitionParameters.contrast.dose}</ParameterValue>
+                    </ParameterItem>
                   )}
-                </MetaInfo>
+                </ParametersGrid>
                 {protocol.acquisitionParameters.contrast.injectionProtocol && (
                   <Description>{protocol.acquisitionParameters.contrast.injectionProtocol}</Description>
                 )}
               </>
             )}
-            
+
+            {/* Préparation */}
             {protocol.acquisitionParameters.preparation && (
               <>
-                <h4>Préparation du patient</h4>
+                <h4 style={{ margin: '1.5rem 0 1rem 0', color: 'var(--color-primary)' }}>
+                  Préparation :
+                </h4>
                 <Description>{protocol.acquisitionParameters.preparation}</Description>
               </>
             )}
+          </>
+        )}
+
+        {/* Contre-indications */}
+        {protocol.contraindications && protocol.contraindications.length > 0 && (
+          <>
+            <SectionTitle>
+              ⚠️ Contre-indications
+            </SectionTitle>
+            <ul style={{ color: 'var(--color-text)', lineHeight: 1.6 }}>
+              {protocol.contraindications.map((contraindication, index) => (
+                <li key={index} style={{ marginBottom: '0.5rem' }}>
+                  <AlertCircle size={16} style={{ display: 'inline', marginRight: '0.5rem', color: 'var(--color-error)' }} />
+                  {contraindication}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        {/* Avantages */}
+        {protocol.advantages && protocol.advantages.length > 0 && (
+          <>
+            <SectionTitle>
+              ✅ Avantages
+            </SectionTitle>
+            <ul style={{ color: 'var(--color-text)', lineHeight: 1.6 }}>
+              {protocol.advantages.map((advantage, index) => (
+                <li key={index} style={{ marginBottom: '0.5rem' }}>
+                  {advantage}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        {/* Limitations */}
+        {protocol.limitations && protocol.limitations.length > 0 && (
+          <>
+            <SectionTitle>
+              ⚠️ Limitations
+            </SectionTitle>
+            <ul style={{ color: 'var(--color-text)', lineHeight: 1.6 }}>
+              {protocol.limitations.map((limitation, index) => (
+                <li key={index} style={{ marginBottom: '0.5rem' }}>
+                  {limitation}
+                </li>
+              ))}
+            </ul>
           </>
         )}
       </ContentContainer>
