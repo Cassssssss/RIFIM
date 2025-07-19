@@ -224,7 +224,7 @@
   object-fit: contain;
   display: block;
   transform-origin: center;
-  transition: transform 0.1s ease-out;
+  /* transition: transform 0.1s ease-out; ← LIGNE SUPPRIMÉE pour éliminer TOUT décalage */
   user-select: none;
   -webkit-user-select: none;
   pointer-events: none;

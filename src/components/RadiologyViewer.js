@@ -297,10 +297,19 @@ const handlePan = useCallback((side, deltaX, deltaY) => {
     const scale = newControls[side].scale;
     newControls[side].translateX += deltaX / scale;
     newControls[side].translateY += deltaY / scale;
+    
+    // Application IMMÉDIATE au DOM pour éliminer le décalage
+    const imageElement = side === 'left' ? leftViewerRef.current : 
+                         side === 'right' ? rightViewerRef.current : 
+                         singleViewerRef.current;
+    if (imageElement) {
+      imageElement.style.transform = `scale(${newControls[side].scale}) translate(${newControls[side].translateX}px, ${newControls[side].translateY}px)`;
+    }
+    
     return newControls;
   });
-  applyImageTransforms(side);
-}, [applyImageTransforms]);
+  // Plus besoin d'appeler applyImageTransforms puisqu'on applique directement
+}, []);
 
 const toggleViewMode = useCallback(() => {
   setIsSingleViewMode(prev => {
