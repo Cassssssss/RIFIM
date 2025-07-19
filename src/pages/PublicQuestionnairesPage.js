@@ -53,258 +53,13 @@ const FilterGroup = styled.div`
 `;
 
 const FilterTitle = styled.h3`
-  margin-bottom: 1.5rem;
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: ${props => props.theme.primary};
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-`;
-
-const FilterOption = styled.label`
-  display: flex;
-  align-items: center;
-  margin-bottom: 0.75rem;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  font-weight: 500;
-
-  &:hover {
-    background-color: ${props => props.theme.hover};
-    transform: translateX(2px);
-  }
-
-  input {
-    margin-right: 0.75rem;
-    width: 18px;
-    height: 18px;
-    accent-color: ${props => props.theme.primary};
-    cursor: pointer;
-  }
-`;
-
-const FilterIndicator = styled.div`
-  margin-top: 1.5rem;
-  font-size: 0.9rem;
-  color: ${props => props.theme.primary};
-  padding: 1rem;
-  background-color: ${props => props.theme.background};
-  border-radius: 8px;
-  border: 1px solid ${props => props.theme.border};
-  font-weight: 500;
-
-  &::before {
-    content: '🔍';
-    margin-right: 0.5rem;
-  }
-`;
-
-const ModernListContainer = styled.div`
-  flex-grow: 1;
-  max-width: calc(100% - 340px);
-
-  @media (max-width: 768px) {
-    max-width: 100%;
-  }
-`;
-
-const ModernTitle = styled.h1`
-  font-size: 2.5rem;
-  margin-bottom: 2rem;
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-align: center;
-  font-weight: 700;
-  text-shadow: 0 2px 4px ${props => props.theme.shadow};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-
-  &::before {
-    content: '🌐';
-    font-size: 2rem;
-    -webkit-text-fill-color: initial;
-  }
-`;
-
-const ModernSearchBar = styled.input`
-  width: 100%;
-  padding: 1rem 1.5rem;
-  margin-bottom: 2rem;
-  border: 2px solid ${props => props.theme.border};
-  border-radius: 12px;
-  font-size: 1rem;
-  background-color: ${props => props.theme.card};
-  color: ${props => props.theme.text};
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px ${props => props.theme.shadow};
-
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.primary};
-    box-shadow: 0 0 0 3px ${props => props.theme.primary}20, 0 4px 12px ${props => props.theme.shadow};
-    transform: translateY(-1px);
-  }
-
-  &::placeholder {
-    color: ${props => props.theme.textSecondary || props.theme.textLight};
-  }
-`;
-
-const QuestionnairesGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-  gap: 2rem;
-  margin-bottom: 2rem;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-`;
-
-const ModernQuestionnaireCard = styled.div`
-  background-color: ${props => props.theme.card};
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 16px;
-  padding: 2rem;
-  box-shadow: 0 4px 15px ${props => props.theme.shadow};
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  }
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px ${props => props.theme.shadow};
-    border-color: ${props => props.theme.primary}50;
-  }
-`;
-
-const QuestionnaireTitle = styled(Link)`
-  color: ${props => props.theme.primary};
-  font-size: 1.3rem;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  line-height: 1.4;
   margin-bottom: 1rem;
-  
-  &:hover {
-    text-decoration: underline;
-  }
-
-  &::before {
-    content: '📋';
-    font-size: 1.5rem;
-  }
-`;
-
-const CardMeta = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background-color: ${props => props.theme.backgroundSecondary || props.theme.background};
-  border-radius: 8px;
-  border: 1px solid ${props => props.theme.border};
-`;
-
-const MetaItem = styled.div`
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: ${props => props.theme.primary};
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.85rem;
-  font-weight: 500;
-
-  svg {
-    color: ${props => props.theme.primary};
-    flex-shrink: 0;
-  }
-`;
-
-const ActionButtons = styled.div`
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 1.5rem;
-  flex-wrap: wrap;
-`;
-
-const PrimaryActionButton = styled.button`
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.primaryHover || props.theme.secondary});
-  color: ${props => props.theme.buttonText || 'white'};
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px ${props => props.theme.primary}30;
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px ${props => props.theme.primary}40;
-  }
-`;
-
-const SecondaryActionButton = styled(Link)`
-  background: linear-gradient(135deg, ${props => props.theme.secondary}, ${props => props.theme.secondaryHover || props.theme.primary});
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  text-decoration: none;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px ${props => props.theme.secondary}30;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px ${props => props.theme.secondary}40;
-  }
-`;
-
-const ModernTagsContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin: 1rem 0;
-`;
-
-const ModernTag = styled.span`
-  background: linear-gradient(135deg, ${props => props.theme.tagBackground || props.theme.primary}, ${props => props.theme.primary});
-  color: ${props => props.theme.tagText || 'white'};
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  box-shadow: 0 1px 3px ${props => props.theme.shadow};
 `;
 
 const FilterDropdown = styled.div`
@@ -351,23 +106,8 @@ const DropdownContent = styled.div`
   border: 2px solid ${props => props.theme.border};
   border-top: none;
   border-radius: 0 0 8px 8px;
-  z-index: 10;
-  box-shadow: 0 4px 12px ${props => props.theme.shadow};
-
-  /* Scrollbar styling */
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: ${props => props.theme.background};
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: ${props => props.theme.primary};
-    border-radius: 3px;
-  }
+  z-index: 1000;
+  box-shadow: 0 4px 6px ${props => props.theme.shadow};
 `;
 
 const DropdownOption = styled.label`
@@ -375,9 +115,7 @@ const DropdownOption = styled.label`
   align-items: center;
   padding: 0.75rem;
   cursor: pointer;
-  color: ${props => props.theme.text};
   transition: background-color 0.2s ease;
-  font-weight: 500;
 
   &:hover {
     background-color: ${props => props.theme.hover};
@@ -389,62 +127,249 @@ const DropdownOption = styled.label`
     height: 16px;
     accent-color: ${props => props.theme.primary};
   }
+
+  span {
+    font-weight: 500;
+    color: ${props => props.theme.text};
+  }
+`;
+
+const ModernListContainer = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+`;
+
+const ModernTitle = styled.h1`
+  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-shadow: 0 2px 4px ${props => props.theme.shadow};
+  margin-bottom: 2rem;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+
+  &::before {
+    content: '🌐';
+    font-size: 2rem;
+  }
+`;
+
+const ModernSearchBar = styled.input`
+  width: 100%;
+  padding: 1rem 1.5rem;
+  border: 2px solid ${props => props.theme.border};
+  border-radius: 12px;
+  font-size: 1.1rem;
+  background-color: ${props => props.theme.card};
+  color: ${props => props.theme.text};
+  box-shadow: 0 2px 8px ${props => props.theme.shadow};
+  transition: all 0.3s ease;
+  margin-bottom: 2rem;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary};
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
+    transform: translateY(-1px);
+  }
+
+  &::placeholder {
+    color: ${props => props.theme.textSecondary};
+  }
+`;
+
+const ModernQuestionnairesGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+`;
+
+const ModernQuestionnaireCard = styled.div`
+  background-color: ${props => props.theme.card};
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px ${props => props.theme.shadow};
+  border: 1px solid ${props => props.theme.border};
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px ${props => props.theme.shadow};
+    border-color: ${props => props.theme.primary};
+  }
+`;
+
+const ModernCardHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+`;
+
+const ModernCardTitle = styled.h3`
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: ${props => props.theme.text};
+  margin: 0;
+  line-height: 1.3;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`;
+
+const ModernCardMeta = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  color: ${props => props.theme.textSecondary};
+  font-size: 0.9rem;
+`;
+
+const ModernMetaItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+
+  svg {
+    color: ${props => props.theme.primary};
+  }
+`;
+
+const ModernCardActions = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+`;
+
+const PrimaryActionButton = styled.button`
+  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.primaryHover || props.theme.secondary});
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px ${props => props.theme.primary}30;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px ${props => props.theme.primary}40;
+  }
+`;
+
+const SecondaryActionButton = styled(Link)`
+  background: linear-gradient(135deg, ${props => props.theme.secondary}, ${props => props.theme.secondaryHover || props.theme.primary});
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px ${props => props.theme.secondary}30;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px ${props => props.theme.secondary}40;
+  }
+`;
+
+const ModernTagsContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0;
+`;
+
+const ModernTag = styled.span`
+  background: linear-gradient(135deg, ${props => props.theme.tagBackground || props.theme.primary}, ${props => props.theme.primary});
+  color: ${props => props.theme.tagText || 'white'};
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  box-shadow: 0 1px 3px ${props => props.theme.shadow};
+`;
+
+const FilterIndicator = styled.div`
+  background: linear-gradient(135deg, ${props => props.theme.primary}15, ${props => props.theme.secondary}15);
+  border: 1px solid ${props => props.theme.primary}30;
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: ${props => props.theme.primary};
 `;
 
 const LoadingMessage = styled.div`
   text-align: center;
   padding: 3rem;
-  font-size: 1.2rem;
   color: ${props => props.theme.textSecondary};
+  font-size: 1.2rem;
   background-color: ${props => props.theme.card};
   border-radius: 12px;
-  box-shadow: 0 4px 15px ${props => props.theme.shadow};
-
-  &::before {
-    content: '🔄';
-    font-size: 2rem;
-    display: block;
-    margin-bottom: 1rem;
-  }
+  border: 1px solid ${props => props.theme.border};
 `;
 
 const ErrorMessage = styled.div`
   text-align: center;
   padding: 2rem;
-  color: ${props => props.theme.error || '#ef4444'};
+  color: #ef4444;
   font-size: 1.1rem;
-  background-color: ${props => props.theme.errorLight || '#fef2f2'};
-  border: 2px solid ${props => props.theme.error || '#ef4444'}30;
-  border-radius: 12px;
-  margin: 2rem 0;
-  font-weight: 500;
-
-  &::before {
-    content: '⚠️';
-    font-size: 1.5rem;
-    display: block;
-    margin-bottom: 1rem;
-  }
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  margin: 1rem 0;
 `;
 
 const EmptyState = styled.div`
   text-align: center;
-  padding: 4rem 2rem;
+  padding: 3rem;
   background-color: ${props => props.theme.card};
-  border-radius: 16px;
-  box-shadow: 0 4px 15px ${props => props.theme.shadow};
-  margin: 2rem 0;
-
-  &::before {
-    content: '📚';
-    font-size: 3rem;
-    display: block;
-    margin-bottom: 1rem;
-  }
+  border-radius: 12px;
+  border: 1px solid ${props => props.theme.border};
 
   h3 {
-    color: ${props => props.theme.primary};
     font-size: 1.5rem;
+    font-weight: 600;
+    color: ${props => props.theme.text};
     margin-bottom: 1rem;
   }
 
@@ -464,7 +389,12 @@ function PublicQuestionnairesPage() {
   const [modalityFilters, setModalityFilters] = useState([]);
   const [specialtyFilters, setSpecialtyFilters] = useState([]);
   const [locationFilters, setLocationFilters] = useState([]);
+  
+  // États pour les menus dépliants
+  const [isModalityDropdownOpen, setIsModalityDropdownOpen] = useState(false);
+  const [isSpecialtyDropdownOpen, setIsSpecialtyDropdownOpen] = useState(false);
   const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
+  
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -506,8 +436,12 @@ function PublicQuestionnairesPage() {
   }, [searchTerm, modalityFilters, specialtyFilters, locationFilters]);
 
   useEffect(() => {
-    fetchQuestionnaires(1);
-  }, [fetchQuestionnaires]);
+    const delayDebounceFn = setTimeout(() => {
+      fetchQuestionnaires(1);
+    }, 300);
+  
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, modalityFilters, specialtyFilters, locationFilters, fetchQuestionnaires]);
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
@@ -576,47 +510,62 @@ function PublicQuestionnairesPage() {
     return '📋';
   };
 
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      fetchQuestionnaires(1);
-    }, 300);
-  
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, modalityFilters, specialtyFilters, locationFilters, fetchQuestionnaires]);
-
   return (
     <ModernPageContainer>
+      {/* SECTION FILTRES AVEC MENUS DÉPLIANTS */}
       <ModernFilterSection>
         <FilterGroup>
           <FilterTitle>📊 Modalités</FilterTitle>
-          {modalityOptions.map(modality => (
-            <FilterOption key={modality}>
-              <input
-                type="checkbox"
-                name="modality"
-                value={modality}
-                checked={modalityFilters.includes(modality)}
-                onChange={() => handleModalityFilter(modality)}
-              />
-              {modality}
-            </FilterOption>
-          ))}
+          <FilterDropdown>
+            <DropdownButton 
+              onClick={() => setIsModalityDropdownOpen(!isModalityDropdownOpen)}
+              data-open={isModalityDropdownOpen}
+            >
+              Modalités ({modalityFilters.length})
+              {isModalityDropdownOpen ? <ChevronUp /> : <ChevronDown />}
+            </DropdownButton>
+            {isModalityDropdownOpen && (
+              <DropdownContent>
+                {modalityOptions.map(modality => (
+                  <DropdownOption key={modality}>
+                    <input
+                      type="checkbox"
+                      checked={modalityFilters.includes(modality)}
+                      onChange={() => handleModalityFilter(modality)}
+                    />
+                    <span>{modality}</span>
+                  </DropdownOption>
+                ))}
+              </DropdownContent>
+            )}
+          </FilterDropdown>
         </FilterGroup>
 
         <FilterGroup>
           <FilterTitle>🏥 Spécialités</FilterTitle>
-          {specialtyOptions.map(specialty => (
-            <FilterOption key={specialty}>
-              <input
-                type="checkbox"
-                name="specialty"
-                value={specialty}
-                checked={specialtyFilters.includes(specialty)}
-                onChange={() => handleSpecialtyFilter(specialty)}
-              />
-              {specialty}
-            </FilterOption>
-          ))}
+          <FilterDropdown>
+            <DropdownButton 
+              onClick={() => setIsSpecialtyDropdownOpen(!isSpecialtyDropdownOpen)}
+              data-open={isSpecialtyDropdownOpen}
+            >
+              Spécialités ({specialtyFilters.length})
+              {isSpecialtyDropdownOpen ? <ChevronUp /> : <ChevronDown />}
+            </DropdownButton>
+            {isSpecialtyDropdownOpen && (
+              <DropdownContent>
+                {specialtyOptions.map(specialty => (
+                  <DropdownOption key={specialty}>
+                    <input
+                      type="checkbox"
+                      checked={specialtyFilters.includes(specialty)}
+                      onChange={() => handleSpecialtyFilter(specialty)}
+                    />
+                    <span>{specialty}</span>
+                  </DropdownOption>
+                ))}
+              </DropdownContent>
+            )}
+          </FilterDropdown>
         </FilterGroup>
 
         <FilterGroup>
@@ -626,8 +575,8 @@ function PublicQuestionnairesPage() {
               onClick={() => setIsLocationDropdownOpen(!isLocationDropdownOpen)}
               data-open={isLocationDropdownOpen}
             >
-              Sélectionner {locationFilters.length > 0 && `(${locationFilters.length})`}
-              {isLocationDropdownOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              Localisation ({locationFilters.length})
+              {isLocationDropdownOpen ? <ChevronUp /> : <ChevronDown />}
             </DropdownButton>
             {isLocationDropdownOpen && (
               <DropdownContent>
@@ -635,12 +584,10 @@ function PublicQuestionnairesPage() {
                   <DropdownOption key={location}>
                     <input
                       type="checkbox"
-                      name="location"
-                      value={location}
                       checked={locationFilters.includes(location)}
                       onChange={() => handleLocationFilter(location)}
                     />
-                    {location}
+                    <span>{location}</span>
                   </DropdownOption>
                 ))}
               </DropdownContent>
@@ -675,70 +622,81 @@ function PublicQuestionnairesPage() {
           </ErrorMessage>
         ) : questionnaires.length === 0 ? (
           <EmptyState>
-            <h3>Aucun questionnaire public trouvé</h3>
-            <p>Essayez de modifier vos critères de recherche ou de filtrage.</p>
+            <h3>Aucun questionnaire trouvé</h3>
+            <p>
+              {searchTerm || modalityFilters.length > 0 || specialtyFilters.length > 0 || locationFilters.length > 0
+                ? 'Essayez de modifier vos critères de recherche ou vos filtres.'
+                : 'Il n\'y a pas encore de questionnaires publics disponibles.'
+              }
+            </p>
           </EmptyState>
         ) : (
-          <QuestionnairesGrid>
-            {questionnaires.map((questionnaire) => (
-              <ModernQuestionnaireCard key={questionnaire._id}>
-                <QuestionnaireTitle to={`/use/${questionnaire._id}`}>
-                  {questionnaire.title}
-                </QuestionnaireTitle>
+          <>
+            <ModernQuestionnairesGrid>
+              {questionnaires.map(questionnaire => (
+                <ModernQuestionnaireCard key={questionnaire._id}>
+                  <ModernCardHeader>
+                    <ModernCardTitle>
+                      {getQuestionnaireIcon(questionnaire.tags)}
+                      {questionnaire.title}
+                    </ModernCardTitle>
+                  </ModernCardHeader>
 
-                <ModernTagsContainer>
-                  {questionnaire.tags && questionnaire.tags.map(tag => (
-                    <ModernTag key={tag}>{tag}</ModernTag>
-                  ))}
-                </ModernTagsContainer>
+                  <ModernCardMeta>
+                    <ModernMetaItem>
+                      <Clock size={16} />
+                      {formatDate(questionnaire.createdAt)}
+                    </ModernMetaItem>
+                    <ModernMetaItem>
+                      <Users size={16} />
+                      Public
+                    </ModernMetaItem>
+                    <ModernMetaItem>
+                      <FileText size={16} />
+                      {estimateTime(questionnaire)}
+                    </ModernMetaItem>
+                  </ModernCardMeta>
 
-                <CardMeta>
-                  <MetaItem>
-                    <Clock />
-                    <span>{formatDate(questionnaire.updatedAt || questionnaire.createdAt)}</span>
-                  </MetaItem>
-                  <MetaItem>
-                    <Users />
-                    <span>Public</span>
-                  </MetaItem>
-                  <MetaItem>
-                    <FileText />
-                    <span>{estimateTime(questionnaire)}</span>
-                  </MetaItem>
-                </CardMeta>
+                  {questionnaire.tags && questionnaire.tags.length > 0 && (
+                    <ModernTagsContainer>
+                      {questionnaire.tags.map((tag, index) => (
+                        <ModernTag key={index}>{tag}</ModernTag>
+                      ))}
+                    </ModernTagsContainer>
+                  )}
 
-                <ActionButtons>
-                  <PrimaryActionButton onClick={() => addToMyQuestionnaires(questionnaire._id)}>
-                    ➕ Ajouter à mes questionnaires
-                  </PrimaryActionButton>
-                  
-                  <SecondaryActionButton to={`/use/${questionnaire._id}`}>
-                    ▶️ UTILISER
-                  </SecondaryActionButton>
-                </ActionButtons>
-              </ModernQuestionnaireCard>
-            ))}
-          </QuestionnairesGrid>
-        )}
+                  <ModernCardActions>
+                    <PrimaryActionButton onClick={() => addToMyQuestionnaires(questionnaire._id)}>
+                      ➕ Ajouter à mes questionnaires
+                    </PrimaryActionButton>
+                    <SecondaryActionButton to={`/questionnaires/use/${questionnaire._id}`}>
+                      ▶️ UTILISER
+                    </SecondaryActionButton>
+                  </ModernCardActions>
+                </ModernQuestionnaireCard>
+              ))}
+            </ModernQuestionnairesGrid>
 
-        {totalPages > 1 && (
-          <PaginationContainer>
-            <PaginationButton 
-              onClick={() => fetchQuestionnaires(currentPage - 1)} 
-              disabled={currentPage === 1}
-            >
-              ← Précédent
-            </PaginationButton>
-            <PaginationInfo>
-              Page {currentPage} sur {totalPages} • {questionnaires.length} questionnaires
-            </PaginationInfo>
-            <PaginationButton 
-              onClick={() => fetchQuestionnaires(currentPage + 1)} 
-              disabled={currentPage === totalPages}
-            >
-              Suivant →
-            </PaginationButton>
-          </PaginationContainer>
+            {totalPages > 1 && (
+              <PaginationContainer>
+                <PaginationButton 
+                  onClick={() => fetchQuestionnaires(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Précédent
+                </PaginationButton>
+                <PaginationInfo>
+                  Page {currentPage} sur {totalPages}
+                </PaginationInfo>
+                <PaginationButton 
+                  onClick={() => fetchQuestionnaires(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Suivant
+                </PaginationButton>
+              </PaginationContainer>
+            )}
+          </>
         )}
       </ModernListContainer>
     </ModernPageContainer>
