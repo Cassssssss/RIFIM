@@ -11,7 +11,7 @@ import ImageMapEditor from './ImageMapEditor';
 // ==================== STYLED COMPONENTS MODERNISÉS COMPACTS ====================
 
 const ModernCreatorWrapper = styled.div`
-  background: linear-gradient(135deg, ${props => props.theme.background} 0%, ${props => props.theme.backgroundSecondary || props.theme.card} 100%);
+  background: ${props => props.theme.background};
   color: ${props => props.theme.text};
   padding: 1.5rem;
   min-height: calc(100vh - 60px);

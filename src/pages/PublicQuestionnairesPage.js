@@ -9,7 +9,7 @@ import { ChevronDown, ChevronUp, Clock, Users, FileText } from 'lucide-react';
 
 const ModernPageContainer = styled.div`
   display: flex;
-  background: linear-gradient(135deg, ${props => props.theme.background} 0%, ${props => props.theme.backgroundSecondary || props.theme.card} 100%);
+  background: ${props => props.theme.background};
   min-height: calc(100vh - 60px);
   padding: 2rem;
 
