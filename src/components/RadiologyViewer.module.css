@@ -186,10 +186,9 @@
   height: 100%;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  /* transition: all 0.3s ease; ← LIGNE SUPPRIMÉE */
   
   &:hover {
-    border-color: rgb/* la suite du code... */
+    border-color: rgb(var(--color-primary));
   }
 }
 
@@ -224,7 +223,6 @@
   object-fit: contain;
   display: block;
   transform-origin: center;
-  /* transition: transform 0.1s ease-out; ← LIGNE SUPPRIMÉE pour éliminer TOUT décalage */
   user-select: none;
   -webkit-user-select: none;
   pointer-events: none;
@@ -260,14 +258,15 @@
   }
 }
 
-/* ==================== BOTTOM BAR MODERNISÉE ==================== */
+/* ==================== BOTTOM BAR ADAPTATIVE AU THÈME ==================== */
 .bottomBar {
   height: 60px;
   width: 100%;
   margin: 0;
   padding: 0 24px;
-  background: rgba(79, 91, 147, 0.95); /* Utilise la couleur du header mais plus transparente */
-  color: white;
+  /* CORRIGÉ : Utilise les couleurs du thème au lieu d'une couleur fixe */
+  background: var(--header-background, #4f5b93);
+  color: var(--header-text, #ffffff);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -275,6 +274,7 @@
   box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
+  transition: background-color 0.3s ease, color 0.3s ease;
   
   @media (max-width: 768px) {
     position: fixed;
@@ -282,7 +282,8 @@
     left: 0;
     height: 50px;
     padding: 0 12px;
-    background: rgba(79, 91, 147, 0.98); /* Légèrement plus opaque sur mobile */
+    /* Plus opaque sur mobile */
+    background: var(--header-background, #4f5b93);
   }
 }
 
