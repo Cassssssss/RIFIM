@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
-import { Search, Filter, Eye, Copy, Star, Clock, User, TrendingUp, Globe } from 'lucide-react';
+import { Search, Filter, Eye, Copy, Star, Clock, User, TrendingUp, Globe, ThumbsUp } from 'lucide-react';
 import styled from 'styled-components';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
+import RatingStars, { RatingInput } from '../components/RatingStars';
 
 // ==================== STYLED COMPONENTS ====================
 
@@ -140,7 +141,7 @@ const SortButton = styled.button`
 
 const ProtocolsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: 2rem;
   margin-bottom: 3rem;
 
@@ -205,6 +206,25 @@ const PopularityBadge = styled.div`
   font-weight: 600;
 `;
 
+const RatingBadge = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+`;
+
+const BadgesContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-end;
+`;
+
 const ProtocolMeta = styled.div`
   display: flex;
   gap: 1rem;
@@ -243,6 +263,44 @@ const ProtocolDescription = styled.p`
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+`;
+
+const RatingSection = styled.div`
+  margin: 1rem 0;
+  padding: 1rem;
+  background-color: ${props => props.theme.backgroundSecondary || '#f8fafc'};
+  border-radius: 8px;
+  border: 1px solid ${props => props.theme.border};
+`;
+
+const RatingHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+`;
+
+const RateButton = styled.button`
+  padding: 0.5rem 1rem;
+  border: 1px solid ${props => props.theme.primary};
+  border-radius: 6px;
+  background-color: ${props => props.theme.primary};
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: ${props => props.theme.primaryHover};
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
 `;
 
 const StatsContainer = styled.div`
@@ -350,14 +408,20 @@ function ProtocolsPublicPage() {
   const [sortBy, setSortBy] = useState('popular');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  
+  // États pour la notation
+  const [showRatingForm, setShowRatingForm] = useState({});
+  const [submittingRating, setSubmittingRating] = useState({});
 
   // Options pour les filtres
   const imagingTypes = ['IRM', 'Scanner', 'Échographie', 'Radiographie', 'Mammographie', 'Médecine Nucléaire', 'Angiographie'];
-  const anatomicalRegions = ['Cerveau', 'Thorax', 'Abdomen', 'Pelvis', 'Rachis', 'Membre Supérieur', 'Membre Inférieur', 'Vaisseaux', 'Cœur', 'Sein', 'Uro, Pédiatrie, ORL'];
+  const anatomicalRegions = ['Céphalée', 'Cervical', 'Thorax', 'Abdomen', 'Pelvis', 'Rachis', 'Membre Supérieur', 'Membre Inférieur', 'Vaisseaux', 'Cœur', 'Sein', 'Autre'];
 
   const fetchProtocols = useCallback(async () => {
     try {
       setLoading(true);
+      setError('');
+      
       const params = new URLSearchParams({
         page: currentPage.toString(),
         limit: '12',
@@ -368,11 +432,13 @@ function ProtocolsPublicPage() {
       });
 
       const response = await axios.get(`/protocols/public?${params}`);
+      
       setProtocols(response.data.protocols || []);
       setTotalPages(response.data.totalPages || 0);
+      
     } catch (err) {
       console.error('Erreur lors du chargement des protocoles publics:', err);
-      setError('Erreur lors du chargement des protocoles publics');
+      setError('Erreur lors du chargement des protocoles publics: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -396,16 +462,52 @@ function ProtocolsPublicPage() {
     }
   };
 
+  const handleRate = async (protocolId, rating, comment) => {
+    try {
+      setSubmittingRating(prev => ({ ...prev, [protocolId]: true }));
+      
+      await axios.post(`/protocols/${protocolId}/rate`, {
+        rating,
+        comment
+      });
+
+      // Rafraîchir les protocoles pour obtenir les nouvelles notes
+      await fetchProtocols();
+      
+      // Fermer le formulaire de notation
+      setShowRatingForm(prev => ({ ...prev, [protocolId]: false }));
+      
+      alert('Note ajoutée avec succès !');
+    } catch (err) {
+      console.error('Erreur lors de la notation:', err);
+      setError(err.response?.data?.message || 'Erreur lors de la notation du protocole');
+    } finally {
+      setSubmittingRating(prev => ({ ...prev, [protocolId]: false }));
+    }
+  };
+
+  const toggleRatingForm = (protocolId) => {
+    setShowRatingForm(prev => ({
+      ...prev,
+      [protocolId]: !prev[protocolId]
+    }));
+  };
+
   const isPopular = (protocol) => {
     return protocol.copies > 10 || protocol.views > 100;
   };
 
+  const isWellRated = (protocol) => {
+    return protocol.averageRating >= 8 && protocol.ratingsCount >= 3;
+  };
+
   if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorMessage message={error} />;
 
   return (
     <PageContainer>
       <PageTitle>Protocoles Publics</PageTitle>
+
+      {error && <ErrorMessage message={error} />}
 
       <ActionBar>
         <SearchContainer>
@@ -447,6 +549,13 @@ function ProtocolsPublicPage() {
             Populaires
           </SortButton>
           <SortButton
+            isActive={sortBy === 'rating'}
+            onClick={() => setSortBy('rating')}
+          >
+            <Star size={16} style={{ marginRight: '0.5rem' }} />
+            Mieux notés
+          </SortButton>
+          <SortButton
             isActive={sortBy === 'recent'}
             onClick={() => setSortBy('recent')}
           >
@@ -478,12 +587,20 @@ function ProtocolsPublicPage() {
               <ProtocolCard key={protocol._id}>
                 <ProtocolHeader>
                   <ProtocolTitle>{protocol.title}</ProtocolTitle>
-                  {isPopular(protocol) && (
-                    <PopularityBadge>
-                      <TrendingUp size={12} />
-                      Populaire
-                    </PopularityBadge>
-                  )}
+                  <BadgesContainer>
+                    {isWellRated(protocol) && (
+                      <RatingBadge>
+                        <Star size={12} fill="currentColor" />
+                        Excellent
+                      </RatingBadge>
+                    )}
+                    {isPopular(protocol) && (
+                      <PopularityBadge>
+                        <TrendingUp size={12} />
+                        Populaire
+                      </PopularityBadge>
+                    )}
+                  </BadgesContainer>
                 </ProtocolHeader>
                 
                 <AuthorInfo>
@@ -518,6 +635,36 @@ function ProtocolsPublicPage() {
                 <ProtocolDescription>
                   {protocol.description || protocol.indication}
                 </ProtocolDescription>
+                
+                {/* Section de notation */}
+                <RatingSection>
+                  <RatingHeader>
+                    <RatingStars
+                      rating={protocol.averageRating || 0}
+                      showValue={true}
+                      showCount={true}
+                      count={protocol.ratingsCount || 0}
+                      size="medium"
+                    />
+                    <RateButton
+                      onClick={() => toggleRatingForm(protocol._id)}
+                      disabled={submittingRating[protocol._id]}
+                    >
+                      <ThumbsUp size={14} style={{ marginRight: '0.25rem' }} />
+                      Noter
+                    </RateButton>
+                  </RatingHeader>
+                  
+                  {/* Formulaire de notation */}
+                  {showRatingForm[protocol._id] && (
+                    <RatingInput
+                      currentRating={0}
+                      onSubmit={(rating, comment) => handleRate(protocol._id, rating, comment)}
+                      onCancel={() => toggleRatingForm(protocol._id)}
+                      isSubmitting={submittingRating[protocol._id]}
+                    />
+                  )}
+                </RatingSection>
                 
                 <StatsContainer>
                   <div style={{ display: 'flex', gap: '1rem' }}>

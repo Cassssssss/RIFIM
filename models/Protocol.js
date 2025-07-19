@@ -49,6 +49,37 @@ const AcquisitionParametersSchema = new mongoose.Schema({
   }
 });
 
+// Schéma pour les notes/évaluations - NOUVEAU SYSTÈME DE NOTATION
+const RatingSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  rating: {
+    type: Number,
+    required: true,
+    min: 0,
+    max: 10,
+    validate: {
+      validator: function(value) {
+        // Vérifier que la note est un multiple de 0.5
+        return (value * 2) % 1 === 0;
+      },
+      message: 'La note doit être un multiple de 0.5 (ex: 3.5, 7.0, 9.5)'
+    }
+  },
+  comment: {
+    type: String,
+    default: '',
+    maxlength: 500
+  },
+  date: {
+    type: Date,
+    default: Date.now
+  }
+});
+
 // Schéma principal du protocole
 const ProtocolSchema = new mongoose.Schema({
   title: {
@@ -190,20 +221,22 @@ const ProtocolSchema = new mongoose.Schema({
     copies: { type: Number, default: 0 }
   },
   
-  // Commentaires et évaluations
-  reviews: [{
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User'
-    },
-    rating: {
-      type: Number,
-      min: 1,
-      max: 5
-    },
-    comment: String,
-    date: { type: Date, default: Date.now }
-  }]
+  // NOUVEAU SYSTÈME DE NOTATION - Remplace l'ancien système reviews
+  ratings: [RatingSchema],
+  
+  // Moyenne des notes calculée automatiquement
+  averageRating: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 10
+  },
+  
+  // Nombre total de notes
+  ratingsCount: {
+    type: Number,
+    default: 0
+  }
   
 }, {
   timestamps: true // Ajoute automatiquement createdAt et updatedAt
@@ -214,7 +247,10 @@ ProtocolSchema.index({ imagingType: 1, anatomicalRegion: 1 });
 ProtocolSchema.index({ user: 1 });
 ProtocolSchema.index({ public: 1 });
 ProtocolSchema.index({ tags: 1 });
+ProtocolSchema.index({ averageRating: -1 }); // Index pour trier par note
+ProtocolSchema.index({ ratingsCount: -1 }); // Index pour trier par popularité
 ProtocolSchema.index({ title: 'text', description: 'text', indication: 'text' });
+ProtocolSchema.index({ 'ratings.user': 1 }); // Index pour vérifier si un utilisateur a déjà noté
 
 // Méthode pour calculer la durée totale automatiquement
 ProtocolSchema.methods.calculateTotalDuration = function() {
@@ -249,22 +285,112 @@ ProtocolSchema.methods.incrementViews = function() {
   return this.save();
 };
 
-// Méthode pour ajouter une évaluation
-ProtocolSchema.methods.addReview = function(userId, rating, comment) {
-  this.reviews.push({
-    user: userId,
-    rating: rating,
-    comment: comment
-  });
+// NOUVELLE MÉTHODE : Ajouter ou mettre à jour une note
+ProtocolSchema.methods.addOrUpdateRating = function(userId, rating, comment = '') {
+  // Valider la note (0 à 10, multiples de 0.5)
+  if (rating < 0 || rating > 10 || (rating * 2) % 1 !== 0) {
+    throw new Error('La note doit être entre 0 et 10 avec des incréments de 0.5');
+  }
+
+  // Vérifier si l'utilisateur a déjà noté ce protocole
+  const existingRatingIndex = this.ratings.findIndex(
+    r => r.user.toString() === userId.toString()
+  );
+
+  if (existingRatingIndex !== -1) {
+    // Mettre à jour la note existante
+    this.ratings[existingRatingIndex].rating = rating;
+    this.ratings[existingRatingIndex].comment = comment;
+    this.ratings[existingRatingIndex].date = new Date();
+  } else {
+    // Ajouter une nouvelle note
+    this.ratings.push({
+      user: userId,
+      rating: rating,
+      comment: comment
+    });
+  }
+
+  // Recalculer la moyenne et le nombre de notes
+  this.calculateAverageRating();
+  
   return this.save();
 };
 
-// Middleware pour mettre à jour la durée totale avant sauvegarde
+// NOUVELLE MÉTHODE : Supprimer une note
+ProtocolSchema.methods.removeRating = function(userId) {
+  const initialLength = this.ratings.length;
+  this.ratings = this.ratings.filter(r => r.user.toString() !== userId.toString());
+  
+  if (this.ratings.length < initialLength) {
+    this.calculateAverageRating();
+    return this.save();
+  }
+  
+  return Promise.resolve(this);
+};
+
+// NOUVELLE MÉTHODE : Calculer la moyenne des notes
+ProtocolSchema.methods.calculateAverageRating = function() {
+  if (this.ratings.length === 0) {
+    this.averageRating = 0;
+    this.ratingsCount = 0;
+  } else {
+    const sum = this.ratings.reduce((total, rating) => total + rating.rating, 0);
+    this.averageRating = Math.round((sum / this.ratings.length) * 2) / 2; // Arrondir au 0.5 le plus proche
+    this.ratingsCount = this.ratings.length;
+  }
+};
+
+// NOUVELLE MÉTHODE : Obtenir la note d'un utilisateur spécifique
+ProtocolSchema.methods.getUserRating = function(userId) {
+  const userRating = this.ratings.find(r => r.user.toString() === userId.toString());
+  return userRating ? userRating.rating : null;
+};
+
+// NOUVELLE MÉTHODE : Vérifier si un utilisateur a déjà noté
+ProtocolSchema.methods.hasUserRated = function(userId) {
+  return this.ratings.some(r => r.user.toString() === userId.toString());
+};
+
+// Méthode pour ajouter une évaluation (ancienne méthode - maintenant dépréciée)
+ProtocolSchema.methods.addReview = function(userId, rating, comment) {
+  console.warn('addReview est déprécié, utilisez addOrUpdateRating à la place');
+  return this.addOrUpdateRating(userId, rating, comment);
+};
+
+// Middleware pour mettre à jour la durée totale et recalculer les notes avant sauvegarde
 ProtocolSchema.pre('save', function(next) {
   if (this.isModified('sequences')) {
     this.estimatedDuration = this.calculateTotalDuration();
   }
+  
+  if (this.isModified('ratings')) {
+    this.calculateAverageRating();
+  }
+  
   next();
 });
+
+// Méthode statique pour obtenir les protocoles les mieux notés
+ProtocolSchema.statics.getTopRated = function(limit = 10) {
+  return this.find({ 
+    public: true, 
+    ratingsCount: { $gte: 3 } // Au moins 3 notes pour être considéré
+  })
+  .sort({ averageRating: -1, ratingsCount: -1 })
+  .limit(limit)
+  .populate('user', 'username');
+};
+
+// Méthode statique pour obtenir les protocoles par note
+ProtocolSchema.statics.getByRatingRange = function(minRating, maxRating) {
+  return this.find({
+    public: true,
+    averageRating: { $gte: minRating, $lte: maxRating }
+  })
+  .sort({ averageRating: -1 })
+  .populate('user', 'username');
+};
 
 module.exports = mongoose.model('Protocol', ProtocolSchema);
