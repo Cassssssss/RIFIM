@@ -190,40 +190,44 @@ const Auth = ({ onLogin }) => {
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    setSuccess('');
-    
-    try {
-      let response;
-      if (isLogin) {
-        response = await axios.post('/auth/login', { username, password });
-        localStorage.setItem('token', response.data.token);
-        onLogin(response.data.token, username);
-        setSuccess('Connexion réussie ! Redirection...');
-        setTimeout(() => navigate('/'), 1000);
-      } else {
-        response = await axios.post('/auth/register', { username, password });
-        setSuccess('Inscription réussie ! Connexion automatique...');
-        
-        // Connexion automatique après inscription
-        const loginResponse = await axios.post('/auth/login', { username, password });
-        localStorage.setItem('token', loginResponse.data.token);
-        onLogin(loginResponse.data.token, username);
-        setTimeout(() => navigate('/'), 1500);
-      }
-    } catch (error) {
-      console.error('Erreur:', error.response ? error.response.data : error.message);
-      setError(
-        error.response?.data?.message || 
-        'Une erreur est survenue. Veuillez réessayer.'
-      );
-    } finally {
-      setLoading(false);
+// Dans Auth.js, modifier la partie handleSubmit :
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError('');
+  setSuccess('');
+  
+  try {
+    let response;
+    if (isLogin) {
+      response = await axios.post('/auth/login', { username, password });
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('username', response.data.username); // ← UTILISER response.data.username
+      onLogin(response.data.token, response.data.username); // ← UTILISER response.data.username
+      setSuccess('Connexion réussie ! Redirection...');
+      setTimeout(() => navigate('/'), 1000);
+    } else {
+      response = await axios.post('/auth/register', { username, password });
+      setSuccess('Inscription réussie ! Connexion automatique...');
+      
+      // Connexion automatique après inscription
+      const loginResponse = await axios.post('/auth/login', { username, password });
+      localStorage.setItem('token', loginResponse.data.token);
+      localStorage.setItem('username', loginResponse.data.username); // ← UTILISER loginResponse.data.username
+      onLogin(loginResponse.data.token, loginResponse.data.username); // ← UTILISER loginResponse.data.username
+      setTimeout(() => navigate('/'), 1500);
     }
-  };
+  } catch (error) {
+    console.error('Erreur:', error.response ? error.response.data : error.message);
+    setError(
+      error.response?.data?.message || 
+      'Une erreur est survenue. Veuillez réessayer.'
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   const toggleMode = () => {
     setIsLogin(!isLogin);

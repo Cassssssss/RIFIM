@@ -34,6 +34,7 @@ const LinkView = lazy(() => import('./components/LinkView'));
 const ProtocolsPersonalPage = lazy(() => import('./pages/ProtocolsPersonalPage'));
 const ProtocolsPublicPage = lazy(() => import('./pages/ProtocolsPublicPage'));
 const ProtocolCreatorPage = lazy(() => import('./pages/ProtocolCreatorPage'));
+const ProtocolViewPage = lazy(() => import('./pages/ProtocolViewPage')); // ← NOUVEAU !
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -49,11 +50,22 @@ function App() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
-    if (token && savedUser) {
-      setUser(JSON.parse(savedUser));
+    const username = localStorage.getItem('username');
+    if (token && username) {
+      setUser({ token, username }); // ← CORRECTION : Utiliser un objet avec token et username
     }
   }, []);
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    
+    document.documentElement.style.setProperty('--header-background', theme.headerBackground);
+    document.documentElement.style.setProperty('--header-text', theme.headerText);
+  }, [isDarkMode, theme]);
 
   const toggleDarkMode = () => {
     const newMode = !isDarkMode;
@@ -61,15 +73,16 @@ function App() {
     localStorage.setItem('darkMode', JSON.stringify(newMode));
   };
 
-  const handleLogin = (userData) => {
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+  const handleLogin = (token, username) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('username', username);
+    setUser({ token, username }); // ← CORRECTION : Utiliser un objet avec token et username
   };
 
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem('username');
   };
 
   const onDragEnd = (result) => {
@@ -112,6 +125,7 @@ function App() {
                     <Route path="protocols/personal" element={<ProtocolsPersonalPage />} />
                     <Route path="protocols/create" element={<ProtocolCreatorPage />} />
                     <Route path="protocols/edit/:id" element={<ProtocolCreatorPage />} />
+                    <Route path="protocols/view/:id" element={<ProtocolViewPage />} /> {/* ← NOUVEAU ! */}
                   </Route>
                   
                   {/* Routes publiques */}

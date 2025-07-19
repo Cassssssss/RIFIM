@@ -44,11 +44,17 @@ router.post('/login', async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '8h' } // Augmenté à 8 heures
     );
-      res.json({ token, userId: user._id });
-    } catch (error) {
-        console.error('Erreur lors de la connexion:', error);
-        res.status(500).json({ message: 'Erreur lors de la connexion', error: error.message });
-      }
+    
+    // ← CORRECTION ICI : Renvoyer aussi le username
+    res.json({ 
+      token, 
+      userId: user._id,
+      username: user.username  // ← AJOUT DU USERNAME
     });
+  } catch (error) {
+    console.error('Erreur lors de la connexion:', error);
+    res.status(500).json({ message: 'Erreur lors de la connexion', error: error.message });
+  }
+});
 
 module.exports = router;
