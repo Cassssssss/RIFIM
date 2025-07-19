@@ -669,7 +669,7 @@ function PublicQuestionnairesPage() {
                     <PrimaryActionButton onClick={() => addToMyQuestionnaires(questionnaire._id)}>
                       ➕ Ajouter à mes questionnaires
                     </PrimaryActionButton>
-                    <SecondaryActionButton to={`/questionnaires/use/${questionnaire._id}`}>
+                    <SecondaryActionButton to={`/use/${questionnaire._id}`}>
                       ▶️ UTILISER
                     </SecondaryActionButton>
                   </ModernCardActions>
