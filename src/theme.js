@@ -15,6 +15,7 @@ export const lightTheme = {
   // ==================== BACKGROUNDS ====================
   background: '#f8fafc',           // Background principal
   backgroundSolid: '#f8fafc',      // Background solide
+  backgroundSecondary: '#f8fafc',  // Background secondaire (pour SectionTitle)
   card: '#ffffff',                 // Cartes/conteneurs
   cardSecondary: '#f9fafb',        // Cartes secondaires
   cardHover: '#f3f4f6',            // Survol des cartes
@@ -112,6 +113,7 @@ export const darkTheme = {
   // ==================== BACKGROUNDS SOMBRES ====================
   background: '#1a202c',           // Background principal sombre
   backgroundSolid: '#1a202c',      // Background solide sombre
+  backgroundSecondary: '#4a5568',  // Background secondaire pour SectionTitle
   card: '#2d3748',                 // Cartes sombres
   cardSecondary: '#4a5568',        // Cartes secondaires sombres
   cardHover: '#718096',            // Survol des cartes sombres

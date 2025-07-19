@@ -59,6 +59,30 @@ const RightSection = styled.div`
   position: relative;
 `;
 
+// NOUVEAU : Bouton toggle mode sombre dans le header
+const ThemeToggleButton = styled.button`
+  background: none;
+  border: none;
+  color: ${props => props.theme.headerText};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
 const MenuButton = styled.button`
   background: none;
   border: none;
@@ -175,48 +199,6 @@ const MenuItem = styled(Link)`
   }
 `;
 
-const ThemeToggleItem = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  background: none;
-  border: none;
-  color: ${props => props.theme.text || '#374151'};
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-weight: 500;
-  width: 100%;
-  text-align: left;
-  margin: 0 0.5rem;
-  border-radius: 8px;
-  
-  &:hover {
-    background-color: ${props => props.theme.backgroundSecondary || '#f1f5f9'};
-    color: ${props => props.theme.primary || '#3b82f6'};
-    transform: translateX(4px);
-  }
-
-  svg {
-    width: 18px;
-    height: 18px;
-    opacity: 0.7;
-  }
-`;
-
-const UserInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  color: ${props => props.theme.text || '#374151'};
-  background-color: ${props => props.theme.backgroundSecondary || '#f8fafc'};
-  margin: 0 0.5rem;
-  border-radius: 8px;
-  font-weight: 500;
-  border: 1px solid ${props => props.theme.border || '#e0e6ed'};
-`;
-
 const LogoutItem = styled.button`
   display: flex;
   align-items: center;
@@ -244,17 +226,43 @@ const LogoutItem = styled.button`
   }
 `;
 
-function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
+const UserInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: ${props => props.theme.text || '#374151'};
+  font-weight: 500;
+  margin: 0 0.5rem;
+  border-radius: 8px;
+  background-color: ${props => props.theme.backgroundSecondary || '#f8fafc'};
+
+  svg {
+    width: 18px;
+    height: 18px;
+    opacity: 0.7;
+  }
+`;
+
+function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = null }) {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
   const location = useLocation();
 
+  const handleMenuToggle = () => {
+    setShowMenu(!showMenu);
+  };
+
+  const handleMenuItemClick = () => {
+    setShowMenu(false);
+  };
+
   useEffect(() => {
-    function handleClickOutside(event) {
+    const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setShowMenu(false);
       }
-    }
+    };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
@@ -262,69 +270,26 @@ function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
     };
   }, []);
 
-  // Fonction pour obtenir le titre de la page basé sur l'URL
-  const getPageTitle = () => {
-    const path = location.pathname;
-    if (path === '/') return 'Accueil';
-    if (path === '/questionnaires') return 'Mes Questionnaires';
-    if (path === '/questionnaires-list') return 'Questionnaires';
-    if (path === '/create') return 'Créer un Questionnaire';
-    if (path.includes('/edit/')) return 'Modifier le Questionnaire';
-    if (path.includes('/cr/')) return 'Compte Rendu';
-    if (path.includes('/use/')) return 'Utiliser le Questionnaire';
-    if (path === '/cases') return 'Mes Cas';
-    if (path === '/cases-list') return 'Liste des Cas';
-    if (path === '/public-questionnaires') return 'Questionnaires Publics';
-    if (path === '/public-cases') return 'Cas Publics';
-    if (path === '/protocols') return 'Protocoles';
-    if (path === '/protocols/personal') return 'Mes Protocoles';
-    if (path === '/protocols/public') return 'Protocoles Publics';
-    if (path === '/protocols/create') return 'Créer un Protocole';
-    return 'RIFIM';
-  };
-
-  // Fonction pour obtenir le nom d'utilisateur de manière sûre
-  const getUserName = () => {
-    if (!user) return null;
-    
-    // Si user est une string, la retourner directement
-    if (typeof user === 'string') return user;
-    
-    // Si user est un objet, extraire le username
-    if (typeof user === 'object' && user.username) return user.username;
-    
-    // Fallback
-    return 'Utilisateur';
-  };
-
-  const userName = getUserName();
-
-  const handleMenuItemClick = () => {
-    setShowMenu(false);
-  };
-
   return (
     <HeaderWrapper>
       <HeaderContent>
-        {/* Logo */}
         <Logo to="/">
-          🩺 RIFIM
+          <Stethoscope size={24} />
+          RIFIM
         </Logo>
-
-        {/* Titre central */}
-        <CenterTitle>
-          {getPageTitle()}
-        </CenterTitle>
-
-        {/* Section droite avec menu déroulant */}
+        
+        {pageTitle && (
+          <CenterTitle>{pageTitle}</CenterTitle>
+        )}
+        
         <RightSection ref={menuRef}>
-          <MenuButton onClick={() => setShowMenu(!showMenu)}>
-            {userName && (
-              <>
-                <User size={18} />
-                {userName}
-              </>
-            )}
+          {/* NOUVEAU : Bouton toggle mode sombre directement dans le header */}
+          <ThemeToggleButton onClick={toggleDarkMode} title={isDarkMode ? 'Passer en mode clair' : 'Passer en mode sombre'}>
+            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+          </ThemeToggleButton>
+
+          <MenuButton onClick={handleMenuToggle}>
+            {userName && <span>Cass22</span>}
             <ChevronDown 
               size={16} 
               style={{ 
@@ -384,7 +349,7 @@ function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
 
             <MenuDivider />
 
-            {/* Section Protocoles - NOUVELLE ! */}
+            {/* Section Protocoles */}
             <MenuSection>
               <SectionTitle>
                 <Stethoscope size={18} />
@@ -399,16 +364,6 @@ function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
               <MenuItem to="/protocols/public" onClick={handleMenuItemClick}>
                 <span>🌍</span> Protocoles Publics
               </MenuItem>
-            </MenuSection>
-
-            <MenuDivider />
-
-            {/* Paramètres */}
-            <MenuSection>
-              <ThemeToggleItem onClick={toggleDarkMode}>
-                {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-                {isDarkMode ? 'Mode Clair' : 'Mode Sombre'}
-              </ThemeToggleItem>
             </MenuSection>
 
             <MenuDivider />
