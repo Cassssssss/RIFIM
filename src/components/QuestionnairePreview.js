@@ -1,20 +1,3 @@
-import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
-import { Camera, EyeOff, Eye, ChevronDown, ChevronUp, Plus, Italic } from 'lucide-react';
-
-// ==================== STYLED COMPONENTS AVEC SUPPORT MODE SOMBRE ====================
-
-const ImagePreviewWrapper = styled.div`
-  position: fixed;
-  z-index: 9999;
-  background-color: ${props => props.theme.card || 'white'};
-  border: 1px solid ${props => props.theme.border || '#ccc'};
-  border-radius: 4px;
-  padding: 4px;
-  box-shadow: 0 2px 10px ${props => props.theme.shadow || 'rgba(0,0,0,0.1)'};
-`;
-
 const FormatButton = styled.button`
   padding: 0.5rem;
   margin-right: 0.25rem;
@@ -32,6 +15,143 @@ const FormatButton = styled.button`
 
   &:hover {
     background-color: ${props => props.theme.backgroundSecondary || props.theme.hover || '#f3f4f6'};
+  }
+`;
+
+// Input de texte libre avec styles adaptatifs
+const FreeTextInput = styled.textarea`
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid ${props => props.theme.border || '#d1d5db'};
+  border-radius: 8px;
+  min-height: 100px;
+  background-color: ${props => props.theme.card || 'white'};
+  color: ${props => props.theme.text || '#000'};
+  
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary || '#3b82f6'};
+    box-shadow: 0 0 0 3px ${props => props.theme.primary || '#3b82f6'}20;
+  }
+  
+  &::placeholder {
+    color: ${props => props.theme.textSecondary || '#6b7280'};
+  }
+`;
+
+// Input numérique avec styles adaptatifs
+const NumberInput = styled.input`
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid ${props => props.theme.border || '#d1d5db'};
+  border-radius: 8px;
+  background-color: ${props => props.theme.card || 'white'};
+  color: ${props => props.theme.text || '#000'};
+  
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary || '#3b82f6'};
+    box-shadow: 0 0 0 3px ${props => props.theme.primary || '#3b82f6'}20;
+  }
+  
+  &::placeholder {
+    color: ${props => props.theme.textSecondary || '#6b7280'};
+  }
+`;import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+import { Camera, EyeOff, Eye, ChevronDown, ChevronUp, Plus, Italic } from 'lucide-react';
+
+// ==================== STYLED COMPONENTS AVEC SUPPORT MODE SOMBRE ====================
+
+const ImagePreviewWrapper = styled.div`
+  position: fixed;
+  z-index: 9999;
+  background-color: ${props => props.theme.card || 'white'};
+  border: 1px solid ${props => props.theme.border || '#ccc'};
+  border-radius: 4px;
+  padding: 4px;
+  box-shadow: 0 2px 10px ${props => props.theme.shadow || 'rgba(0,0,0,0.1)'};
+`;
+
+// Boutons de navigation des pages avec support mode sombre
+const PageNavigationButton = styled.button`
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  
+  ${props => props.isActive ? `
+    background-color: ${props.theme.primary || '#3b82f6'};
+    color: white;
+    box-shadow: 0 4px 12px ${props.theme.shadow || 'rgba(0,0,0,0.1)'};
+  ` : `
+    background-color: ${props.theme.backgroundSecondary || props.theme.card || '#e5e7eb'};
+    color: ${props.theme.text || '#374151'};
+    
+    &:hover {
+      background-color: ${props.theme.hover || props.theme.cardSecondary || '#d1d5db'};
+    }
+  `}
+`;
+
+const PageTitleInput = styled.input`
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid ${props => props.theme.border || '#d1d5db'};
+  border-radius: 4px;
+  background-color: ${props => props.theme.card || 'white'};
+  color: ${props => props.theme.text || '#000'};
+  box-shadow: 0 4px 12px ${props => props.theme.shadow || 'rgba(0,0,0,0.1)'};
+  
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary || '#3b82f6'};
+    box-shadow: 0 0 0 3px ${props => props.theme.primary || '#3b82f6'}20;
+  }
+`;
+
+// Input de texte libre avec styles adaptatifs
+const FreeTextInput = styled.textarea`
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid ${props => props.theme.border || '#d1d5db'};
+  border-radius: 8px;
+  min-height: 100px;
+  background-color: ${props => props.theme.card || 'white'};
+  color: ${props => props.theme.text || '#000'};
+  
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary || '#3b82f6'};
+    box-shadow: 0 0 0 3px ${props => props.theme.primary || '#3b82f6'}20;
+  }
+  
+  &::placeholder {
+    color: ${props => props.theme.textSecondary || '#6b7280'};
+  }
+`;
+
+// Input numérique avec styles adaptatifs
+const NumberInput = styled.input`
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid ${props => props.theme.border || '#d1d5db'};
+  border-radius: 8px;
+  background-color: ${props => props.theme.card || 'white'};
+  color: ${props => props.theme.text || '#000'};
+  
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary || '#3b82f6'};
+    box-shadow: 0 0 0 3px ${props => props.theme.primary || '#3b82f6'}20;
+  }
+  
+  &::placeholder {
+    color: ${props => props.theme.textSecondary || '#6b7280'};
   }
 `;
 
@@ -676,23 +796,17 @@ const QuestionnairePreview = ({
       <div className="flex justify-start gap-2 mb-6">
         {[...Array(maxPage)].map((_, idx) => (
           <div key={idx} className="relative">
-            <button
+            <PageNavigationButton
+              isActive={currentPage === idx + 1}
               onClick={() => setCurrentPage(idx + 1)}
               onDoubleClick={() => setEditingPageTitle(idx + 1)}
-              className={`
-                px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
-                ${currentPage === idx + 1 
-                  ? 'bg-blue-500 text-white shadow-md' 
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
-              `}
             >
               {questionnaire?.pageTitles?.[idx + 1] || `Page ${idx + 1}`}
-            </button>
+            </PageNavigationButton>
             {editingPageTitle === idx + 1 && setQuestionnaire && (
               <div className="absolute z-10 top-full left-0 mt-1 w-48">
-                <input
+                <PageTitleInput
                   type="text"
-                  className="w-full px-2 py-1 border rounded shadow-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                   value={questionnaire?.pageTitles?.[idx + 1] || `Page ${idx + 1}`}
                   onChange={(e) => {
                     setQuestionnaire(prev => ({
