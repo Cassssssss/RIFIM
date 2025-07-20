@@ -100,7 +100,7 @@ const SheetContent = styled.div`
 `;
 
 const SheetViewer = () => {
-  const { caseId } = useParams();
+  const { caseId } = useParams(); // ← DÉJÀ CORRECT
   const [sheet, setSheet] = useState({ title: '', content: '' });
   const theme = useContext(ThemeContext);
 
