@@ -16,6 +16,7 @@ import {
 
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
+import RatingStars from '../components/RatingStars'; // IMPORT AJOUTÉ
 
 // ==================== STYLES COMPOSANTS ====================
 
@@ -151,7 +152,7 @@ const SortButton = styled.button`
 
 const ProtocolsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
 `;
@@ -162,7 +163,6 @@ const ProtocolCard = styled.div`
   border-radius: 12px;
   padding: 1.5rem;
   transition: all 0.2s ease;
-  cursor: pointer;
 
   &:hover {
     transform: translateY(-2px);
@@ -235,13 +235,19 @@ const ProtocolDescription = styled.p`
   overflow: hidden;
 `;
 
+// NOUVEAU: Section de notation dans la carte
+const RatingSection = styled.div`
+  padding: 1rem 0;
+  border-top: 1px solid ${props => props.theme.borderLight};
+  border-bottom: 1px solid ${props => props.theme.borderLight};
+  margin: 1rem 0;
+`;
+
 const StatsContainer = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid ${props => props.theme.borderLight};
 `;
 
 const StatItem = styled.span`
@@ -309,30 +315,6 @@ const CreateButton = styled(Link)`
   &:hover {
     background-color: ${props => props.theme.primaryDark};
   }
-`;
-
-const RatingContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-`;
-
-const RatingStars = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.1rem;
-`;
-
-const RatingValue = styled.span`
-  font-weight: 600;
-  color: ${props => props.theme.text};
-  font-size: 0.9rem;
-`;
-
-const RatingCount = styled.span`
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.8rem;
 `;
 
 // Pagination components
@@ -416,6 +398,7 @@ function ProtocolsPublicPage() {
         views: protocol.views || protocol.stats?.views || 0,
         copies: protocol.copies || protocol.stats?.copies || 0,
         user: protocol.user || {},
+        userRating: protocol.userRating || null, // AJOUTÉ
         _id: protocol._id ? String(protocol._id) : ''
       }));
       
@@ -454,59 +437,18 @@ function ProtocolsPublicPage() {
     return copies > 10 || views > 100;
   };
 
-  // Fonction pour afficher les étoiles de notation - CORRIGÉE
-  const renderRatingStars = (rating) => {
-    const stars = [];
-    const numericRating = Number(rating) || 0;
-    const maxStars = 5;
-    
-    // Convertir la note de 0-10 à 0-5 pour l'affichage
-    const adjustedRating = (numericRating / 10) * maxStars;
-    const fullStars = Math.floor(adjustedRating);
-    const hasHalfStar = adjustedRating % 1 >= 0.5;
-    
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(
-        <Star 
-          key={`full-${i}`} 
-          size={12} 
-          fill="gold" 
-          stroke="gold"
-        />
-      );
-    }
-    
-    if (hasHalfStar) {
-      stars.push(
-        <Star 
-          key="half" 
-          size={12} 
-          fill="gold" 
-          stroke="gold"
-          style={{ opacity: 0.5 }} 
-        />
-      );
-    }
-    
-    const emptyStars = maxStars - fullStars - (hasHalfStar ? 1 : 0);
-    for (let i = 0; i < emptyStars; i++) {
-      stars.push(
-        <Star 
-          key={`empty-${i}`} 
-          size={12} 
-          fill="none"
-          stroke="#d1d5db"
-        />
-      );
-    }
-    
-    return stars;
-  };
-
-  // Fonction pour formatter la note - AJOUTÉE
-  const formatRating = (rating) => {
-    const numericRating = Number(rating) || 0;
-    return numericRating.toFixed(1);
+  // NOUVEAU: Callback pour mettre à jour les notes
+  const handleRatingUpdate = (protocolId, newRatingData) => {
+    setProtocols(prev => prev.map(protocol => 
+      protocol._id === protocolId 
+        ? { 
+            ...protocol, 
+            averageRating: newRatingData.averageRating || 0,
+            ratingsCount: newRatingData.ratingsCount || 0,
+            userRating: newRatingData.userRating || null
+          }
+        : protocol
+    ));
   };
 
   if (loading) return <LoadingSpinner />;
@@ -608,17 +550,6 @@ function ProtocolsPublicPage() {
                   <User size={16} />
                   Par <strong>{protocol.user?.username || 'Utilisateur'}</strong>
                 </AuthorInfo>
-
-                {/* Système de notation - AJOUTÉ */}
-                {protocol.averageRating > 0 && (
-                  <RatingContainer>
-                    <RatingStars>
-                      {renderRatingStars(protocol.averageRating)}
-                    </RatingStars>
-                    <RatingValue>{formatRating(protocol.averageRating)}/10</RatingValue>
-                    <RatingCount>({protocol.ratingsCount} avis)</RatingCount>
-                  </RatingContainer>
-                )}
                 
                 <ProtocolMeta>
                   <MetaItem>
@@ -647,6 +578,18 @@ function ProtocolsPublicPage() {
                 <ProtocolDescription>
                   {protocol.description || protocol.indication}
                 </ProtocolDescription>
+
+                {/* NOUVEAU : Section de notation intégrée dans chaque carte */}
+                <RatingSection>
+                  <RatingStars
+                    protocolId={protocol._id}
+                    averageRating={protocol.averageRating}
+                    ratingsCount={protocol.ratingsCount}
+                    userRating={protocol.userRating}
+                    onRatingUpdate={(newRatingData) => handleRatingUpdate(protocol._id, newRatingData)}
+                    size={18}
+                  />
+                </RatingSection>
                 
                 <StatsContainer>
                   <div style={{ display: 'flex', gap: '1rem' }}>
@@ -664,7 +607,7 @@ function ProtocolsPublicPage() {
                     <ActionButton
                       as={Link}
                       to={`/protocols/view/${protocol._id}`}
-                      title="Voir"
+                      title="Voir les détails"
                     >
                       <Eye size={16} />
                     </ActionButton>
