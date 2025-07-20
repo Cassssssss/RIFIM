@@ -8,15 +8,16 @@ import axios from '../utils/axiosConfig';
 const RatingContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  margin: 1rem 0;
+  gap: ${props => props.compact ? '0.5rem' : '0.75rem'};
+  margin: ${props => props.compact ? '0' : '1rem 0'};
 `;
 
 const RatingDisplay = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  justify-content: ${props => props.compact ? 'space-between' : 'flex-start'};
+  gap: ${props => props.compact ? '0.5rem' : '0.5rem'};
+  margin-bottom: ${props => props.compact ? '0' : '0.5rem'};
 `;
 
 const StarsContainer = styled.div`
@@ -29,17 +30,19 @@ const RatingInfo = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.875rem;
+  font-size: ${props => props.compact ? '0.8rem' : '0.875rem'};
 `;
 
 const RatingValue = styled.span`
   font-weight: 600;
   color: ${props => props.theme.text};
-  font-size: 1rem;
+  font-size: ${props => props.compact ? '0.875rem' : '1rem'};
 `;
 
 const RatingCount = styled.span`
   color: ${props => props.theme.textSecondary};
+  font-size: ${props => props.compact ? '0.75rem' : '0.875rem'};
+  white-space: nowrap;
 `;
 
 // NOUVEAU : Système de notation numérique
@@ -235,16 +238,20 @@ const Message = styled.div`
   }
 `;
 
+// MODIFICATION : Bouton plus compact avec taille adaptative
 const StartRatingButton = styled.button`
-  padding: 0.5rem 1rem;
+  padding: ${props => props.compact ? '0.3rem 0.6rem' : '0.5rem 1rem'};
   background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: ${props => props.compact ? '4px' : '6px'};
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: ${props => props.compact ? '0.75rem' : '0.875rem'};
   font-weight: 500;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  max-width: ${props => props.compact ? '120px' : 'none'};
+  flex-shrink: 0;
 
   &:hover {
     transform: translateY(-1px);
@@ -252,16 +259,26 @@ const StartRatingButton = styled.button`
   }
 `;
 
+// NOUVEAU : Conteneur pour l'affichage utilisateur en mode compact
+const UserRatingDisplay = styled.div`
+  font-size: ${props => props.compact ? '0.75rem' : '0.875rem'};
+  color: ${props => props.theme.primary};
+  font-weight: 500;
+  white-space: nowrap;
+`;
+
 // ==================== COMPOSANT PRINCIPAL ====================
 
 function RatingStars({ 
-  protocolId, 
+  itemId,           // MODIFICATION : itemId au lieu de protocolId 
+  itemType,         // NOUVEAU : type d'élément (protocol, questionnaire, case)
   averageRating = 0, 
   ratingsCount = 0, 
   userRating = null,
   onRatingUpdate,
   readonly = false,
-  size = 16
+  size = 16,
+  compact = false
 }) {
   const [selectedRating, setSelectedRating] = useState(userRating || 0);
   const [comment, setComment] = useState('');
@@ -272,6 +289,29 @@ function RatingStars({
   // Notes rapides prédéfinies
   const quickRatings = [0, 2.5, 5, 7.5, 10];
   const quickLabels = ['0 - Très mauvais', '2.5 - Mauvais', '5 - Moyen', '7.5 - Bon', '10 - Excellent'];
+
+  // NOUVEAU : Définir les endpoints selon le type d'élément
+  const getEndpoints = () => {
+    switch (itemType) {
+      case 'protocol':
+        return {
+          rate: `/protocols/${itemId}/rate`,
+          delete: `/protocols/${itemId}/rate`
+        };
+      case 'questionnaire':
+        return {
+          rate: `/questionnaires/${itemId}/rate`,
+          delete: `/questionnaires/${itemId}/rate`
+        };
+      case 'case':
+        return {
+          rate: `/cases/${itemId}/rate`,
+          delete: `/cases/${itemId}/rate`
+        };
+      default:
+        throw new Error(`Type d'élément non supporté: ${itemType}`);
+    }
+  };
 
   const handleStartRating = () => {
     setIsRating(true);
@@ -297,7 +337,8 @@ function RatingStars({
     setMessage('');
 
     try {
-      const response = await axios.post(`/protocols/${protocolId}/rate`, {
+      const endpoints = getEndpoints();
+      const response = await axios.post(endpoints.rate, {
         rating: selectedRating,
         comment: comment.trim()
       });
@@ -328,7 +369,8 @@ function RatingStars({
     setMessage('');
 
     try {
-      await axios.delete(`/protocols/${protocolId}/rate`);
+      const endpoints = getEndpoints();
+      await axios.delete(endpoints.delete);
       
       setSelectedRating(0);
       setComment('');
@@ -382,50 +424,75 @@ function RatingStars({
     return stars;
   };
 
+  // NOUVEAU : Obtenir le texte du bouton selon le type d'élément
+  const getButtonText = () => {
+    const labels = {
+      protocol: compact ? (userRating ? '✏️' : '⭐') : (userRating ? 'Modifier ma note' : '⭐ Noter ce protocole'),
+      questionnaire: compact ? (userRating ? '✏️' : '⭐') : (userRating ? 'Modifier ma note' : '⭐ Noter ce questionnaire'),
+      case: compact ? (userRating ? '✏️' : '⭐') : (userRating ? 'Modifier ma note' : '⭐ Noter ce cas')
+    };
+    return labels[itemType] || labels.protocol;
+  };
+
+  // NOUVEAU : Obtenir le placeholder du commentaire selon le type
+  const getCommentPlaceholder = () => {
+    const placeholders = {
+      protocol: 'Commentaire sur ce protocole (optionnel)...',
+      questionnaire: 'Commentaire sur ce questionnaire (optionnel)...',
+      case: 'Commentaire sur ce cas (optionnel)...'
+    };
+    return placeholders[itemType] || placeholders.protocol;
+  };
+
   return (
-    <RatingContainer>
+    <RatingContainer compact={compact}>
       {/* Affichage de la note moyenne */}
-      <RatingDisplay>
-        <StarsContainer>
-          {renderDisplayStars()}
-        </StarsContainer>
-        <RatingInfo>
-          {averageRating > 0 ? (
-            <>
-              <RatingValue>{averageRating.toFixed(1)}/10</RatingValue>
-              <RatingCount>({ratingsCount} avis)</RatingCount>
-            </>
-          ) : (
-            <RatingCount>Aucune note</RatingCount>
-          )}
-        </RatingInfo>
+      <RatingDisplay compact={compact}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <StarsContainer>
+            {renderDisplayStars()}
+          </StarsContainer>
+          <RatingInfo compact={compact}>
+            {averageRating > 0 ? (
+              <>
+                <RatingValue compact={compact}>{averageRating.toFixed(1)}/10</RatingValue>
+                <RatingCount compact={compact}>({ratingsCount} avis)</RatingCount>
+              </>
+            ) : (
+              <RatingCount compact={compact}>Aucune note</RatingCount>
+            )}
+          </RatingInfo>
+        </div>
+
+        {/* Bouton pour commencer à noter en mode compact ou normal */}
+        {!isRating && !readonly && (
+          <StartRatingButton compact={compact} onClick={handleStartRating}>
+            {getButtonText()}
+          </StartRatingButton>
+        )}
       </RatingDisplay>
 
-      {/* Affichage de la note utilisateur */}
-      {userRating && !isRating && (
+      {/* Affichage de la note utilisateur seulement en mode non-compact */}
+      {userRating && !isRating && !compact && (
         <RatingInfo>
-          <span style={{ 
-            fontSize: '0.875rem', 
-            color: 'var(--color-primary)', 
-            fontWeight: 500 
-          }}>
+          <UserRatingDisplay compact={compact}>
             Votre note: {userRating}/10
-          </span>
+          </UserRatingDisplay>
         </RatingInfo>
       )}
 
-      {/* Bouton pour commencer à noter */}
-      {!isRating && !readonly && (
-        <StartRatingButton onClick={handleStartRating}>
-          {userRating ? 'Modifier ma note' : '⭐ Noter ce protocole'}
-        </StartRatingButton>
+      {/* Affichage compact de la note utilisateur */}
+      {userRating && !isRating && compact && (
+        <UserRatingDisplay compact={compact}>
+          Ma note: {userRating}/10
+        </UserRatingDisplay>
       )}
 
       {/* Interface de notation */}
       {isRating && (
         <NumericRatingContainer>
           <RatingLabel>
-            Notez ce protocole de 0 à 10 (par incréments de 0.5)
+            Notez ce {itemType === 'protocol' ? 'protocole' : itemType === 'questionnaire' ? 'questionnaire' : 'cas'} de 0 à 10 (par incréments de 0.5)
           </RatingLabel>
           
           {/* Slider pour la note */}
@@ -461,7 +528,7 @@ function RatingStars({
           <CommentInput
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder="Commentaire sur ce protocole (optionnel)..."
+            placeholder={getCommentPlaceholder()}
             disabled={loading}
           />
           
