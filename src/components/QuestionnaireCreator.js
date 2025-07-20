@@ -749,188 +749,181 @@ const QuestionnaireCreator = () => {
     });
   }, []);
 
-  // ✅ FONCTION handleSave CORRIGÉE FINALE
-// Je vais mettre ici SEULEMENT la section handleSave corrigée
-// Vous devez remplacer SEULEMENT cette fonction dans votre fichier QuestionnaireCreator.js
-
-// ✅ FONCTION handleSave CORRIGÉE FINALE - Version qui préserve les questions
-const handleSave = useCallback(async () => {
-  try {
-    if (!questionnaire.title) {
-      alert('Le titre du questionnaire est requis');
-      return;
-    }
-
-    // ✅ CORRECTION PRINCIPALE : S'assurer que TOUS les champs sont correctement formatés et envoyés
-    const dataToSave = {
-      title: questionnaire.title,
-      questions: questionnaire.questions.map(question => ({
-        ...question,
-        page: question.page || 1,
-        type: question.type || 'single',
-        text: question.text || '',
-        id: question.id || Date.now().toString(),
-        // S'assurer que les options existent
-        options: question.options || []
-      })),
-      
-      selectedOptions: questionnaire.selectedOptions || {},
-      crData: {
-        crTexts: questionnaire.crData?.crTexts || {},
-        freeTexts: questionnaire.crData?.freeTexts || {}
-      },
-      
-      // ✅ CORRECTION CRITIQUE : S'assurer que hiddenQuestions est un objet, pas un tableau ou une chaîne
-      hiddenQuestions: (() => {
-        const hidden = questionnaire.hiddenQuestions;
-        if (!hidden) return {};
-        if (typeof hidden === 'string') {
-          try {
-            return JSON.parse(hidden);
-          } catch {
-            return {};
-          }
-        }
-        if (Array.isArray(hidden)) return {};
-        if (typeof hidden === 'object') return hidden;
-        return {};
-      })(),
-      
-      // ✅ AJOUT des champs manquants pour la création initiale - AVEC VÉRIFICATION DU TYPE
-      pageTitles: (() => {
-        const titles = questionnaire.pageTitles;
-        if (!titles) return {};
-        if (typeof titles === 'string') {
-          try {
-            return JSON.parse(titles);
-          } catch {
-            return {};
-          }
-        }
-        if (typeof titles === 'object' && !Array.isArray(titles)) return titles;
-        return {};
-      })(),
-      
-      links: (() => {
-        const links = questionLinks;
-        if (!links) return {};
-        if (typeof links === 'string') {
-          try {
-            return JSON.parse(links);
-          } catch {
-            return {};
-          }
-        }
-        if (typeof links === 'object' && !Array.isArray(links)) return links;
-        return {};
-      })(),
-      
-      tags: (() => {
-        const tags = questionnaire.tags;
-        if (!tags) return [];
-        if (typeof tags === 'string') {
-          try {
-            const parsed = JSON.parse(tags);
-            return Array.isArray(parsed) ? parsed : [];
-          } catch {
-            return [];
-          }
-        }
-        if (Array.isArray(tags)) return tags;
-        return [];
-      })(),
-      
-      public: Boolean(questionnaire.public || false),
-      
-      // Champs par défaut pour les nouvelles créations
-      averageRating: Number(questionnaire.averageRating || 0),
-      ratingsCount: Number(questionnaire.ratingsCount || 0),
-      views: Number(questionnaire.views || 0),
-      copies: Number(questionnaire.copies || 0)
-    };
-
-    console.log('✅ ID du questionnaire:', id);
-    console.log('✅ Données envoyées au serveur (vérifiées):', {
-      title: dataToSave.title,
-      questionsCount: dataToSave.questions.length,
-      selectedOptionsType: typeof dataToSave.selectedOptions,
-      selectedOptionsCount: Object.keys(dataToSave.selectedOptions).length,
-      hiddenQuestionsType: typeof dataToSave.hiddenQuestions,
-      hiddenQuestionsContent: dataToSave.hiddenQuestions,
-      pageTitlesType: typeof dataToSave.pageTitles,
-      linksType: typeof dataToSave.links,
-      tagsType: typeof dataToSave.tags,
-      tagsCount: dataToSave.tags.length,
-      public: dataToSave.public
-    });
-
-    let response;
-    if (id) {
-      // MISE À JOUR d'un questionnaire existant
-      console.log('✅ Mise à jour du questionnaire existant...');
-      response = await axios.put(`/questionnaires/${id}`, dataToSave);
-      console.log('✅ Questionnaire mis à jour:', response.data);
-    } else {
-      // ✅ CRÉATION d'un nouveau questionnaire avec TOUS les champs
-      console.log('✅ Création d\'un nouveau questionnaire...');
-      console.log('🔍 Questions à sauvegarder:', dataToSave.questions);
-      
-      response = await axios.post('/questionnaires', dataToSave);
-      console.log('✅ Nouveau questionnaire créé:', response.data);
-      
-      // 🚨 CORRECTION CRITIQUE : Vérifier que les questions sont préservées
-      if (response.data && response.data._id) {
-        console.log('✅ Mise à jour de l\'état local avec l\'ID:', response.data._id);
-        
-        // 🚨 CORRECTION : Utiliser les questions envoyées si celles reçues sont vides
-        const questionsToUse = (response.data.questions && response.data.questions.length > 0) 
-          ? response.data.questions 
-          : dataToSave.questions;
-          
-        console.log('🔍 Questions utilisées pour l\'état local:', questionsToUse);
-        
-        setQuestionnaire(prev => ({
-          ...prev,
-          ...response.data,
-          // 🚨 CORRECTION CRITIQUE : S'assurer que les questions sont bien préservées
-          questions: questionsToUse
-        }));
-        
-        // ✅ Rediriger vers l'édition du questionnaire créé pour les prochaines modifications
-        const newId = response.data._id;
-        console.log('✅ Redirection vers l\'édition:', newId);
-        navigate(`/edit/${newId}`);
-        return; // Sortir ici pour éviter l'alerte de succès car on redirige
+  // ✅ FONCTION handleSave CORRIGÉE - NE PAS REDIRIGER LORS DE LA CRÉATION
+  const handleSave = useCallback(async () => {
+    try {
+      if (!questionnaire.title) {
+        alert('Le titre du questionnaire est requis');
+        return;
       }
+
+      // ✅ CORRECTION PRINCIPALE : S'assurer que TOUS les champs sont correctement formatés et envoyés
+      const dataToSave = {
+        title: questionnaire.title,
+        questions: questionnaire.questions.map(question => ({
+          ...question,
+          page: question.page || 1,
+          type: question.type || 'single',
+          text: question.text || '',
+          id: question.id || Date.now().toString(),
+          // S'assurer que les options existent
+          options: question.options || []
+        })),
+        
+        selectedOptions: questionnaire.selectedOptions || {},
+        crData: {
+          crTexts: questionnaire.crData?.crTexts || {},
+          freeTexts: questionnaire.crData?.freeTexts || {}
+        },
+        
+        // ✅ CORRECTION CRITIQUE : S'assurer que hiddenQuestions est un objet, pas un tableau ou une chaîne
+        hiddenQuestions: (() => {
+          const hidden = questionnaire.hiddenQuestions;
+          if (!hidden) return {};
+          if (typeof hidden === 'string') {
+            try {
+              return JSON.parse(hidden);
+            } catch {
+              return {};
+            }
+          }
+          if (Array.isArray(hidden)) return {};
+          if (typeof hidden === 'object') return hidden;
+          return {};
+        })(),
+        
+        // ✅ AJOUT des champs manquants pour la création initiale - AVEC VÉRIFICATION DU TYPE
+        pageTitles: (() => {
+          const titles = questionnaire.pageTitles;
+          if (!titles) return {};
+          if (typeof titles === 'string') {
+            try {
+              return JSON.parse(titles);
+            } catch {
+              return {};
+            }
+          }
+          if (typeof titles === 'object' && !Array.isArray(titles)) return titles;
+          return {};
+        })(),
+        
+        links: (() => {
+          const links = questionLinks;
+          if (!links) return {};
+          if (typeof links === 'string') {
+            try {
+              return JSON.parse(links);
+            } catch {
+              return {};
+            }
+          }
+          if (typeof links === 'object' && !Array.isArray(links)) return links;
+          return {};
+        })(),
+        
+        tags: (() => {
+          const tags = questionnaire.tags;
+          if (!tags) return [];
+          if (typeof tags === 'string') {
+            try {
+              const parsed = JSON.parse(tags);
+              return Array.isArray(parsed) ? parsed : [];
+            } catch {
+              return [];
+            }
+          }
+          if (Array.isArray(tags)) return tags;
+          return [];
+        })(),
+        
+        public: Boolean(questionnaire.public || false),
+        
+        // Champs par défaut pour les nouvelles créations
+        averageRating: Number(questionnaire.averageRating || 0),
+        ratingsCount: Number(questionnaire.ratingsCount || 0),
+        views: Number(questionnaire.views || 0),
+        copies: Number(questionnaire.copies || 0)
+      };
+
+      console.log('✅ ID du questionnaire:', id);
+      console.log('✅ Données envoyées au serveur (vérifiées):', {
+        title: dataToSave.title,
+        questionsCount: dataToSave.questions.length,
+        selectedOptionsType: typeof dataToSave.selectedOptions,
+        selectedOptionsCount: Object.keys(dataToSave.selectedOptions).length,
+        hiddenQuestionsType: typeof dataToSave.hiddenQuestions,
+        hiddenQuestionsContent: dataToSave.hiddenQuestions,
+        pageTitlesType: typeof dataToSave.pageTitles,
+        linksType: typeof dataToSave.links,
+        tagsType: typeof dataToSave.tags,
+        tagsCount: dataToSave.tags.length,
+        public: dataToSave.public
+      });
+
+      let response;
+      if (id) {
+        // MISE À JOUR d'un questionnaire existant
+        console.log('✅ Mise à jour du questionnaire existant...');
+        response = await axios.put(`/questionnaires/${id}`, dataToSave);
+        console.log('✅ Questionnaire mis à jour:', response.data);
+        
+        // Mettre à jour l'état local avec la réponse du serveur
+        if (response.data) {
+          setQuestionnaire(prev => ({
+            ...prev,
+            ...response.data
+          }));
+        }
+        
+        alert('✅ Questionnaire sauvegardé avec succès');
+        navigate('/questionnaires'); // Rediriger vers la liste après mise à jour
+        
+      } else {
+        // ✅ CRÉATION d'un nouveau questionnaire - NE PAS REDIRIGER AUTOMATIQUEMENT
+        console.log('✅ Création d\'un nouveau questionnaire...');
+        console.log('🔍 Questions à sauvegarder:', dataToSave.questions);
+        
+        response = await axios.post('/questionnaires', dataToSave);
+        console.log('✅ Nouveau questionnaire créé:', response.data);
+        
+        if (response.data && response.data._id) {
+          console.log('✅ Mise à jour de l\'état local avec l\'ID:', response.data._id);
+          
+          // 🚨 CORRECTION : Utiliser les questions envoyées si celles reçues sont vides
+          const questionsToUse = (response.data.questions && response.data.questions.length > 0) 
+            ? response.data.questions 
+            : dataToSave.questions;
+            
+          console.log('🔍 Questions utilisées pour l\'état local:', questionsToUse);
+          
+          setQuestionnaire(prev => ({
+            ...prev,
+            ...response.data,
+            // 🚨 CORRECTION CRITIQUE : S'assurer que les questions sont bien préservées
+            questions: questionsToUse
+          }));
+          
+          // ✅ CORRECTION PRINCIPALE : Mettre à jour l'URL sans rediriger pour éviter la perte des questions
+          const newId = response.data._id;
+          console.log('✅ Mise à jour de l\'URL sans redirection:', newId);
+          window.history.replaceState(null, null, `/edit/${newId}`);
+          // NE PAS utiliser navigate() pour éviter la perte des données
+          // navigate(`/edit/${newId}`); // ← SUPPRIMÉ pour corriger le problème
+          
+          alert('✅ Questionnaire créé avec succès ! Vous pouvez continuer à le modifier ou naviguer vers la liste.');
+          return; // Sortir ici pour éviter l'exécution du reste
+        }
+      }
+
+      console.log('✅ Réponse serveur:', response.data);
+      
+    } catch (error) {
+      console.error('❌ Détails complets de l\'erreur:', error);
+      console.error('❌ Données de la requête:', error?.config?.data);
+      console.error('❌ Réponse serveur:', error?.response?.data);
+      alert(`❌ Erreur lors de la sauvegarde: ${error?.response?.data?.message || error.message}`);
     }
-
-    console.log('✅ Réponse serveur:', response.data);
-    
-    // Mettre à jour l'état local avec la réponse du serveur
-    if (response.data) {
-      setQuestionnaire(prev => ({
-        ...prev,
-        ...response.data
-      }));
-    }
-    
-    alert('✅ Questionnaire sauvegardé avec succès');
-    
-    // Si c'est une mise à jour, rediriger vers la liste
-    if (id) {
-      navigate('/questionnaires');
-    }
-    
-  } catch (error) {
-    console.error('❌ Détails complets de l\'erreur:', error);
-    console.error('❌ Données de la requête:', error?.config?.data);
-    console.error('❌ Réponse serveur:', error?.response?.data);
-    alert(`❌ Erreur lors de la sauvegarde: ${error?.response?.data?.message || error.message}`);
-  }
-}, [questionnaire, id, navigate, questionLinks]);
-
-
-
+  }, [questionnaire, id, navigate, questionLinks]);
 
   const handleFreeTextChange = useCallback((questionId, value) => {
     setQuestionnaire(prev => ({
