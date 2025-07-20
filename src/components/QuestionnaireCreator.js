@@ -911,7 +911,7 @@ const QuestionnaireCreator = () => {
           // navigate(`/edit/${newId}`); // ← SUPPRIMÉ pour corriger le problème
           
 alert('✅ Questionnaire créé avec succès !');
-setTimeout(() => navigate('/questionnaires'), 1000);           return; // Sortir ici pour éviter l'exécution du reste
+setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir ici pour éviter l'exécution du reste
         }
       }
 
