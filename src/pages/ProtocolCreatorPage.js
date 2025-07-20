@@ -363,13 +363,11 @@ function ProtocolCreatorPage() {
     }
   });
 
-  // Listes des options
-  const imagingTypes = ['IRM', 'TDM', 'Radiographie', 'Échographie', 'Mammographie', 'Scintigraphie'];
+  // Listes des options - VALEURS EXACTES DU SCHÉMA MONGODB
+  const imagingTypes = ['IRM', 'Scanner', 'Échographie', 'Radiographie', 'Mammographie', 'Médecine Nucléaire', 'Angiographie'];
   const anatomicalRegions = [
-    'Crâne', 
-    'Cerveau', 
-    'Face', 
-    'Cou', 
+    'Céphalée', 
+    'Cervical', 
     'Thorax', 
     'Abdomen', 
     'Pelvis', 
