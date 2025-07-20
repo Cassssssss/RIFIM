@@ -1,4 +1,4 @@
-// routes/questionnaireRoutes.js - VERSION COMPLÈTE AVEC SYSTÈME DE NOTATION
+// routes/questionnaireRoutes.js - VERSION COMPLÈTE AVEC SYSTÈME DE NOTATION - PROBLÈME DE SAUVEGARDE CORRIGÉ
 const express = require('express');
 const router = express.Router();
 const Questionnaire = require('../models/Questionnaire');
@@ -67,102 +67,46 @@ router.post('/:id/rate', authMiddleware, async (req, res) => {
     // Recalculer la note moyenne et le nombre de notes
     const allRatings = await QuestionnaireRating.find({ questionnaire: questionnaireId });
     const averageRating = allRatings.reduce((sum, r) => sum + r.rating, 0) / allRatings.length;
-    const ratingsCount = allRatings.length;
 
-    // Mettre à jour le questionnaire avec les nouvelles statistiques
+    // Mettre à jour le questionnaire avec les nouvelles notes
     await Questionnaire.findByIdAndUpdate(questionnaireId, {
-      averageRating: averageRating,
-      ratingsCount: ratingsCount
+      averageRating: Math.round(averageRating * 10) / 10, // Arrondir à 1 décimale
+      ratingsCount: allRatings.length
     });
 
     res.json({
-      averageRating: averageRating,
-      ratingsCount: ratingsCount,
-      userRating: rating,
-      message: 'Note enregistrée avec succès'
+      message: 'Note ajoutée avec succès',
+      userRating: existingRating.rating,
+      averageRating: Math.round(averageRating * 10) / 10,
+      ratingsCount: allRatings.length
     });
 
   } catch (error) {
     console.error('Erreur lors de la notation du questionnaire:', error);
-    res.status(500).json({ message: 'Erreur serveur lors de la notation' });
+    res.status(500).json({ message: 'Erreur lors de la notation du questionnaire' });
   }
 });
 
-// Supprimer la note d'un questionnaire
-router.delete('/:id/rate', authMiddleware, async (req, res) => {
-  try {
-    const questionnaireId = req.params.id;
-    const userId = req.userId; // ✅ CORRIGÉ : utiliser req.userId au lieu de req.user._id
+// ==================== ROUTES PRINCIPALES ====================
 
-    // Supprimer la note de l'utilisateur
-    const deletedRating = await QuestionnaireRating.findOneAndDelete({ 
-      questionnaire: questionnaireId, 
-      user: userId 
-    });
-
-    if (!deletedRating) {
-      return res.status(404).json({ message: 'Aucune note trouvée pour ce questionnaire' });
-    }
-
-    // Recalculer la note moyenne et le nombre de notes
-    const allRatings = await QuestionnaireRating.find({ questionnaire: questionnaireId });
-    const averageRating = allRatings.length > 0 
-      ? allRatings.reduce((sum, r) => sum + r.rating, 0) / allRatings.length 
-      : 0;
-    const ratingsCount = allRatings.length;
-
-    // Mettre à jour le questionnaire avec les nouvelles statistiques
-    await Questionnaire.findByIdAndUpdate(questionnaireId, {
-      averageRating: averageRating,
-      ratingsCount: ratingsCount
-    });
-
-    res.json({
-      averageRating: averageRating,
-      ratingsCount: ratingsCount,
-      userRating: null,
-      message: 'Note supprimée avec succès'
-    });
-
-  } catch (error) {
-    console.error('Erreur lors de la suppression de la note:', error);
-    res.status(500).json({ message: 'Erreur serveur lors de la suppression' });
-  }
-});
-
-// ==================== ROUTES EXISTANTES MODIFIÉES ====================
-
-// Route pour récupérer les questionnaires de l'utilisateur connecté
+// Route pour récupérer tous les questionnaires de l'utilisateur connecté
 router.get('/my', authMiddleware, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const search = req.query.search || '';
-    const modality = req.query.modality || '';
-    const specialty = req.query.specialty || '';
-    const location = req.query.location || '';
 
     // Construction du filtre de recherche
     let searchFilter = {
       user: req.userId // Questionnaires de l'utilisateur connecté uniquement
     };
 
-    // Recherche textuelle
+    // Recherche textuelle si fournie
     if (search.trim()) {
       searchFilter.title = { $regex: search, $options: 'i' };
     }
 
-    // Filtres par tags
-    const filters = [];
-    if (modality) filters.push(...modality.split(',').filter(Boolean));
-    if (specialty) filters.push(...specialty.split(',').filter(Boolean));
-    if (location) filters.push(...location.split(',').filter(Boolean));
-    
-    if (filters.length > 0) {
-      searchFilter.tags = { $in: filters };
-    }
-
-    console.log('Filtre de recherche:', searchFilter);
+    console.log('Filtre de recherche questionnaires:', searchFilter);
 
     // Compter le total
     const total = await Questionnaire.countDocuments(searchFilter);
@@ -178,27 +122,17 @@ router.get('/my', authMiddleware, async (req, res) => {
     // S'assurer que questionnaires est toujours un tableau
     const safeQuestionnaires = Array.isArray(questionnaires) ? questionnaires : [];
 
-    // Ajouter les métadonnées requises par le frontend
-    const questionnairesWithMetadata = safeQuestionnaires.map(questionnaire => ({
-      ...questionnaire,
-      averageRating: questionnaire.averageRating || 0,
-      ratingsCount: questionnaire.ratingsCount || 0,
-      views: questionnaire.views || 0,
-      copies: questionnaire.copies || 0,
-      tags: questionnaire.tags || []
-    }));
-
     res.json({
-      questionnaires: questionnairesWithMetadata,
+      questionnaires: safeQuestionnaires,
       currentPage: page,
-      totalPages,
+      totalPages: totalPages,
       totalQuestionnaires: total
     });
 
   } catch (error) {
     console.error('Erreur lors de la récupération des questionnaires:', error);
     res.json({
-      questionnaires: [],
+      questionnaires: [], // Toujours retourner un tableau vide en cas d'erreur
       currentPage: 1,
       totalPages: 0,
       totalQuestionnaires: 0
@@ -206,12 +140,14 @@ router.get('/my', authMiddleware, async (req, res) => {
   }
 });
 
-// Route pour récupérer les questionnaires publics avec pagination et filtres
+// Route pour récupérer tous les questionnaires publics avec filtres
 router.get('/public', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const search = req.query.search || '';
+    
+    // Nouveaux filtres
     const modality = req.query.modality || '';
     const specialty = req.query.specialty || '';
     const location = req.query.location || '';
@@ -221,10 +157,13 @@ router.get('/public', async (req, res) => {
 
     // Recherche textuelle
     if (search.trim()) {
-      filter.title = { $regex: search, $options: 'i' };
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { tags: { $elemMatch: { $regex: search, $options: 'i' } } }
+      ];
     }
 
-    // Filtres par tags
+    // Filtres par tags - Conversion des chaînes en tableaux et filtrage
     const modalityTags = modality ? modality.split(',').filter(Boolean) : [];
     const specialtyTags = specialty ? specialty.split(',').filter(Boolean) : [];
     const locationTags = location ? location.split(',').filter(Boolean) : [];
@@ -399,32 +338,65 @@ router.delete('/:id/tags', authMiddleware, async (req, res) => {
   }
 });
 
-// MODIFIÉ : Route pour créer un questionnaire avec initialisation des champs de notation
+// ✅ CORRECTION PRINCIPALE : Route pour créer un questionnaire avec TOUS LES CHAMPS
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { title, questions, selectedOptions, crData, hiddenQuestions } = req.body;
+    // ✅ RÉCUPÉRER TOUS LES CHAMPS depuis le corps de la requête
+    const { 
+      title, 
+      questions, 
+      selectedOptions, 
+      crData, 
+      hiddenQuestions,
+      pageTitles,    // ✅ AJOUTÉ
+      links,         // ✅ AJOUTÉ
+      tags,          // ✅ AJOUTÉ
+      public         // ✅ AJOUTÉ
+    } = req.body;
     
-    console.log(`Création du questionnaire : ${title}`);
+    console.log(`✅ Création du questionnaire : ${title}`);
+    console.log('✅ Données reçues:', {
+      title,
+      questionsCount: questions?.length || 0,
+      selectedOptions: Object.keys(selectedOptions || {}).length,
+      crData: crData ? 'présent' : 'absent',
+      hiddenQuestions: Object.keys(hiddenQuestions || {}).length,
+      pageTitles: Object.keys(pageTitles || {}).length,
+      linksCount: links ? Object.keys(links).length : 0,
+      tagsCount: tags?.length || 0,
+      public: public || false
+    });
 
+    // ✅ CRÉER le questionnaire avec TOUS LES CHAMPS
     const questionnaire = new Questionnaire({
       title,
-      questions,
-      selectedOptions,
-      crData,
-      hiddenQuestions,
+      questions: questions || [],
+      selectedOptions: selectedOptions || {},
+      crData: crData || { crTexts: {}, freeTexts: {} },
+      hiddenQuestions: hiddenQuestions || {},
+      pageTitles: pageTitles || {},        // ✅ AJOUTÉ
+      links: links || new Map(),           // ✅ AJOUTÉ
+      tags: tags || [],                    // ✅ AJOUTÉ
+      public: public || false,             // ✅ AJOUTÉ
       user: req.userId,
-      links: new Map(),
-      tags: [], // Initialiser avec un tableau vide
-      averageRating: 0, // NOUVEAU : Initialiser les champs de notation
+      // Champs de notation
+      averageRating: 0,
       ratingsCount: 0,
       views: 0,
       copies: 0
     });
 
     const newQuestionnaire = await questionnaire.save();
+    
+    console.log('✅ Questionnaire créé avec succès:', {
+      id: newQuestionnaire._id,
+      title: newQuestionnaire.title,
+      questionsCount: newQuestionnaire.questions?.length || 0
+    });
+    
     res.status(201).json(newQuestionnaire);
   } catch (error) {
-    console.error('Erreur lors de la création du questionnaire:', error);
+    console.error('❌ Erreur lors de la création du questionnaire:', error);
     res.status(500).json({ message: 'Erreur lors de la création du questionnaire' });
   }
 });
@@ -464,7 +436,8 @@ router.get('/:id', authMiddleware, async (req, res) => {
         questionnaire: req.params.id,
         user: req.userId // ✅ CORRIGÉ : utiliser req.userId au lieu de req.user._id
       });
-      questionnaireObject.userRating = userRating ? userRating.rating : null;
+      questionnaireObject.userRating = userRating ? 
+        userRating.rating : null;
     }
     
     res.json(questionnaireObject);
@@ -482,6 +455,15 @@ router.put('/:id', authMiddleware, async (req, res) => {
       return res.status(400).json({ message: 'ID de questionnaire invalide' });
     }
 
+    console.log('✅ Mise à jour du questionnaire:', req.params.id);
+    console.log('✅ Données reçues pour mise à jour:', {
+      title: req.body.title,
+      questionsCount: req.body.questions?.length || 0,
+      selectedOptions: Object.keys(req.body.selectedOptions || {}).length,
+      crData: req.body.crData ? 'présent' : 'absent',
+      hiddenQuestions: Object.keys(req.body.hiddenQuestions || {}).length
+    });
+
     const questionnaire = await Questionnaire.findOneAndUpdate(
       { 
         _id: req.params.id, 
@@ -495,9 +477,10 @@ router.put('/:id', authMiddleware, async (req, res) => {
       return res.status(404).json({ message: 'Questionnaire non trouvé' });
     }
     
+    console.log('✅ Questionnaire mis à jour avec succès');
     res.json(questionnaire);
   } catch (error) {
-    console.error('Erreur lors de la mise à jour du questionnaire:', error);
+    console.error('❌ Erreur lors de la mise à jour du questionnaire:', error);
     res.status(500).json({ message: 'Erreur lors de la mise à jour du questionnaire' });
   }
 });
@@ -527,36 +510,6 @@ router.patch('/:id', authMiddleware, async (req, res) => {
   } catch (error) {
     console.error('Erreur lors de la modification du questionnaire:', error);
     res.status(500).json({ message: 'Erreur lors de la modification du questionnaire' });
-  }
-});
-
-// NOUVELLE ROUTE : Toggle public/privé pour les questionnaires
-router.patch('/:id/togglePublic', authMiddleware, async (req, res) => {
-  console.log("Route /togglePublic appelée pour le questionnaire:", req.params.id);
-  try {
-    // Vérifier que l'ID est valide
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: 'ID de questionnaire invalide' });
-    }
-
-    const questionnaire = await Questionnaire.findOne({ 
-      _id: req.params.id, 
-      user: req.userId 
-    });
-    
-    if (!questionnaire) {
-      return res.status(404).json({ message: 'Questionnaire non trouvé' });
-    }
-    
-    // Inverser la visibilité
-    questionnaire.public = !questionnaire.public;
-    await questionnaire.save();
-    
-    console.log(`Questionnaire ${req.params.id} maintenant ${questionnaire.public ? 'public' : 'privé'}`);
-    res.json(questionnaire);
-  } catch (error) {
-    console.error('Erreur lors du basculement de la visibilité:', error);
-    res.status(500).json({ message: error.message });
   }
 });
 

@@ -752,6 +752,9 @@ const QuestionnaireCreator = () => {
 // CORRECTION POUR LA FONCTION handleSave
 // Remplacez votre fonction handleSave actuelle par celle-ci :
 
+// ✅ FONCTION handleSave CORRIGÉE - QuestionnaireCreator.js
+// Remplacez EXACTEMENT la fonction handleSave dans votre fichier QuestionnaireCreator.js par celle-ci :
+
 const handleSave = useCallback(async () => {
   try {
     if (!questionnaire.title) {
@@ -759,7 +762,7 @@ const handleSave = useCallback(async () => {
       return;
     }
 
-    // CORRIGER : S'assurer que toutes les données sont correctement formatées
+    // ✅ CORRECTION PRINCIPALE : S'assurer que TOUS les champs sont correctement formatés et envoyés
     const dataToSave = {
       title: questionnaire.title,
       questions: questionnaire.questions.map(question => ({
@@ -776,34 +779,42 @@ const handleSave = useCallback(async () => {
         crTexts: questionnaire.crData?.crTexts || {},
         freeTexts: questionnaire.crData?.freeTexts || {}
       },
-      // NOUVEAU : Ajouter les champs manquants pour la création
       hiddenQuestions: questionnaire.hiddenQuestions || {},
+      
+      // ✅ AJOUT des champs manquants pour la création initiale
       pageTitles: questionnaire.pageTitles || {},
-      links: questionLinks || new Map(),
-      // NOUVEAU : Ajouter les champs par défaut
+      links: questionLinks || {},  // ✅ Convertir Map en objet si nécessaire
       tags: questionnaire.tags || [],
       public: questionnaire.public || false,
+      
+      // Champs par défaut pour les nouvelles créations
       averageRating: questionnaire.averageRating || 0,
       ratingsCount: questionnaire.ratingsCount || 0,
       views: questionnaire.views || 0,
       copies: questionnaire.copies || 0
     };
 
-    console.log('ID du questionnaire:', id);
-    console.log('Données envoyées au serveur:', dataToSave);
+    console.log('✅ ID du questionnaire:', id);
+    console.log('✅ Données envoyées au serveur:', {
+      ...dataToSave,
+      questions: `${dataToSave.questions.length} questions`
+    });
 
     let response;
     if (id) {
       // MISE À JOUR d'un questionnaire existant
+      console.log('✅ Mise à jour du questionnaire existant...');
       response = await axios.put(`/questionnaires/${id}`, dataToSave);
-      console.log('Questionnaire mis à jour:', response.data);
+      console.log('✅ Questionnaire mis à jour:', response.data);
     } else {
-      // CRÉATION d'un nouveau questionnaire
+      // ✅ CRÉATION d'un nouveau questionnaire avec TOUS les champs
+      console.log('✅ Création d\'un nouveau questionnaire...');
       response = await axios.post('/questionnaires', dataToSave);
-      console.log('Nouveau questionnaire créé:', response.data);
+      console.log('✅ Nouveau questionnaire créé:', response.data);
       
-      // IMPORTANT : Mettre à jour l'état avec les données retournées par le serveur
+      // ✅ IMPORTANT : Mettre à jour l'état avec les données retournées par le serveur
       if (response.data && response.data._id) {
+        console.log('✅ Mise à jour de l\'état local avec l\'ID:', response.data._id);
         setQuestionnaire(prev => ({
           ...prev,
           ...response.data,
@@ -811,14 +822,15 @@ const handleSave = useCallback(async () => {
           questions: response.data.questions || prev.questions
         }));
         
-        // NOUVEAU : Rediriger vers l'édition du questionnaire créé
+        // ✅ Rediriger vers l'édition du questionnaire créé pour les prochaines modifications
         const newId = response.data._id;
+        console.log('✅ Redirection vers l\'édition:', newId);
         navigate(`/edit/${newId}`);
-        return; // Sortir ici pour éviter l'alerte de succès
+        return; // Sortir ici pour éviter l'alerte de succès car on redirige
       }
     }
 
-    console.log('Réponse serveur:', response.data);
+    console.log('✅ Réponse serveur:', response.data);
     
     // Mettre à jour l'état local avec la réponse du serveur
     if (response.data) {
@@ -828,7 +840,7 @@ const handleSave = useCallback(async () => {
       }));
     }
     
-    alert('Questionnaire sauvegardé avec succès');
+    alert('✅ Questionnaire sauvegardé avec succès');
     
     // Si c'est une mise à jour, rediriger vers la liste
     if (id) {
@@ -836,12 +848,15 @@ const handleSave = useCallback(async () => {
     }
     
   } catch (error) {
-    console.error('Détails complets de l\'erreur:', error);
-    console.error('Données de la requête:', error?.config?.data);
-    console.error('Réponse serveur:', error?.response?.data);
-    alert(`Erreur lors de la sauvegarde: ${error?.response?.data?.message || error.message}`);
+    console.error('❌ Détails complets de l\'erreur:', error);
+    console.error('❌ Données de la requête:', error?.config?.data);
+    console.error('❌ Réponse serveur:', error?.response?.data);
+    alert(`❌ Erreur lors de la sauvegarde: ${error?.response?.data?.message || error.message}`);
   }
 }, [questionnaire, id, navigate, questionLinks]);
+
+
+
 
   const handleFreeTextChange = useCallback((questionId, value) => {
     setQuestionnaire(prev => ({
