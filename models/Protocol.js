@@ -4,11 +4,12 @@ const mongoose = require('mongoose');
 const SequenceSchema = new mongoose.Schema({
   id: {
     type: String,
-    required: true
+    // ✅ SUPPRIMÉ : required: true
   },
   name: {
     type: String,
-    required: true
+    // ✅ SUPPRIMÉ : required: true
+    default: ''
   },
   description: {
     type: String,
@@ -16,7 +17,8 @@ const SequenceSchema = new mongoose.Schema({
   },
   justification: {
     type: String,
-    required: true // Chaque séquence doit être justifiée
+    // ✅ SUPPRIMÉ : required: true // Chaque séquence doit être justifiée
+    default: ''
   },
   technicalParameters: {
     type: Object, // Paramètres techniques (TR, TE, épaisseur de coupe, etc.)
@@ -32,7 +34,7 @@ const SequenceSchema = new mongoose.Schema({
   }
 });
 
-// Schéma pour les paramètres d'acquisition généralx
+// Schéma pour les paramètres d'acquisition généraux
 const AcquisitionParametersSchema = new mongoose.Schema({
   fieldStrength: String,        // Force du champ magnétique (ex: "1.5T", "3T")
   coil: String,                 // Antenne utilisée (ex: "Antenne tête 32 canaux")
@@ -84,32 +86,36 @@ const RatingSchema = new mongoose.Schema({
 const ProtocolSchema = new mongoose.Schema({
   title: {
     type: String,
-    required: true,
-    trim: true
+    // ✅ SUPPRIMÉ : required: true,
+    trim: true,
+    default: 'Protocole sans titre'
   },
   
   // Classification du protocole
   imagingType: {
     type: String,
-    required: true,
-    enum: ['IRM', 'Scanner', 'Échographie', 'Radiographie', 'Mammographie', 'Médecine Nucléaire', 'Angiographie']
+    // ✅ SUPPRIMÉ : required: true,
+    enum: ['IRM', 'Scanner', 'Échographie', 'Radiographie', 'Mammographie', 'Médecine Nucléaire', 'Angiographie'],
+    default: ''
   },
   
   anatomicalRegion: {
     type: String,
-    required: true,
+    // ✅ SUPPRIMÉ : required: true,
     enum: [
       'Céphalée', 'Cervical', 'Thorax', 'Abdomen', 'Pelvis', 
       'Rachis', 'Membre Supérieur', 'Membre Inférieur', 
       'Vaisseaux', 'Cœur', 'Sein', 'Autre'
-    ]
+    ],
+    default: ''
   },
   
   // Indication clinique
   indication: {
     type: String,
-    required: true,
-    trim: true
+    // ✅ SUPPRIMÉ : required: true,
+    trim: true,
+    default: ''
   },
   
   // Description générale du protocole
@@ -167,7 +173,7 @@ const ProtocolSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: true // ← GARDÉ car nécessaire pour la sécurité
   },
   
   // Visibilité publique
@@ -269,128 +275,44 @@ ProtocolSchema.methods.calculateTotalDuration = function() {
     }
   });
   
+  if (totalMinutes === 0) return 'Non spécifiée';
+  
   const hours = Math.floor(totalMinutes / 60);
   const minutes = Math.round(totalMinutes % 60);
   
   if (hours > 0) {
-    return `${hours}h ${minutes}min`;
+    return `${hours}h ${minutes > 0 ? minutes + 'min' : ''}`;
   } else {
     return `${minutes}min`;
   }
 };
 
-// Méthode pour incrémenter les vues
-ProtocolSchema.methods.incrementViews = function() {
-  this.stats.views += 1;
-  return this.save();
-};
-
-// NOUVELLE MÉTHODE : Ajouter ou mettre à jour une note
-ProtocolSchema.methods.addOrUpdateRating = function(userId, rating, comment = '') {
-  // Valider la note (0 à 10, multiples de 0.5)
-  if (rating < 0 || rating > 10 || (rating * 2) % 1 !== 0) {
-    throw new Error('La note doit être entre 0 et 10 avec des incréments de 0.5');
-  }
-
-  // Vérifier si l'utilisateur a déjà noté ce protocole
-  const existingRatingIndex = this.ratings.findIndex(
-    r => r.user.toString() === userId.toString()
-  );
-
-  if (existingRatingIndex !== -1) {
-    // Mettre à jour la note existante
-    this.ratings[existingRatingIndex].rating = rating;
-    this.ratings[existingRatingIndex].comment = comment;
-    this.ratings[existingRatingIndex].date = new Date();
-  } else {
-    // Ajouter une nouvelle note
-    this.ratings.push({
-      user: userId,
-      rating: rating,
-      comment: comment
-    });
-  }
-
-  // Recalculer la moyenne et le nombre de notes
-  this.calculateAverageRating();
-  
-  return this.save();
-};
-
-// NOUVELLE MÉTHODE : Supprimer une note
-ProtocolSchema.methods.removeRating = function(userId) {
-  const initialLength = this.ratings.length;
-  this.ratings = this.ratings.filter(r => r.user.toString() !== userId.toString());
-  
-  if (this.ratings.length < initialLength) {
-    this.calculateAverageRating();
-    return this.save();
-  }
-  
-  return Promise.resolve(this);
-};
-
-// NOUVELLE MÉTHODE : Calculer la moyenne des notes
-ProtocolSchema.methods.calculateAverageRating = function() {
+// Méthode pour recalculer les statistiques de notation
+ProtocolSchema.methods.updateRatingStats = function() {
   if (this.ratings.length === 0) {
     this.averageRating = 0;
     this.ratingsCount = 0;
-  } else {
-    const sum = this.ratings.reduce((total, rating) => total + rating.rating, 0);
-    this.averageRating = Math.round((sum / this.ratings.length) * 2) / 2; // Arrondir au 0.5 le plus proche
-    this.ratingsCount = this.ratings.length;
+    return;
   }
+  
+  const total = this.ratings.reduce((sum, rating) => sum + rating.rating, 0);
+  this.averageRating = Number((total / this.ratings.length).toFixed(1));
+  this.ratingsCount = this.ratings.length;
 };
 
-// NOUVELLE MÉTHODE : Obtenir la note d'un utilisateur spécifique
-ProtocolSchema.methods.getUserRating = function(userId) {
-  const userRating = this.ratings.find(r => r.user.toString() === userId.toString());
-  return userRating ? userRating.rating : null;
-};
-
-// NOUVELLE MÉTHODE : Vérifier si un utilisateur a déjà noté
-ProtocolSchema.methods.hasUserRated = function(userId) {
-  return this.ratings.some(r => r.user.toString() === userId.toString());
-};
-
-// Méthode pour ajouter une évaluation (ancienne méthode - maintenant dépréciée)
-ProtocolSchema.methods.addReview = function(userId, rating, comment) {
-  console.warn('addReview est déprécié, utilisez addOrUpdateRating à la place');
-  return this.addOrUpdateRating(userId, rating, comment);
-};
-
-// Middleware pour mettre à jour la durée totale et recalculer les notes avant sauvegarde
+// Middleware pour recalculer les stats avant sauvegarde
 ProtocolSchema.pre('save', function(next) {
-  if (this.isModified('sequences')) {
+  // Recalculer la durée estimée
+  if (this.sequences && this.sequences.length > 0) {
     this.estimatedDuration = this.calculateTotalDuration();
   }
   
-  if (this.isModified('ratings')) {
-    this.calculateAverageRating();
+  // Recalculer les stats de notation si nécessaire
+  if (this.ratings && this.ratings.length > 0) {
+    this.updateRatingStats();
   }
   
   next();
 });
-
-// Méthode statique pour obtenir les protocoles les mieux notés
-ProtocolSchema.statics.getTopRated = function(limit = 10) {
-  return this.find({ 
-    public: true, 
-    ratingsCount: { $gte: 3 } // Au moins 3 notes pour être considéré
-  })
-  .sort({ averageRating: -1, ratingsCount: -1 })
-  .limit(limit)
-  .populate('user', 'username');
-};
-
-// Méthode statique pour obtenir les protocoles par note
-ProtocolSchema.statics.getByRatingRange = function(minRating, maxRating) {
-  return this.find({
-    public: true,
-    averageRating: { $gte: minRating, $lte: maxRating }
-  })
-  .sort({ averageRating: -1 })
-  .populate('user', 'username');
-};
 
 module.exports = mongoose.model('Protocol', ProtocolSchema);

@@ -1,4 +1,4 @@
-// ProtocolCreatorPage.js - VERSION CORRIGÉE
+// ProtocolCreatorPage.js - VERSION SANS VALIDATION OBLIGATOIRE
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -350,7 +350,7 @@ function ProtocolCreatorPage() {
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // État du formulaire - SUPPRESSION DE LA COMPLEXITÉ
+  // État du formulaire - AUCUNE VALIDATION CÔTÉ CLIENT
   const [formData, setFormData] = useState({
     title: '',
     imagingType: '',
@@ -377,12 +377,10 @@ function ProtocolCreatorPage() {
     public: false
   });
 
-  // ✅ CORRECTION : Options corrigées pour correspondre au schéma MongoDB
+  // Options pour les selects
   const imagingTypes = ['IRM', 'Scanner', 'Échographie', 'Radiographie', 'Mammographie', 'Médecine Nucléaire', 'Angiographie'];
-  
-  // ✅ CORRECTION CRITIQUE : Utiliser exactement les mêmes valeurs que dans Protocol.js
   const anatomicalRegions = [
-    'Céphalée',           // ← AU LIEU DE "Cerveau"
+    'Céphalée',           
     'Cervical', 
     'Thorax', 
     'Abdomen', 
@@ -393,7 +391,7 @@ function ProtocolCreatorPage() {
     'Vaisseaux', 
     'Cœur', 
     'Sein', 
-    'Autre'              // ← AU LIEU DE "Uro, Pédiatrie, ORL"
+    'Autre'              
   ];
 
   // Charger le protocole existant en mode édition
@@ -409,7 +407,7 @@ function ProtocolCreatorPage() {
             ...response.data,
             sequences: response.data.sequences?.map(seq => ({
               ...seq,
-              technicalParameters: seq.technicalParameters || {}, // S'assurer que c'est un objet
+              technicalParameters: seq.technicalParameters || {}, 
               justification: seq.justification || '',
               description: seq.description || '',
               duration: seq.duration || ''
@@ -556,11 +554,8 @@ function ProtocolCreatorPage() {
   };
 
   const handleSave = async () => {
-    // Validation basique
-    if (!formData.title || !formData.imagingType || !formData.anatomicalRegion) {
-      setError('Veuillez remplir tous les champs obligatoires');
-      return;
-    }
+    // ✅ AUCUNE VALIDATION CÔTÉ CLIENT - SUPPRIMÉE
+    // On permet la sauvegarde même si les champs sont vides
 
     try {
       setSaving(true);
@@ -572,7 +567,12 @@ function ProtocolCreatorPage() {
         contraindications: formData.contraindications.filter(item => item.trim() !== ''),
         advantages: formData.advantages.filter(item => item.trim() !== ''),
         limitations: formData.limitations.filter(item => item.trim() !== ''),
-        estimatedDuration: calculateEstimatedDuration()
+        estimatedDuration: calculateEstimatedDuration(),
+        // S'assurer que les champs vides ont des valeurs par défaut
+        title: formData.title || 'Protocole sans titre',
+        imagingType: formData.imagingType || '',
+        anatomicalRegion: formData.anatomicalRegion || '',
+        indication: formData.indication || ''
       };
 
       if (isEditing) {
@@ -623,7 +623,7 @@ function ProtocolCreatorPage() {
       )}
 
       <FormContainer>
-        {/* Informations générales - SUPPRESSION DU CHAMP COMPLEXITÉ */}
+        {/* Informations générales - PLUS DE CHAMPS OBLIGATOIRES */}
         <SectionTitle>
           📋 Informations Générales
         </SectionTitle>
@@ -631,8 +631,8 @@ function ProtocolCreatorPage() {
         <FormGrid>
           <FormGroup className="full-width">
             <Label>
-              Titre du protocole *
-              <AlertCircle size={14} color="#ef4444" />
+              Titre du protocole
+              {/* ✅ SUPPRIMÉ : <AlertCircle size={14} color="#ef4444" /> */}
             </Label>
             <Input
               type="text"
@@ -643,7 +643,7 @@ function ProtocolCreatorPage() {
           </FormGroup>
           
           <FormGroup>
-            <Label>Type d'imagerie *</Label>
+            <Label>Type d'imagerie</Label>
             <Select
               value={formData.imagingType}
               onChange={(e) => handleInputChange('imagingType', e.target.value)}
@@ -656,7 +656,7 @@ function ProtocolCreatorPage() {
           </FormGroup>
           
           <FormGroup>
-            <Label>Région anatomique *</Label>
+            <Label>Région anatomique</Label>
             <Select
               value={formData.anatomicalRegion}
               onChange={(e) => handleInputChange('anatomicalRegion', e.target.value)}
@@ -667,8 +667,6 @@ function ProtocolCreatorPage() {
               ))}
             </Select>
           </FormGroup>
-          
-          {/* LE CHAMP COMPLEXITÉ A ÉTÉ SUPPRIMÉ ICI */}
           
           <FormGroup className="full-width">
             <Label>Indication clinique</Label>
@@ -802,7 +800,7 @@ function ProtocolCreatorPage() {
             
             <FormGrid>
               <FormGroup>
-                <Label>Nom de la séquence *</Label>
+                <Label>Nom de la séquence</Label>
                 <Input
                   type="text"
                   placeholder="Ex: T1 FLAIR axial"
@@ -831,7 +829,7 @@ function ProtocolCreatorPage() {
               </FormGroup>
               
               <FormGroup className="full-width">
-                <Label>Justification médicale *</Label>
+                <Label>Justification médicale</Label>
                 <TextArea
                   placeholder="Pourquoi cette séquence est-elle nécessaire ?"
                   value={sequence.justification}
