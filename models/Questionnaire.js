@@ -1,4 +1,4 @@
-// models/Questionnaire.js - Modèle complet avec système de notation
+// models/Questionnaire.js - Modèle complet CORRIGÉ avec objets au lieu de Maps
 const mongoose = require('mongoose');
 
 const questionnaireSchema = new mongoose.Schema({
@@ -28,17 +28,14 @@ const questionnaireSchema = new mongoose.Schema({
     type: [String],
     default: []
   },
+  pageTitles: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
+  },
+  // ✅ CORRECTION CRITIQUE : Utiliser un objet au lieu d'une Map
   links: {
-    type: Map,
-    of: [{
-      content: String,
-      title: String,
-      date: {
-        type: Date,
-        default: Date.now
-      }
-    }],
-    default: new Map()
+    type: mongoose.Schema.Types.Mixed,
+    default: {} // ← CHANGÉ : {} au lieu de new Map()
   },
   tags: [{
     type: String,
@@ -50,7 +47,7 @@ const questionnaireSchema = new mongoose.Schema({
     default: false
   },
   
-  // NOUVEAUX CHAMPS POUR LE SYSTÈME DE NOTATION
+  // CHAMPS POUR LE SYSTÈME DE NOTATION
   averageRating: {
     type: Number,
     default: 0,
@@ -101,163 +98,71 @@ const questionnaireSchema = new mongoose.Schema({
   toJSON: { 
     virtuals: true,
     transform: function(doc, ret) {
-      // Convertir les Maps en objets lors de la sérialisation JSON
-      if (ret.links instanceof Map) {
-        ret.links = Object.fromEntries(ret.links);
-      }
+      // ✅ CORRECTION : Plus besoin de convertir les Maps puisqu'on utilise des objets
       return ret;
     }
   },
   toObject: { 
     virtuals: true,
     transform: function(doc, ret) {
-      // Convertir les Maps en objets lors de la conversion en objet
-      if (ret.links instanceof Map) {
-        ret.links = Object.fromEntries(ret.links);
-      }
+      // ✅ CORRECTION : Plus besoin de convertir les Maps puisqu'on utilise des objets
       return ret;
     }
   }
 });
 
-// Index pour optimiser les requêtes
-questionnaireSchema.index({ user: 1 });
-questionnaireSchema.index({ public: 1 });
+// Index pour améliorer les performances
+questionnaireSchema.index({ user: 1, createdAt: -1 });
+questionnaireSchema.index({ public: 1, createdAt: -1 });
 questionnaireSchema.index({ tags: 1 });
 questionnaireSchema.index({ averageRating: -1 });
 questionnaireSchema.index({ views: -1 });
-questionnaireSchema.index({ copies: -1 });
-questionnaireSchema.index({ createdAt: -1 });
-questionnaireSchema.index({ updatedAt: -1 });
 
-// Index composé pour les questionnaires publics populaires
-questionnaireSchema.index({ public: 1, averageRating: -1, views: -1 });
-
-// Index pour la recherche textuelle
-questionnaireSchema.index({ title: 'text' });
-
-// NOUVELLE MÉTHODE : Vérifier si le questionnaire est populaire
-questionnaireSchema.methods.isPopular = function() {
-  return this.copies > 10 || this.views > 100;
-};
-
-// NOUVELLE MÉTHODE : Obtenir les statistiques du questionnaire
-questionnaireSchema.methods.getStats = function() {
-  return {
-    averageRating: this.averageRating,
-    ratingsCount: this.ratingsCount,
-    views: this.views,
-    copies: this.copies,
-    isPopular: this.isPopular()
-  };
-};
-
-// NOUVELLE MÉTHODE : Estimer le temps de completion
-questionnaireSchema.methods.getEstimatedTime = function() {
-  const questionCount = this.questions ? this.questions.length : 0;
-  const estimatedMinutes = Math.max(2, Math.ceil(questionCount * 0.5));
-  return `~${estimatedMinutes} min`;
-};
-
-// NOUVELLE MÉTHODE : Obtenir la note en étoiles (conversion 0-10 vers 0-5)
-questionnaireSchema.methods.getStarsRating = function() {
-  return Math.round(this.averageRating / 2);
-};
-
-// NOUVELLE MÉTHODE : Incrémenter les vues
-questionnaireSchema.methods.incrementViews = async function() {
-  this.views += 1;
-  return await this.save();
-};
-
-// NOUVELLE MÉTHODE : Incrémenter les copies
-questionnaireSchema.methods.incrementCopies = async function() {
-  this.copies += 1;
-  return await this.save();
-};
-
-// NOUVELLE MÉTHODE : Obtenir l'icône basée sur les tags
-questionnaireSchema.methods.getIcon = function() {
-  if (!this.tags || this.tags.length === 0) return '📋';
-  
-  const tags = this.tags.map(tag => tag.toLowerCase());
-  
-  if (tags.some(tag => ['irm', 'mri'].includes(tag))) return '🧲';
-  if (tags.some(tag => ['tdm', 'ct', 'scanner'].includes(tag))) return '🔍';
-  if (tags.some(tag => ['rx', 'radio', 'radiographie'].includes(tag))) return '🩻';
-  if (tags.some(tag => ['echo', 'echographie', 'ultrasound'].includes(tag))) return '📡';
-  if (tags.some(tag => ['neuro', 'neurologie', 'brain'].includes(tag))) return '🧠';
-  if (tags.some(tag => ['cardio', 'coeur', 'heart'].includes(tag))) return '❤️';
-  if (tags.some(tag => ['thorax', 'poumon', 'lung'].includes(tag))) return '🫁';
-  if (tags.some(tag => ['abdomen', 'digestif'].includes(tag))) return '🫄';
-  if (tags.some(tag => ['osteo', 'bone', 'os'].includes(tag))) return '🦴';
-  
-  return '📋';
-};
-
-// MÉTHODE VIRTUELLE : Compter le nombre de questions
-questionnaireSchema.virtual('questionsCount').get(function() {
+// Virtual pour obtenir le nombre de questions
+questionnaireSchema.virtual('questionCount').get(function() {
   return this.questions ? this.questions.length : 0;
 });
 
-// MÉTHODE VIRTUELLE : Compter le nombre de tags
-questionnaireSchema.virtual('tagsCount').get(function() {
-  return this.tags ? this.tags.length : 0;
+// Virtual pour vérifier si le questionnaire a des liens
+questionnaireSchema.virtual('hasLinks').get(function() {
+  return this.links && Object.keys(this.links).length > 0;
 });
 
-// MÉTHODE VIRTUELLE : Vérifier si le questionnaire est complet
-questionnaireSchema.virtual('isComplete').get(function() {
-  return this.title && 
-         this.questions && 
-         this.questions.length > 0 &&
-         this.questions.every(q => q.question && q.question.trim().length > 0);
-});
-
-// MÉTHODE VIRTUELLE : Obtenir un résumé du questionnaire
-questionnaireSchema.virtual('summary').get(function() {
-  return {
-    id: this._id,
-    title: this.title,
-    questionsCount: this.questionsCount,
-    tagsCount: this.tagsCount,
-    estimatedTime: this.getEstimatedTime(),
-    isComplete: this.isComplete,
-    isPublic: this.public,
-    stats: this.getStats(),
-    icon: this.getIcon()
-  };
-});
-
-// Middleware pre-save pour validation et nettoyage
+// Middleware pre-save pour valider les données
 questionnaireSchema.pre('save', function(next) {
-  // Nettoyer les tags vides
-  if (this.tags) {
-    this.tags = this.tags.filter(tag => tag && tag.trim().length > 0);
+  // ✅ CORRECTION : S'assurer que links est toujours un objet
+  if (!this.links || typeof this.links !== 'object') {
+    this.links = {};
   }
   
-  // Nettoyer les questions vides
-  if (this.questions) {
-    this.questions = this.questions.filter(q => 
-      q && q.question && q.question.trim().length > 0
-    );
+  // S'assurer que les autres champs sont bien initialisés
+  if (!this.selectedOptions || typeof this.selectedOptions !== 'object') {
+    this.selectedOptions = {};
   }
   
-  // Nettoyer les hiddenQuestions invalides
-  if (this.hiddenQuestions) {
-    this.hiddenQuestions = this.hiddenQuestions.filter(id => 
-      id && typeof id === 'string' && id.trim().length > 0
-    );
+  if (!this.crData || typeof this.crData !== 'object') {
+    this.crData = { crTexts: {}, freeTexts: {} };
   }
   
-  // Valider la cohérence des données
+  if (!this.pageTitles || typeof this.pageTitles !== 'object') {
+    this.pageTitles = {};
+  }
+  
+  if (!Array.isArray(this.hiddenQuestions)) {
+    this.hiddenQuestions = [];
+  }
+  
+  if (!Array.isArray(this.tags)) {
+    this.tags = [];
+  }
+  
+  // Valider que les notes sont dans la plage correcte
+  if (this.averageRating < 0 || this.averageRating > 10) {
+    this.averageRating = 0;
+  }
+  
   if (this.ratingsCount < 0) {
     this.ratingsCount = 0;
-  }
-  
-  if (this.averageRating < 0) {
-    this.averageRating = 0;
-  } else if (this.averageRating > 10) {
-    this.averageRating = 10;
   }
   
   if (this.views < 0) {
@@ -271,136 +176,51 @@ questionnaireSchema.pre('save', function(next) {
   next();
 });
 
-// Middleware post-save pour log des changements importants
-questionnaireSchema.post('save', function(doc) {
-  if (this.wasNew) {
-    console.log(`Nouveau questionnaire créé: ${doc.title} (ID: ${doc._id})`);
-  }
-});
-
-// Méthode statique pour obtenir les questionnaires populaires
-questionnaireSchema.statics.getPopularQuestionnaires = function(limit = 10) {
-  return this.find({ public: true })
-    .sort({ views: -1, copies: -1, averageRating: -1 })
-    .limit(limit)
-    .populate('user', 'username')
-    .lean();
-};
-
-// Méthode statique pour obtenir les questionnaires les mieux notés
-questionnaireSchema.statics.getTopRatedQuestionnaires = function(limit = 10) {
-  return this.find({ 
-    public: true, 
-    ratingsCount: { $gte: 3 } // Au moins 3 notes pour être considéré
-  })
-    .sort({ averageRating: -1, ratingsCount: -1 })
-    .limit(limit)
-    .populate('user', 'username')
-    .lean();
-};
-
-// Méthode statique pour rechercher des questionnaires
-questionnaireSchema.statics.searchPublicQuestionnaires = function(searchQuery, options = {}) {
-  const {
-    tags = [],
-    modality = [],
-    specialty = [],
-    location = [],
-    minRating = 0,
-    page = 1,
-    limit = 12,
-    sortBy = 'createdAt'
-  } = options;
-
-  let query = { public: true };
-  
-  if (searchQuery && searchQuery.trim()) {
-    query.title = { $regex: searchQuery.trim(), $options: 'i' };
+// Méthode pour ajouter une note
+questionnaireSchema.methods.addRating = function(rating) {
+  if (rating < 0 || rating > 10) {
+    throw new Error('La note doit être comprise entre 0 et 10');
   }
   
-  // Combiner tous les filtres de tags
-  const allTagFilters = [...tags, ...modality, ...specialty, ...location].filter(Boolean);
-  if (allTagFilters.length > 0) {
-    query.tags = { $in: allTagFilters };
+  const totalRating = (this.averageRating * this.ratingsCount) + rating;
+  this.ratingsCount += 1;
+  this.averageRating = Math.round((totalRating / this.ratingsCount) * 100) / 100;
+  
+  return this.save();
+};
+
+// Méthode pour mettre à jour une note existante
+questionnaireSchema.methods.updateRating = function(oldRating, newRating) {
+  if (newRating < 0 || newRating > 10) {
+    throw new Error('La note doit être comprise entre 0 et 10');
   }
   
-  if (minRating > 0) {
-    query.averageRating = { $gte: minRating };
+  if (this.ratingsCount === 0) {
+    throw new Error('Aucune note à mettre à jour');
   }
+  
+  const totalRating = (this.averageRating * this.ratingsCount) - oldRating + newRating;
+  this.averageRating = Math.round((totalRating / this.ratingsCount) * 100) / 100;
+  
+  return this.save();
+};
 
-  const sortOptions = {};
-  switch (sortBy) {
-    case 'popular':
-      sortOptions.views = -1;
-      sortOptions.copies = -1;
-      break;
-    case 'rating':
-      sortOptions.averageRating = -1;
-      sortOptions.ratingsCount = -1;
-      break;
-    case 'newest':
-      sortOptions.createdAt = -1;
-      break;
-    case 'oldest':
-      sortOptions.createdAt = 1;
-      break;
-    case 'alphabetical':
-      sortOptions.title = 1;
-      break;
-    default:
-      sortOptions.createdAt = -1;
+// Méthode pour supprimer une note
+questionnaireSchema.methods.removeRating = function(rating) {
+  if (this.ratingsCount === 0) {
+    throw new Error('Aucune note à supprimer');
   }
-
-  return this.find(query)
-    .sort(sortOptions)
-    .skip((page - 1) * limit)
-    .limit(limit)
-    .populate('user', 'username')
-    .lean();
+  
+  if (this.ratingsCount === 1) {
+    this.averageRating = 0;
+    this.ratingsCount = 0;
+  } else {
+    const totalRating = (this.averageRating * this.ratingsCount) - rating;
+    this.ratingsCount -= 1;
+    this.averageRating = Math.round((totalRating / this.ratingsCount) * 100) / 100;
+  }
+  
+  return this.save();
 };
 
-// Méthode statique pour obtenir les tags les plus utilisés
-questionnaireSchema.statics.getPopularTags = function(limit = 20) {
-  return this.aggregate([
-    { $match: { public: true } },
-    { $unwind: '$tags' },
-    { 
-      $group: { 
-        _id: '$tags', 
-        count: { $sum: 1 } 
-      } 
-    },
-    { $sort: { count: -1 } },
-    { $limit: limit },
-    { 
-      $project: { 
-        tag: '$_id', 
-        count: 1, 
-        _id: 0 
-      } 
-    }
-  ]);
-};
-
-// Méthode statique pour obtenir les statistiques globales
-questionnaireSchema.statics.getGlobalStats = function() {
-  return this.aggregate([
-    {
-      $group: {
-        _id: null,
-        totalQuestionnaires: { $sum: 1 },
-        publicQuestionnaires: { 
-          $sum: { $cond: ['$public', 1, 0] } 
-        },
-        totalViews: { $sum: '$views' },
-        totalCopies: { $sum: '$copies' },
-        averageRating: { $avg: '$averageRating' },
-        totalRatings: { $sum: '$ratingsCount' }
-      }
-    }
-  ]);
-};
-
-const Questionnaire = mongoose.model('Questionnaire', questionnaireSchema);
-
-module.exports = Questionnaire;
+module.exports = mongoose.model('Questionnaire', questionnaireSchema);
