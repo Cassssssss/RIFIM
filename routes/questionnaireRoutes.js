@@ -1,4 +1,4 @@
-// routes/questionnaireRoutes.js - VERSION COMPATIBLE AVEC LES DONNÉES EXISTANTES
+// routes/questionnaireRoutes.js - VERSION FINALE AVEC ROUTE /my
 const express = require('express');
 const router = express.Router();
 const Questionnaire = require('../models/Questionnaire');
@@ -162,7 +162,163 @@ function normalizeHiddenQuestionsForSave(hiddenQuestions) {
   return [];
 }
 
-// Route pour récupérer tous les questionnaires (avec système de notation et tags)
+// 🚨 ROUTE MANQUANTE AJOUTÉE : /my pour récupérer les questionnaires de l'utilisateur connecté
+router.get('/my', authMiddleware, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+    const modality = req.query.modality || '';
+    const specialty = req.query.specialty || '';
+    const location = req.query.location || '';
+
+    console.log('🚨 Route /my appelée avec les paramètres:', {
+      page,
+      limit,
+      search,
+      modality,
+      specialty,
+      location,
+      userId: req.userId
+    });
+
+    // Construction du filtre de recherche
+    let searchFilter = {
+      user: req.userId // SEULEMENT les questionnaires de l'utilisateur connecté
+    };
+
+    // Recherche textuelle
+    if (search.trim()) {
+      searchFilter.title = { $regex: search, $options: 'i' };
+    }
+
+    // Filtres par tags (si fournis)
+    const tagFilters = [];
+    if (modality) tagFilters.push(...modality.split(',').filter(Boolean));
+    if (specialty) tagFilters.push(...specialty.split(',').filter(Boolean));
+    if (location) tagFilters.push(...location.split(',').filter(Boolean));
+    
+    if (tagFilters.length > 0) {
+      searchFilter.tags = { $in: tagFilters };
+    }
+
+    console.log('✅ Filtre de recherche questionnaires /my:', searchFilter);
+
+    // Compter le total
+    const total = await Questionnaire.countDocuments(searchFilter);
+    const totalPages = Math.ceil(total / limit);
+
+    console.log(`📊 Total questionnaires trouvés pour l'utilisateur: ${total}`);
+
+    // Récupérer les questionnaires avec pagination
+    const questionnaires = await Questionnaire.find(searchFilter)
+      .sort({ updatedAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
+
+    console.log(`📝 ${questionnaires.length} questionnaires récupérés de la base`);
+
+    // 🔧 CORRECTION : Normaliser hiddenQuestions pour tous les questionnaires
+    const normalizedQuestionnaires = questionnaires.map(questionnaire => ({
+      ...questionnaire,
+      hiddenQuestions: normalizeHiddenQuestionsForDisplay(questionnaire.hiddenQuestions)
+    }));
+
+    // S'assurer que questionnaires est toujours un tableau
+    const safeQuestionnaires = Array.isArray(normalizedQuestionnaires) ? normalizedQuestionnaires : [];
+
+    console.log(`✅ Réponse finale: ${safeQuestionnaires.length} questionnaires normalisés`);
+
+    res.json({
+      questionnaires: safeQuestionnaires,
+      currentPage: page,
+      totalPages: totalPages,
+      totalQuestionnaires: total
+    });
+
+  } catch (error) {
+    console.error('❌ Erreur lors de la récupération des questionnaires /my:', error);
+    res.json({
+      questionnaires: [], // Toujours retourner un tableau vide en cas d'erreur
+      currentPage: 1,
+      totalPages: 0,
+      totalQuestionnaires: 0
+    });
+  }
+});
+
+// Route pour récupérer tous les questionnaires publics (garde la structure existante)
+router.get('/public', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+    const modality = req.query.modality || '';
+    const specialty = req.query.specialty || '';
+    const location = req.query.location || '';
+
+    // Construction du filtre de base
+    let filter = { public: true };
+
+    // Recherche textuelle
+    if (search.trim()) {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { tags: { $elemMatch: { $regex: search, $options: 'i' } } }
+      ];
+    }
+
+    // Filtres par tags
+    const tagFilters = [];
+    if (modality) tagFilters.push(...modality.split(',').filter(Boolean));
+    if (specialty) tagFilters.push(...specialty.split(',').filter(Boolean));
+    if (location) tagFilters.push(...location.split(',').filter(Boolean));
+    
+    if (tagFilters.length > 0) {
+      filter.tags = { $in: tagFilters };
+    }
+
+    // Récupérer les questionnaires publics avec pagination
+    const questionnaires = await Questionnaire.find(filter)
+      .populate('user', 'username')
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
+
+    const totalQuestionnaires = await Questionnaire.countDocuments(filter);
+    const totalPages = Math.ceil(totalQuestionnaires / limit);
+
+    // Normaliser hiddenQuestions pour tous les questionnaires
+    const normalizedQuestionnaires = questionnaires.map(questionnaire => ({
+      ...questionnaire,
+      hiddenQuestions: normalizeHiddenQuestionsForDisplay(questionnaire.hiddenQuestions),
+      averageRating: questionnaire.averageRating || 0,
+      ratingsCount: questionnaire.ratingsCount || 0,
+      views: questionnaire.views || 0,
+      copies: questionnaire.copies || 0
+    }));
+
+    res.json({
+      questionnaires: normalizedQuestionnaires,
+      currentPage: page,
+      totalPages,
+      totalQuestionnaires
+    });
+
+  } catch (error) {
+    console.error('Erreur lors de la récupération des questionnaires publics:', error);
+    res.json({
+      questionnaires: [], // Toujours retourner un tableau vide en cas d'erreur
+      currentPage: 1,
+      totalPages: 0,
+      totalQuestionnaires: 0
+    });
+  }
+});
+
+// Route générale pour récupérer tous les questionnaires (garder pour compatibilité)
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -197,7 +353,7 @@ router.get('/', authMiddleware, async (req, res) => {
       }
     }
 
-    console.log('✅ Filtre de recherche questionnaires:', searchFilter);
+    console.log('✅ Filtre de recherche questionnaires généraux:', searchFilter);
 
     // Compter le total
     const total = await Questionnaire.countDocuments(searchFilter);
@@ -213,8 +369,6 @@ router.get('/', authMiddleware, async (req, res) => {
       .limit(limit)
       .populate('user', 'username')
       .lean();
-
-    console.log(`✅ ${questionnaires.length} questionnaires trouvés`);
 
     // 🔧 CORRECTION : Normaliser hiddenQuestions pour tous les questionnaires
     const normalizedQuestionnaires = questionnaires.map(questionnaire => ({
