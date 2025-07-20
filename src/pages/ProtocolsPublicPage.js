@@ -20,10 +20,15 @@ import RatingStars from '../components/RatingStars';
 
 // ==================== STYLES COMPOSANTS ====================
 
+// MODIFICATION : Retirer max-width et utiliser plus d'espace comme les autres pages
 const PageContainer = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
+  padding: 2rem 3rem;
+  width: 100%;
+  min-height: calc(100vh - 60px);
+
+  @media (max-width: 1200px) {
+    padding: 2rem;
+  }
 
   @media (max-width: 768px) {
     padding: 1rem;
@@ -131,35 +136,64 @@ const SortButton = styled.button`
   padding: 0.75rem 1rem;
   border: 2px solid ${props => props.isActive ? props.theme.primary : props.theme.borderLight};
   border-radius: 8px;
-  background-color: ${props => props.isActive ? props.theme.primary : props.theme.card};
+  background-color: ${props => props.isActive ? props.theme.primary : props.theme.background};
   color: ${props => props.isActive ? 'white' : props.theme.text};
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0.9rem;
-  font-weight: 500;
+  gap: 0.5rem;
 
-  &:hover:not(:disabled) {
-    background-color: ${props => props.theme.primary};
-    color: white;
+  &:hover {
     border-color: ${props => props.theme.primary};
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+    background-color: ${props => props.isActive ? props.theme.primary : props.theme.cardHover};
   }
 `;
 
+const StatsContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: ${props => props.theme.card};
+  border-radius: 12px;
+  border: 1px solid ${props => props.theme.borderLight};
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+`;
+
+const StatItem = styled.div`
+  text-align: center;
+`;
+
+const StatNumber = styled.div`
+  font-size: 2rem;
+  font-weight: 700;
+  color: ${props => props.theme.primary};
+`;
+
+const StatLabel = styled.div`
+  color: ${props => props.theme.textSecondary};
+  font-size: 0.9rem;
+`;
+
+// MODIFICATION : Grille plus large et responsive améliorée
 const ProtocolsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 350px));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
-  justify-content: center;
+
+  @media (max-width: 1400px) {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
-    justify-content: stretch;
+    gap: 1rem;
   }
 `;
 
@@ -167,13 +201,19 @@ const ProtocolCard = styled.div`
   background-color: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.borderLight};
   border-radius: 12px;
-  padding: 0;
-  transition: all 0.2s ease;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
   overflow: hidden;
 
-  /* NOUVEAU : Bordure dégradée au dessus comme les autres pages */
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: ${props => props.theme.primary};
+    background-color: ${props => props.theme.cardHover};
+  }
+
   &::before {
     content: '';
     position: absolute;
@@ -183,23 +223,11 @@ const ProtocolCard = styled.div`
     height: 4px;
     background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
   }
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    border-color: ${props => props.theme.primary}50;
-  }
 `;
 
 const CardContent = styled.div`
-  padding: 1.5rem;
-`;
-
-const ProtocolHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
 `;
 
 const ProtocolTitle = styled.h3`
@@ -267,14 +295,14 @@ const RatingSection = styled.div`
   margin: 0.75rem 0;
 `;
 
-const StatsContainer = styled.div`
+const StatsBottomContainer = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 1rem;
 `;
 
-const StatItem = styled.span`
+const StatBottomItem = styled.span`
   display: flex;
   align-items: center;
   gap: 0.25rem;
@@ -299,74 +327,36 @@ const ActionButton = styled.button`
   color: ${props => props.theme.textSecondary};
   cursor: pointer;
   transition: all 0.2s ease;
-  text-decoration: none;
 
   &:hover {
     background-color: ${props => props.theme.primary};
     color: white;
     border-color: ${props => props.theme.primary};
-  }
-
-  /* Empêcher la propagation du clic vers la carte */
-  &:hover {
-    z-index: 10;
+    transform: scale(1.1);
   }
 `;
 
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 3rem;
-  color: ${props => props.theme.textSecondary};
-
-  h3 {
-    color: ${props => props.theme.text};
-    margin-bottom: 1rem;
-  }
-
-  p {
-    margin-bottom: 2rem;
-    line-height: 1.6;
-  }
-`;
-
-const CreateButton = styled(Link)`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background-color: ${props => props.theme.primary};
-  color: white;
-  text-decoration: none;
-  border-radius: 8px;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: ${props => props.theme.primaryDark};
-  }
-`;
-
-// Pagination components
 const PaginationContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 2rem;
+  gap: 1rem;
+  margin-top: 3rem;
 `;
 
 const PaginationButton = styled.button`
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1.5rem;
   border: 1px solid ${props => props.theme.borderLight};
-  border-radius: 6px;
-  background-color: ${props => props.isActive ? props.theme.primary : props.theme.card};
-  color: ${props => props.isActive ? 'white' : props.theme.text};
+  border-radius: 8px;
+  background-color: ${props => props.theme.background};
+  color: ${props => props.theme.text};
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
     background-color: ${props => props.theme.primary};
     color: white;
+    border-color: ${props => props.theme.primary};
   }
 
   &:disabled {
@@ -378,127 +368,144 @@ const PaginationButton = styled.button`
 // ==================== COMPOSANT PRINCIPAL ====================
 
 function ProtocolsPublicPage() {
-  const navigate = useNavigate();
+  // États
   const [protocols, setProtocols] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('');
-  const [filterRegion, setFilterRegion] = useState('');
+  const [modalityFilter, setModalityFilter] = useState('');
+  const [specialtyFilter, setSpecialtyFilter] = useState('');
   const [sortBy, setSortBy] = useState('popular');
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [stats, setStats] = useState({ total: 0, authors: 0 });
 
-  // Options pour les filtres
-  const imagingTypes = ['IRM', 'Scanner', 'Échographie', 'Radiographie', 'Mammographie', 'Médecine Nucléaire', 'Angiographie'];
-  const anatomicalRegions = ['Céphalée', 'Cervical', 'Thorax', 'Abdomen', 'Pelvis', 'Rachis', 'Membre Supérieur', 'Membre Inférieur', 'Vaisseaux', 'Cœur', 'Sein', 'Autre'];
+  const navigate = useNavigate();
 
-  const fetchProtocols = useCallback(async () => {
+  // Chargement des protocoles
+  const fetchProtocols = useCallback(async (page = 1) => {
     try {
       setLoading(true);
-      const params = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: '12',
-        search: searchTerm,
-        imagingType: filterType,
-        anatomicalRegion: filterRegion,
-        sortBy: sortBy
+      const response = await axios.get('/protocols/public', {
+        params: {
+          page,
+          limit: 12,
+          search: searchTerm,
+          modality: modalityFilter,
+          specialty: specialtyFilter,
+          sortBy
+        }
       });
 
-      const response = await axios.get(`/protocols/public?${params}`);
-      console.log('Réponse API:', response.data);
-      
-      // S'assurer que les données sont valides et sont des tableaux
-      const protocolsData = response.data.protocols || [];
-      const validProtocols = Array.isArray(protocolsData) ? protocolsData : [];
-      
-      // Nettoyer les données pour éviter les objets React invalides
-      const cleanedProtocols = validProtocols.map(protocol => ({
-        ...protocol,
-        // S'assurer que toutes les propriétés sont des valeurs primitives ou null
-        title: protocol.title ? String(protocol.title) : 'Sans titre',
-        description: protocol.description ? String(protocol.description) : '',
-        indication: protocol.indication ? String(protocol.indication) : '',
-        imagingType: protocol.imagingType ? String(protocol.imagingType) : '',
-        anatomicalRegion: protocol.anatomicalRegion ? String(protocol.anatomicalRegion) : '',
-        estimatedDuration: protocol.estimatedDuration ? String(protocol.estimatedDuration) : '',
-        // SUPPRIMÉ : complexity - plus nécessaire
-        averageRating: protocol.averageRating ? Number(protocol.averageRating) : 0,
-        ratingsCount: protocol.ratingsCount ? Number(protocol.ratingsCount) : 0,
-        views: protocol.views || protocol.stats?.views || 0,
-        copies: protocol.copies || protocol.stats?.copies || 0,
-        user: protocol.user || {},
-        userRating: protocol.userRating || null,
-        _id: protocol._id ? String(protocol._id) : ''
-      }));
-      
-      setProtocols(cleanedProtocols);
-      setTotalPages(response.data.totalPages || 0);
-    } catch (err) {
-      console.error('Erreur lors du chargement des protocoles publics:', err);
-      setError('Erreur lors du chargement des protocoles publics');
-      setProtocols([]); // Reset en cas d'erreur
+      setProtocols(response.data.protocols || []);
+      setCurrentPage(response.data.currentPage || 1);
+      setTotalPages(response.data.totalPages || 1);
+      setStats({
+        total: response.data.total || 0,
+        authors: response.data.authorsCount || 0
+      });
+    } catch (error) {
+      console.error('Erreur lors du chargement des protocoles:', error);
+      setError('Impossible de charger les protocoles publics.');
     } finally {
       setLoading(false);
     }
-  }, [currentPage, searchTerm, filterType, filterRegion, sortBy]);
+  }, [searchTerm, modalityFilter, specialtyFilter, sortBy]);
 
+  // Effet pour charger les protocoles
   useEffect(() => {
-    fetchProtocols();
+    fetchProtocols(1);
   }, [fetchProtocols]);
 
-  useEffect(() => {
-    setCurrentPage(1); // Reset page when filters change
-  }, [searchTerm, filterType, filterRegion, sortBy]);
+  // Gestionnaires d'événements
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
+  };
 
-  // NOUVEAU : Gérer le clic sur la carte pour naviguer vers la vue détaillée
-  const handleCardClick = (protocolId) => {
+  const handleModalityChange = (e) => {
+    setModalityFilter(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleSpecialtyChange = (e) => {
+    setSpecialtyFilter(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleSortChange = (newSort) => {
+    setSortBy(newSort);
+    setCurrentPage(1);
+  };
+
+  const handleProtocolClick = (protocolId) => {
+    navigate(`/protocols/view/${protocolId}`);
+  };
+
+  const handleViewClick = (e, protocolId) => {
+    e.stopPropagation();
     navigate(`/protocols/view/${protocolId}`);
   };
 
   const handleCopy = async (e, protocolId) => {
-    e.stopPropagation(); // Empêcher la navigation quand on clique sur copier
+    e.stopPropagation();
     try {
       await axios.post(`/protocols/${protocolId}/copy`);
-      alert('Protocole copié dans vos protocoles personnels !');
-    } catch (err) {
-      console.error('Erreur lors de la copie:', err);
-      setError('Erreur lors de la copie du protocole');
+      alert('Protocole copié avec succès !');
+    } catch (error) {
+      console.error('Erreur lors de la copie:', error);
+      alert('Erreur lors de la copie du protocole');
     }
   };
 
-  const handleViewClick = (e, protocolId) => {
-    e.stopPropagation(); // Empêcher la double navigation
-    navigate(`/protocols/view/${protocolId}`);
-  };
-
-  const isPopular = (protocol) => {
-    const views = Number(protocol?.views) || 0;
-    const copies = Number(protocol?.copies) || 0;
-    return copies > 10 || views > 100;
-  };
-
-  // NOUVEAU: Callback pour mettre à jour les notes
   const handleRatingUpdate = (protocolId, newRatingData) => {
     setProtocols(prev => prev.map(protocol => 
       protocol._id === protocolId 
-        ? { 
-            ...protocol, 
-            averageRating: newRatingData.averageRating || 0,
-            ratingsCount: newRatingData.ratingsCount || 0,
-            userRating: newRatingData.userRating || null
-          }
+        ? { ...protocol, ...newRatingData }
         : protocol
     ));
   };
 
-  if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorMessage message={error} />;
+  // Options de filtre
+  const modalityOptions = [
+    { value: '', label: 'Toutes les modalités' },
+    { value: 'IRM', label: 'IRM' },
+    { value: 'TDM', label: 'TDM' },
+    { value: 'Rx', label: 'Radiographie' },
+    { value: 'Echo', label: 'Échographie' }
+  ];
+
+  const specialtyOptions = [
+    { value: '', label: 'Toutes les spécialités' },
+    { value: 'Cardiovasc', label: 'Cardiovasculaire' },
+    { value: 'Dig', label: 'Digestif' },
+    { value: 'Neuro', label: 'Neurologie' },
+    { value: 'ORL', label: 'ORL' },
+    { value: 'Ostéo', label: 'Ostéo-articulaire' },
+    { value: 'Pedia', label: 'Pédiatrie' },
+    { value: 'Pelvis', label: 'Pelvis' },
+    { value: 'Séno', label: 'Sénologie' },
+    { value: 'Thorax', label: 'Thorax' },
+    { value: 'Uro', label: 'Urologie' }
+  ];
 
   return (
     <PageContainer>
       <PageTitle>Protocoles Publics</PageTitle>
 
+      {/* Statistiques */}
+      <StatsContainer>
+        <StatItem>
+          <StatNumber>{stats.total}</StatNumber>
+          <StatLabel>Protocoles disponibles</StatLabel>
+        </StatItem>
+        <StatItem>
+          <StatNumber>{stats.authors}</StatNumber>
+          <StatLabel>Auteurs contributeurs</StatLabel>
+        </StatItem>
+      </StatsContainer>
+
+      {/* Barre d'actions */}
       <ActionBar>
         <SearchContainer>
           <SearchWrapper>
@@ -507,27 +514,25 @@ function ProtocolsPublicPage() {
             </SearchIconWrapper>
             <SearchInput
               type="text"
-              placeholder="Rechercher un protocole public..."
+              placeholder="Rechercher un protocole..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearch}
             />
           </SearchWrapper>
-          <FilterSelect
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-          >
-            <option value="">Toutes les modalités</option>
-            {imagingTypes.map(type => (
-              <option key={type} value={type}>{type}</option>
+
+          <FilterSelect value={modalityFilter} onChange={handleModalityChange}>
+            {modalityOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
             ))}
           </FilterSelect>
-          <FilterSelect
-            value={filterRegion}
-            onChange={(e) => setFilterRegion(e.target.value)}
-          >
-            <option value="">Toutes les régions</option>
-            {anatomicalRegions.map(region => (
-              <option key={region} value={region}>{region}</option>
+
+          <FilterSelect value={specialtyFilter} onChange={handleSpecialtyChange}>
+            {specialtyOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
             ))}
           </FilterSelect>
         </SearchContainer>
@@ -535,83 +540,76 @@ function ProtocolsPublicPage() {
         <SortContainer>
           <SortButton
             isActive={sortBy === 'popular'}
-            onClick={() => setSortBy('popular')}
+            onClick={() => handleSortChange('popular')}
           >
-            <TrendingUp size={16} style={{ marginRight: '0.5rem' }} />
+            <TrendingUp size={16} />
             Populaires
           </SortButton>
           <SortButton
             isActive={sortBy === 'recent'}
-            onClick={() => setSortBy('recent')}
+            onClick={() => handleSortChange('recent')}
           >
+            <Clock size={16} />
             Récents
           </SortButton>
           <SortButton
-            isActive={sortBy === 'alphabetical'}
-            onClick={() => setSortBy('alphabetical')}
-          >
-            A-Z
-          </SortButton>
-          <SortButton
             isActive={sortBy === 'rating'}
-            onClick={() => setSortBy('rating')}
+            onClick={() => handleSortChange('rating')}
           >
-            <Star size={16} style={{ marginRight: '0.5rem' }} />
+            <Star size={16} />
             Mieux notés
           </SortButton>
         </SortContainer>
       </ActionBar>
 
-      {protocols.length === 0 ? (
-        <EmptyState>
+      {/* Contenu */}
+      {loading ? (
+        <LoadingSpinner />
+      ) : error ? (
+        <ErrorMessage message={error} />
+      ) : protocols.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '3rem 0', color: 'var(--color-text-secondary)' }}>
           <h3>Aucun protocole trouvé</h3>
-          <p>
-            {searchTerm || filterType || filterRegion 
-              ? "Aucun protocole public ne correspond à vos critères de recherche."
-              : "Aucun protocole public n'est disponible pour le moment."
-            }
-          </p>
-        </EmptyState>
+          <p>Essayez de modifier vos critères de recherche.</p>
+        </div>
       ) : (
         <>
           <ProtocolsGrid>
-            {protocols.map((protocol) => (
-              <ProtocolCard 
-                key={protocol._id || Math.random()}
-                onClick={() => handleCardClick(protocol._id)}
-              >
+            {protocols.map(protocol => (
+              <ProtocolCard key={protocol._id} onClick={() => handleProtocolClick(protocol._id)}>
                 <CardContent>
-                  <ProtocolHeader>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '1rem' }}>
                     <ProtocolTitle>{protocol.title}</ProtocolTitle>
-                    {isPopular(protocol) && (
+                    {protocol.isPopular && (
                       <PopularityBadge>
-                        <TrendingUp size={12} />
+                        <ThumbsUp size={12} />
                         Populaire
                       </PopularityBadge>
                     )}
-                  </ProtocolHeader>
-                  
+                  </div>
+
                   <AuthorInfo>
-                    <User size={16} />
-                    Par <strong>{protocol.user?.username || 'Utilisateur'}</strong>
+                    <User size={14} />
+                    Par {protocol.author?.nom || 'Auteur inconnu'}
                   </AuthorInfo>
-                  
+
                   <ProtocolMeta>
-                    <MetaItem>
-                      <span>📋</span>
-                      {protocol.imagingType}
-                    </MetaItem>
-                    <MetaItem>
-                      <span>🎯</span>
-                      {protocol.anatomicalRegion}
-                    </MetaItem>
-                    {protocol.estimatedDuration && (
+                    {protocol.modality && (
                       <MetaItem>
-                        <Clock size={14} />
-                        {protocol.estimatedDuration}
+                        🔬 {protocol.modality}
                       </MetaItem>
                     )}
-                    {/* SUPPRIMÉ : Affichage de la complexité */}
+                    {protocol.specialty && (
+                      <MetaItem>
+                        🏥 {protocol.specialty}
+                      </MetaItem>
+                    )}
+                    {protocol.estimatedTime && (
+                      <MetaItem>
+                        <Clock size={14} />
+                        {protocol.estimatedTime} min
+                      </MetaItem>
+                    )}
                   </ProtocolMeta>
                   
                   <ProtocolDescription>
@@ -619,31 +617,31 @@ function ProtocolsPublicPage() {
                   </ProtocolDescription>
 
                   {/* MODIFICATION : Section de notation optimisée en mode compact */}
-<RatingSection>
-  <div onClick={(e) => e.stopPropagation()}>
-    <RatingStars
-      itemId={protocol._id}
-      itemType="protocol"
-      averageRating={protocol.averageRating}
-      ratingsCount={protocol.ratingsCount}
-      userRating={protocol.userRating}
-      onRatingUpdate={(newRatingData) => handleRatingUpdate(protocol._id, newRatingData)}
-      size={14}
-      compact={true}
-    />
-  </div>
-</RatingSection>
+                  <RatingSection>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <RatingStars
+                        itemId={protocol._id}
+                        itemType="protocol"
+                        averageRating={protocol.averageRating}
+                        ratingsCount={protocol.ratingsCount}
+                        userRating={protocol.userRating}
+                        onRatingUpdate={(newRatingData) => handleRatingUpdate(protocol._id, newRatingData)}
+                        size={14}
+                        compact={true}
+                      />
+                    </div>
+                  </RatingSection>
                   
-                  <StatsContainer>
+                  <StatsBottomContainer>
                     <div style={{ display: 'flex', gap: '1rem' }}>
-                      <StatItem>
+                      <StatBottomItem>
                         <Eye size={14} />
                         {Number(protocol.views) || 0} vues
-                      </StatItem>
-                      <StatItem>
+                      </StatBottomItem>
+                      <StatBottomItem>
                         <Copy size={14} />
                         {Number(protocol.copies) || 0} copies
-                      </StatItem>
+                      </StatBottomItem>
                     </div>
                     
                     <ActionsContainer>
@@ -661,7 +659,7 @@ function ProtocolsPublicPage() {
                         <Copy size={16} />
                       </ActionButton>
                     </ActionsContainer>
-                  </StatsContainer>
+                  </StatsBottomContainer>
                 </CardContent>
               </ProtocolCard>
             ))}
