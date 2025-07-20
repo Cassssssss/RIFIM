@@ -1,5 +1,5 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 import { DragDropContext } from 'react-beautiful-dnd';
 import { lightTheme, darkTheme } from './theme';
@@ -36,10 +36,12 @@ const ProtocolsPublicPage = lazy(() => import('./pages/ProtocolsPublicPage'));
 const ProtocolCreatorPage = lazy(() => import('./pages/ProtocolCreatorPage'));
 const ProtocolViewPage = lazy(() => import('./pages/ProtocolViewPage')); // ← NOUVEAU !
 
-function App() {
+// NOUVEAU : Composant wrapper pour gérer la navigation dans les routes protégées
+function AppContent() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [user, setUser] = useState(null);
   const theme = isDarkMode ? darkTheme : lightTheme;
+  const navigate = useNavigate(); // ← AJOUT : Hook de navigation
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('darkMode');
@@ -79,10 +81,13 @@ function App() {
     setUser({ token, username }); // ← CORRECTION : Utiliser un objet avec token et username
   };
 
+  // MODIFICATION : Fonction de déconnexion avec redirection automatique
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('username');
+    // AJOUT : Redirection automatique vers la page de connexion
+    navigate('/login');
   };
 
   const onDragEnd = (result) => {
@@ -92,69 +97,69 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <DragDropContext onDragEnd={onDragEnd}>
-        <Router>
-          <GlobalStyle />
-          <div className={`app ${isDarkMode ? 'dark' : ''}`}>
-            <Header 
-              isDarkMode={isDarkMode} 
-              toggleDarkMode={toggleDarkMode}
-              user={user}
-              onLogout={handleLogout}
-            />
-            <main className="container mt-8" style={{ paddingTop: '80px' }}> {/* ← AJOUT : paddingTop pour compenser le header fixe */}
-              <Suspense fallback={<LoadingSpinner />}>
-                <Routes>
-                  <Route path="/login" element={<Auth onLogin={handleLogin} />} />
-                  <Route path="/" element={<PrivateRoute />}>
-                    <Route index element={<Home />} />
-                    
-                    {/* Routes Questionnaires */}
-                    <Route path="questionnaires" element={<QuestionnaireListPage />} />
-                    <Route path="questionnaires-list" element={<QuestionnairePage />} />
-                    <Route path="create" element={<QuestionnaireCreator />} />
-                    <Route path="edit/:id" element={<QuestionnaireCreator />} />
-                    <Route path="cr/:id" element={<QuestionnaireCRPage />} />
-                    <Route path="use/:id" element={<QuestionnaireUsePage />} />
-                    
-                    {/* Routes Cas */}
-                    <Route path="radiology-viewer/:caseId" element={<RadiologyViewer />} />
-                    <Route path="cases" element={<CasesPage />} />
-                    <Route path="cases-list" element={<CasesListPage />} />
-                    
-                    {/* NOUVELLES ROUTES PROTOCOLES */}
-                    <Route path="protocols/personal" element={<ProtocolsPersonalPage />} />
-                    <Route path="protocols/create" element={<ProtocolCreatorPage />} />
-                    <Route path="protocols/edit/:id" element={<ProtocolCreatorPage />} />
-                    <Route path="protocols/view/:id" element={<ProtocolViewPage />} /> {/* ← NOUVEAU ! */}
-                  </Route>
+        <GlobalStyle />
+        <div className={`app ${isDarkMode ? 'dark' : ''}`}>
+          <Header 
+            isDarkMode={isDarkMode} 
+            toggleDarkMode={toggleDarkMode}
+            user={user}
+            onLogout={handleLogout}
+          />
+          <main className="container mt-8" style={{ paddingTop: '80px' }}> {/* ← AJOUT : paddingTop pour compenser le header fixe */}
+            <Suspense fallback={<LoadingSpinner />}>
+              <Routes>
+                <Route path="/login" element={<Auth onLogin={handleLogin} />} />
+                <Route path="/" element={<PrivateRoute />}>
+                  <Route index element={<Home />} />
                   
-                  {/* Routes publiques */}
-                  <Route path="/public-questionnaires" element={<PublicQuestionnairesPage />} />
-                  <Route path="/public-cases" element={<PublicCasesPage />} />
-                  <Route path="/protocols/public" element={<ProtocolsPublicPage />} />
+                  {/* Routes Questionnaires */}
+                  <Route path="questionnaires" element={<QuestionnaireListPage />} />
+                  <Route path="questionnaires-list" element={<QuestionnairePage />} />
+                  <Route path="create" element={<QuestionnaireCreator />} />
+                  <Route path="edit/:id" element={<QuestionnaireCreator />} />
+                  <Route path="cr/:id" element={<QuestionnaireCRPage />} />
+                  <Route path="use/:id" element={<QuestionnaireUsePage />} />
                   
-                  {/* Routes spéciales */}
-                  <Route path="/sheet/:caseId" element={<SheetViewer />} />
-                  <Route path="/create-sheet/:caseId" element={<SheetEditor />} />
-                  <Route path="/test-upload" element={<TestUpload />} />
-                  <Route 
-                    path="questionnaire/:questionnaireId/link/:elementId/:linkIndex" 
-                    element={
-                      <Suspense fallback={<LoadingSpinner />}>
-                        <LinkView />
-                      </Suspense>
-                    } 
-                  />
+                  {/* Routes Cas */}
+                  <Route path="radiology-viewer/:caseId" element={<RadiologyViewer />} />
+                  <Route path="cases" element={<CasesPage />} />
+                  <Route path="cases-list" element={<CasesListPage />} />
                   
-                  {/* Redirection par défaut */}
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-              </Suspense>
-            </main>
-          </div>
-        </Router>
+                  {/* NOUVELLES ROUTES PROTOCOLES */}
+                  <Route path="protocols/personal" element={<ProtocolsPersonalPage />} />
+                  <Route path="protocols/create" element={<ProtocolCreatorPage />} />
+                  <Route path="protocols/edit/:id" element={<ProtocolCreatorPage />} />
+                  <Route path="protocols/view/:id" element={<ProtocolViewPage />} /> {/* ← NOUVEAU ! */}
+                  
+                  {/* Routes utilitaires */}
+                  <Route path="sheet-editor" element={<SheetEditor />} />
+                  <Route path="test-upload" element={<TestUpload />} />
+                  <Route path="sheet-viewer/:id" element={<SheetViewer />} />
+                  <Route path="link/:id" element={<LinkView />} />
+                </Route>
+                
+                {/* Routes publiques accessibles même sans connexion */}
+                <Route path="/public-questionnaires" element={<PublicQuestionnairesPage />} />
+                <Route path="/public-cases" element={<PublicCasesPage />} />
+                <Route path="/protocols/public" element={<ProtocolsPublicPage />} /> {/* ← NOUVEAU ! */}
+                
+                {/* Redirection par défaut */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Suspense>
+          </main>
+        </div>
       </DragDropContext>
     </ThemeProvider>
+  );
+}
+
+// MODIFICATION : Composant App principal qui wraps AppContent avec Router
+function App() {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
   );
 }
 
