@@ -34,14 +34,14 @@ const LinkView = lazy(() => import('./components/LinkView'));
 const ProtocolsPersonalPage = lazy(() => import('./pages/ProtocolsPersonalPage'));
 const ProtocolsPublicPage = lazy(() => import('./pages/ProtocolsPublicPage'));
 const ProtocolCreatorPage = lazy(() => import('./pages/ProtocolCreatorPage'));
-const ProtocolViewPage = lazy(() => import('./pages/ProtocolViewPage')); // ← NOUVEAU !
+const ProtocolViewPage = lazy(() => import('./pages/ProtocolViewPage'));
 
 // NOUVEAU : Composant wrapper pour gérer la navigation dans les routes protégées
 function AppContent() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [user, setUser] = useState(null);
   const theme = isDarkMode ? darkTheme : lightTheme;
-  const navigate = useNavigate(); // ← AJOUT : Hook de navigation
+  const navigate = useNavigate();
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('darkMode');
@@ -54,7 +54,7 @@ function AppContent() {
     const token = localStorage.getItem('token');
     const username = localStorage.getItem('username');
     if (token && username) {
-      setUser({ token, username }); // ← CORRECTION : Utiliser un objet avec token et username
+      setUser({ token, username });
     }
   }, []);
 
@@ -78,15 +78,13 @@ function AppContent() {
   const handleLogin = (token, username) => {
     localStorage.setItem('token', token);
     localStorage.setItem('username', username);
-    setUser({ token, username }); // ← CORRECTION : Utiliser un objet avec token et username
+    setUser({ token, username });
   };
 
-  // MODIFICATION : Fonction de déconnexion avec redirection automatique
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('username');
-    // AJOUT : Redirection automatique vers la page de connexion
     navigate('/login');
   };
 
@@ -105,7 +103,7 @@ function AppContent() {
             userName={user?.username}
             onLogout={handleLogout}
           />
-          <main className="container mt-8" style={{ paddingTop: '80px' }}> {/* ← AJOUT : paddingTop pour compenser le header fixe */}
+          <main className="container mt-8" style={{ paddingTop: '80px' }}>
             <Suspense fallback={<LoadingSpinner />}>
               <Routes>
                 <Route path="/login" element={<Auth onLogin={handleLogin} />} />
@@ -125,23 +123,28 @@ function AppContent() {
                   <Route path="cases" element={<CasesPage />} />
                   <Route path="cases-list" element={<CasesListPage />} />
                   
+                  {/* ROUTES FICHES - CORRIGÉES */}
+                  <Route path="sheet/:caseId" element={<SheetViewer />} />
+                  <Route path="sheet-editor/:caseId" element={<SheetEditor />} />
+                  
                   {/* NOUVELLES ROUTES PROTOCOLES */}
                   <Route path="protocols/personal" element={<ProtocolsPersonalPage />} />
                   <Route path="protocols/create" element={<ProtocolCreatorPage />} />
                   <Route path="protocols/edit/:id" element={<ProtocolCreatorPage />} />
-                  <Route path="protocols/view/:id" element={<ProtocolViewPage />} /> {/* ← NOUVEAU ! */}
+                  <Route path="protocols/view/:id" element={<ProtocolViewPage />} />
                   
                   {/* Routes utilitaires */}
-                  <Route path="sheet-editor" element={<SheetEditor />} />
                   <Route path="test-upload" element={<TestUpload />} />
-                  <Route path="sheet-viewer/:id" element={<SheetViewer />} />
                   <Route path="link/:id" element={<LinkView />} />
                 </Route>
                 
                 {/* Routes publiques accessibles même sans connexion */}
                 <Route path="/public-questionnaires" element={<PublicQuestionnairesPage />} />
                 <Route path="/public-cases" element={<PublicCasesPage />} />
-                <Route path="/protocols/public" element={<ProtocolsPublicPage />} /> {/* ← NOUVEAU ! */}
+                <Route path="/protocols/public" element={<ProtocolsPublicPage />} />
+                
+                {/* Redirection par défaut */}
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>
           </main>
