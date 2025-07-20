@@ -32,7 +32,7 @@ router.post('/:id/rate', authMiddleware, async (req, res) => {
   try {
     const { rating, comment } = req.body;
     const caseId = req.params.id;
-    const userId = req.user._id;
+    const userId = req.userId; // ✅ CORRIGÉ : utiliser req.userId au lieu de req.user._id
 
     // Validation des données
     if (rating === undefined || rating === null || rating < 0 || rating > 10) {
@@ -52,7 +52,7 @@ router.post('/:id/rate', authMiddleware, async (req, res) => {
     }
 
     // Empêcher l'auto-notation
-    if (caseDoc.user.toString() === userId.toString()) {
+    if (caseDoc.user.toString() === userId) { // ✅ CORRIGÉ : supprimé .toString() sur userId
       return res.status(403).json({ message: 'Vous ne pouvez pas noter votre propre cas' });
     }
 
@@ -109,7 +109,7 @@ router.post('/:id/rate', authMiddleware, async (req, res) => {
 router.delete('/:id/rate', authMiddleware, async (req, res) => {
   try {
     const caseId = req.params.id;
-    const userId = req.user._id;
+    const userId = req.userId; // ✅ CORRIGÉ : utiliser req.userId au lieu de req.user._id
 
     // Supprimer la note de l'utilisateur
     const deletedRating = await CaseRating.findOneAndDelete({ 
@@ -151,7 +151,7 @@ router.delete('/:id/rate', authMiddleware, async (req, res) => {
 router.post('/:id/copy', authMiddleware, async (req, res) => {
   try {
     const caseId = req.params.id;
-    const userId = req.user._id;
+    const userId = req.userId; // ✅ CORRIGÉ : utiliser req.userId au lieu de req.user._id
 
     // Vérifier que le cas existe et est public
     const originalCase = await Case.findById(caseId);
@@ -242,9 +242,9 @@ router.get('/public', async (req, res) => {
 
     // Si l'utilisateur est connecté, récupérer ses notes
     let userRatings = {};
-    if (req.user) {
+    if (req.userId) { // ✅ CORRIGÉ : utiliser req.userId au lieu de req.user
       const userRatingDocs = await CaseRating.find({ 
-        user: req.user._id,
+        user: req.userId, // ✅ CORRIGÉ : utiliser req.userId au lieu de req.user._id
         case: { $in: cases.map(c => c._id) }
       });
       
@@ -328,10 +328,10 @@ router.get('/:id', async (req, res) => {
     }
 
     // Ajouter la note de l'utilisateur connecté si applicable
-    if (req.user && caseDoc.public) {
+    if (req.userId && caseDoc.public) { // ✅ CORRIGÉ : utiliser req.userId au lieu de req.user
       const userRating = await CaseRating.findOne({
         case: req.params.id,
-        user: req.user._id
+        user: req.userId // ✅ CORRIGÉ : utiliser req.userId au lieu de req.user._id
       });
       caseObject.userRating = userRating ? userRating.rating : null;
     }
