@@ -238,6 +238,7 @@ function ProtocolViewPage() {
   const [protocol, setProtocol] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     const fetchProtocol = async () => {
@@ -245,6 +246,18 @@ function ProtocolViewPage() {
         setLoading(true);
         const response = await axios.get(`/protocols/${id}`);
         setProtocol(response.data);
+        
+        // Récupérer l'ID de l'utilisateur connecté depuis le token ou localStorage
+        const token = localStorage.getItem('token');
+        if (token) {
+          // Décoder le token pour récupérer l'ID utilisateur (simple décodage JWT)
+          try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            setCurrentUser(payload.userId);
+          } catch (e) {
+            console.error('Erreur décodage token:', e);
+          }
+        }
       } catch (err) {
         console.error('Erreur lors du chargement du protocole:', err);
         setError('Erreur lors du chargement du protocole');
@@ -267,6 +280,10 @@ function ProtocolViewPage() {
     }
   };
 
+  // NOUVEAU : Vérifier si l'utilisateur actuel est le propriétaire du protocole
+  const isOwner = protocol && currentUser && protocol.user && 
+    (protocol.user._id === currentUser || protocol.user === currentUser);
+
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
   if (!protocol) return <ErrorMessage message="Protocole non trouvé" />;
@@ -276,7 +293,7 @@ function ProtocolViewPage() {
       <Header>
         <PageTitle>{protocol.title}</PageTitle>
         <ActionButtons>
-          <ActionButton as={Link} to="/protocols/personal">
+          <ActionButton as={Link} to="/protocols/public">
             <ArrowLeft size={16} />
             Retour
           </ActionButton>
@@ -284,10 +301,13 @@ function ProtocolViewPage() {
             <Copy size={16} />
             Copier
           </ActionButton>
-          <ActionButton as={Link} to={`/protocols/edit/${protocol._id}`} className="primary">
-            <Edit size={16} />
-            Modifier
-          </ActionButton>
+          {/* MODIFICATION : Afficher le bouton Modifier SEULEMENT si l'utilisateur est propriétaire */}
+          {isOwner && (
+            <ActionButton as={Link} to={`/protocols/edit/${protocol._id}`} className="primary">
+              <Edit size={16} />
+              Modifier
+            </ActionButton>
+          )}
         </ActionButtons>
       </Header>
 
@@ -302,14 +322,7 @@ function ProtocolViewPage() {
             <MetaLabel>Région anatomique</MetaLabel>
             <MetaValue>{protocol.anatomicalRegion}</MetaValue>
           </MetaItem>
-          <MetaItem>
-            <MetaLabel>Complexité</MetaLabel>
-            <MetaValue>
-              {Array.from({ length: protocol.complexity || 1 }, (_, i) => (
-                <Star key={i} size={16} fill="currentColor" />
-              ))}
-            </MetaValue>
-          </MetaItem>
+          {/* SUPPRIMÉ : Complexité */}
           <MetaItem>
             <MetaLabel>Statut</MetaLabel>
             <MetaValue>
