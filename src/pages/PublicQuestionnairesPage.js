@@ -1,25 +1,30 @@
-// PublicQuestionnairesPage.js - VERSION CORRIGÉE SANS FOND SUPPLÉMENTAIRE
+// PublicQuestionnairesPage.js - VERSION CORRIGÉE AVEC CARTES OPTIMISÉES
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { ChevronDown, ChevronUp, Clock, Users, FileText, TrendingUp, User, Eye, Copy } from 'lucide-react';
 import axios from '../utils/axiosConfig';
-import RatingStars from '../components/RatingStars'; // NOUVEAU : Import du système de notation
+import RatingStars from '../components/RatingStars';
 
-// ==================== STYLED COMPONENTS SIMPLIFIÉS COMME QuestionnairePage ====================
+// ==================== STYLES CONTAINER PRINCIPAL OPTIMISÉ ====================
 
 const PageContainer = styled.div`
-  min-height: 100vh;
+  padding: 2rem 3rem;
+  width: 100%;
+  min-height: calc(100vh - 60px);
   background-color: ${props => props.theme.background};
-  padding: 2rem;
-  
+
+  @media (max-width: 1200px) {
+    padding: 2rem;
+  }
+
   @media (max-width: 768px) {
     padding: 1rem;
   }
 `;
 
 const ContentWrapper = styled.div`
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   display: flex;
   gap: 2rem;
@@ -49,7 +54,7 @@ const Subtitle = styled.p`
   line-height: 1.6;
 `;
 
-// ==================== SECTION FILTRES ====================
+// ==================== SECTION FILTRES (INCHANGÉE) ====================
 
 const FilterSection = styled.div`
   width: 280px;
@@ -149,15 +154,11 @@ const FilterIndicator = styled.div`
   border-radius: 4px;
 `;
 
-// ==================== SECTION CONTENU PRINCIPAL ====================
+// ==================== SECTION CONTENU PRINCIPAL OPTIMISÉE ====================
 
 const ListContainer = styled.div`
   flex: 1;
-  max-width: calc(100% - 300px);
-
-  @media (max-width: 768px) {
-    max-width: 100%;
-  }
+  width: 100%;
 `;
 
 const SearchBar = styled.input`
@@ -182,13 +183,21 @@ const SearchBar = styled.input`
   }
 `;
 
-// ==================== GRILLE DES QUESTIONNAIRES ====================
+// ==================== GRILLE OPTIMISÉE POUR MAXIMISER L'ESPACE ====================
 
 const QuestionnairesGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
+
+  @media (max-width: 1400px) {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -196,15 +205,20 @@ const QuestionnairesGrid = styled.div`
   }
 `;
 
+// ==================== CARTES RÉDUITES EN LARGEUR ====================
+
 const QuestionnaireCard = styled.div`
   background-color: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.border};
   border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 12px ${props => props.theme.shadow};
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px ${props => props.theme.shadow};
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
 
   &::before {
     content: '';
@@ -212,7 +226,7 @@ const QuestionnaireCard = styled.div`
     top: 0;
     left: 0;
     right: 0;
-    height: 4px;
+    height: 3px;
     background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
   }
 
@@ -229,13 +243,13 @@ const CardHeader = styled.div`
 
 const QuestionnaireTitle = styled(Link)`
   color: ${props => props.theme.text};
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 600;
   text-decoration: none;
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  line-height: 1.4;
+  align-items: flex-start;
+  gap: 0.5rem;
+  line-height: 1.3;
   
   &:hover {
     color: ${props => props.theme.primary};
@@ -243,16 +257,61 @@ const QuestionnaireTitle = styled(Link)`
 `;
 
 const QuestionnaireIcon = styled.span`
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   flex-shrink: 0;
+  margin-top: 2px;
 `;
 
-const CardMeta = styled.div`
+const PopularityBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: linear-gradient(45deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+`;
+
+const AuthorInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: ${props => props.theme.textSecondary};
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+
+  svg {
+    color: ${props => props.theme.primary};
+  }
+`;
+
+const TagsContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+`;
+
+const Tag = styled.span`
+  background-color: ${props => props.theme.primary};
+  color: white;
+  padding: 0.2rem 0.4rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 500;
+`;
+
+// ==================== MÉTADONNÉES COMPACTES ====================
+
+const CardMeta = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
   background-color: ${props => props.theme.backgroundSecondary};
   border-radius: 8px;
   border: 1px solid ${props => props.theme.border};
@@ -261,77 +320,69 @@ const CardMeta = styled.div`
 const MetaItem = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   color: ${props => props.theme.textSecondary};
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 500;
 
   svg {
     color: ${props => props.theme.primary};
     flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 `;
 
-const TagsContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-`;
-
-const Tag = styled.span`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-`;
+// ==================== ACTIONS COMPACTES ====================
 
 const ActionButtons = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  align-items: center;
-  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: auto;
 `;
 
 const ActionButton = styled(Link)`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 0.95rem;
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.6rem 0.8rem;
+  background-color: ${props => props.theme.primary};
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
   transition: all 0.2s ease;
 
   &:hover {
+    background-color: ${props => props.theme.primaryHover};
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px ${props => props.theme.shadow};
-    opacity: 0.9;
   }
 
   svg {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
   }
 `;
 
 const CopyButton = styled.button`
-  background-color: ${props => props.theme.secondary};
-  color: white;
-  padding: 0.5rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0.6rem;
+  background-color: ${props => props.theme.secondary};
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
@@ -340,71 +391,12 @@ const CopyButton = styled.button`
   }
 
   svg {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
   }
 `;
 
-const AuthorInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
-`;
-
-const PopularityBadge = styled.span`
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  background-color: ${props => props.theme.success};
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  margin-left: 0.5rem;
-`;
-
-// ==================== MESSAGES D'ÉTAT ====================
-
-const LoadingMessage = styled.div`
-  text-align: center;
-  padding: 4rem 2rem;
-  color: ${props => props.theme.textSecondary};
-  font-size: 1.2rem;
-`;
-
-const ErrorMessage = styled.div`
-  text-align: center;
-  padding: 2rem;
-  color: #ef4444;
-  font-size: 1.1rem;
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 12px;
-  margin: 2rem 0;
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 4rem 2rem;
-  color: ${props => props.theme.textSecondary};
-
-  h3 {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    color: ${props => props.theme.text};
-  }
-
-  p {
-    font-size: 1.1rem;
-    line-height: 1.6;
-  }
-`;
-
-// ==================== PAGINATION ====================
+// ==================== PAGINATION (INCHANGÉE) ====================
 
 const PaginationContainer = styled.div`
   display: flex;
@@ -443,29 +435,59 @@ const PaginationInfo = styled.span`
   font-size: 0.9rem;
 `;
 
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem;
+  color: ${props => props.theme.textSecondary};
+`;
+
+const ErrorContainer = styled.div`
+  text-align: center;
+  padding: 2rem;
+  color: ${props => props.theme.error};
+  background-color: ${props => props.theme.errorLight};
+  border-radius: 8px;
+  border: 1px solid ${props => props.theme.error};
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 4rem 2rem;
+  color: ${props => props.theme.textSecondary};
+  
+  h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: ${props => props.theme.text};
+  }
+
+  p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+`;
+
 // ==================== COMPOSANTS ====================
 
 function QuestionnaireCardComponent({ questionnaire }) {
-  // NOUVEAU : États pour la gestion des notes
   const [questionnaireRating, setQuestionnaireRating] = useState({
     averageRating: questionnaire.averageRating || 0,
     ratingsCount: questionnaire.ratingsCount || 0,
     userRating: questionnaire.userRating || null
   });
 
-  // NOUVEAU : Gestion de la mise à jour des notes
   const handleRatingUpdate = (questionnaireId, newRatingData) => {
     setQuestionnaireRating(newRatingData);
   };
 
-  // NOUVEAU : Fonction pour déterminer si un questionnaire est populaire
   const isPopular = (questionnaire) => {
     const views = Number(questionnaire?.views) || 0;
     const copies = Number(questionnaire?.copies) || 0;
     return copies > 10 || views > 100;
   };
 
-  // NOUVEAU : Fonction pour copier un questionnaire
   const addToMyQuestionnaires = async (questionnaireId) => {
     try {
       await axios.post(`/questionnaires/${questionnaireId}/copy`);
@@ -510,10 +532,10 @@ function QuestionnaireCardComponent({ questionnaire }) {
           <QuestionnaireIcon>
             {getQuestionnaireIcon(questionnaire.tags)}
           </QuestionnaireIcon>
-          {questionnaire.title}
+          <span>{questionnaire.title}</span>
           {isPopular(questionnaire) && (
             <PopularityBadge>
-              <TrendingUp size={12} />
+              <TrendingUp size={10} />
               Populaire
             </PopularityBadge>
           )}
@@ -521,15 +543,18 @@ function QuestionnaireCardComponent({ questionnaire }) {
       </CardHeader>
 
       <AuthorInfo>
-        <User size={16} />
+        <User size={14} />
         Par <strong>{questionnaire.user?.username || 'Utilisateur'}</strong>
       </AuthorInfo>
 
       {/* Tags */}
       <TagsContainer>
-        {questionnaire.tags && questionnaire.tags.map((tag, index) => (
+        {questionnaire.tags && questionnaire.tags.slice(0, 3).map((tag, index) => (
           <Tag key={index}>{tag}</Tag>
         ))}
+        {questionnaire.tags && questionnaire.tags.length > 3 && (
+          <Tag>+{questionnaire.tags.length - 3}</Tag>
+        )}
       </TagsContainer>
 
       {/* Métadonnées */}
@@ -547,20 +572,12 @@ function QuestionnaireCardComponent({ questionnaire }) {
           <span>{questionnaire.questions ? questionnaire.questions.length : 0} questions</span>
         </MetaItem>
         <MetaItem>
-          <Clock />
-          <span>{estimateTime(questionnaire)}</span>
-        </MetaItem>
-        <MetaItem>
           <Eye />
           <span>{questionnaire.views || 0} vues</span>
         </MetaItem>
-        <MetaItem>
-          <Copy />
-          <span>{questionnaire.copies || 0} copies</span>
-        </MetaItem>
       </CardMeta>
 
-      {/* NOUVEAU : Système de notation */}
+      {/* Système de notation */}
       <RatingStars
         itemId={questionnaire._id}
         itemType="questionnaire"
@@ -574,7 +591,7 @@ function QuestionnaireCardComponent({ questionnaire }) {
       {/* Actions */}
       <ActionButtons>
         <ActionButton to={`/use/${questionnaire._id}`}>
-          <FileText size={16} />
+          <FileText size={14} />
           Utiliser
         </ActionButton>
         
@@ -585,7 +602,7 @@ function QuestionnaireCardComponent({ questionnaire }) {
           }}
           title="Ajouter à mes questionnaires"
         >
-          <Copy size={16} />
+          <Copy size={14} />
         </CopyButton>
       </ActionButtons>
     </QuestionnaireCard>
@@ -633,7 +650,6 @@ function PublicQuestionnairesPage() {
         }
       });
       if (response.data && response.data.questionnaires) {
-        // MODIFIÉ : Nettoyer les données pour inclure les informations de notation
         const cleanedQuestionnaires = response.data.questionnaires.map(questionnaire => ({
           ...questionnaire,
           averageRating: questionnaire.averageRating ? Number(questionnaire.averageRating) : 0,
@@ -695,33 +711,30 @@ function PublicQuestionnairesPage() {
     );
   };
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
   };
 
   return (
     <PageContainer>
-      <Title>🩺 Questionnaires Publics</Title>
+      <Title>🌍 Questionnaires Publics</Title>
       <Subtitle>
-        Découvrez et utilisez des questionnaires partagés par la communauté médicale
+        Découvrez et utilisez les questionnaires partagés par la communauté
       </Subtitle>
 
       <ContentWrapper>
         {/* SECTION FILTRES */}
         <FilterSection>
           <FilterGroup>
-            <FilterTitle>🔍 Modalités</FilterTitle>
+            <FilterTitle>🏥 Modalité</FilterTitle>
             <FilterDropdown>
               <DropdownButton
-                data-open={isModalityDropdownOpen}
                 onClick={() => setIsModalityDropdownOpen(!isModalityDropdownOpen)}
+                data-open={isModalityDropdownOpen}
               >
-                <span>
-                  {modalityFilters.length > 0 
-                    ? `${modalityFilters.length} sélectionnée(s)` 
-                    : 'Toutes modalités'
-                  }
-                </span>
+                <span>{modalityFilters.length > 0 ? `${modalityFilters.length} sélectionnée(s)` : 'Toutes'}</span>
                 {isModalityDropdownOpen ? <ChevronUp /> : <ChevronDown />}
               </DropdownButton>
               {isModalityDropdownOpen && (
@@ -742,18 +755,13 @@ function PublicQuestionnairesPage() {
           </FilterGroup>
 
           <FilterGroup>
-            <FilterTitle>🏥 Spécialités</FilterTitle>
+            <FilterTitle>🩺 Spécialité</FilterTitle>
             <FilterDropdown>
               <DropdownButton
-                data-open={isSpecialtyDropdownOpen}
                 onClick={() => setIsSpecialtyDropdownOpen(!isSpecialtyDropdownOpen)}
+                data-open={isSpecialtyDropdownOpen}
               >
-                <span>
-                  {specialtyFilters.length > 0 
-                    ? `${specialtyFilters.length} sélectionnée(s)` 
-                    : 'Toutes spécialités'
-                  }
-                </span>
+                <span>{specialtyFilters.length > 0 ? `${specialtyFilters.length} sélectionnée(s)` : 'Toutes'}</span>
                 {isSpecialtyDropdownOpen ? <ChevronUp /> : <ChevronDown />}
               </DropdownButton>
               {isSpecialtyDropdownOpen && (
@@ -774,18 +782,13 @@ function PublicQuestionnairesPage() {
           </FilterGroup>
 
           <FilterGroup>
-            <FilterTitle>📍 Localisations</FilterTitle>
+            <FilterTitle>📍 Localisation</FilterTitle>
             <FilterDropdown>
               <DropdownButton
-                data-open={isLocationDropdownOpen}
                 onClick={() => setIsLocationDropdownOpen(!isLocationDropdownOpen)}
+                data-open={isLocationDropdownOpen}
               >
-                <span>
-                  {locationFilters.length > 0 
-                    ? `${locationFilters.length} sélectionnée(s)` 
-                    : 'Toutes localisations'
-                  }
-                </span>
+                <span>{locationFilters.length > 0 ? `${locationFilters.length} sélectionnée(s)` : 'Toutes'}</span>
                 {isLocationDropdownOpen ? <ChevronUp /> : <ChevronDown />}
               </DropdownButton>
               {isLocationDropdownOpen && (
@@ -825,25 +828,25 @@ function PublicQuestionnairesPage() {
 
           {/* CONTENU CONDITIONNEL */}
           {isLoading ? (
-            <LoadingMessage>⏳ Chargement des questionnaires...</LoadingMessage>
+            <LoadingContainer>
+              <div>Chargement des questionnaires...</div>
+            </LoadingContainer>
           ) : error ? (
-            <ErrorMessage>{error}</ErrorMessage>
+            <ErrorContainer>
+              <h3>❌ Erreur</h3>
+              <p>{error}</p>
+            </ErrorContainer>
           ) : questionnaires.length === 0 ? (
             <EmptyState>
-              <h3>Aucun questionnaire trouvé</h3>
-              <p>
-                Essayez de modifier vos critères de recherche ou de supprimer certains filtres.
-              </p>
+              <h3>🔍 Aucun questionnaire trouvé</h3>
+              <p>Essayez de modifier vos critères de recherche ou supprimez les filtres.</p>
             </EmptyState>
           ) : (
             <>
               {/* GRILLE DES QUESTIONNAIRES */}
               <QuestionnairesGrid>
                 {questionnaires.map((questionnaire) => (
-                  <QuestionnaireCardComponent 
-                    key={questionnaire._id} 
-                    questionnaire={questionnaire} 
-                  />
+                  <QuestionnaireCardComponent key={questionnaire._id} questionnaire={questionnaire} />
                 ))}
               </QuestionnairesGrid>
 

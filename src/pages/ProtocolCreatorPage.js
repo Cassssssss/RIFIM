@@ -1,7 +1,7 @@
-// ProtocolCreatorPage.js - VERSION SANS VALIDATION OBLIGATOIRE
+// ProtocolCreatorPage.js - VERSION CORRIGÉE AVEC SAUVEGARDE AMÉLIORÉE
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../utils/axiosConfig';
 import styled from 'styled-components';
 import { 
   Save, 
@@ -65,49 +65,46 @@ const ActionButton = styled.button`
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: ${props => props.className === 'primary' ? props.theme.primaryHover : props.theme.hover};
-    transform: translateY(-1px);
+    background-color: ${props => props.className === 'primary' ? 
+      props.theme.primaryHover : props.theme.cardHover};
+    border-color: ${props => props.theme.primary};
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
-    transform: none;
   }
 `;
 
 const FormContainer = styled.div`
   background-color: ${props => props.theme.card};
+  border: 1px solid ${props => props.theme.border};
   border-radius: 12px;
   padding: 2rem;
   box-shadow: 0 4px 12px ${props => props.theme.shadow};
-  border: 1px solid ${props => props.theme.border};
 `;
 
 const SectionTitle = styled.h2`
   color: ${props => props.theme.text};
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 600;
-  margin: 2rem 0 1.5rem 0;
-  padding-bottom: 0.75rem;
-  border-bottom: 2px solid ${props => props.theme.border};
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-
-  &:first-of-type {
-    margin-top: 0;
-  }
+  margin: 0 0 1.5rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid ${props => props.theme.primary};
 `;
 
 const FormGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
   margin-bottom: 2rem;
 
   .full-width {
     grid-column: 1 / -1;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
   }
 `;
 
@@ -128,33 +125,26 @@ const Label = styled.label`
 
 const Input = styled.input`
   padding: 0.75rem;
-  border: 2px solid ${props => props.theme.border};
-  border-radius: 8px;
-  font-size: 1rem;
-  background-color: ${props => props.theme.card};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 6px;
+  background-color: ${props => props.theme.background};
   color: ${props => props.theme.text};
-  transition: all 0.2s ease;
+  font-size: 1rem;
 
   &:focus {
     outline: none;
     border-color: ${props => props.theme.primary};
     box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
   }
-
-  &::placeholder {
-    color: ${props => props.theme.textSecondary};
-  }
 `;
 
 const Select = styled.select`
   padding: 0.75rem;
-  border: 2px solid ${props => props.theme.border};
-  border-radius: 8px;
-  font-size: 1rem;
-  background-color: ${props => props.theme.card};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 6px;
+  background-color: ${props => props.theme.background};
   color: ${props => props.theme.text};
-  cursor: pointer;
-  transition: all 0.2s ease;
+  font-size: 1rem;
 
   &:focus {
     outline: none;
@@ -165,34 +155,49 @@ const Select = styled.select`
 
 const TextArea = styled.textarea`
   padding: 0.75rem;
-  border: 2px solid ${props => props.theme.border};
-  border-radius: 8px;
-  font-size: 1rem;
-  background-color: ${props => props.theme.card};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 6px;
+  background-color: ${props => props.theme.background};
   color: ${props => props.theme.text};
+  font-size: 1rem;
+  min-height: 120px;
   resize: vertical;
-  min-height: 100px;
-  font-family: inherit;
-  transition: all 0.2s ease;
 
   &:focus {
     outline: none;
     border-color: ${props => props.theme.primary};
     box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
   }
-
-  &::placeholder {
-    color: ${props => props.theme.textSecondary};
-  }
 `;
 
-const SequenceCard = styled.div`
+const CheckboxContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background-color: ${props => props.theme.backgroundSecondary};
+  border-radius: 8px;
+  border: 1px solid ${props => props.theme.border};
+`;
+
+const Checkbox = styled.input`
+  width: 18px;
+  height: 18px;
+  accent-color: ${props => props.theme.primary};
+`;
+
+const CheckboxLabel = styled.label`
+  color: ${props => props.theme.text};
+  font-weight: 500;
+  cursor: pointer;
+`;
+
+const SequenceContainer = styled.div`
   background-color: ${props => props.theme.backgroundSecondary};
   border: 1px solid ${props => props.theme.border};
   border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 1rem;
-  position: relative;
 `;
 
 const SequenceHeader = styled.div`
@@ -202,28 +207,11 @@ const SequenceHeader = styled.div`
   margin-bottom: 1rem;
 `;
 
-const SequenceTitle = styled.h4`
+const SequenceTitle = styled.h3`
   color: ${props => props.theme.text};
-  margin: 0;
   font-size: 1.1rem;
-`;
-
-const DeleteButton = styled.button`
-  background-color: ${props => props.theme.error};
-  color: white;
-  border: none;
-  padding: 0.5rem;
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: ${props => props.theme.errorHover || props.theme.error};
-    transform: translateY(-1px);
-  }
+  font-weight: 600;
+  margin: 0;
 `;
 
 const AddButton = styled.button`
@@ -317,13 +305,12 @@ const ToggleSwitch = styled.button`
     content: '';
     position: absolute;
     top: 2px;
-    left: ${props => props.isActive ? '27px' : '2px'};
+    left: ${props => props.isActive ? '26px' : '2px'};
     width: 21px;
     height: 21px;
     background-color: white;
     border-radius: 50%;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
 `;
 
@@ -331,12 +318,12 @@ const EstimatedDuration = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: linear-gradient(135deg, ${props => props.theme.primary}20, ${props => props.theme.secondary}20);
-  border-radius: 8px;
+  padding: 0.75rem;
+  background-color: ${props => props.theme.info}20;
+  border: 1px solid ${props => props.theme.info};
+  border-radius: 6px;
+  color: ${props => props.theme.info};
   font-weight: 500;
-  color: ${props => props.theme.primary};
-  margin-top: 1rem;
 `;
 
 // ==================== COMPOSANT PRINCIPAL ====================
@@ -345,18 +332,22 @@ function ProtocolCreatorPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEditing = Boolean(id);
-
+  
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
-  // État du formulaire - AUCUNE VALIDATION CÔTÉ CLIENT
+  // État du formulaire avec valeurs par défaut
   const [formData, setFormData] = useState({
     title: '',
     imagingType: '',
     anatomicalRegion: '',
     indication: '',
     description: '',
+    contraindications: [],
+    advantages: [],
+    limitations: [],
+    public: false,
     sequences: [],
     acquisitionParameters: {
       fieldStrength: '',
@@ -369,19 +360,16 @@ function ProtocolCreatorPage() {
         injectionProtocol: ''
       },
       preparation: ''
-    },
-    contraindications: [],
-    advantages: [],
-    limitations: [],
-    status: 'Brouillon',
-    public: false
+    }
   });
 
-  // Options pour les selects
-  const imagingTypes = ['IRM', 'Scanner', 'Échographie', 'Radiographie', 'Mammographie', 'Médecine Nucléaire', 'Angiographie'];
+  // Listes des options
+  const imagingTypes = ['IRM', 'TDM', 'Radiographie', 'Échographie', 'Mammographie', 'Scintigraphie'];
   const anatomicalRegions = [
-    'Céphalée',           
-    'Cervical', 
+    'Crâne', 
+    'Cerveau', 
+    'Face', 
+    'Cou', 
     'Thorax', 
     'Abdomen', 
     'Pelvis', 
@@ -426,9 +414,7 @@ function ProtocolCreatorPage() {
             },
             contraindications: response.data.contraindications || [],
             advantages: response.data.advantages || [],
-            limitations: response.data.limitations || [],
-            public: response.data.public || false,
-            status: response.data.status || 'Brouillon'
+            limitations: response.data.limitations || []
           };
           
           setFormData(protocolData);
@@ -444,7 +430,7 @@ function ProtocolCreatorPage() {
     }
   }, [id, isEditing]);
 
-  // Gestionnaires d'événements
+  // Gérer les changements dans les champs
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -452,6 +438,7 @@ function ProtocolCreatorPage() {
     }));
   };
 
+  // Gérer les changements dans les paramètres d'acquisition
   const handleAcquisitionParameterChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -462,6 +449,7 @@ function ProtocolCreatorPage() {
     }));
   };
 
+  // Gérer les changements dans les paramètres de contraste
   const handleContrastChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -475,88 +463,85 @@ function ProtocolCreatorPage() {
     }));
   };
 
-  const addSequence = () => {
-    const newSequence = {
-      id: Date.now().toString(),
-      name: '',
-      description: '',
-      justification: '',
-      technicalParameters: {},
-      order: formData.sequences.length + 1,
-      duration: ''
-    };
-
+  // Ajouter un élément à une liste
+  const addListItem = (listName) => {
     setFormData(prev => ({
       ...prev,
-      sequences: [...prev.sequences, newSequence]
+      [listName]: [...prev[listName], '']
     }));
   };
 
-  const updateSequence = (sequenceId, field, value) => {
+  // Supprimer un élément d'une liste
+  const removeListItem = (listName, index) => {
     setFormData(prev => ({
       ...prev,
-      sequences: prev.sequences.map(seq =>
-        seq.id === sequenceId ? { ...seq, [field]: value } : seq
+      [listName]: prev[listName].filter((_, i) => i !== index)
+    }));
+  };
+
+  // Modifier un élément d'une liste
+  const updateListItem = (listName, index, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [listName]: prev[listName].map((item, i) => i === index ? value : item)
+    }));
+  };
+
+  // Ajouter une séquence
+  const addSequence = () => {
+    setFormData(prev => ({
+      ...prev,
+      sequences: [...prev.sequences, {
+        name: '',
+        description: '',
+        duration: '',
+        technicalParameters: {},
+        justification: ''
+      }]
+    }));
+  };
+
+  // Supprimer une séquence
+  const removeSequence = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      sequences: prev.sequences.filter((_, i) => i !== index)
+    }));
+  };
+
+  // Modifier une séquence
+  const updateSequence = (index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      sequences: prev.sequences.map((seq, i) => 
+        i === index ? { ...seq, [field]: value } : seq
       )
     }));
   };
 
-  const removeSequence = (sequenceId) => {
-    setFormData(prev => ({
-      ...prev,
-      sequences: prev.sequences.filter(seq => seq.id !== sequenceId)
-    }));
-  };
-
-  const addListItem = (listType) => {
-    setFormData(prev => ({
-      ...prev,
-      [listType]: [...prev[listType], '']
-    }));
-  };
-
-  const updateListItem = (listType, index, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [listType]: prev[listType].map((item, i) => i === index ? value : item)
-    }));
-  };
-
-  const removeListItem = (listType, index) => {
-    setFormData(prev => ({
-      ...prev,
-      [listType]: prev[listType].filter((_, i) => i !== index)
-    }));
-  };
-
+  // Calculer la durée estimée
   const calculateEstimatedDuration = () => {
-    let totalMinutes = 0;
-    
-    formData.sequences.forEach(sequence => {
-      if (sequence.duration) {
-        const durationMatch = sequence.duration.match(/(\d+)min/);
-        if (durationMatch) {
-          totalMinutes += parseInt(durationMatch[1]);
-        }
-      }
-    });
+    const totalMinutes = formData.sequences.reduce((total, sequence) => {
+      const duration = sequence.duration || '';
+      const minutes = parseInt(duration.replace(/\D/g, ''), 10) || 0;
+      return total + minutes;
+    }, 0);
 
-    if (totalMinutes === 0) return 'Non spécifiée';
-    
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    
-    if (hours > 0) {
-      return `${hours}h ${minutes > 0 ? minutes + 'min' : ''}`;
+    if (totalMinutes === 0) {
+      return '';
+    } else if (totalMinutes >= 60) {
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      return `${hours}h${minutes > 0 ? minutes + 'min' : ''}`;
     } else {
-      return `${minutes}min`;
+      return `${totalMinutes}min`;
     }
   };
 
+  // FONCTION DE SAUVEGARDE CORRIGÉE AVEC DEBUGGING
   const handleSave = async () => {
-    // ✅ AUCUNE VALIDATION CÔTÉ CLIENT - SUPPRIMÉE
-    // On permet la sauvegarde même si les champs sont vides
-
+    console.log('🔍 DÉBUT SAUVEGARDE - isEditing:', isEditing, 'ID:', id);
+    
     try {
       setSaving(true);
       setError('');
@@ -567,24 +552,49 @@ function ProtocolCreatorPage() {
         contraindications: formData.contraindications.filter(item => item.trim() !== ''),
         advantages: formData.advantages.filter(item => item.trim() !== ''),
         limitations: formData.limitations.filter(item => item.trim() !== ''),
+        sequences: formData.sequences.filter(seq => seq.name && seq.name.trim() !== ''),
         estimatedDuration: calculateEstimatedDuration(),
-        // S'assurer que les champs vides ont des valeurs par défaut
+        // S'assurer que les champs obligatoires ont des valeurs par défaut
         title: formData.title || 'Protocole sans titre',
-        imagingType: formData.imagingType || '',
-        anatomicalRegion: formData.anatomicalRegion || '',
-        indication: formData.indication || ''
+        imagingType: formData.imagingType || 'Non spécifié',
+        anatomicalRegion: formData.anatomicalRegion || 'Non spécifié',
+        indication: formData.indication || 'Non spécifiée'
       };
 
+      console.log('📤 Données à envoyer:', cleanedData);
+
+      let response;
       if (isEditing) {
-        await axios.put(`/protocols/${id}`, cleanedData);
+        console.log('🔄 Mise à jour du protocole existant...');
+        response = await axios.put(`/protocols/${id}`, cleanedData);
+        console.log('✅ Protocole mis à jour:', response.data);
       } else {
-        await axios.post('/protocols', cleanedData);
+        console.log('➕ Création d\'un nouveau protocole...');
+        response = await axios.post('/protocols', cleanedData);
+        console.log('✅ Protocole créé:', response.data);
       }
 
+      console.log('🎉 Sauvegarde réussie, redirection...');
       navigate('/protocols/personal');
     } catch (err) {
-      console.error('Erreur lors de la sauvegarde:', err);
-      setError('Erreur lors de la sauvegarde du protocole');
+      console.error('❌ Erreur lors de la sauvegarde:', err);
+      console.error('📋 Détails de l\'erreur:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        url: err.config?.url
+      });
+
+      if (err.response?.status === 401) {
+        setError('Session expirée. Veuillez vous reconnecter.');
+        navigate('/auth');
+      } else if (err.response?.status === 403) {
+        setError('Accès non autorisé pour cette action.');
+      } else if (err.response?.status === 404) {
+        setError('Protocole non trouvé.');
+      } else {
+        setError(err.response?.data?.message || 'Erreur lors de la sauvegarde du protocole');
+      }
     } finally {
       setSaving(false);
     }
@@ -632,7 +642,6 @@ function ProtocolCreatorPage() {
           <FormGroup className="full-width">
             <Label>
               Titre du protocole
-              {/* ✅ SUPPRIMÉ : <AlertCircle size={14} color="#ef4444" /> */}
             </Label>
             <Input
               type="text"
@@ -669,18 +678,19 @@ function ProtocolCreatorPage() {
           </FormGroup>
           
           <FormGroup className="full-width">
-            <Label>Indication clinique</Label>
-            <TextArea
-              placeholder="Décrivez l'indication clinique pour ce protocole..."
+            <Label>Indication</Label>
+            <Input
+              type="text"
+              placeholder="Ex: Suspicion de pathologie tumorale"
               value={formData.indication}
               onChange={(e) => handleInputChange('indication', e.target.value)}
             />
           </FormGroup>
           
           <FormGroup className="full-width">
-            <Label>Description du protocole</Label>
+            <Label>Description générale</Label>
             <TextArea
-              placeholder="Description détaillée du protocole..."
+              placeholder="Décrivez brièvement ce protocole..."
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
             />
@@ -689,12 +699,12 @@ function ProtocolCreatorPage() {
 
         {/* Paramètres d'acquisition */}
         <SectionTitle>
-          ⚙️ Paramètres d'Acquisition
+          🔬 Paramètres d'Acquisition
         </SectionTitle>
         
         <FormGrid>
           <FormGroup>
-            <Label>Intensité du champ magnétique</Label>
+            <Label>Intensité du champ</Label>
             <Select
               value={formData.acquisitionParameters.fieldStrength}
               onChange={(e) => handleAcquisitionParameterChange('fieldStrength', e.target.value)}
@@ -702,7 +712,7 @@ function ProtocolCreatorPage() {
               <option value="">Sélectionner...</option>
               <option value="1.5T">1.5T</option>
               <option value="3T">3T</option>
-              <option value="7T">7T (recherche)</option>
+              <option value="7T">7T</option>
             </Select>
           </FormGroup>
           
@@ -729,73 +739,71 @@ function ProtocolCreatorPage() {
             </Select>
           </FormGroup>
           
-          <FormGroup>
-            <Label>
-              <input
-                type="checkbox"
-                checked={formData.acquisitionParameters.contrast.used}
-                onChange={(e) => handleContrastChange('used', e.target.checked)}
-                style={{ marginRight: '0.5rem' }}
-              />
-              Utiliser un produit de contraste
-            </Label>
-          </FormGroup>
-          
-          {formData.acquisitionParameters.contrast.used && (
-            <>
-              <FormGroup>
-                <Label>Agent de contraste</Label>
-                <Input
-                  type="text"
-                  placeholder="Ex: Gadolinium"
-                  value={formData.acquisitionParameters.contrast.agent}
-                  onChange={(e) => handleContrastChange('agent', e.target.value)}
-                />
-              </FormGroup>
-              
-              <FormGroup>
-                <Label>Dose</Label>
-                <Input
-                  type="text"
-                  placeholder="Ex: 0.1 mmol/kg"
-                  value={formData.acquisitionParameters.contrast.dose}
-                  onChange={(e) => handleContrastChange('dose', e.target.value)}
-                />
-              </FormGroup>
-              
-              <FormGroup className="full-width">
-                <Label>Protocole d'injection</Label>
-                <TextArea
-                  placeholder="Décrivez le protocole d'injection..."
-                  value={formData.acquisitionParameters.contrast.injectionProtocol}
-                  onChange={(e) => handleContrastChange('injectionProtocol', e.target.value)}
-                />
-              </FormGroup>
-            </>
-          )}
-          
           <FormGroup className="full-width">
             <Label>Préparation du patient</Label>
             <TextArea
-              placeholder="Instructions de préparation (jeûne, médication, etc.)..."
+              placeholder="Instructions de préparation..."
               value={formData.acquisitionParameters.preparation}
               onChange={(e) => handleAcquisitionParameterChange('preparation', e.target.value)}
             />
           </FormGroup>
         </FormGrid>
 
+        {/* Injection de produit de contraste */}
+        <CheckboxContainer>
+          <Checkbox
+            type="checkbox"
+            checked={formData.acquisitionParameters.contrast.used}
+            onChange={(e) => handleContrastChange('used', e.target.checked)}
+          />
+          <CheckboxLabel>Injection de produit de contraste</CheckboxLabel>
+        </CheckboxContainer>
+
+        {formData.acquisitionParameters.contrast.used && (
+          <FormGrid style={{ marginTop: '1rem' }}>
+            <FormGroup>
+              <Label>Agent de contraste</Label>
+              <Input
+                type="text"
+                placeholder="Ex: Gadolinium"
+                value={formData.acquisitionParameters.contrast.agent}
+                onChange={(e) => handleContrastChange('agent', e.target.value)}
+              />
+            </FormGroup>
+            
+            <FormGroup>
+              <Label>Dose</Label>
+              <Input
+                type="text"
+                placeholder="Ex: 0.1 mmol/kg"
+                value={formData.acquisitionParameters.contrast.dose}
+                onChange={(e) => handleContrastChange('dose', e.target.value)}
+              />
+            </FormGroup>
+            
+            <FormGroup className="full-width">
+              <Label>Protocole d'injection</Label>
+              <TextArea
+                placeholder="Protocole d'injection détaillé..."
+                value={formData.acquisitionParameters.contrast.injectionProtocol}
+                onChange={(e) => handleContrastChange('injectionProtocol', e.target.value)}
+              />
+            </FormGroup>
+          </FormGrid>
+        )}
+
         {/* Séquences */}
         <SectionTitle>
-          🔄 Séquences d'Acquisition
+          📷 Séquences d'Acquisition
         </SectionTitle>
         
         {formData.sequences.map((sequence, index) => (
-          <SequenceCard key={sequence.id}>
+          <SequenceContainer key={index}>
             <SequenceHeader>
               <SequenceTitle>Séquence {index + 1}</SequenceTitle>
-              <DeleteButton onClick={() => removeSequence(sequence.id)}>
-                <Trash2 size={14} />
-              </DeleteButton>
+              <RemoveItemButton onClick={() => removeSequence(index)}>
+                <Trash2 size={16} />
+              </RemoveItemButton>
             </SequenceHeader>
             
             <FormGrid>
@@ -805,7 +813,7 @@ function ProtocolCreatorPage() {
                   type="text"
                   placeholder="Ex: T1 FLAIR axial"
                   value={sequence.name}
-                  onChange={(e) => updateSequence(sequence.id, 'name', e.target.value)}
+                  onChange={(e) => updateSequence(index, 'name', e.target.value)}
                 />
               </FormGroup>
               
@@ -815,7 +823,7 @@ function ProtocolCreatorPage() {
                   type="text"
                   placeholder="Ex: 3min 30s"
                   value={sequence.duration}
-                  onChange={(e) => updateSequence(sequence.id, 'duration', e.target.value)}
+                  onChange={(e) => updateSequence(index, 'duration', e.target.value)}
                 />
               </FormGroup>
               
@@ -824,7 +832,7 @@ function ProtocolCreatorPage() {
                 <TextArea
                   placeholder="Décrivez cette séquence..."
                   value={sequence.description}
-                  onChange={(e) => updateSequence(sequence.id, 'description', e.target.value)}
+                  onChange={(e) => updateSequence(index, 'description', e.target.value)}
                 />
               </FormGroup>
               
@@ -833,17 +841,25 @@ function ProtocolCreatorPage() {
                 <TextArea
                   placeholder="Pourquoi cette séquence est-elle nécessaire ?"
                   value={sequence.justification}
-                  onChange={(e) => updateSequence(sequence.id, 'justification', e.target.value)}
+                  onChange={(e) => updateSequence(index, 'justification', e.target.value)}
                 />
               </FormGroup>
             </FormGrid>
-          </SequenceCard>
+          </SequenceContainer>
         ))}
-
+        
         <AddButton onClick={addSequence}>
           <Plus size={16} />
           Ajouter une séquence
         </AddButton>
+
+        {/* Durée estimée totale */}
+        {formData.sequences.length > 0 && (
+          <EstimatedDuration>
+            <Clock size={16} />
+            Durée estimée totale : {calculateEstimatedDuration()}
+          </EstimatedDuration>
+        )}
 
         {/* Contre-indications */}
         <SectionTitle>
@@ -854,96 +870,91 @@ function ProtocolCreatorPage() {
           {formData.contraindications.map((item, index) => (
             <ListItem key={index}>
               <ListInput
+                type="text"
+                placeholder="Contre-indication..."
                 value={item}
-                placeholder="Saisir une contre-indication..."
                 onChange={(e) => updateListItem('contraindications', index, e.target.value)}
               />
               <RemoveItemButton onClick={() => removeListItem('contraindications', index)}>
-                <Trash2 size={14} />
+                <Trash2 size={16} />
               </RemoveItemButton>
             </ListItem>
           ))}
-          <AddButton onClick={() => addListItem('contraindications')}>
-            <Plus size={16} />
-            Ajouter une contre-indication
-          </AddButton>
         </ListContainer>
+        
+        <AddButton onClick={() => addListItem('contraindications')}>
+          <Plus size={16} />
+          Ajouter une contre-indication
+        </AddButton>
 
         {/* Avantages */}
         <SectionTitle>
-          ✅ Avantages du Protocole
+          ✅ Avantages
         </SectionTitle>
         
         <ListContainer>
           {formData.advantages.map((item, index) => (
             <ListItem key={index}>
               <ListInput
+                type="text"
+                placeholder="Avantage..."
                 value={item}
-                placeholder="Saisir un avantage..."
                 onChange={(e) => updateListItem('advantages', index, e.target.value)}
               />
               <RemoveItemButton onClick={() => removeListItem('advantages', index)}>
-                <Trash2 size={14} />
+                <Trash2 size={16} />
               </RemoveItemButton>
             </ListItem>
           ))}
-          <AddButton onClick={() => addListItem('advantages')}>
-            <Plus size={16} />
-            Ajouter un avantage
-          </AddButton>
         </ListContainer>
+        
+        <AddButton onClick={() => addListItem('advantages')}>
+          <Plus size={16} />
+          Ajouter un avantage
+        </AddButton>
 
         {/* Limitations */}
         <SectionTitle>
-          ⚠️ Limitations
+          ⚡ Limitations
         </SectionTitle>
         
         <ListContainer>
           {formData.limitations.map((item, index) => (
             <ListItem key={index}>
               <ListInput
+                type="text"
+                placeholder="Limitation..."
                 value={item}
-                placeholder="Saisir une limitation..."
                 onChange={(e) => updateListItem('limitations', index, e.target.value)}
               />
               <RemoveItemButton onClick={() => removeListItem('limitations', index)}>
-                <Trash2 size={14} />
+                <Trash2 size={16} />
               </RemoveItemButton>
             </ListItem>
           ))}
-          <AddButton onClick={() => addListItem('limitations')}>
-            <Plus size={16} />
-            Ajouter une limitation
-          </AddButton>
         </ListContainer>
-
-        {/* Paramètres de publication */}
-        <SectionTitle>
-          🌐 Paramètres de Publication
-        </SectionTitle>
         
+        <AddButton onClick={() => addListItem('limitations')}>
+          <Plus size={16} />
+          Ajouter une limitation
+        </AddButton>
+
+        {/* Statut de publication */}
         <StatusToggle>
           <ToggleSwitch
+            type="button"
             isActive={formData.public}
             onClick={() => handleInputChange('public', !formData.public)}
           />
           <div>
-            <strong>Protocole {formData.public ? 'Public' : 'Privé'}</strong>
-            <p style={{ margin: 0, fontSize: '0.85rem', color: 'gray' }}>
-              {formData.public 
-                ? 'Visible par tous les utilisateurs' 
-                : 'Visible uniquement par vous'
-              }
-            </p>
+            <div style={{ color: formData.public ? '#10b981' : '#6b7280', fontWeight: '600' }}>
+              {formData.public ? <Eye size={16} /> : <EyeOff size={16} />}
+            </div>
+            <div style={{ fontSize: '0.9rem', color: '#6b7280' }}>
+              {formData.public ? 'Protocole public' : 'Protocole privé'}
+            </div>
           </div>
-          {formData.public ? <Eye /> : <EyeOff />}
         </StatusToggle>
-
-        {/* Durée estimée */}
-        <EstimatedDuration>
-          <Clock size={16} />
-          <span>Durée totale estimée: {calculateEstimatedDuration()}</span>
-        </EstimatedDuration>
       </FormContainer>
     </PageContainer>
   );
