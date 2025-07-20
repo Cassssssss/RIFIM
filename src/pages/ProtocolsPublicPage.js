@@ -253,12 +253,12 @@ const ProtocolDescription = styled.p`
   overflow: hidden;
 `;
 
-// NOUVEAU: Section de notation dans la carte
+// MODIFICATION : Section de notation plus compacte
 const RatingSection = styled.div`
-  padding: 1rem 0;
+  padding: 0.5rem 0;
   border-top: 1px solid ${props => props.theme.borderLight};
   border-bottom: 1px solid ${props => props.theme.borderLight};
-  margin: 1rem 0;
+  margin: 0.75rem 0;
 `;
 
 const StatsContainer = styled.div`
@@ -612,7 +612,7 @@ function ProtocolsPublicPage() {
                     {protocol.description || protocol.indication}
                   </ProtocolDescription>
 
-                  {/* Section de notation intégrée dans chaque carte */}
+                  {/* MODIFICATION : Section de notation optimisée en mode compact */}
                   <RatingSection>
                     <div onClick={(e) => e.stopPropagation()}>
                       <RatingStars
@@ -621,7 +621,8 @@ function ProtocolsPublicPage() {
                         ratingsCount={protocol.ratingsCount}
                         userRating={protocol.userRating}
                         onRatingUpdate={(newRatingData) => handleRatingUpdate(protocol._id, newRatingData)}
-                        size={18}
+                        size={14}
+                        compact={true}
                       />
                     </div>
                   </RatingSection>

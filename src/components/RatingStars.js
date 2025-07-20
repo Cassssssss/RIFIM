@@ -8,15 +8,16 @@ import axios from '../utils/axiosConfig';
 const RatingContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  margin: 1rem 0;
+  gap: ${props => props.compact ? '0.5rem' : '0.75rem'};
+  margin: ${props => props.compact ? '0' : '1rem 0'};
 `;
 
 const RatingDisplay = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  justify-content: ${props => props.compact ? 'space-between' : 'flex-start'};
+  gap: ${props => props.compact ? '0.5rem' : '0.5rem'};
+  margin-bottom: ${props => props.compact ? '0' : '0.5rem'};
 `;
 
 const StarsContainer = styled.div`
@@ -29,17 +30,19 @@ const RatingInfo = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.875rem;
+  font-size: ${props => props.compact ? '0.8rem' : '0.875rem'};
 `;
 
 const RatingValue = styled.span`
   font-weight: 600;
   color: ${props => props.theme.text};
-  font-size: 1rem;
+  font-size: ${props => props.compact ? '0.875rem' : '1rem'};
 `;
 
 const RatingCount = styled.span`
   color: ${props => props.theme.textSecondary};
+  font-size: ${props => props.compact ? '0.75rem' : '0.875rem'};
+  white-space: nowrap;
 `;
 
 // NOUVEAU : Système de notation numérique
@@ -235,21 +238,33 @@ const Message = styled.div`
   }
 `;
 
+// MODIFICATION : Bouton plus compact avec taille adaptative
 const StartRatingButton = styled.button`
-  padding: 0.5rem 1rem;
+  padding: ${props => props.compact ? '0.3rem 0.6rem' : '0.5rem 1rem'};
   background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: ${props => props.compact ? '4px' : '6px'};
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: ${props => props.compact ? '0.75rem' : '0.875rem'};
   font-weight: 500;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  max-width: ${props => props.compact ? '120px' : 'none'};
+  flex-shrink: 0;
 
   &:hover {
     transform: translateY(-1px);
     box-shadow: 0 2px 8px ${props => props.theme.primary}30;
   }
+`;
+
+// NOUVEAU : Conteneur pour l'affichage utilisateur en mode compact
+const UserRatingDisplay = styled.div`
+  font-size: ${props => props.compact ? '0.75rem' : '0.875rem'};
+  color: ${props => props.theme.primary};
+  font-weight: 500;
+  white-space: nowrap;
 `;
 
 // ==================== COMPOSANT PRINCIPAL ====================
@@ -261,7 +276,8 @@ function RatingStars({
   userRating = null,
   onRatingUpdate,
   readonly = false,
-  size = 16
+  size = 16,
+  compact = false  // NOUVEAU : prop compact
 }) {
   const [selectedRating, setSelectedRating] = useState(userRating || 0);
   const [comment, setComment] = useState('');
@@ -383,42 +399,47 @@ function RatingStars({
   };
 
   return (
-    <RatingContainer>
+    <RatingContainer compact={compact}>
       {/* Affichage de la note moyenne */}
-      <RatingDisplay>
-        <StarsContainer>
-          {renderDisplayStars()}
-        </StarsContainer>
-        <RatingInfo>
-          {averageRating > 0 ? (
-            <>
-              <RatingValue>{averageRating.toFixed(1)}/10</RatingValue>
-              <RatingCount>({ratingsCount} avis)</RatingCount>
-            </>
-          ) : (
-            <RatingCount>Aucune note</RatingCount>
-          )}
-        </RatingInfo>
+      <RatingDisplay compact={compact}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <StarsContainer>
+            {renderDisplayStars()}
+          </StarsContainer>
+          <RatingInfo compact={compact}>
+            {averageRating > 0 ? (
+              <>
+                <RatingValue compact={compact}>{averageRating.toFixed(1)}/10</RatingValue>
+                <RatingCount compact={compact}>({ratingsCount} avis)</RatingCount>
+              </>
+            ) : (
+              <RatingCount compact={compact}>Aucune note</RatingCount>
+            )}
+          </RatingInfo>
+        </div>
+
+        {/* MODIFICATION : Bouton pour commencer à noter en mode compact ou normal */}
+        {!isRating && !readonly && (
+          <StartRatingButton compact={compact} onClick={handleStartRating}>
+            {compact ? (userRating ? '✏️' : '⭐') : (userRating ? 'Modifier ma note' : '⭐ Noter ce protocole')}
+          </StartRatingButton>
+        )}
       </RatingDisplay>
 
-      {/* Affichage de la note utilisateur */}
-      {userRating && !isRating && (
+      {/* MODIFICATION : Affichage de la note utilisateur seulement en mode non-compact */}
+      {userRating && !isRating && !compact && (
         <RatingInfo>
-          <span style={{ 
-            fontSize: '0.875rem', 
-            color: 'var(--color-primary)', 
-            fontWeight: 500 
-          }}>
+          <UserRatingDisplay compact={compact}>
             Votre note: {userRating}/10
-          </span>
+          </UserRatingDisplay>
         </RatingInfo>
       )}
 
-      {/* Bouton pour commencer à noter */}
-      {!isRating && !readonly && (
-        <StartRatingButton onClick={handleStartRating}>
-          {userRating ? 'Modifier ma note' : '⭐ Noter ce protocole'}
-        </StartRatingButton>
+      {/* MODIFICATION : Affichage compact de la note utilisateur */}
+      {userRating && !isRating && compact && (
+        <UserRatingDisplay compact={compact}>
+          Ma note: {userRating}/10
+        </UserRatingDisplay>
       )}
 
       {/* Interface de notation */}
