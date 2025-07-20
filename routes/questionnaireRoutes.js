@@ -1,4 +1,4 @@
-// routes/questionnaireRoutes.js - VERSION CORRIGÉE POUR LE PROBLÈME hiddenQuestions
+// routes/questionnaireRoutes.js - VERSION COMPATIBLE AVEC LES DONNÉES EXISTANTES
 const express = require('express');
 const router = express.Router();
 const Questionnaire = require('../models/Questionnaire');
@@ -124,6 +124,44 @@ router.get('/:id/ratings', async (req, res) => {
   }
 });
 
+// 🔧 FONCTION UTILITAIRE : Normaliser hiddenQuestions pour l'affichage
+function normalizeHiddenQuestionsForDisplay(hiddenQuestions) {
+  if (!hiddenQuestions) return {};
+  
+  if (Array.isArray(hiddenQuestions)) {
+    // Convertir tableau vers objet
+    const hiddenQuestionsObj = {};
+    hiddenQuestions.forEach(questionId => {
+      hiddenQuestionsObj[questionId] = true;
+    });
+    return hiddenQuestionsObj;
+  }
+  
+  if (typeof hiddenQuestions === 'object') {
+    // C'est déjà un objet, on le retourne tel quel
+    return hiddenQuestions;
+  }
+  
+  return {};
+}
+
+// 🔧 FONCTION UTILITAIRE : Normaliser hiddenQuestions pour la sauvegarde
+function normalizeHiddenQuestionsForSave(hiddenQuestions) {
+  if (!hiddenQuestions) return [];
+  
+  if (Array.isArray(hiddenQuestions)) {
+    // C'est déjà un tableau, on le filtre pour garder que les strings
+    return hiddenQuestions.filter(item => typeof item === 'string');
+  }
+  
+  if (typeof hiddenQuestions === 'object') {
+    // Convertir objet vers tableau
+    return Object.keys(hiddenQuestions).filter(key => hiddenQuestions[key]);
+  }
+  
+  return [];
+}
+
 // Route pour récupérer tous les questionnaires (avec système de notation et tags)
 router.get('/', authMiddleware, async (req, res) => {
   try {
@@ -159,7 +197,7 @@ router.get('/', authMiddleware, async (req, res) => {
       }
     }
 
-    console.log('Filtre de recherche questionnaires:', searchFilter);
+    console.log('✅ Filtre de recherche questionnaires:', searchFilter);
 
     // Compter le total
     const total = await Questionnaire.countDocuments(searchFilter);
@@ -176,8 +214,16 @@ router.get('/', authMiddleware, async (req, res) => {
       .populate('user', 'username')
       .lean();
 
+    console.log(`✅ ${questionnaires.length} questionnaires trouvés`);
+
+    // 🔧 CORRECTION : Normaliser hiddenQuestions pour tous les questionnaires
+    const normalizedQuestionnaires = questionnaires.map(questionnaire => ({
+      ...questionnaire,
+      hiddenQuestions: normalizeHiddenQuestionsForDisplay(questionnaire.hiddenQuestions)
+    }));
+
     // S'assurer que questionnaires est toujours un tableau
-    const safeQuestionnaires = Array.isArray(questionnaires) ? questionnaires : [];
+    const safeQuestionnaires = Array.isArray(normalizedQuestionnaires) ? normalizedQuestionnaires : [];
 
     res.json({
       questionnaires: safeQuestionnaires,
@@ -191,7 +237,7 @@ router.get('/', authMiddleware, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Erreur lors de la récupération des questionnaires:', error);
+    console.error('❌ Erreur lors de la récupération des questionnaires:', error);
     res.status(500).json({ message: 'Erreur lors de la récupération des questionnaires' });
   }
 });
@@ -213,18 +259,8 @@ router.post('/:id/copy', authMiddleware, async (req, res) => {
       return res.status(403).json({ message: 'Seuls les questionnaires publics peuvent être copiés' });
     }
 
-    // 🔄 CORRECTION : Conversion correcte de hiddenQuestions
-    let hiddenQuestionsToSave;
-    if (typeof originalQuestionnaire.hiddenQuestions === 'object' && !Array.isArray(originalQuestionnaire.hiddenQuestions)) {
-      // Si c'est un objet, on le convertit en tableau des clés (les IDs des questions cachées)
-      hiddenQuestionsToSave = Object.keys(originalQuestionnaire.hiddenQuestions).filter(key => originalQuestionnaire.hiddenQuestions[key]);
-    } else if (Array.isArray(originalQuestionnaire.hiddenQuestions)) {
-      // Si c'est déjà un tableau, on le garde tel quel
-      hiddenQuestionsToSave = originalQuestionnaire.hiddenQuestions;
-    } else {
-      // Par défaut, un tableau vide
-      hiddenQuestionsToSave = [];
-    }
+    // 🔧 CORRECTION : Normaliser hiddenQuestions pour la copie
+    const hiddenQuestionsArray = normalizeHiddenQuestionsForSave(originalQuestionnaire.hiddenQuestions);
 
     // Créer une copie du questionnaire
     const newQuestionnaire = new Questionnaire({
@@ -232,7 +268,7 @@ router.post('/:id/copy', authMiddleware, async (req, res) => {
       questions: originalQuestionnaire.questions,
       selectedOptions: {},
       crData: { crTexts: {}, freeTexts: {} },
-      hiddenQuestions: hiddenQuestionsToSave, // 🔄 CORRIGÉ : Type de données correct
+      hiddenQuestions: hiddenQuestionsArray,
       pageTitles: originalQuestionnaire.pageTitles || {},
       links: new Map(),
       tags: originalQuestionnaire.tags || [],
@@ -322,7 +358,7 @@ router.delete('/:id/tags', authMiddleware, async (req, res) => {
   }
 });
 
-// 🔄 CORRECTION PRINCIPALE : Route pour créer un questionnaire avec hiddenQuestions en TABLEAU
+// 🔧 CORRECTION : Route pour créer un questionnaire compatible
 router.post('/', authMiddleware, async (req, res) => {
   try {
     // Récupérer tous les champs depuis le corps de la requête
@@ -352,21 +388,10 @@ router.post('/', authMiddleware, async (req, res) => {
       public: public || false
     });
 
-    // 🔄 CORRECTION CRITIQUE : Conversion de hiddenQuestions en tableau de chaînes
-    let hiddenQuestionsArray;
-    if (typeof hiddenQuestions === 'object' && !Array.isArray(hiddenQuestions)) {
-      // Si c'est un objet comme { "questionId1": true, "questionId2": false }, 
-      // on extrait les clés où la valeur est true
-      hiddenQuestionsArray = Object.keys(hiddenQuestions).filter(key => hiddenQuestions[key]);
-    } else if (Array.isArray(hiddenQuestions)) {
-      // Si c'est déjà un tableau, on le garde tel quel
-      hiddenQuestionsArray = hiddenQuestions.filter(item => typeof item === 'string');
-    } else {
-      // Par défaut, un tableau vide
-      hiddenQuestionsArray = [];
-    }
+    // 🔧 CORRECTION : Normaliser hiddenQuestions pour la sauvegarde
+    const hiddenQuestionsArray = normalizeHiddenQuestionsForSave(hiddenQuestions);
 
-    console.log('🔄 CORRECTION hiddenQuestions:', {
+    console.log('🔧 Normalisation hiddenQuestions:', {
       original: hiddenQuestions,
       converted: hiddenQuestionsArray,
       type: typeof hiddenQuestionsArray,
@@ -379,7 +404,7 @@ router.post('/', authMiddleware, async (req, res) => {
       questions: questions || [],
       selectedOptions: selectedOptions || {},
       crData: crData || { crTexts: {}, freeTexts: {} },
-      hiddenQuestions: hiddenQuestionsArray, // 🔄 CORRIGÉ : Maintenant c'est un tableau de chaînes
+      hiddenQuestions: hiddenQuestionsArray,
       pageTitles: pageTitles || {},
       links: links || new Map(),
       tags: tags || [],
@@ -437,14 +462,8 @@ router.get('/:id', authMiddleware, async (req, res) => {
 
     const questionnaireObject = questionnaire.toObject();
 
-    // 🔄 CORRECTION : Convertir hiddenQuestions de tableau vers objet pour le frontend
-    if (Array.isArray(questionnaire.hiddenQuestions)) {
-      const hiddenQuestionsObj = {};
-      questionnaire.hiddenQuestions.forEach(questionId => {
-        hiddenQuestionsObj[questionId] = true;
-      });
-      questionnaireObject.hiddenQuestions = hiddenQuestionsObj;
-    }
+    // 🔧 CORRECTION : Normaliser hiddenQuestions pour l'affichage
+    questionnaireObject.hiddenQuestions = normalizeHiddenQuestionsForDisplay(questionnaire.hiddenQuestions);
 
     // Ajouter la note de l'utilisateur connecté si applicable
     if (req.userId && questionnaire.public) {
@@ -457,7 +476,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
     
     res.json(questionnaireObject);
   } catch (error) {
-    console.error('Erreur lors de la récupération du questionnaire:', error);
+    console.error('❌ Erreur lors de la récupération du questionnaire:', error);
     res.status(500).json({ message: 'Erreur lors de la récupération du questionnaire' });
   }
 });
@@ -472,16 +491,11 @@ router.put('/:id', authMiddleware, async (req, res) => {
 
     console.log('✅ Mise à jour du questionnaire:', req.params.id);
 
-    // 🔄 CORRECTION : Conversion de hiddenQuestions avant mise à jour
+    // 🔧 CORRECTION : Normaliser updateData
     const updateData = { ...req.body };
     
-    if (updateData.hiddenQuestions) {
-      if (typeof updateData.hiddenQuestions === 'object' && !Array.isArray(updateData.hiddenQuestions)) {
-        // Convertir l'objet en tableau
-        updateData.hiddenQuestions = Object.keys(updateData.hiddenQuestions).filter(key => updateData.hiddenQuestions[key]);
-      } else if (!Array.isArray(updateData.hiddenQuestions)) {
-        updateData.hiddenQuestions = [];
-      }
+    if (updateData.hiddenQuestions !== undefined) {
+      updateData.hiddenQuestions = normalizeHiddenQuestionsForSave(updateData.hiddenQuestions);
     }
 
     console.log('✅ Données reçues pour mise à jour:', {
@@ -508,15 +522,9 @@ router.put('/:id', authMiddleware, async (req, res) => {
     
     console.log('✅ Questionnaire mis à jour avec succès');
     
-    // 🔄 CORRECTION : Convertir hiddenQuestions pour le retour au frontend
+    // 🔧 CORRECTION : Normaliser hiddenQuestions pour le retour
     const questionnaireObject = questionnaire.toObject();
-    if (Array.isArray(questionnaire.hiddenQuestions)) {
-      const hiddenQuestionsObj = {};
-      questionnaire.hiddenQuestions.forEach(questionId => {
-        hiddenQuestionsObj[questionId] = true;
-      });
-      questionnaireObject.hiddenQuestions = hiddenQuestionsObj;
-    }
+    questionnaireObject.hiddenQuestions = normalizeHiddenQuestionsForDisplay(questionnaire.hiddenQuestions);
     
     res.json(questionnaireObject);
   } catch (error) {
