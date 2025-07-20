@@ -755,6 +755,9 @@ const QuestionnaireCreator = () => {
 // ✅ FONCTION handleSave CORRIGÉE - QuestionnaireCreator.js
 // Remplacez EXACTEMENT la fonction handleSave dans votre fichier QuestionnaireCreator.js par celle-ci :
 
+// ✅ FONCTION handleSave CORRIGÉE FINALE - QuestionnaireCreator.js
+// Remplacez EXACTEMENT la fonction handleSave dans votre fichier QuestionnaireCreator.js par celle-ci :
+
 const handleSave = useCallback(async () => {
   try {
     if (!questionnaire.title) {
@@ -779,25 +782,89 @@ const handleSave = useCallback(async () => {
         crTexts: questionnaire.crData?.crTexts || {},
         freeTexts: questionnaire.crData?.freeTexts || {}
       },
-      hiddenQuestions: questionnaire.hiddenQuestions || {},
       
-      // ✅ AJOUT des champs manquants pour la création initiale
-      pageTitles: questionnaire.pageTitles || {},
-      links: questionLinks || {},  // ✅ Convertir Map en objet si nécessaire
-      tags: questionnaire.tags || [],
-      public: questionnaire.public || false,
+      // ✅ CORRECTION CRITIQUE : S'assurer que hiddenQuestions est un objet, pas un tableau ou une chaîne
+      hiddenQuestions: (() => {
+        const hidden = questionnaire.hiddenQuestions;
+        if (!hidden) return {};
+        if (typeof hidden === 'string') {
+          try {
+            return JSON.parse(hidden);
+          } catch {
+            return {};
+          }
+        }
+        if (Array.isArray(hidden)) return {};
+        if (typeof hidden === 'object') return hidden;
+        return {};
+      })(),
+      
+      // ✅ AJOUT des champs manquants pour la création initiale - AVEC VÉRIFICATION DU TYPE
+      pageTitles: (() => {
+        const titles = questionnaire.pageTitles;
+        if (!titles) return {};
+        if (typeof titles === 'string') {
+          try {
+            return JSON.parse(titles);
+          } catch {
+            return {};
+          }
+        }
+        if (typeof titles === 'object' && !Array.isArray(titles)) return titles;
+        return {};
+      })(),
+      
+      links: (() => {
+        const links = questionLinks;
+        if (!links) return {};
+        if (typeof links === 'string') {
+          try {
+            return JSON.parse(links);
+          } catch {
+            return {};
+          }
+        }
+        if (typeof links === 'object' && !Array.isArray(links)) return links;
+        return {};
+      })(),
+      
+      tags: (() => {
+        const tags = questionnaire.tags;
+        if (!tags) return [];
+        if (typeof tags === 'string') {
+          try {
+            const parsed = JSON.parse(tags);
+            return Array.isArray(parsed) ? parsed : [];
+          } catch {
+            return [];
+          }
+        }
+        if (Array.isArray(tags)) return tags;
+        return [];
+      })(),
+      
+      public: Boolean(questionnaire.public || false),
       
       // Champs par défaut pour les nouvelles créations
-      averageRating: questionnaire.averageRating || 0,
-      ratingsCount: questionnaire.ratingsCount || 0,
-      views: questionnaire.views || 0,
-      copies: questionnaire.copies || 0
+      averageRating: Number(questionnaire.averageRating || 0),
+      ratingsCount: Number(questionnaire.ratingsCount || 0),
+      views: Number(questionnaire.views || 0),
+      copies: Number(questionnaire.copies || 0)
     };
 
     console.log('✅ ID du questionnaire:', id);
-    console.log('✅ Données envoyées au serveur:', {
-      ...dataToSave,
-      questions: `${dataToSave.questions.length} questions`
+    console.log('✅ Données envoyées au serveur (vérifiées):', {
+      title: dataToSave.title,
+      questionsCount: dataToSave.questions.length,
+      selectedOptionsType: typeof dataToSave.selectedOptions,
+      selectedOptionsCount: Object.keys(dataToSave.selectedOptions).length,
+      hiddenQuestionsType: typeof dataToSave.hiddenQuestions,
+      hiddenQuestionsContent: dataToSave.hiddenQuestions,
+      pageTitlesType: typeof dataToSave.pageTitles,
+      linksType: typeof dataToSave.links,
+      tagsType: typeof dataToSave.tags,
+      tagsCount: dataToSave.tags.length,
+      public: dataToSave.public
     });
 
     let response;
