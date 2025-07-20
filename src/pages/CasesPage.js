@@ -660,7 +660,7 @@ const CaseCard = memo(({ cas, onUpdateDifficulty, onUpdateAnswer, onAddTag, onRe
         </S.AddTagForm>
       </ModernTagsContainer>
       <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem', alignItems: 'center' }}>
-        <SecondaryButton as={Link} to={`/create-sheet/${cas._id}`}>Créer fiche</SecondaryButton>
+<SecondaryButton as={Link} to={`/sheet-editor/${cas._id}`}>Créer fiche</SecondaryButton>
         <PrimaryButton onClick={() => onLoadCase(cas._id)}>Charger</PrimaryButton>
         <SecondaryButton onClick={handleTogglePublic}>
           {cas.public ? 'Rendre privé' : 'Rendre public'}
