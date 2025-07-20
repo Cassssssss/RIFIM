@@ -1,200 +1,205 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import axios from '../utils/axiosConfig';
-import { Star, ChevronDown, Eye, EyeOff } from 'lucide-react';
 import styled from 'styled-components';
-import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/CasesPage.styles';
+import { Star, Eye, EyeOff, ChevronDown, TrendingUp, User, Copy } from 'lucide-react';
+import axios from '../utils/axiosConfig';
+import RatingStars from '../components/RatingStars'; // NOUVEAU : Import du système de notation
 
-// ==================== STYLED COMPONENTS HARMONISÉS AVEC LE THÈME ====================
+// ==================== STYLED COMPONENTS ====================
 
 const ModernPageContainer = styled.div`
-  padding: 2rem;
+  min-height: 100vh;
   background: ${props => props.theme.background};
-  min-height: calc(100vh - 60px);
-
+  padding: 2rem;
+  
   @media (max-width: 768px) {
     padding: 1rem;
   }
 `;
 
-const ModernTitle = styled.h1`
+const HeaderSection = styled.div`
+  text-align: center;
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, ${props => props.theme.primary}15, ${props => props.theme.secondary}15);
+  border-radius: 20px;
+  border: 1px solid ${props => props.theme.primary}20;
+`;
+
+const MainTitle = styled.h1`
   font-size: 2.5rem;
-  margin-bottom: 2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
   background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-align: center;
-  font-weight: 700;
-  text-shadow: 0 2px 4px ${props => props.theme.shadow};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-
-  &::before {
-    content: '🌍';
-    font-size: 2rem;
-    -webkit-text-fill-color: initial;
-  }
 `;
 
-const ModernSearchInput = styled.input`
-  width: 100%;
-  padding: 1rem 1.5rem;
-  margin-bottom: 2rem;
-  border: 2px solid ${props => props.theme.border};
-  border-radius: 12px;
-  font-size: 1rem;
-  background-color: ${props => props.theme.card};
-  color: ${props => props.theme.text};
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px ${props => props.theme.shadow};
-
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.primary};
-    box-shadow: 0 0 0 3px ${props => props.theme.primary}20, 0 4px 12px ${props => props.theme.shadow};
-    transform: translateY(-1px);
-  }
-
-  &::placeholder {
-    color: ${props => props.theme.textSecondary || props.theme.textLight};
-  }
+const SubTitle = styled.p`
+  font-size: 1.2rem;
+  color: ${props => props.theme.textSecondary};
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
 `;
 
 const FilterContainer = styled.div`
   display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 3rem;
   flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: ${props => props.theme.card};
+  border-radius: 12px;
+  border: 1px solid ${props => props.theme.border};
+  box-shadow: 0 2px 10px ${props => props.theme.shadow};
+`;
 
-  @media (max-width: 768px) {
-    gap: 1rem;
-    margin-bottom: 2rem;
+const SearchInput = styled.input`
+  flex: 1;
+  min-width: 250px;
+  padding: 0.75rem 1rem;
+  border: 2px solid ${props => props.theme.borderLight};
+  border-radius: 8px;
+  background-color: ${props => props.theme.background};
+  color: ${props => props.theme.text};
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary};
+  }
+
+  &::placeholder {
+    color: ${props => props.theme.textSecondary};
   }
 `;
 
-const FilterSection = styled.div`
+const FilterDropdown = styled.div`
   position: relative;
+  min-width: 150px;
 `;
 
-const FilterButton = styled.button`
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.primaryHover || props.theme.secondary});
-  color: ${props => props.theme.buttonText || 'white'};
-  border: none;
-  border-radius: 10px;
+const DropdownButton = styled.button`
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: ${props => props.theme.background};
+  border: 2px solid ${props => props.theme.borderLight};
+  border-radius: 8px;
+  color: ${props => props.theme.text};
   cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: ${props => props.theme.primary};
+  }
+
+  &[data-open="true"] {
+    border-color: ${props => props.theme.primary};
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+`;
+
+const DropdownMenu = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: ${props => props.theme.card};
+  border: 2px solid ${props => props.theme.primary};
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 4px 15px ${props => props.theme.shadow};
+`;
+
+const DropdownItem = styled.label`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px ${props => props.theme.primary}30;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  color: ${props => props.theme.text};
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px ${props => props.theme.primary}40;
+    background-color: ${props => props.theme.hover};
   }
 
-  svg {
-    transition: transform 0.3s ease;
-  }
-
-  &[data-open="true"] svg {
-    transform: rotate(180deg);
+  input {
+    width: 16px;
+    height: 16px;
+    accent-color: ${props => props.theme.primary};
   }
 `;
 
 const SpoilerButton = styled.button`
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, ${props => props.theme.accent || '#f59e0b'}, #d97706);
+  background-color: ${props => props.theme.primary};
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px ${props => props.theme.accent || '#f59e0b'}30;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px ${props => props.theme.accent || '#f59e0b'}40;
-  }
-`;
-
-const Dropdown = styled.div`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  margin-top: 0.5rem;
-  background-color: ${props => props.theme.card};
-  border: 2px solid ${props => props.theme.border};
-  border-radius: 12px;
-  padding: 1rem;
-  z-index: 10;
-  box-shadow: 0 8px 25px ${props => props.theme.shadow};
-  min-width: 200px;
-  max-height: 250px;
-  overflow-y: auto;
-
-  /* Scrollbar styling */
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: ${props => props.theme.background};
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: ${props => props.theme.primary};
-    border-radius: 3px;
-  }
-`;
-
-const DropdownOption = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-  color: ${props => props.theme.text};
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 8px;
   transition: all 0.2s ease;
-  font-weight: 500;
 
   &:hover {
-    background-color: ${props => props.theme.hover};
-    transform: translateX(2px);
+    background-color: ${props => props.theme.primaryDark || props.theme.primary};
+    transform: translateY(-2px);
+  }
+`;
+
+const LoadingMessage = styled.div`
+  text-align: center;
+  padding: 3rem;
+  color: ${props => props.theme.textSecondary};
+  font-size: 1.2rem;
+`;
+
+const ErrorMessage = styled.div`
+  text-align: center;
+  padding: 2rem;
+  color: #ef4444;
+  font-size: 1.1rem;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  margin: 2rem 0;
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 4rem 2rem;
+  color: ${props => props.theme.textSecondary};
+
+  h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: ${props => props.theme.text};
   }
 
-  &:last-child {
-    margin-bottom: 0;
-  }
-
-  input {
-    width: 18px;
-    height: 18px;
-    accent-color: ${props => props.theme.primary};
-    cursor: pointer;
+  p {
+    font-size: 1.1rem;
+    line-height: 1.6;
   }
 `;
 
 const CasesList = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 2rem;
   margin-bottom: 2rem;
 
@@ -253,19 +258,117 @@ const CaseContent = styled.div`
   flex-direction: column;
 `;
 
+const CaseHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+`;
+
 const CaseTitle = styled.h2`
   font-size: 1.3rem;
-  margin-bottom: 1rem;
-  text-align: center;
   font-weight: 600;
   color: ${props => props.theme.primary};
   line-height: 1.3;
+  flex: 1;
+  margin: 0;
+`;
+
+const PopularityBadge = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background-color: ${props => props.theme.success};
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-left: 0.5rem;
+`;
+
+const AuthorInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: ${props => props.theme.textSecondary};
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
 `;
 
 const StarRating = styled.div`
   display: flex;
   justify-content: center;
   margin-bottom: 1rem;
+`;
+
+const CaseMeta = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+`;
+
+const MetaItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: ${props => props.theme.textSecondary};
+  font-size: 0.875rem;
+`;
+
+// NOUVEAU : Section de notation
+const RatingSection = styled.div`
+  padding: 0.5rem 0;
+  border-top: 1px solid ${props => props.theme.borderLight};
+  border-bottom: 1px solid ${props => props.theme.borderLight};
+  margin: 0.75rem 0;
+`;
+
+const StatsContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+`;
+
+const StatItem = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: ${props => props.theme.textSecondary};
+  font-size: 0.875rem;
+`;
+
+const ActionsContainer = styled.div`
+  display: flex;
+  gap: 0.5rem;
+`;
+
+const ActionButton = styled.button`
+  padding: 0.5rem 1rem;
+  border: 1px solid ${props => props.theme.borderLight};
+  border-radius: 6px;
+  background-color: ${props => props.theme.background};
+  color: ${props => props.theme.text};
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: ${props => props.theme.primary};
+    background-color: ${props => props.theme.hover};
+  }
+
+  &.primary {
+    background-color: ${props => props.theme.primary};
+    color: white;
+    border-color: ${props => props.theme.primary};
+
+    &:hover {
+      background-color: ${props => props.theme.primaryDark || props.theme.primary};
+    }
+  }
 `;
 
 const TagsContainer = styled.div`
@@ -277,92 +380,103 @@ const TagsContainer = styled.div`
 `;
 
 const ModernTag = styled.span`
-  background: linear-gradient(135deg, ${props => props.theme.tagBackground || props.theme.primary}, ${props => props.theme.primary});
-  color: ${props => props.theme.tagText || 'white'};
+  background: linear-gradient(135deg, ${props => props.theme.primary}20, ${props => props.theme.secondary}20);
+  color: ${props => props.theme.primary};
   padding: 0.25rem 0.75rem;
-  border-radius: 20px;
+  border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 500;
-  box-shadow: 0 1px 3px ${props => props.theme.shadow};
+  border: 1px solid ${props => props.theme.primary}30;
 `;
 
-const LoadingMessage = styled.div`
-  text-align: center;
-  padding: 3rem;
-  font-size: 1.2rem;
-  color: ${props => props.theme.textSecondary};
-  background-color: ${props => props.theme.card};
-  border-radius: 12px;
-  box-shadow: 0 4px 15px ${props => props.theme.shadow};
-
-  &::before {
-    content: '🔄';
-    font-size: 2rem;
-    display: block;
-    margin-bottom: 1rem;
-  }
-`;
-
-const ErrorMessage = styled.div`
-  text-align: center;
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 3rem;
   padding: 2rem;
-  color: ${props => props.theme.error || '#ef4444'};
-  font-size: 1.1rem;
-  background-color: ${props => props.theme.errorLight || '#fef2f2'};
-  border: 2px solid ${props => props.theme.error || '#ef4444'}30;
-  border-radius: 12px;
-  margin: 2rem 0;
+`;
+
+const PaginationButton = styled.button`
+  padding: 0.75rem 1.5rem;
+  background-color: ${props => props.theme.primary};
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
   font-weight: 500;
+  transition: all 0.2s ease;
 
-  &::before {
-    content: '⚠️';
-    font-size: 1.5rem;
-    display: block;
-    margin-bottom: 1rem;
+  &:hover:not(:disabled) {
+    background-color: ${props => props.theme.primaryDark || props.theme.primary};
+    transform: translateY(-2px);
+  }
+
+  &:disabled {
+    background-color: ${props => props.theme.textSecondary};
+    cursor: not-allowed;
+    transform: none;
   }
 `;
 
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 4rem 2rem;
-  background-color: ${props => props.theme.card};
-  border-radius: 16px;
-  box-shadow: 0 4px 15px ${props => props.theme.shadow};
-  margin: 2rem 0;
-
-  &::before {
-    content: '📭';
-    font-size: 3rem;
-    display: block;
-    margin-bottom: 1rem;
-  }
-
-  h3 {
-    color: ${props => props.theme.primary};
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-  }
-
-  p {
-    color: ${props => props.theme.textSecondary};
-    font-size: 1.1rem;
-  }
+const PaginationInfo = styled.span`
+  color: ${props => props.theme.textSecondary};
+  font-size: 0.9rem;
 `;
 
-// ==================== COMPOSANT PRINCIPAL ====================
+// ==================== COMPOSANTS ====================
 
 function CaseCardComponent({ cas, showSpoilers }) {
-  if (!cas) return null;
+  // NOUVEAU : États pour la gestion des notes
+  const [caseRating, setCaseRating] = useState({
+    averageRating: cas.averageRating || 0,
+    ratingsCount: cas.ratingsCount || 0,
+    userRating: cas.userRating || null
+  });
+
+  // NOUVEAU : Gestion de la mise à jour des notes
+  const handleRatingUpdate = (caseId, newRatingData) => {
+    setCaseRating(newRatingData);
+  };
+
+  // NOUVEAU : Fonction pour déterminer si un cas est populaire
+  const isPopular = (cas) => {
+    const views = Number(cas?.views) || 0;
+    const copies = Number(cas?.copies) || 0;
+    return copies > 5 || views > 50;
+  };
+
+  // NOUVEAU : Gestion du clic sur la carte (éviter la navigation lors du clic sur notation)
+  const handleCardClick = (e) => {
+    e.preventDefault();
+    // La navigation sera gérée par le Link parent
+  };
 
   return (
-    <ModernCaseCard to={`/radiology-viewer/${cas._id}`}>
+    <ModernCaseCard to={`/radiology-viewer/${cas._id}`} onClick={handleCardClick}>
       <CaseImage 
-        src={cas.mainImage || '/images/default.jpg'}
-        alt={cas.title || 'Cas sans titre'}
-        loading="lazy"
+        src={cas.mainImage || (cas.folders && cas.folders[0] && cas.folderMainImages && cas.folderMainImages[cas.folders[0]]) || '/images/default.jpg'}
+        alt={cas.title || 'Image sans titre'} 
       />
       <CaseContent>
-        <CaseTitle>{showSpoilers ? (cas.title || 'Sans titre') : '?'}</CaseTitle>
+        <CaseHeader>
+          <CaseTitle>
+            {showSpoilers ? (cas.title || 'Sans titre') : '?'}
+          </CaseTitle>
+          {isPopular(cas) && (
+            <PopularityBadge>
+              <TrendingUp size={12} />
+              Populaire
+            </PopularityBadge>
+          )}
+        </CaseHeader>
+
+        <AuthorInfo>
+          <User size={16} />
+          Par <strong>{cas.user?.username || 'Utilisateur'}</strong>
+        </AuthorInfo>
+
         <StarRating>
           {[...Array(5)].map((_, index) => (
             <Star
@@ -376,6 +490,63 @@ function CaseCardComponent({ cas, showSpoilers }) {
             />
           ))}
         </StarRating>
+
+        <CaseMeta>
+          <MetaItem>
+            <span>📊</span>
+            Difficulté {cas.difficulty || 1}/5
+          </MetaItem>
+          {cas.tags && cas.tags.length > 0 && (
+            <MetaItem>
+              <span>🏷️</span>
+              {cas.tags.length} tag{cas.tags.length > 1 ? 's' : ''}
+            </MetaItem>
+          )}
+        </CaseMeta>
+
+        {/* NOUVEAU : Section de notation optimisée */}
+        <RatingSection>
+          <div onClick={(e) => e.stopPropagation()}>
+            <RatingStars
+              itemId={cas._id}
+              itemType="case"
+              averageRating={caseRating.averageRating}
+              ratingsCount={caseRating.ratingsCount}
+              userRating={caseRating.userRating}
+              onRatingUpdate={(newRatingData) => handleRatingUpdate(cas._id, newRatingData)}
+              size={14}
+              compact={true}
+            />
+          </div>
+        </RatingSection>
+
+        <StatsContainer>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <StatItem>
+              <Eye size={14} />
+              {Number(cas.views) || 0} vues
+            </StatItem>
+            <StatItem>
+              <Copy size={14} />
+              {Number(cas.copies) || 0} copies
+            </StatItem>
+          </div>
+          
+          <ActionsContainer>
+            <ActionButton
+              className="primary"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // Logique de copie du cas
+                handleCopyCase(cas._id);
+              }}
+            >
+              Copier
+            </ActionButton>
+          </ActionsContainer>
+        </StatsContainer>
+
         <TagsContainer>
           {cas.tags && cas.tags.map(tag => (
             <ModernTag key={tag}>{tag}</ModernTag>
@@ -385,6 +556,8 @@ function CaseCardComponent({ cas, showSpoilers }) {
     </ModernCaseCard>
   );
 }
+
+// ==================== COMPOSANT PRINCIPAL ====================
 
 function PublicCasesPage() {
   const [cases, setCases] = useState([]);
@@ -406,7 +579,17 @@ function PublicCasesPage() {
     try {
       const response = await axios.get(`/cases/public?page=${page}&limit=12`);
       if (response.data) {
-        setCases(response.data.cases);
+        // MODIFIÉ : Nettoyer les données pour inclure les informations de notation
+        const cleanedCases = response.data.cases.map(cas => ({
+          ...cas,
+          averageRating: cas.averageRating ? Number(cas.averageRating) : 0,
+          ratingsCount: cas.ratingsCount ? Number(cas.ratingsCount) : 0,
+          userRating: cas.userRating || null,
+          views: cas.views || cas.stats?.views || 0,
+          copies: cas.copies || cas.stats?.copies || 0,
+        }));
+        
+        setCases(cleanedCases);
         setCurrentPage(response.data.currentPage);
         setTotalPages(response.data.totalPages);
         const tags = new Set(response.data.cases.flatMap(cas => cas.tags || []));
@@ -423,6 +606,17 @@ function PublicCasesPage() {
   useEffect(() => {
     fetchCases();
   }, [fetchCases]);
+
+  // NOUVEAU : Fonction pour copier un cas
+  const handleCopyCase = async (caseId) => {
+    try {
+      await axios.post(`/cases/${caseId}/copy`);
+      alert('✅ Cas copié dans vos cas personnels !');
+    } catch (err) {
+      console.error('Erreur lors de la copie:', err);
+      alert('❌ Erreur lors de la copie du cas');
+    }
+  };
 
   const filteredCases = cases.filter(cas => 
     cas.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -446,79 +640,71 @@ function PublicCasesPage() {
     );
   };
 
-  // Fermer les dropdowns quand on clique ailleurs
-  useEffect(() => {
-    const handleClickOutside = () => {
-      setShowDifficultyDropdown(false);
-      setShowTagDropdown(false);
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, []);
-
-  const handleFilterClick = (e, setter) => {
-    e.stopPropagation();
-    setter(prev => !prev);
-  };
-
   return (
     <ModernPageContainer>
-      <ModernTitle>Cas Publics</ModernTitle>
-      
-      <ModernSearchInput
-        type="text"
-        placeholder="🔍 Rechercher un cas..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
+      <HeaderSection>
+        <MainTitle>📂 Cas Cliniques Publics</MainTitle>
+        <SubTitle>
+          Explorez une collection de cas cliniques partagés par la communauté. 
+          Apprenez, pratiquez et enrichissez vos connaissances en radiologie.
+        </SubTitle>
+      </HeaderSection>
 
       <FilterContainer>
-        <FilterSection>
-          <FilterButton 
-            onClick={(e) => handleFilterClick(e, setShowDifficultyDropdown)}
+        <SearchInput
+          type="text"
+          placeholder="🔍 Rechercher un cas..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        
+        <FilterDropdown>
+          <DropdownButton 
+            onClick={() => setShowDifficultyDropdown(!showDifficultyDropdown)}
             data-open={showDifficultyDropdown}
           >
-            ⭐ Difficulté ({difficultyFilter.length}/5) <ChevronDown size={16} />
-          </FilterButton>
+            Difficulté ({difficultyFilter.length}/5)
+            <ChevronDown size={16} />
+          </DropdownButton>
           {showDifficultyDropdown && (
-            <Dropdown onClick={(e) => e.stopPropagation()}>
-              {[1,2,3,4,5].map(difficulty => (
-                <DropdownOption key={difficulty}>
-                  <input 
+            <DropdownMenu>
+              {[1, 2, 3, 4, 5].map(level => (
+                <DropdownItem key={level}>
+                  <input
                     type="checkbox"
-                    checked={difficultyFilter.includes(difficulty)}
-                    onChange={() => handleDifficultyChange(difficulty)}
+                    checked={difficultyFilter.includes(level)}
+                    onChange={() => handleDifficultyChange(level)}
                   />
-                  <span>{difficulty} étoile{difficulty > 1 ? 's' : ''}</span>
-                </DropdownOption>
+                  Niveau {level}
+                </DropdownItem>
               ))}
-            </Dropdown>
+            </DropdownMenu>
           )}
-        </FilterSection>
+        </FilterDropdown>
 
-        <FilterSection>
-          <FilterButton 
-            onClick={(e) => handleFilterClick(e, setShowTagDropdown)}
+        <FilterDropdown>
+          <DropdownButton 
+            onClick={() => setShowTagDropdown(!showTagDropdown)}
             data-open={showTagDropdown}
           >
-            🏷️ Tags ({tagFilter.length}/{allTags.length}) <ChevronDown size={16} />
-          </FilterButton>
+            Tags ({tagFilter.length})
+            <ChevronDown size={16} />
+          </DropdownButton>
           {showTagDropdown && (
-            <Dropdown onClick={(e) => e.stopPropagation()}>
+            <DropdownMenu>
               {allTags.map(tag => (
-                <DropdownOption key={tag}>
-                  <input 
+                <DropdownItem key={tag}>
+                  <input
                     type="checkbox"
                     checked={tagFilter.includes(tag)}
                     onChange={() => handleTagChange(tag)}
                   />
-                  <span>{tag}</span>
-                </DropdownOption>
+                  {tag}
+                </DropdownItem>
               ))}
-            </Dropdown>
+            </DropdownMenu>
           )}
-        </FilterSection>
+        </FilterDropdown>
 
         <SpoilerButton onClick={() => setShowSpoilers(!showSpoilers)}>
           {showSpoilers ? <EyeOff size={16} /> : <Eye size={16} />}

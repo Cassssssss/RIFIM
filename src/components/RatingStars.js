@@ -128,13 +128,12 @@ const QuickRatingButton = styled.button`
   color: ${props => props.isSelected ? 'white' : props.theme.text};
   cursor: pointer;
   transition: all 0.2s ease;
+  font-size: 0.875rem;
   font-weight: 500;
-  font-size: 0.9rem;
 
-  &:hover {
+  &:hover:not(:disabled) {
     border-color: ${props => props.theme.primary};
-    background-color: ${props => props.theme.primary};
-    color: white;
+    background-color: ${props => !props.isSelected ? props.theme.hover : props.theme.primary};
   }
 
   &:disabled {
@@ -145,20 +144,19 @@ const QuickRatingButton = styled.button`
 
 const CommentInput = styled.textarea`
   width: 100%;
-  min-height: 60px;
+  min-height: 80px;
   padding: 0.75rem;
-  border: 1px solid ${props => props.theme.borderLight};
+  border: 2px solid ${props => props.theme.borderLight};
   border-radius: 6px;
   background-color: ${props => props.theme.background};
   color: ${props => props.theme.text};
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   resize: vertical;
-  font-family: inherit;
+  transition: border-color 0.2s ease;
 
   &:focus {
     outline: none;
     border-color: ${props => props.theme.primary};
-    box-shadow: 0 0 0 2px ${props => props.theme.primary}20;
   }
 
   &::placeholder {
@@ -169,44 +167,73 @@ const CommentInput = styled.textarea`
 const RatingActions = styled.div`
   display: flex;
   gap: 0.75rem;
-  margin-top: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
 `;
 
 const RatingButton = styled.button`
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 6px;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-
+  
   &.primary {
     background-color: ${props => props.theme.primary};
     color: white;
-
+    
     &:hover:not(:disabled) {
       background-color: ${props => props.theme.primaryDark || props.theme.primary};
       transform: translateY(-1px);
     }
   }
-
+  
   &.secondary {
-    background-color: ${props => props.theme.textSecondary};
-    color: white;
-
+    background-color: ${props => props.theme.background};
+    color: ${props => props.theme.text};
+    border: 2px solid ${props => props.theme.borderLight};
+    
     &:hover:not(:disabled) {
-      opacity: 0.8;
+      border-color: ${props => props.theme.primary};
+      background-color: ${props => props.theme.hover};
+    }
+  }
+  
+  &.danger {
+    background-color: #ef4444;
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background-color: #dc2626;
     }
   }
 
-  &.danger {
-    background-color: ${props => props.theme.error || '#ef4444'};
-    color: white;
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
 
-    &:hover:not(:disabled) {
-      opacity: 0.8;
-    }
+const StartRatingButton = styled.button`
+  padding: 0.5rem 1rem;
+  background-color: ${props => props.theme.primary};
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &:hover:not(:disabled) {
+    background-color: ${props => props.theme.primaryDark || props.theme.primary};
+    transform: translateY(-1px);
   }
 
   &:disabled {
@@ -218,50 +245,34 @@ const RatingButton = styled.button`
 const Message = styled.div`
   padding: 0.75rem;
   border-radius: 6px;
-  font-size: 0.875rem;
-  margin-top: 0.75rem;
+  font-size: 0.9rem;
   font-weight: 500;
-
+  
   &.success {
-    background-color: ${props => props.theme.success}20;
-    color: ${props => props.theme.success};
-    border: 1px solid ${props => props.theme.success}30;
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
   }
-
+  
   &.error {
-    background-color: ${props => props.theme.error}20;
-    color: ${props => props.theme.error};
-    border: 1px solid ${props => props.theme.error}30;
-  }
-`;
-
-const StartRatingButton = styled.button`
-  padding: 0.5rem 1rem;
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px ${props => props.theme.primary}30;
+    background-color: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
   }
 `;
 
 // ==================== COMPOSANT PRINCIPAL ====================
 
 function RatingStars({ 
-  protocolId, 
+  itemId,           // MODIFIÉ : au lieu de protocolId
+  itemType,         // NOUVEAU : 'protocol', 'case', ou 'questionnaire'
   averageRating = 0, 
   ratingsCount = 0, 
   userRating = null,
   onRatingUpdate,
   readonly = false,
-  size = 16
+  size = 16,
+  compact = false   // NOUVEAU : mode compact pour affichage dans les cartes
 }) {
   const [selectedRating, setSelectedRating] = useState(userRating || 0);
   const [comment, setComment] = useState('');
@@ -272,6 +283,22 @@ function RatingStars({
   // Notes rapides prédéfinies
   const quickRatings = [0, 2.5, 5, 7.5, 10];
   const quickLabels = ['0 - Très mauvais', '2.5 - Mauvais', '5 - Moyen', '7.5 - Bon', '10 - Excellent'];
+
+  // Fonction pour obtenir l'URL API appropriée selon le type d'item
+  const getApiUrl = (action = '') => {
+    const baseUrl = `/${itemType}s/${itemId}/rate`;
+    return action === 'delete' ? baseUrl : baseUrl;
+  };
+
+  // Fonction pour obtenir le nom du type d'item en français
+  const getItemTypeFrench = () => {
+    switch(itemType) {
+      case 'protocol': return 'protocole';
+      case 'case': return 'cas';
+      case 'questionnaire': return 'questionnaire';
+      default: return 'élément';
+    }
+  };
 
   const handleStartRating = () => {
     setIsRating(true);
@@ -287,6 +314,13 @@ function RatingStars({
     setSelectedRating(rating);
   };
 
+  const cancelRating = () => {
+    setIsRating(false);
+    setSelectedRating(userRating || 0);
+    setComment('');
+    setMessage('');
+  };
+
   const submitRating = async () => {
     if (selectedRating === null || selectedRating === undefined) {
       setMessage('Veuillez sélectionner une note');
@@ -297,7 +331,7 @@ function RatingStars({
     setMessage('');
 
     try {
-      const response = await axios.post(`/protocols/${protocolId}/rate`, {
+      const response = await axios.post(getApiUrl(), {
         rating: selectedRating,
         comment: comment.trim()
       });
@@ -328,17 +362,23 @@ function RatingStars({
     setMessage('');
 
     try {
-      await axios.delete(`/protocols/${protocolId}/rate`);
+      await axios.delete(getApiUrl('delete'));
       
       setSelectedRating(0);
       setComment('');
       setIsRating(false);
       setMessage('Note supprimée avec succès !');
       
+      // Appeler le callback de mise à jour si fourni
       if (onRatingUpdate) {
-        onRatingUpdate({ averageRating: 0, ratingsCount: 0, userRating: null });
+        onRatingUpdate({
+          averageRating: 0,
+          ratingsCount: 0,
+          userRating: null
+        });
       }
 
+      // Effacer le message après 3 secondes
       setTimeout(() => setMessage(''), 3000);
 
     } catch (error) {
@@ -349,75 +389,86 @@ function RatingStars({
     }
   };
 
-  const cancelRating = () => {
-    setSelectedRating(userRating || 0);
-    setComment('');
-    setIsRating(false);
-    setMessage('');
-  };
-
-  // Fonction pour afficher les étoiles (en lecture seule)
-  const renderDisplayStars = () => {
+  // Affichage des étoiles basé sur la note moyenne
+  const renderStars = () => {
     const stars = [];
-    const displayRating = averageRating / 2; // Convertir 0-10 vers 0-5
+    const fullStars = Math.floor(averageRating / 2); // Conversion 0-10 vers 0-5
+    const hasHalfStar = (averageRating / 2) % 1 >= 0.5;
     
-    for (let i = 1; i <= 5; i++) {
-      const isFilled = i <= displayRating;
-      const isHalfFilled = i === Math.ceil(displayRating) && displayRating % 1 >= 0.5 && !isFilled;
-
-      stars.push(
-        <Star
-          key={i}
-          size={size}
-          fill={isFilled ? "gold" : "none"}
-          stroke={isFilled ? "gold" : "#d1d5db"}
-          style={{ 
-            opacity: isHalfFilled ? 0.5 : 1,
-            filter: isFilled ? 'drop-shadow(0 1px 2px rgba(255, 215, 0, 0.3))' : 'none'
-          }}
-        />
-      );
+    for (let i = 0; i < 5; i++) {
+      if (i < fullStars) {
+        stars.push(
+          <Star
+            key={i}
+            size={size}
+            fill={`${compact ? '#fbbf24' : '#fbbf24'}`}
+            stroke="#fbbf24"
+          />
+        );
+      } else if (i === fullStars && hasHalfStar) {
+        stars.push(
+          <Star
+            key={i}
+            size={size}
+            fill="url(#half)"
+            stroke="#fbbf24"
+          />
+        );
+      } else {
+        stars.push(
+          <Star
+            key={i}
+            size={size}
+            fill="transparent"
+            stroke="#d1d5db"
+          />
+        );
+      }
     }
-    
     return stars;
   };
+
+  if (readonly) {
+    return (
+      <RatingDisplay>
+        <StarsContainer>
+          {renderStars()}
+        </StarsContainer>
+        {!compact && (
+          <RatingInfo>
+            <RatingValue>{averageRating.toFixed(1)}/10</RatingValue>
+            <RatingCount>({ratingsCount} note{ratingsCount > 1 ? 's' : ''})</RatingCount>
+          </RatingInfo>
+        )}
+      </RatingDisplay>
+    );
+  }
 
   return (
     <RatingContainer>
       {/* Affichage de la note moyenne */}
       <RatingDisplay>
         <StarsContainer>
-          {renderDisplayStars()}
+          <svg width="0" height="0">
+            <defs>
+              <linearGradient id="half">
+                <stop offset="50%" stopColor="#fbbf24" />
+                <stop offset="50%" stopColor="transparent" />
+              </linearGradient>
+            </defs>
+          </svg>
+          {renderStars()}
         </StarsContainer>
         <RatingInfo>
-          {averageRating > 0 ? (
-            <>
-              <RatingValue>{averageRating.toFixed(1)}/10</RatingValue>
-              <RatingCount>({ratingsCount} avis)</RatingCount>
-            </>
-          ) : (
-            <RatingCount>Aucune note</RatingCount>
-          )}
+          <RatingValue>{averageRating.toFixed(1)}/10</RatingValue>
+          <RatingCount>({ratingsCount} note{ratingsCount > 1 ? 's' : ''})</RatingCount>
         </RatingInfo>
       </RatingDisplay>
 
-      {/* Affichage de la note utilisateur */}
-      {userRating && !isRating && (
-        <RatingInfo>
-          <span style={{ 
-            fontSize: '0.875rem', 
-            color: 'var(--color-primary)', 
-            fontWeight: 500 
-          }}>
-            Votre note: {userRating}/10
-          </span>
-        </RatingInfo>
-      )}
-
       {/* Bouton pour commencer à noter */}
-      {!isRating && !readonly && (
-        <StartRatingButton onClick={handleStartRating}>
-          {userRating ? 'Modifier ma note' : '⭐ Noter ce protocole'}
+      {!isRating && (
+        <StartRatingButton onClick={handleStartRating} disabled={loading}>
+          {userRating ? 'Modifier ma note' : `⭐ Noter ce ${getItemTypeFrench()}`}
         </StartRatingButton>
       )}
 
@@ -425,7 +476,7 @@ function RatingStars({
       {isRating && (
         <NumericRatingContainer>
           <RatingLabel>
-            Notez ce protocole de 0 à 10 (par incréments de 0.5)
+            Notez ce {getItemTypeFrench()} de 0 à 10 (par incréments de 0.5)
           </RatingLabel>
           
           {/* Slider pour la note */}
@@ -461,7 +512,7 @@ function RatingStars({
           <CommentInput
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder="Commentaire sur ce protocole (optionnel)..."
+            placeholder={`Commentaire sur ce ${getItemTypeFrench()} (optionnel)...`}
             disabled={loading}
           />
           
