@@ -272,6 +272,7 @@ const CaseTitle = styled.h2`
   line-height: 1.3;
   flex: 1;
   margin: 0;
+  text-align: center;
 `;
 
 const PopularityBadge = styled.span`
@@ -290,6 +291,7 @@ const PopularityBadge = styled.span`
 const AuthorInfo = styled.div`
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   color: ${props => props.theme.textSecondary};
   font-size: 0.9rem;
@@ -300,21 +302,6 @@ const StarRating = styled.div`
   display: flex;
   justify-content: center;
   margin-bottom: 1rem;
-`;
-
-const CaseMeta = styled.div`
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-`;
-
-const MetaItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.875rem;
 `;
 
 // NOUVEAU : Section de notation
@@ -489,19 +476,6 @@ function CaseCardComponent({ cas, showSpoilers }) {
             />
           ))}
         </StarRating>
-
-        <CaseMeta>
-          <MetaItem>
-            <span>📊</span>
-            Difficulté {cas.difficulty || 1}/5
-          </MetaItem>
-          {cas.tags && cas.tags.length > 0 && (
-            <MetaItem>
-              <span>🏷️</span>
-              {cas.tags.length} tag{cas.tags.length > 1 ? 's' : ''}
-            </MetaItem>
-          )}
-        </CaseMeta>
 
         {/* NOUVEAU : Section de notation optimisée */}
         <RatingSection>
