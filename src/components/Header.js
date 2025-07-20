@@ -1,4 +1,3 @@
-// components/Header.js - VERSION CORRIGÉE avec nom d'utilisateur dynamique
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
@@ -10,13 +9,13 @@ const HeaderWrapper = styled.header`
   padding: 1rem 0;
   width: 100%;
   transition: background-color 0.3s ease, color 0.3s ease;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(8px);
+  position: fixed; /* ← CHANGEMENT : fixed au lieu de relative */
+  top: 0; /* ← AJOUT : Collé en haut */
+  left: 0; /* ← AJOUT : Collé à gauche */
+  right: 0; /* ← AJOUT : Collé à droite */
+  z-index: 1000; /* ← AJOUT : Au-dessus de tout le contenu */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* ← AJOUT : Ombre pour le séparer du contenu */
+  backdrop-filter: blur(8px); /* ← AJOUT : Effet de flou d'arrière-plan moderne */
 `;
 
 const HeaderContent = styled.div`
@@ -60,6 +59,7 @@ const RightSection = styled.div`
   position: relative;
 `;
 
+// NOUVEAU : Bouton toggle mode sombre dans le header
 const ThemeToggleButton = styled.button`
   background: none;
   border: none;
@@ -117,7 +117,7 @@ const DropdownMenu = styled.div`
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   padding: 0.75rem 0;
   display: ${props => props.isOpen ? 'block' : 'none'};
-  z-index: 1001;
+  z-index: 1001; /* ← AUGMENTÉ : Au-dessus du header */
   min-width: 280px;
   backdrop-filter: blur(8px);
   animation: ${props => props.isOpen ? 'dropdownSlideIn' : 'dropdownSlideOut'} 0.2s ease;
@@ -283,12 +283,12 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
         )}
         
         <RightSection ref={menuRef}>
+          {/* NOUVEAU : Bouton toggle mode sombre directement dans le header */}
           <ThemeToggleButton onClick={toggleDarkMode} title={isDarkMode ? 'Passer en mode clair' : 'Passer en mode sombre'}>
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </ThemeToggleButton>
 
           <MenuButton onClick={handleMenuToggle}>
-            {/* ✅ CORRECTION : Afficher le nom d'utilisateur dynamique */}
             {userName && <span>{userName}</span>}
             <ChevronDown 
               size={16} 
@@ -305,7 +305,6 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
               <>
                 <UserInfo>
                   <User size={18} />
-                  {/* ✅ CORRECTION : Afficher le nom d'utilisateur dynamique */}
                   Connecté en tant que <strong>{userName}</strong>
                 </UserInfo>
                 <MenuDivider />
