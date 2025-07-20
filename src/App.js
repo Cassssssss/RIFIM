@@ -102,7 +102,7 @@ function AppContent() {
           <Header 
             isDarkMode={isDarkMode} 
             toggleDarkMode={toggleDarkMode}
-            user={user}
+            userName={user?.username}
             onLogout={handleLogout}
           />
           <main className="container mt-8" style={{ paddingTop: '80px' }}> {/* ← AJOUT : paddingTop pour compenser le header fixe */}
@@ -142,9 +142,6 @@ function AppContent() {
                 <Route path="/public-questionnaires" element={<PublicQuestionnairesPage />} />
                 <Route path="/public-cases" element={<PublicCasesPage />} />
                 <Route path="/protocols/public" element={<ProtocolsPublicPage />} /> {/* ← NOUVEAU ! */}
-                
-                {/* Redirection par défaut */}
-                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>
           </main>
@@ -154,7 +151,7 @@ function AppContent() {
   );
 }
 
-// MODIFICATION : Composant App principal qui wraps AppContent avec Router
+// Composant principal avec Router
 function App() {
   return (
     <Router>
