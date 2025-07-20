@@ -260,6 +260,13 @@ const ModernCardTitle = styled.h3`
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: ${props => props.theme.primaryDark || props.theme.primary};
+    text-decoration: underline;
+  }
 `;
 
 const PopularityBadge = styled.span`
@@ -513,7 +520,10 @@ function QuestionnaireCardComponent({ questionnaire }) {
   return (
     <ModernQuestionnaireCard>
       <ModernCardHeader>
-        <ModernCardTitle>
+        <ModernCardTitle 
+          onClick={() => window.open(`/use/${questionnaire._id}`, '_blank')}
+          title="Cliquer pour utiliser ce questionnaire"
+        >
           {getQuestionnaireIcon(questionnaire.tags)}
           {questionnaire.title}
         </ModernCardTitle>
@@ -578,13 +588,6 @@ function QuestionnaireCardComponent({ questionnaire }) {
             {Number(questionnaire.copies) || 0} copies
           </StatItem>
         </div>
-        
-        <ActionButton
-          className="primary"
-          onClick={() => addToMyQuestionnaires(questionnaire._id)}
-        >
-          Copier
-        </ActionButton>
       </StatsContainer>
 
       <ModernCardActions>
