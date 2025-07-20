@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
 import { Search, Filter, Plus, Eye, Edit, Trash2, Copy, Globe, Lock, Star, Clock } from 'lucide-react';
 import styled from 'styled-components';
@@ -157,6 +157,7 @@ const ProtocolCard = styled.div`
   box-shadow: 0 4px 20px ${props => props.theme.shadow};
   position: relative;
   overflow: hidden;
+  cursor: pointer;
 
   &:hover {
     transform: translateY(-4px);
@@ -180,42 +181,43 @@ const ProtocolHeader = styled.div`
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 1rem;
+  gap: 1rem;
 `;
 
 const ProtocolTitle = styled.h3`
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 700;
   color: ${props => props.theme.text};
   margin: 0;
-  line-height: 1.3;
+  line-height: 1.4;
   flex: 1;
 `;
 
-// StatusBadge CORRIGÉ avec les nouvelles couleurs du thème
 const StatusBadge = styled.span`
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
   
   ${props => {
     switch (props.status) {
       case 'Validé':
         return `
-          background-color: ${props.theme.success};
-          color: white;
+          background-color: #dcfce7;
+          color: #15803d;
         `;
       case 'En révision':
         return `
-          background-color: ${props.theme.warning};
-          color: white;
+          background-color: #fef3c7;
+          color: #d97706;
         `;
-      default: // Brouillon
+      default:
         return `
-          background-color: ${props.theme.statusDraft || props.theme.textSecondary};
-          color: ${props.theme.statusDraftText || 'white'};
+          background-color: ${props.theme.backgroundSecondary};
+          color: ${props.theme.textSecondary};
         `;
     }
   }}
@@ -223,25 +225,27 @@ const StatusBadge = styled.span`
 
 const ProtocolMeta = styled.div`
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   margin-bottom: 1rem;
-  font-size: 0.875rem;
-  color: ${props => props.theme.textSecondary};
 `;
 
 const MetaItem = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  background-color: ${props => props.theme.backgroundSecondary || '#f1f5f9'};
-  padding: 0.25rem 0.5rem;
-  border-radius: 6px;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: ${props => props.theme.textSecondary};
+  
+  span {
+    font-size: 1rem;
+  }
 `;
 
 const ProtocolDescription = styled.p`
   color: ${props => props.theme.textSecondary};
-  margin-bottom: 1rem;
-  line-height: 1.5;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -295,11 +299,12 @@ const ActionButton = styled.button`
     border-color: ${props => props.theme.primary};
     color: white;
     transform: translateY(-1px);
+    z-index: 10;
   }
 
   &.danger:hover {
-    background-color: ${props => props.theme.error};
-    border-color: ${props => props.theme.error};
+    background-color: ${props => props.theme.error || '#ef4444'};
+    border-color: ${props => props.theme.error || '#ef4444'};
   }
 `;
 
@@ -355,6 +360,7 @@ const PaginationButton = styled.button`
 // ==================== COMPOSANT PRINCIPAL ====================
 
 function ProtocolsPersonalPage() {
+  const navigate = useNavigate();
   const [protocols, setProtocols] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -398,7 +404,13 @@ function ProtocolsPersonalPage() {
     setCurrentPage(1); // Reset page when filters change
   }, [searchTerm, filterType, filterRegion]);
 
-  const handleDelete = async (protocolId) => {
+  // NOUVEAU : Gérer le clic sur la carte pour naviguer vers la vue détaillée
+  const handleCardClick = (protocolId) => {
+    navigate(`/protocols/view/${protocolId}`);
+  };
+
+  const handleDelete = async (e, protocolId) => {
+    e.stopPropagation(); // Empêcher la navigation quand on clique sur supprimer
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce protocole ?')) {
       try {
         await axios.delete(`/protocols/${protocolId}`);
@@ -410,7 +422,8 @@ function ProtocolsPersonalPage() {
     }
   };
 
-  const handleCopy = async (protocolId) => {
+  const handleCopy = async (e, protocolId) => {
+    e.stopPropagation(); // Empêcher la navigation quand on clique sur copier
     try {
       await axios.post(`/protocols/${protocolId}/copy`);
       alert('Protocole copié avec succès !');
@@ -421,10 +434,11 @@ function ProtocolsPersonalPage() {
     }
   };
 
-  const handleToggleVisibility = async (protocolId, currentPublicState) => {
+  const handleToggleVisibility = async (e, protocolId, isPublic) => {
+    e.stopPropagation(); // Empêcher la navigation quand on clique sur la visibilité
     try {
       await axios.patch(`/protocols/${protocolId}`, {
-        public: !currentPublicState
+        public: !isPublic
       });
       fetchProtocols();
     } catch (err) {
@@ -439,7 +453,7 @@ function ProtocolsPersonalPage() {
   return (
     <PageContainer>
       <PageTitle>Mes Protocoles</PageTitle>
-
+      
       <ActionBar>
         <SearchContainer>
           <SearchWrapper>
@@ -451,6 +465,7 @@ function ProtocolsPersonalPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </SearchWrapper>
+          
           <FilterSelect
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
@@ -460,6 +475,7 @@ function ProtocolsPersonalPage() {
               <option key={type} value={type}>{type}</option>
             ))}
           </FilterSelect>
+          
           <FilterSelect
             value={filterRegion}
             onChange={(e) => setFilterRegion(e.target.value)}
@@ -470,7 +486,7 @@ function ProtocolsPersonalPage() {
             ))}
           </FilterSelect>
         </SearchContainer>
-
+        
         <CreateButton to="/protocols/create">
           <Plus size={20} />
           Créer un Protocole
@@ -495,7 +511,10 @@ function ProtocolsPersonalPage() {
         <>
           <ProtocolsGrid>
             {protocols.map((protocol) => (
-              <ProtocolCard key={protocol._id}>
+              <ProtocolCard 
+                key={protocol._id}
+                onClick={() => handleCardClick(protocol._id)}
+              >
                 <ProtocolHeader>
                   <ProtocolTitle>{protocol.title}</ProtocolTitle>
                   <StatusBadge status={protocol.status}>
@@ -525,7 +544,7 @@ function ProtocolsPersonalPage() {
                 </ProtocolDescription>
                 
                 <VisibilityToggle
-                  onClick={() => handleToggleVisibility(protocol._id, protocol.public)}
+                  onClick={(e) => handleToggleVisibility(e, protocol._id, protocol.public)}
                 >
                   {protocol.public ? <Globe size={16} /> : <Lock size={16} />}
                   {protocol.public ? 'Public' : 'Privé'}
@@ -536,6 +555,7 @@ function ProtocolsPersonalPage() {
                     as={Link}
                     to={`/protocols/view/${protocol._id}`}
                     title="Voir"
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <Eye size={16} />
                   </ActionButton>
@@ -544,19 +564,20 @@ function ProtocolsPersonalPage() {
                     as={Link}
                     to={`/protocols/edit/${protocol._id}`}
                     title="Modifier"
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <Edit size={16} />
                   </ActionButton>
                   
                   <ActionButton
-                    onClick={() => handleCopy(protocol._id)}
+                    onClick={(e) => handleCopy(e, protocol._id)}
                     title="Copier"
                   >
                     <Copy size={16} />
                   </ActionButton>
                   
                   <ActionButton
-                    onClick={() => handleDelete(protocol._id)}
+                    onClick={(e) => handleDelete(e, protocol._id)}
                     className="danger"
                     title="Supprimer"
                   >
