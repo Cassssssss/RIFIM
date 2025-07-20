@@ -1,8 +1,8 @@
-// routes/questionnaireRoutes.js - VERSION COMPLÈTE AVEC SYSTÈME DE NOTATION - PROBLÈME DE SAUVEGARDE CORRIGÉ
+// routes/questionnaireRoutes.js - VERSION CORRIGÉE POUR LE PROBLÈME hiddenQuestions
 const express = require('express');
 const router = express.Router();
 const Questionnaire = require('../models/Questionnaire');
-const QuestionnaireRating = require('../models/QuestionnaireRating'); // NOUVEAU : Import du modèle de notation
+const QuestionnaireRating = require('../models/QuestionnaireRating');
 const authMiddleware = require('../middleware/authMiddleware');
 const mongoose = require('mongoose');
 
@@ -15,7 +15,7 @@ router.post('/:id/rate', authMiddleware, async (req, res) => {
   try {
     const { rating, comment } = req.body;
     const questionnaireId = req.params.id;
-    const userId = req.userId; // ✅ CORRIGÉ : utiliser req.userId au lieu de req.user._id
+    const userId = req.userId;
 
     // Validation des données
     if (rating === undefined || rating === null || rating < 0 || rating > 10) {
@@ -35,75 +35,128 @@ router.post('/:id/rate', authMiddleware, async (req, res) => {
     }
 
     // Empêcher l'auto-notation
-    if (questionnaire.user.toString() === userId) { // ✅ CORRIGÉ : supprimé .toString() sur userId
+    if (questionnaire.user.toString() === userId) {
       return res.status(403).json({ message: 'Vous ne pouvez pas noter votre propre questionnaire' });
     }
 
     // Vérifier si l'utilisateur a déjà noté ce questionnaire
-    let existingRating = await QuestionnaireRating.findOne({ 
-      questionnaire: questionnaireId, 
-      user: userId 
+    let existingRating = await QuestionnaireRating.findOne({
+      questionnaire: questionnaireId,
+      user: userId
     });
 
     if (existingRating) {
       // Mettre à jour la note existante
+      const oldRating = existingRating.rating;
       existingRating.rating = rating;
       existingRating.comment = comment || '';
       existingRating.updatedAt = new Date();
       await existingRating.save();
+
+      // Recalculer la moyenne
+      const allRatings = await QuestionnaireRating.find({ questionnaire: questionnaireId });
+      const totalRating = allRatings.reduce((sum, r) => sum + r.rating, 0);
+      const averageRating = totalRating / allRatings.length;
+
+      await Questionnaire.findByIdAndUpdate(questionnaireId, {
+        averageRating: Number(averageRating.toFixed(1))
+      });
+
+      res.json({ 
+        message: 'Note mise à jour avec succès',
+        rating: existingRating
+      });
     } else {
       // Créer une nouvelle note
-      existingRating = new QuestionnaireRating({
+      const newRating = new QuestionnaireRating({
         questionnaire: questionnaireId,
         user: userId,
-        rating: rating,
-        comment: comment || '',
-        createdAt: new Date(),
-        updatedAt: new Date()
+        rating,
+        comment: comment || ''
       });
-      await existingRating.save();
+
+      await newRating.save();
+
+      // Mettre à jour les statistiques du questionnaire
+      const allRatings = await QuestionnaireRating.find({ questionnaire: questionnaireId });
+      const totalRating = allRatings.reduce((sum, r) => sum + r.rating, 0);
+      const averageRating = totalRating / allRatings.length;
+
+      await Questionnaire.findByIdAndUpdate(questionnaireId, {
+        averageRating: Number(averageRating.toFixed(1)),
+        ratingsCount: allRatings.length
+      });
+
+      res.json({ 
+        message: 'Note ajoutée avec succès',
+        rating: newRating
+      });
     }
-
-    // Recalculer la note moyenne et le nombre de notes
-    const allRatings = await QuestionnaireRating.find({ questionnaire: questionnaireId });
-    const averageRating = allRatings.reduce((sum, r) => sum + r.rating, 0) / allRatings.length;
-
-    // Mettre à jour le questionnaire avec les nouvelles notes
-    await Questionnaire.findByIdAndUpdate(questionnaireId, {
-      averageRating: Math.round(averageRating * 10) / 10, // Arrondir à 1 décimale
-      ratingsCount: allRatings.length
-    });
-
-    res.json({
-      message: 'Note ajoutée avec succès',
-      userRating: existingRating.rating,
-      averageRating: Math.round(averageRating * 10) / 10,
-      ratingsCount: allRatings.length
-    });
-
   } catch (error) {
-    console.error('Erreur lors de la notation du questionnaire:', error);
+    console.error('Erreur lors de la notation:', error);
     res.status(500).json({ message: 'Erreur lors de la notation du questionnaire' });
   }
 });
 
-// ==================== ROUTES PRINCIPALES ====================
+// Récupérer les notes d'un questionnaire
+router.get('/:id/ratings', async (req, res) => {
+  try {
+    const questionnaireId = req.params.id;
 
-// Route pour récupérer tous les questionnaires de l'utilisateur connecté
-router.get('/my', authMiddleware, async (req, res) => {
+    // Vérifier que le questionnaire existe et est public
+    const questionnaire = await Questionnaire.findById(questionnaireId);
+    if (!questionnaire) {
+      return res.status(404).json({ message: 'Questionnaire non trouvé' });
+    }
+
+    if (!questionnaire.public) {
+      return res.status(403).json({ message: 'Seuls les questionnaires publics peuvent être consultés' });
+    }
+
+    const ratings = await QuestionnaireRating.find({ questionnaire: questionnaireId })
+      .populate('user', 'username')
+      .sort({ createdAt: -1 });
+
+    res.json(ratings);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des notes:', error);
+    res.status(500).json({ message: 'Erreur lors de la récupération des notes' });
+  }
+});
+
+// Route pour récupérer tous les questionnaires (avec système de notation et tags)
+router.get('/', authMiddleware, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const search = req.query.search || '';
+    const tags = req.query.tags || '';
+    const sortBy = req.query.sortBy || 'updatedAt';
+    const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+    const showPublic = req.query.showPublic === 'true';
 
     // Construction du filtre de recherche
-    let searchFilter = {
-      user: req.userId // Questionnaires de l'utilisateur connecté uniquement
-    };
+    let searchFilter = {};
 
-    // Recherche textuelle si fournie
+    if (showPublic) {
+      searchFilter.public = true;
+    } else {
+      searchFilter.user = req.userId;
+    }
+
+    // Recherche textuelle
     if (search.trim()) {
-      searchFilter.title = { $regex: search, $options: 'i' };
+      searchFilter.$or = [
+        { title: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Filtre par tags
+    if (tags.trim()) {
+      const tagArray = tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+      if (tagArray.length > 0) {
+        searchFilter.tags = { $in: tagArray };
+      }
     }
 
     console.log('Filtre de recherche questionnaires:', searchFilter);
@@ -113,10 +166,14 @@ router.get('/my', authMiddleware, async (req, res) => {
     const totalPages = Math.ceil(total / limit);
 
     // Récupérer les questionnaires avec pagination
+    const sortOptions = {};
+    sortOptions[sortBy] = sortOrder;
+
     const questionnaires = await Questionnaire.find(searchFilter)
-      .sort({ updatedAt: -1 })
+      .sort(sortOptions)
       .skip((page - 1) * limit)
       .limit(limit)
+      .populate('user', 'username')
       .lean();
 
     // S'assurer que questionnaires est toujours un tableau
@@ -124,121 +181,30 @@ router.get('/my', authMiddleware, async (req, res) => {
 
     res.json({
       questionnaires: safeQuestionnaires,
-      currentPage: page,
-      totalPages: totalPages,
-      totalQuestionnaires: total
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalItems: total,
+        itemsPerPage: limit,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1
+      }
     });
-
   } catch (error) {
     console.error('Erreur lors de la récupération des questionnaires:', error);
-    res.json({
-      questionnaires: [], // Toujours retourner un tableau vide en cas d'erreur
-      currentPage: 1,
-      totalPages: 0,
-      totalQuestionnaires: 0
-    });
+    res.status(500).json({ message: 'Erreur lors de la récupération des questionnaires' });
   }
 });
 
-// Route pour récupérer tous les questionnaires publics avec filtres
-router.get('/public', async (req, res) => {
-  try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const search = req.query.search || '';
-    
-    // Nouveaux filtres
-    const modality = req.query.modality || '';
-    const specialty = req.query.specialty || '';
-    const location = req.query.location || '';
-
-    // Construction du filtre de base
-    let filter = { public: true };
-
-    // Recherche textuelle
-    if (search.trim()) {
-      filter.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { tags: { $elemMatch: { $regex: search, $options: 'i' } } }
-      ];
-    }
-
-    // Filtres par tags - Conversion des chaînes en tableaux et filtrage
-    const modalityTags = modality ? modality.split(',').filter(Boolean) : [];
-    const specialtyTags = specialty ? specialty.split(',').filter(Boolean) : [];
-    const locationTags = location ? location.split(',').filter(Boolean) : [];
-
-    if (modalityTags.length > 0) {
-      filter.tags = { ...filter.tags, $in: [...(filter.tags?.$in || []), ...modalityTags] };
-    }
-    if (specialtyTags.length > 0) {
-      filter.tags = { ...filter.tags, $in: [...(filter.tags?.$in || []), ...specialtyTags] };
-    }
-    if (locationTags.length > 0) {
-      filter.tags = { ...filter.tags, $in: [...(filter.tags?.$in || []), ...locationTags] };
-    }
-
-    // Récupérer les questionnaires publics avec pagination
-    const questionnaires = await Questionnaire.find(filter)
-      .populate('user', 'username')
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .lean();
-
-    const totalQuestionnaires = await Questionnaire.countDocuments(filter);
-    const totalPages = Math.ceil(totalQuestionnaires / limit);
-
-    // Si l'utilisateur est connecté, récupérer ses notes
-    let userRatings = {};
-    if (req.userId) { // ✅ CORRIGÉ : utiliser req.userId au lieu de req.user
-      const userRatingDocs = await QuestionnaireRating.find({ 
-        user: req.userId, // ✅ CORRIGÉ : utiliser req.userId au lieu de req.user._id
-        questionnaire: { $in: questionnaires.map(q => q._id) }
-      });
-      
-      userRatings = userRatingDocs.reduce((acc, rating) => {
-        acc[rating.questionnaire.toString()] = rating.rating;
-        return acc;
-      }, {});
-    }
-
-    // Ajouter les notes utilisateur aux questionnaires
-    const questionnairesWithRatings = questionnaires.map(questionnaire => ({
-      ...questionnaire,
-      averageRating: questionnaire.averageRating || 0,
-      ratingsCount: questionnaire.ratingsCount || 0,
-      userRating: userRatings[questionnaire._id.toString()] || null,
-      views: questionnaire.views || 0,
-      copies: questionnaire.copies || 0
-    }));
-
-    res.json({
-      questionnaires: questionnairesWithRatings,
-      currentPage: page,
-      totalPages,
-      totalQuestionnaires
-    });
-
-  } catch (error) {
-    console.error('Erreur lors de la récupération des questionnaires publics:', error);
-    res.json({
-      questionnaires: [], // Toujours retourner un tableau vide en cas d'erreur
-      currentPage: 1,
-      totalPages: 0,
-      totalQuestionnaires: 0
-    });
-  }
-});
-
-// Route pour copier un questionnaire public
+// Copier un questionnaire public
 router.post('/:id/copy', authMiddleware, async (req, res) => {
   try {
-    const questionnaireId = req.params.id;
-    const userId = req.userId;
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: 'ID de questionnaire invalide' });
+    }
 
-    // Vérifier que le questionnaire existe et est public
-    const originalQuestionnaire = await Questionnaire.findById(questionnaireId);
+    const originalQuestionnaire = await Questionnaire.findById(req.params.id);
+    
     if (!originalQuestionnaire) {
       return res.status(404).json({ message: 'Questionnaire non trouvé' });
     }
@@ -247,30 +213,48 @@ router.post('/:id/copy', authMiddleware, async (req, res) => {
       return res.status(403).json({ message: 'Seuls les questionnaires publics peuvent être copiés' });
     }
 
-    // Créer une copie du questionnaire pour l'utilisateur
+    // 🔄 CORRECTION : Conversion correcte de hiddenQuestions
+    let hiddenQuestionsToSave;
+    if (typeof originalQuestionnaire.hiddenQuestions === 'object' && !Array.isArray(originalQuestionnaire.hiddenQuestions)) {
+      // Si c'est un objet, on le convertit en tableau des clés (les IDs des questions cachées)
+      hiddenQuestionsToSave = Object.keys(originalQuestionnaire.hiddenQuestions).filter(key => originalQuestionnaire.hiddenQuestions[key]);
+    } else if (Array.isArray(originalQuestionnaire.hiddenQuestions)) {
+      // Si c'est déjà un tableau, on le garde tel quel
+      hiddenQuestionsToSave = originalQuestionnaire.hiddenQuestions;
+    } else {
+      // Par défaut, un tableau vide
+      hiddenQuestionsToSave = [];
+    }
+
+    // Créer une copie du questionnaire
     const newQuestionnaire = new Questionnaire({
-      ...originalQuestionnaire.toObject(),
-      _id: undefined,
-      title: `${originalQuestionnaire.title} (copie)`,
-      user: userId,
-      public: false, // La copie est privée par défaut
-      averageRating: 0, // Réinitialiser les notes
+      title: `Copie de ${originalQuestionnaire.title}`,
+      questions: originalQuestionnaire.questions,
+      selectedOptions: {},
+      crData: { crTexts: {}, freeTexts: {} },
+      hiddenQuestions: hiddenQuestionsToSave, // 🔄 CORRIGÉ : Type de données correct
+      pageTitles: originalQuestionnaire.pageTitles || {},
+      links: new Map(),
+      tags: originalQuestionnaire.tags || [],
+      public: false,
+      user: req.userId,
+      averageRating: 0,
       ratingsCount: 0,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      views: 0,
+      copies: 0
     });
 
-    await newQuestionnaire.save();
+    const savedQuestionnaire = await newQuestionnaire.save();
 
     // Incrémenter le compteur de copies du questionnaire original
-    await Questionnaire.findByIdAndUpdate(questionnaireId, {
+    await Questionnaire.findByIdAndUpdate(req.params.id, {
       $inc: { copies: 1 }
     });
 
     res.status(201).json({
       message: 'Questionnaire copié avec succès',
-      id: newQuestionnaire._id,
-      questionnaire: newQuestionnaire
+      id: savedQuestionnaire._id,
+      questionnaire: savedQuestionnaire
     });
 
   } catch (error) {
@@ -338,46 +322,68 @@ router.delete('/:id/tags', authMiddleware, async (req, res) => {
   }
 });
 
-// ✅ CORRECTION PRINCIPALE : Route pour créer un questionnaire avec TOUS LES CHAMPS
+// 🔄 CORRECTION PRINCIPALE : Route pour créer un questionnaire avec hiddenQuestions en TABLEAU
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    // ✅ RÉCUPÉRER TOUS LES CHAMPS depuis le corps de la requête
+    // Récupérer tous les champs depuis le corps de la requête
     const { 
       title, 
       questions, 
       selectedOptions, 
       crData, 
       hiddenQuestions,
-      pageTitles,    // ✅ AJOUTÉ
-      links,         // ✅ AJOUTÉ
-      tags,          // ✅ AJOUTÉ
-      public         // ✅ AJOUTÉ
+      pageTitles,
+      links,
+      tags,
+      public
     } = req.body;
     
     console.log(`✅ Création du questionnaire : ${title}`);
     console.log('✅ Données reçues:', {
       title,
       questionsCount: questions?.length || 0,
-      selectedOptions: Object.keys(selectedOptions || {}).length,
+      selectedOptionsCount: Object.keys(selectedOptions || {}).length,
       crData: crData ? 'présent' : 'absent',
-      hiddenQuestions: Object.keys(hiddenQuestions || {}).length,
-      pageTitles: Object.keys(pageTitles || {}).length,
+      hiddenQuestionsType: typeof hiddenQuestions,
+      hiddenQuestionsContent: hiddenQuestions,
+      pageTitlesCount: Object.keys(pageTitles || {}).length,
       linksCount: links ? Object.keys(links).length : 0,
       tagsCount: tags?.length || 0,
       public: public || false
     });
 
-    // ✅ CRÉER le questionnaire avec TOUS LES CHAMPS
+    // 🔄 CORRECTION CRITIQUE : Conversion de hiddenQuestions en tableau de chaînes
+    let hiddenQuestionsArray;
+    if (typeof hiddenQuestions === 'object' && !Array.isArray(hiddenQuestions)) {
+      // Si c'est un objet comme { "questionId1": true, "questionId2": false }, 
+      // on extrait les clés où la valeur est true
+      hiddenQuestionsArray = Object.keys(hiddenQuestions).filter(key => hiddenQuestions[key]);
+    } else if (Array.isArray(hiddenQuestions)) {
+      // Si c'est déjà un tableau, on le garde tel quel
+      hiddenQuestionsArray = hiddenQuestions.filter(item => typeof item === 'string');
+    } else {
+      // Par défaut, un tableau vide
+      hiddenQuestionsArray = [];
+    }
+
+    console.log('🔄 CORRECTION hiddenQuestions:', {
+      original: hiddenQuestions,
+      converted: hiddenQuestionsArray,
+      type: typeof hiddenQuestionsArray,
+      isArray: Array.isArray(hiddenQuestionsArray)
+    });
+
+    // Créer le questionnaire avec le type de données correct
     const questionnaire = new Questionnaire({
       title,
       questions: questions || [],
       selectedOptions: selectedOptions || {},
       crData: crData || { crTexts: {}, freeTexts: {} },
-      hiddenQuestions: hiddenQuestions || {},
-      pageTitles: pageTitles || {},        // ✅ AJOUTÉ
-      links: links || new Map(),           // ✅ AJOUTÉ
-      tags: tags || [],                    // ✅ AJOUTÉ
-      public: public || false,             // ✅ AJOUTÉ
+      hiddenQuestions: hiddenQuestionsArray, // 🔄 CORRIGÉ : Maintenant c'est un tableau de chaînes
+      pageTitles: pageTitles || {},
+      links: links || new Map(),
+      tags: tags || [],
+      public: public || false,
       user: req.userId,
       // Champs de notation
       averageRating: 0,
@@ -391,7 +397,8 @@ router.post('/', authMiddleware, async (req, res) => {
     console.log('✅ Questionnaire créé avec succès:', {
       id: newQuestionnaire._id,
       title: newQuestionnaire.title,
-      questionsCount: newQuestionnaire.questions?.length || 0
+      questionsCount: newQuestionnaire.questions?.length || 0,
+      hiddenQuestionsCount: newQuestionnaire.hiddenQuestions?.length || 0
     });
     
     res.status(201).json(newQuestionnaire);
@@ -401,7 +408,7 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 });
 
-// MODIFIÉ : Route pour récupérer un questionnaire par ID avec gestion des vues et notes utilisateur
+// Route pour récupérer un questionnaire par ID avec gestion des vues et notes utilisateur
 router.get('/:id', authMiddleware, async (req, res) => {
   try {
     // Vérifier que l'ID est valide
@@ -430,14 +437,22 @@ router.get('/:id', authMiddleware, async (req, res) => {
 
     const questionnaireObject = questionnaire.toObject();
 
+    // 🔄 CORRECTION : Convertir hiddenQuestions de tableau vers objet pour le frontend
+    if (Array.isArray(questionnaire.hiddenQuestions)) {
+      const hiddenQuestionsObj = {};
+      questionnaire.hiddenQuestions.forEach(questionId => {
+        hiddenQuestionsObj[questionId] = true;
+      });
+      questionnaireObject.hiddenQuestions = hiddenQuestionsObj;
+    }
+
     // Ajouter la note de l'utilisateur connecté si applicable
-    if (req.userId && questionnaire.public) { // ✅ CORRIGÉ : utiliser req.userId au lieu de req.user
+    if (req.userId && questionnaire.public) {
       const userRating = await QuestionnaireRating.findOne({
         questionnaire: req.params.id,
-        user: req.userId // ✅ CORRIGÉ : utiliser req.userId au lieu de req.user._id
+        user: req.userId
       });
-      questionnaireObject.userRating = userRating ? 
-        userRating.rating : null;
+      questionnaireObject.userRating = userRating ? userRating.rating : null;
     }
     
     res.json(questionnaireObject);
@@ -456,12 +471,26 @@ router.put('/:id', authMiddleware, async (req, res) => {
     }
 
     console.log('✅ Mise à jour du questionnaire:', req.params.id);
+
+    // 🔄 CORRECTION : Conversion de hiddenQuestions avant mise à jour
+    const updateData = { ...req.body };
+    
+    if (updateData.hiddenQuestions) {
+      if (typeof updateData.hiddenQuestions === 'object' && !Array.isArray(updateData.hiddenQuestions)) {
+        // Convertir l'objet en tableau
+        updateData.hiddenQuestions = Object.keys(updateData.hiddenQuestions).filter(key => updateData.hiddenQuestions[key]);
+      } else if (!Array.isArray(updateData.hiddenQuestions)) {
+        updateData.hiddenQuestions = [];
+      }
+    }
+
     console.log('✅ Données reçues pour mise à jour:', {
-      title: req.body.title,
-      questionsCount: req.body.questions?.length || 0,
-      selectedOptions: Object.keys(req.body.selectedOptions || {}).length,
-      crData: req.body.crData ? 'présent' : 'absent',
-      hiddenQuestions: Object.keys(req.body.hiddenQuestions || {}).length
+      title: updateData.title,
+      questionsCount: updateData.questions?.length || 0,
+      selectedOptionsCount: Object.keys(updateData.selectedOptions || {}).length,
+      crData: updateData.crData ? 'présent' : 'absent',
+      hiddenQuestionsType: typeof updateData.hiddenQuestions,
+      hiddenQuestionsCount: updateData.hiddenQuestions?.length || 0
     });
 
     const questionnaire = await Questionnaire.findOneAndUpdate(
@@ -469,7 +498,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
         _id: req.params.id, 
         user: req.userId 
       },
-      req.body,
+      updateData,
       { new: true }
     );
     
@@ -478,7 +507,18 @@ router.put('/:id', authMiddleware, async (req, res) => {
     }
     
     console.log('✅ Questionnaire mis à jour avec succès');
-    res.json(questionnaire);
+    
+    // 🔄 CORRECTION : Convertir hiddenQuestions pour le retour au frontend
+    const questionnaireObject = questionnaire.toObject();
+    if (Array.isArray(questionnaire.hiddenQuestions)) {
+      const hiddenQuestionsObj = {};
+      questionnaire.hiddenQuestions.forEach(questionId => {
+        hiddenQuestionsObj[questionId] = true;
+      });
+      questionnaireObject.hiddenQuestions = hiddenQuestionsObj;
+    }
+    
+    res.json(questionnaireObject);
   } catch (error) {
     console.error('❌ Erreur lors de la mise à jour du questionnaire:', error);
     res.status(500).json({ message: 'Erreur lors de la mise à jour du questionnaire' });
