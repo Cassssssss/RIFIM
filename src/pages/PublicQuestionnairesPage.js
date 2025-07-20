@@ -1,3 +1,4 @@
+// PublicQuestionnairesPage.js - VERSION CORRIGÉE SANS FOND SUPPLÉMENTAIRE
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
@@ -5,11 +6,11 @@ import { ChevronDown, ChevronUp, Clock, Users, FileText, TrendingUp, User, Eye, 
 import axios from '../utils/axiosConfig';
 import RatingStars from '../components/RatingStars'; // NOUVEAU : Import du système de notation
 
-// ==================== STYLED COMPONENTS ====================
+// ==================== STYLED COMPONENTS SIMPLIFIÉS COMME QuestionnairePage ====================
 
-const ModernPageContainer = styled.div`
+const PageContainer = styled.div`
   min-height: 100vh;
-  background: ${props => props.theme.background};
+  background-color: ${props => props.theme.background};
   padding: 2rem;
   
   @media (max-width: 768px) {
@@ -17,83 +18,57 @@ const ModernPageContainer = styled.div`
   }
 `;
 
-const HeaderSection = styled.div`
-  text-align: center;
-  margin-bottom: 3rem;
-  padding: 2rem;
-  background: linear-gradient(135deg, ${props => props.theme.primary}15, ${props => props.theme.secondary}15);
-  border-radius: 20px;
-  border: 1px solid ${props => props.theme.primary}20;
+const ContentWrapper = styled.div`
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  gap: 2rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+  }
 `;
 
-const MainTitle = styled.h1`
+const Title = styled.h1`
   font-size: 2.5rem;
   font-weight: 700;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  text-align: center;
 `;
 
-const SubTitle = styled.p`
+const Subtitle = styled.p`
   font-size: 1.2rem;
   color: ${props => props.theme.textSecondary};
-  max-width: 600px;
-  margin: 0 auto;
+  margin-bottom: 2rem;
+  text-align: center;
   line-height: 1.6;
 `;
 
-const ModernFilterSection = styled.div`
-  background-color: ${props => props.theme.card};
-  border-radius: 16px;
-  padding: 2rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 20px ${props => props.theme.shadow};
-  border: 1px solid ${props => props.theme.border};
-`;
+// ==================== SECTION FILTRES ====================
 
-const SearchContainer = styled.div`
-  margin-bottom: 2rem;
-`;
+const FilterSection = styled.div`
+  width: 280px;
+  flex-shrink: 0;
 
-const SearchInput = styled.input`
-  width: 100%;
-  padding: 1rem 1.5rem;
-  border: 2px solid ${props => props.theme.borderLight};
-  border-radius: 12px;
-  background-color: ${props => props.theme.background};
-  color: ${props => props.theme.text};
-  font-size: 1rem;
-  transition: border-color 0.3s ease;
-
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.primary};
+  @media (max-width: 768px) {
+    width: 100%;
   }
-
-  &::placeholder {
-    color: ${props => props.theme.textSecondary};
-  }
-`;
-
-const FiltersRow = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
 `;
 
 const FilterGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  margin-bottom: 1.5rem;
 `;
 
-const FilterTitle = styled.h4`
-  font-size: 0.9rem;
-  font-weight: 600;
+const FilterTitle = styled.h3`
   color: ${props => props.theme.text};
-  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -106,8 +81,8 @@ const FilterDropdown = styled.div`
 const DropdownButton = styled.button`
   width: 100%;
   padding: 0.75rem 1rem;
-  background-color: ${props => props.theme.background};
-  border: 2px solid ${props => props.theme.borderLight};
+  background-color: ${props => props.theme.card};
+  border: 2px solid ${props => props.theme.border};
   border-radius: 8px;
   color: ${props => props.theme.text};
   cursor: pointer;
@@ -134,40 +109,265 @@ const DropdownContent = styled.div`
   left: 0;
   right: 0;
   background-color: ${props => props.theme.card};
-  border: 2px solid ${props => props.theme.primary};
+  border: 2px solid ${props => props.theme.border};
   border-top: none;
   border-radius: 0 0 8px 8px;
   z-index: 10;
-  max-height: 200px;
-  overflow-y: auto;
-  box-shadow: 0 4px 15px ${props => props.theme.shadow};
+  box-shadow: 0 4px 12px ${props => props.theme.shadow};
 `;
 
-const FilterOption = styled.label`
+const DropdownOption = styled.label`
   display: flex;
   align-items: center;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem;
   cursor: pointer;
-  transition: background-color 0.2s ease;
   color: ${props => props.theme.text};
+  transition: background-color 0.2s ease;
 
   &:hover {
     background-color: ${props => props.theme.hover};
   }
 
   input {
-    margin-right: 0.5rem;
+    margin-right: 0.75rem;
+    width: 16px;
+    height: 16px;
     accent-color: ${props => props.theme.primary};
+  }
+
+  span {
+    font-weight: 500;
   }
 `;
 
-const ModernListContainer = styled.div`
+const FilterIndicator = styled.div`
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: ${props => props.theme.primary};
+  padding: 0.5rem;
+  background-color: ${props => props.theme.background};
+  border-radius: 4px;
+`;
+
+// ==================== SECTION CONTENU PRINCIPAL ====================
+
+const ListContainer = styled.div`
+  flex: 1;
+  max-width: calc(100% - 300px);
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+  }
+`;
+
+const SearchBar = styled.input`
+  width: 100%;
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+  border: 2px solid ${props => props.theme.border};
+  border-radius: 12px;
+  font-size: 1rem;
   background-color: ${props => props.theme.card};
-  border-radius: 16px;
-  padding: 2rem;
-  box-shadow: 0 4px 20px ${props => props.theme.shadow};
+  color: ${props => props.theme.text};
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary};
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
+  }
+
+  &::placeholder {
+    color: ${props => props.theme.textSecondary};
+  }
+`;
+
+// ==================== GRILLE DES QUESTIONNAIRES ====================
+
+const QuestionnairesGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+`;
+
+const QuestionnaireCard = styled.div`
+  background-color: ${props => props.theme.card};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px ${props => props.theme.shadow};
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px ${props => props.theme.shadow};
+    border-color: ${props => props.theme.primary};
+  }
+`;
+
+const CardHeader = styled.div`
+  margin-bottom: 1rem;
+`;
+
+const QuestionnaireTitle = styled(Link)`
+  color: ${props => props.theme.text};
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  line-height: 1.4;
+  
+  &:hover {
+    color: ${props => props.theme.primary};
+  }
+`;
+
+const QuestionnaireIcon = styled.span`
+  font-size: 1.5rem;
+  flex-shrink: 0;
+`;
+
+const CardMeta = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: ${props => props.theme.backgroundSecondary};
+  border-radius: 8px;
   border: 1px solid ${props => props.theme.border};
 `;
+
+const MetaItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: ${props => props.theme.textSecondary};
+  font-size: 0.85rem;
+  font-weight: 500;
+
+  svg {
+    color: ${props => props.theme.primary};
+    flex-shrink: 0;
+  }
+`;
+
+const TagsContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+`;
+
+const Tag = styled.span`
+  background-color: ${props => props.theme.primary};
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+`;
+
+const ActionButtons = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const ActionButton = styled(Link)`
+  background-color: ${props => props.theme.primary};
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px ${props => props.theme.shadow};
+    opacity: 0.9;
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+`;
+
+const CopyButton = styled.button`
+  background-color: ${props => props.theme.secondary};
+  color: white;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: ${props => props.theme.secondaryHover};
+    transform: translateY(-1px);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+`;
+
+const AuthorInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: ${props => props.theme.textSecondary};
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+`;
+
+const PopularityBadge = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background-color: ${props => props.theme.success};
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-left: 0.5rem;
+`;
+
+// ==================== MESSAGES D'ÉTAT ====================
 
 const LoadingMessage = styled.div`
   text-align: center;
@@ -204,225 +404,7 @@ const EmptyState = styled.div`
   }
 `;
 
-const ModernQuestionnairesGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 2rem;
-  margin-bottom: 2rem;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-`;
-
-const ModernQuestionnaireCard = styled.div`
-  background-color: ${props => props.theme.background};
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 16px;
-  padding: 1.5rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px ${props => props.theme.shadow};
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  }
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px ${props => props.theme.shadow};
-    border-color: ${props => props.theme.primary}50;
-  }
-`;
-
-const ModernCardHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-`;
-
-const ModernCardTitle = styled.h3`
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: ${props => props.theme.primary};
-  margin: 0;
-  line-height: 1.3;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  transition: color 0.2s ease;
-
-  &:hover {
-    color: ${props => props.theme.primaryDark || props.theme.primary};
-    text-decoration: underline;
-  }
-`;
-
-const PopularityBadge = styled.span`
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  background-color: ${props => props.theme.success};
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  margin-left: 0.5rem;
-`;
-
-const AuthorInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
-`;
-
-const ModernCardMeta = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1rem;
-`;
-
-const ModernMetaItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.875rem;
-`;
-
-const ModernTagsContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-`;
-
-const ModernTag = styled.span`
-  background: linear-gradient(135deg, ${props => props.theme.primary}20, ${props => props.theme.secondary}20);
-  color: ${props => props.theme.primary};
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  border: 1px solid ${props => props.theme.primary}30;
-`;
-
-// NOUVEAU : Section de notation
-const RatingSection = styled.div`
-  padding: 0.5rem 0;
-  border-top: 1px solid ${props => props.theme.borderLight};
-  border-bottom: 1px solid ${props => props.theme.borderLight};
-  margin: 0.75rem 0;
-`;
-
-const StatsContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-`;
-
-const StatItem = styled.span`
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.875rem;
-`;
-
-const ModernCardActions = styled.div`
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-`;
-
-const PrimaryActionButton = styled.button`
-  flex: 1;
-  padding: 0.75rem 1rem;
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-
-  &:hover {
-    background-color: ${props => props.theme.primaryDark || props.theme.primary};
-    transform: translateY(-2px);
-  }
-`;
-
-const SecondaryActionButton = styled(Link)`
-  flex: 1;
-  padding: 0.75rem 1rem;
-  background-color: ${props => props.theme.background};
-  color: ${props => props.theme.text};
-  border: 2px solid ${props => props.theme.borderLight};
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-
-  &:hover {
-    border-color: ${props => props.theme.primary};
-    background-color: ${props => props.theme.hover};
-    color: ${props => props.theme.text};
-  }
-`;
-
-const ActionButton = styled.button`
-  padding: 0.5rem 1rem;
-  border: 1px solid ${props => props.theme.borderLight};
-  border-radius: 6px;
-  background-color: ${props => props.theme.background};
-  color: ${props => props.theme.text};
-  cursor: pointer;
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
-
-  &:hover {
-    border-color: ${props => props.theme.primary};
-    background-color: ${props => props.theme.hover};
-  }
-
-  &.primary {
-    background-color: ${props => props.theme.primary};
-    color: white;
-    border-color: ${props => props.theme.primary};
-
-    &:hover {
-      background-color: ${props => props.theme.primaryDark || props.theme.primary};
-    }
-  }
-`;
+// ==================== PAGINATION ====================
 
 const PaginationContainer = styled.div`
   display: flex;
@@ -504,101 +486,109 @@ function QuestionnaireCardComponent({ questionnaire }) {
 
   const estimateTime = (questionnaire) => {
     const questionCount = questionnaire.questions ? questionnaire.questions.length : 0;
-    const estimatedMinutes = Math.max(2, Math.ceil(questionCount * 0.5));
-    return `~${estimatedMinutes} min`;
+    return `~${Math.max(1, Math.ceil(questionCount / 3))} min`;
   };
 
   const getQuestionnaireIcon = (tags) => {
-    if (!tags || tags.length === 0) return '📋';
-    if (tags.includes('IRM') || tags.includes('irm')) return '🧲';
-    if (tags.includes('TDM') || tags.includes('tdm')) return '🔍';
-    if (tags.includes('Rx') || tags.includes('rx')) return '🩻';
-    if (tags.includes('Echo') || tags.includes('echo')) return '📡';
+    if (!tags || !Array.isArray(tags)) return '📋';
+    
+    if (tags.some(tag => tag.toLowerCase().includes('neuro'))) return '🧠';
+    if (tags.some(tag => tag.toLowerCase().includes('cardio'))) return '❤️';
+    if (tags.some(tag => tag.toLowerCase().includes('thorax'))) return '🫁';
+    if (tags.some(tag => tag.toLowerCase().includes('abdo'))) return '🔍';
+    if (tags.some(tag => tag.toLowerCase().includes('pelvis'))) return '🦴';
+    if (tags.some(tag => tag.toLowerCase().includes('ostéo'))) return '🦴';
+    if (tags.some(tag => tag.toLowerCase().includes('séno'))) return '🔬';
+    
     return '📋';
   };
 
   return (
-    <ModernQuestionnaireCard>
-      <ModernCardHeader>
-        <ModernCardTitle 
-          onClick={() => window.open(`/use/${questionnaire._id}`, '_blank')}
-          title="Cliquer pour utiliser ce questionnaire"
-        >
-          {getQuestionnaireIcon(questionnaire.tags)}
+    <QuestionnaireCard>
+      <CardHeader>
+        <QuestionnaireTitle to={`/use/${questionnaire._id}`}>
+          <QuestionnaireIcon>
+            {getQuestionnaireIcon(questionnaire.tags)}
+          </QuestionnaireIcon>
           {questionnaire.title}
-        </ModernCardTitle>
-        {isPopular(questionnaire) && (
-          <PopularityBadge>
-            <TrendingUp size={12} />
-            Populaire
-          </PopularityBadge>
-        )}
-      </ModernCardHeader>
+          {isPopular(questionnaire) && (
+            <PopularityBadge>
+              <TrendingUp size={12} />
+              Populaire
+            </PopularityBadge>
+          )}
+        </QuestionnaireTitle>
+      </CardHeader>
 
       <AuthorInfo>
         <User size={16} />
         Par <strong>{questionnaire.user?.username || 'Utilisateur'}</strong>
       </AuthorInfo>
 
-      <ModernCardMeta>
-        <ModernMetaItem>
-          <Clock size={16} />
-          {formatDate(questionnaire.createdAt)}
-        </ModernMetaItem>
-        <ModernMetaItem>
-          <Users size={16} />
-          Public
-        </ModernMetaItem>
-        <ModernMetaItem>
+      {/* Tags */}
+      <TagsContainer>
+        {questionnaire.tags && questionnaire.tags.map((tag, index) => (
+          <Tag key={index}>{tag}</Tag>
+        ))}
+      </TagsContainer>
+
+      {/* Métadonnées */}
+      <CardMeta>
+        <MetaItem>
+          <Clock />
+          <span>{formatDate(questionnaire.updatedAt || questionnaire.createdAt)}</span>
+        </MetaItem>
+        <MetaItem>
+          <Users />
+          <span>Public</span>
+        </MetaItem>
+        <MetaItem>
+          <FileText />
+          <span>{questionnaire.questions ? questionnaire.questions.length : 0} questions</span>
+        </MetaItem>
+        <MetaItem>
+          <Clock />
+          <span>{estimateTime(questionnaire)}</span>
+        </MetaItem>
+        <MetaItem>
+          <Eye />
+          <span>{questionnaire.views || 0} vues</span>
+        </MetaItem>
+        <MetaItem>
+          <Copy />
+          <span>{questionnaire.copies || 0} copies</span>
+        </MetaItem>
+      </CardMeta>
+
+      {/* NOUVEAU : Système de notation */}
+      <RatingStars
+        itemId={questionnaire._id}
+        itemType="questionnaire"
+        averageRating={questionnaireRating.averageRating}
+        ratingsCount={questionnaireRating.ratingsCount}
+        userRating={questionnaireRating.userRating}
+        onRatingUpdate={(id, data) => handleRatingUpdate(id, data)}
+        compact={true}
+      />
+
+      {/* Actions */}
+      <ActionButtons>
+        <ActionButton to={`/use/${questionnaire._id}`}>
           <FileText size={16} />
-          {estimateTime(questionnaire)}
-        </ModernMetaItem>
-      </ModernCardMeta>
-
-      {questionnaire.tags && questionnaire.tags.length > 0 && (
-        <ModernTagsContainer>
-          {questionnaire.tags.map((tag, index) => (
-            <ModernTag key={index}>{tag}</ModernTag>
-          ))}
-        </ModernTagsContainer>
-      )}
-
-      {/* NOUVEAU : Section de notation optimisée */}
-      <RatingSection>
-        <RatingStars
-          itemId={questionnaire._id}
-          itemType="questionnaire"
-          averageRating={questionnaireRating.averageRating}
-          ratingsCount={questionnaireRating.ratingsCount}
-          userRating={questionnaireRating.userRating}
-          onRatingUpdate={(newRatingData) => handleRatingUpdate(questionnaire._id, newRatingData)}
-          size={14}
-          compact={true}
-        />
-      </RatingSection>
-
-      <StatsContainer>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <StatItem>
-            <Eye size={14} />
-            {Number(questionnaire.views) || 0} vues
-          </StatItem>
-          <StatItem>
-            <Copy size={14} />
-            {Number(questionnaire.copies) || 0} copies
-          </StatItem>
-        </div>
-      </StatsContainer>
-
-      <ModernCardActions>
-        <PrimaryActionButton onClick={() => addToMyQuestionnaires(questionnaire._id)}>
-          ➕ Ajouter à mes questionnaires
-        </PrimaryActionButton>
-        <SecondaryActionButton to={`/use/${questionnaire._id}`}>
-          ▶️ UTILISER
-        </SecondaryActionButton>
-      </ModernCardActions>
-    </ModernQuestionnaireCard>
+          Utiliser
+        </ActionButton>
+        
+        <CopyButton
+          onClick={(e) => {
+            e.preventDefault();
+            addToMyQuestionnaires(questionnaire._id);
+          }}
+          title="Ajouter à mes questionnaires"
+        >
+          <Copy size={16} />
+        </CopyButton>
+      </ActionButtons>
+    </QuestionnaireCard>
   );
 }
 
@@ -663,96 +653,88 @@ function PublicQuestionnairesPage() {
     } catch (error) {
       console.error('Erreur lors de la récupération des questionnaires publics:', error);
       setError("Impossible de charger les questionnaires publics. Veuillez réessayer plus tard.");
+      setQuestionnaires([]);
     } finally {
       setIsLoading(false);
     }
   }, [searchTerm, modalityFilters, specialtyFilters, locationFilters]);
 
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      fetchQuestionnaires(1);
-    }, 300);
-  
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, modalityFilters, specialtyFilters, locationFilters, fetchQuestionnaires]);
+    fetchQuestionnaires(currentPage);
+  }, [fetchQuestionnaires, currentPage]);
 
-  const handleSearch = (event) => {
-    setSearchTerm(event.target.value);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, modalityFilters, specialtyFilters, locationFilters]);
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
   };
 
   const handleModalityFilter = (modality) => {
-    setModalityFilters(prev => {
-      if (prev.includes(modality)) {
-        return prev.filter(m => m !== modality);
-      } else {
-        return [...prev, modality];
-      }
-    });
+    setModalityFilters(prev => 
+      prev.includes(modality) 
+        ? prev.filter(m => m !== modality)
+        : [...prev, modality]
+    );
   };
 
   const handleSpecialtyFilter = (specialty) => {
-    setSpecialtyFilters(prev => {
-      if (prev.includes(specialty)) {
-        return prev.filter(s => s !== specialty);
-      } else {
-        return [...prev, specialty];
-      }
-    });
+    setSpecialtyFilters(prev => 
+      prev.includes(specialty) 
+        ? prev.filter(s => s !== specialty)
+        : [...prev, specialty]
+    );
   };
 
   const handleLocationFilter = (location) => {
-    setLocationFilters(prev => {
-      if (prev.includes(location)) {
-        return prev.filter(l => l !== location);
-      } else {
-        return [...prev, location];
-      }
-    });
+    setLocationFilters(prev => 
+      prev.includes(location) 
+        ? prev.filter(l => l !== location)
+        : [...prev, location]
+    );
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
   };
 
   return (
-    <ModernPageContainer>
-      <HeaderSection>
-        <MainTitle>📖 Questionnaires Publics</MainTitle>
-        <SubTitle>
-          Découvrez une collection de questionnaires partagés par la communauté. 
-          Enrichissez votre pratique avec des outils d'évaluation variés et de qualité.
-        </SubTitle>
-      </HeaderSection>
+    <PageContainer>
+      <Title>🩺 Questionnaires Publics</Title>
+      <Subtitle>
+        Découvrez et utilisez des questionnaires partagés par la communauté médicale
+      </Subtitle>
 
-      {/* SECTION FILTRES AVEC MENUS DÉPLIANTS */}
-      <ModernFilterSection>
-        <SearchContainer>
-          <SearchInput
-            type="text"
-            placeholder="🔍 Rechercher un questionnaire..."
-            value={searchTerm}
-            onChange={handleSearch}
-          />
-        </SearchContainer>
-
-        <FiltersRow>
+      <ContentWrapper>
+        {/* SECTION FILTRES */}
+        <FilterSection>
           <FilterGroup>
-            <FilterTitle>📊 Modalités</FilterTitle>
+            <FilterTitle>🔍 Modalités</FilterTitle>
             <FilterDropdown>
-              <DropdownButton 
-                onClick={() => setIsModalityDropdownOpen(!isModalityDropdownOpen)}
+              <DropdownButton
                 data-open={isModalityDropdownOpen}
+                onClick={() => setIsModalityDropdownOpen(!isModalityDropdownOpen)}
               >
-                Modalités ({modalityFilters.length})
-                {isModalityDropdownOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                <span>
+                  {modalityFilters.length > 0 
+                    ? `${modalityFilters.length} sélectionnée(s)` 
+                    : 'Toutes modalités'
+                  }
+                </span>
+                {isModalityDropdownOpen ? <ChevronUp /> : <ChevronDown />}
               </DropdownButton>
               {isModalityDropdownOpen && (
                 <DropdownContent>
                   {modalityOptions.map(modality => (
-                    <FilterOption key={modality}>
+                    <DropdownOption key={modality}>
                       <input
                         type="checkbox"
                         checked={modalityFilters.includes(modality)}
                         onChange={() => handleModalityFilter(modality)}
                       />
-                      {modality}
-                    </FilterOption>
+                      <span>{modality}</span>
+                    </DropdownOption>
                   ))}
                 </DropdownContent>
               )}
@@ -760,26 +742,31 @@ function PublicQuestionnairesPage() {
           </FilterGroup>
 
           <FilterGroup>
-            <FilterTitle>🩺 Spécialités</FilterTitle>
+            <FilterTitle>🏥 Spécialités</FilterTitle>
             <FilterDropdown>
-              <DropdownButton 
-                onClick={() => setIsSpecialtyDropdownOpen(!isSpecialtyDropdownOpen)}
+              <DropdownButton
                 data-open={isSpecialtyDropdownOpen}
+                onClick={() => setIsSpecialtyDropdownOpen(!isSpecialtyDropdownOpen)}
               >
-                Spécialités ({specialtyFilters.length})
-                {isSpecialtyDropdownOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                <span>
+                  {specialtyFilters.length > 0 
+                    ? `${specialtyFilters.length} sélectionnée(s)` 
+                    : 'Toutes spécialités'
+                  }
+                </span>
+                {isSpecialtyDropdownOpen ? <ChevronUp /> : <ChevronDown />}
               </DropdownButton>
               {isSpecialtyDropdownOpen && (
                 <DropdownContent>
                   {specialtyOptions.map(specialty => (
-                    <FilterOption key={specialty}>
+                    <DropdownOption key={specialty}>
                       <input
                         type="checkbox"
                         checked={specialtyFilters.includes(specialty)}
                         onChange={() => handleSpecialtyFilter(specialty)}
                       />
-                      {specialty}
-                    </FilterOption>
+                      <span>{specialty}</span>
+                    </DropdownOption>
                   ))}
                 </DropdownContent>
               )}
@@ -789,82 +776,104 @@ function PublicQuestionnairesPage() {
           <FilterGroup>
             <FilterTitle>📍 Localisations</FilterTitle>
             <FilterDropdown>
-              <DropdownButton 
-                onClick={() => setIsLocationDropdownOpen(!isLocationDropdownOpen)}
+              <DropdownButton
                 data-open={isLocationDropdownOpen}
+                onClick={() => setIsLocationDropdownOpen(!isLocationDropdownOpen)}
               >
-                Localisations ({locationFilters.length})
-                {isLocationDropdownOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                <span>
+                  {locationFilters.length > 0 
+                    ? `${locationFilters.length} sélectionnée(s)` 
+                    : 'Toutes localisations'
+                  }
+                </span>
+                {isLocationDropdownOpen ? <ChevronUp /> : <ChevronDown />}
               </DropdownButton>
               {isLocationDropdownOpen && (
                 <DropdownContent>
                   {locationOptions.map(location => (
-                    <FilterOption key={location}>
+                    <DropdownOption key={location}>
                       <input
                         type="checkbox"
                         checked={locationFilters.includes(location)}
                         onChange={() => handleLocationFilter(location)}
                       />
-                      {location}
-                    </FilterOption>
+                      <span>{location}</span>
+                    </DropdownOption>
                   ))}
                 </DropdownContent>
               )}
             </FilterDropdown>
           </FilterGroup>
-        </FiltersRow>
-      </ModernFilterSection>
 
-      <ModernListContainer>
-        {isLoading ? (
-          <LoadingMessage>
-            🔄 Chargement des questionnaires publics...
-          </LoadingMessage>
-        ) : error ? (
-          <ErrorMessage>
-            {error}
-          </ErrorMessage>
-        ) : questionnaires.length === 0 ? (
-          <EmptyState>
-            <h3>Aucun questionnaire trouvé</h3>
-            <p>
-              {searchTerm || modalityFilters.length > 0 || specialtyFilters.length > 0 || locationFilters.length > 0
-                ? 'Essayez de modifier vos critères de recherche ou vos filtres.'
-                : 'Il n\'y a pas encore de questionnaires publics disponibles.'
-              }
-            </p>
-          </EmptyState>
-        ) : (
-          <>
-            <ModernQuestionnairesGrid>
-              {questionnaires.map(questionnaire => (
-                <QuestionnaireCardComponent key={questionnaire._id} questionnaire={questionnaire} />
-              ))}
-            </ModernQuestionnairesGrid>
+          {(modalityFilters.length > 0 || specialtyFilters.length > 0 || locationFilters.length > 0) && (
+            <FilterIndicator>
+              Filtres appliqués : 
+              {[...modalityFilters, ...specialtyFilters, ...locationFilters].join(', ')}
+            </FilterIndicator>
+          )}
+        </FilterSection>
 
-            {totalPages > 1 && (
-              <PaginationContainer>
-                <PaginationButton 
-                  onClick={() => fetchQuestionnaires(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                >
-                  ← Précédent
-                </PaginationButton>
-                <PaginationInfo>
-                  Page {currentPage} sur {totalPages}
-                </PaginationInfo>
-                <PaginationButton 
-                  onClick={() => fetchQuestionnaires(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
-                >
-                  Suivant →
-                </PaginationButton>
-              </PaginationContainer>
-            )}
-          </>
-        )}
-      </ModernListContainer>
-    </ModernPageContainer>
+        {/* CONTENU PRINCIPAL */}
+        <ListContainer>
+          {/* BARRE DE RECHERCHE */}
+          <SearchBar
+            type="text"
+            placeholder="🔍 Rechercher un questionnaire..."
+            value={searchTerm}
+            onChange={handleSearch}
+          />
+
+          {/* CONTENU CONDITIONNEL */}
+          {isLoading ? (
+            <LoadingMessage>⏳ Chargement des questionnaires...</LoadingMessage>
+          ) : error ? (
+            <ErrorMessage>{error}</ErrorMessage>
+          ) : questionnaires.length === 0 ? (
+            <EmptyState>
+              <h3>Aucun questionnaire trouvé</h3>
+              <p>
+                Essayez de modifier vos critères de recherche ou de supprimer certains filtres.
+              </p>
+            </EmptyState>
+          ) : (
+            <>
+              {/* GRILLE DES QUESTIONNAIRES */}
+              <QuestionnairesGrid>
+                {questionnaires.map((questionnaire) => (
+                  <QuestionnaireCardComponent 
+                    key={questionnaire._id} 
+                    questionnaire={questionnaire} 
+                  />
+                ))}
+              </QuestionnairesGrid>
+
+              {/* PAGINATION */}
+              {totalPages > 1 && (
+                <PaginationContainer>
+                  <PaginationButton
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    Précédent
+                  </PaginationButton>
+                  
+                  <PaginationInfo>
+                    Page {currentPage} sur {totalPages}
+                  </PaginationInfo>
+                  
+                  <PaginationButton
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Suivant
+                  </PaginationButton>
+                </PaginationContainer>
+              )}
+            </>
+          )}
+        </ListContainer>
+      </ContentWrapper>
+    </PageContainer>
   );
 }
 

@@ -1,22 +1,29 @@
+// ProtocolCreatorPage.js - VERSION CORRIGÉE
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from '../utils/axiosConfig';
-import { Save, Plus, Trash2, ArrowLeft, Eye, Clock, AlertCircle } from 'lucide-react';
+import axios from 'axios';
 import styled from 'styled-components';
+import { 
+  Save, 
+  ArrowLeft, 
+  Plus, 
+  Trash2, 
+  Clock, 
+  AlertCircle,
+  Eye,
+  EyeOff
+} from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
 
 // ==================== STYLED COMPONENTS ====================
 
 const PageContainer = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
   padding: 2rem;
-  background: ${props => props.theme.background};
-  color: ${props => props.theme.text};
-  min-height: calc(100vh - 60px);
-
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
+  background-color: ${props => props.theme.background};
+  min-height: 100vh;
 `;
 
 const Header = styled.div`
@@ -24,93 +31,83 @@ const Header = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
+  flex-wrap: wrap;
   gap: 1rem;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: stretch;
-  }
 `;
 
 const PageTitle = styled.h1`
+  color: ${props => props.theme.text};
   font-size: 2rem;
-  margin: 0;
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
   font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 `;
 
 const ActionButtons = styled.div`
   display: flex;
   gap: 1rem;
-  align-items: center;
-
-  @media (max-width: 768px) {
-    justify-content: space-between;
-  }
+  flex-wrap: wrap;
 `;
 
 const ActionButton = styled.button`
+  background-color: ${props => props.className === 'primary' ? props.theme.primary : 'transparent'};
+  color: ${props => props.className === 'primary' ? 'white' : props.theme.text};
+  border: 2px solid ${props => props.className === 'primary' ? props.theme.primary : props.theme.border};
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 8px;
-  background-color: ${props => props.theme.card};
-  color: ${props => props.theme.text};
-  cursor: pointer;
   transition: all 0.2s ease;
-  font-weight: 500;
-  text-decoration: none;
 
   &:hover {
-    background-color: ${props => props.theme.backgroundSecondary};
+    background-color: ${props => props.className === 'primary' ? props.theme.primaryHover : props.theme.hover};
     transform: translateY(-1px);
   }
 
-  &.primary {
-    background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-    color: white;
-    border: none;
-    
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px ${props => props.theme.primary}40;
-    }
-  }
-
-  &.secondary {
-    background-color: ${props => props.theme.backgroundSecondary};
-    border-color: ${props => props.theme.primary};
-    color: ${props => props.theme.primary};
-
-    &:hover {
-      background-color: ${props => props.theme.primary};
-      color: white;
-    }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
   }
 `;
 
 const FormContainer = styled.div`
   background-color: ${props => props.theme.card};
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 16px;
+  border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 4px 20px ${props => props.theme.shadow};
+  box-shadow: 0 4px 12px ${props => props.theme.shadow};
+  border: 1px solid ${props => props.theme.border};
+`;
+
+const SectionTitle = styled.h2`
+  color: ${props => props.theme.text};
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 2rem 0 1.5rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid ${props => props.theme.border};
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &:first-of-type {
+    margin-top: 0;
+  }
 `;
 
 const FormGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
   margin-bottom: 2rem;
 
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1rem;
+  .full-width {
+    grid-column: 1 / -1;
   }
 `;
 
@@ -118,15 +115,11 @@ const FormGroup = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  
-  &.full-width {
-    grid-column: 1 / -1;
-  }
 `;
 
 const Label = styled.label`
-  font-weight: 600;
   color: ${props => props.theme.text};
+  font-weight: 500;
   font-size: 0.9rem;
   display: flex;
   align-items: center;
@@ -135,11 +128,11 @@ const Label = styled.label`
 
 const Input = styled.input`
   padding: 0.75rem;
-  border: 1px solid ${props => props.theme.border};
+  border: 2px solid ${props => props.theme.border};
   border-radius: 8px;
+  font-size: 1rem;
   background-color: ${props => props.theme.card};
   color: ${props => props.theme.text};
-  font-size: 1rem;
   transition: all 0.2s ease;
 
   &:focus {
@@ -155,12 +148,13 @@ const Input = styled.input`
 
 const Select = styled.select`
   padding: 0.75rem;
-  border: 1px solid ${props => props.theme.border};
+  border: 2px solid ${props => props.theme.border};
   border-radius: 8px;
+  font-size: 1rem;
   background-color: ${props => props.theme.card};
   color: ${props => props.theme.text};
-  font-size: 1rem;
   cursor: pointer;
+  transition: all 0.2s ease;
 
   &:focus {
     outline: none;
@@ -171,14 +165,15 @@ const Select = styled.select`
 
 const TextArea = styled.textarea`
   padding: 0.75rem;
-  border: 1px solid ${props => props.theme.border};
+  border: 2px solid ${props => props.theme.border};
   border-radius: 8px;
+  font-size: 1rem;
   background-color: ${props => props.theme.card};
   color: ${props => props.theme.text};
-  font-size: 1rem;
-  min-height: 100px;
   resize: vertical;
+  min-height: 100px;
   font-family: inherit;
+  transition: all 0.2s ease;
 
   &:focus {
     outline: none;
@@ -191,25 +186,10 @@ const TextArea = styled.textarea`
   }
 `;
 
-const SectionTitle = styled.h3`
-  font-size: 1.25rem;
-  margin: 2rem 0 1rem 0;
-  color: ${props => props.theme.primary};
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid ${props => props.theme.border};
-`;
-
-const SequencesContainer = styled.div`
-  margin-top: 1rem;
-`;
-
 const SequenceCard = styled.div`
-  background-color: ${props => props.theme.backgroundSecondary || '#f8fafc'};
+  background-color: ${props => props.theme.backgroundSecondary};
   border: 1px solid ${props => props.theme.border};
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 1rem;
   position: relative;
@@ -217,95 +197,133 @@ const SequenceCard = styled.div`
 
 const SequenceHeader = styled.div`
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
-  gap: 1rem;
 `;
 
-const SequenceNumber = styled.div`
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+const SequenceTitle = styled.h4`
+  color: ${props => props.theme.text};
+  margin: 0;
+  font-size: 1.1rem;
+`;
+
+const DeleteButton = styled.button`
+  background-color: ${props => props.theme.error};
   color: white;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 0.9rem;
-  flex-shrink: 0;
-`;
-
-const DeleteSequenceButton = styled.button`
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: none;
   border: none;
-  color: #ef4444;
-  cursor: pointer;
   padding: 0.5rem;
   border-radius: 6px;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: #fef2f2;
-  }
-`;
-
-const AddSequenceButton = styled.button`
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  width: 100%;
-  padding: 1rem;
-  border: 2px dashed ${props => props.theme.border};
-  border-radius: 12px;
-  background-color: transparent;
-  color: ${props => props.theme.textSecondary};
-  cursor: pointer;
   transition: all 0.2s ease;
-  font-weight: 500;
 
   &:hover {
-    border-color: ${props => props.theme.primary};
-    color: ${props => props.theme.primary};
-    background-color: ${props => props.theme.primary}10;
+    background-color: ${props => props.theme.errorHover || props.theme.error};
+    transform: translateY(-1px);
   }
 `;
 
-const ParametersGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+const AddButton = styled.button`
+  background-color: ${props => props.theme.primary};
+  color: white;
+  border: none;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   margin-top: 1rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: ${props => props.theme.primaryHover};
+    transform: translateY(-1px);
+  }
 `;
 
-const ParameterInput = styled.div`
+const ListContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.5rem;
 `;
 
-const ParameterLabel = styled.label`
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: ${props => props.theme.textSecondary};
-`;
-
-const ParameterField = styled.input`
-  padding: 0.5rem;
+const ListItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.border};
   border-radius: 6px;
+`;
+
+const ListInput = styled.input`
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 4px;
   background-color: ${props => props.theme.card};
   color: ${props => props.theme.text};
-  font-size: 0.9rem;
 
   &:focus {
     outline: none;
     border-color: ${props => props.theme.primary};
+  }
+`;
+
+const RemoveItemButton = styled.button`
+  background-color: ${props => props.theme.error};
+  color: white;
+  border: none;
+  padding: 0.25rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background-color: ${props => props.theme.errorHover || props.theme.error};
+  }
+`;
+
+const StatusToggle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background-color: ${props => props.theme.backgroundSecondary};
+  border-radius: 8px;
+  border: 1px solid ${props => props.theme.border};
+  margin-top: 1rem;
+`;
+
+const ToggleSwitch = styled.button`
+  position: relative;
+  width: 50px;
+  height: 25px;
+  background-color: ${props => props.isActive ? props.theme.primary : props.theme.border};
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: ${props => props.isActive ? '27px' : '2px'};
+    width: 21px;
+    height: 21px;
+    background-color: white;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
 `;
 
@@ -359,9 +377,24 @@ function ProtocolCreatorPage() {
     public: false
   });
 
-  // Options pour les selects
+  // ✅ CORRECTION : Options corrigées pour correspondre au schéma MongoDB
   const imagingTypes = ['IRM', 'Scanner', 'Échographie', 'Radiographie', 'Mammographie', 'Médecine Nucléaire', 'Angiographie'];
-  const anatomicalRegions = ['Cerveau', 'Thorax', 'Abdomen', 'Pelvis', 'Rachis', 'Membre Supérieur', 'Membre Inférieur', 'Vaisseaux', 'Cœur', 'Sein', 'Uro, Pédiatrie, ORL'];
+  
+  // ✅ CORRECTION CRITIQUE : Utiliser exactement les mêmes valeurs que dans Protocol.js
+  const anatomicalRegions = [
+    'Céphalée',           // ← AU LIEU DE "Cerveau"
+    'Cervical', 
+    'Thorax', 
+    'Abdomen', 
+    'Pelvis', 
+    'Rachis', 
+    'Membre Supérieur', 
+    'Membre Inférieur', 
+    'Vaisseaux', 
+    'Cœur', 
+    'Sein', 
+    'Autre'              // ← AU LIEU DE "Uro, Pédiatrie, ORL"
+  ];
 
   // Charger le protocole existant en mode édition
   useEffect(() => {
@@ -382,18 +415,22 @@ function ProtocolCreatorPage() {
               duration: seq.duration || ''
             })) || [],
             acquisitionParameters: {
-              fieldStrength: '',
-              coil: '',
-              position: '',
+              fieldStrength: response.data.acquisitionParameters?.fieldStrength || '',
+              coil: response.data.acquisitionParameters?.coil || '',
+              position: response.data.acquisitionParameters?.position || '',
               contrast: {
-                used: false,
-                agent: '',
-                dose: '',
-                injectionProtocol: ''
+                used: response.data.acquisitionParameters?.contrast?.used || false,
+                agent: response.data.acquisitionParameters?.contrast?.agent || '',
+                dose: response.data.acquisitionParameters?.contrast?.dose || '',
+                injectionProtocol: response.data.acquisitionParameters?.contrast?.injectionProtocol || ''
               },
-              preparation: '',
-              ...response.data.acquisitionParameters
-            }
+              preparation: response.data.acquisitionParameters?.preparation || ''
+            },
+            contraindications: response.data.contraindications || [],
+            advantages: response.data.advantages || [],
+            limitations: response.data.limitations || [],
+            public: response.data.public || false,
+            status: response.data.status || 'Brouillon'
           };
           
           setFormData(protocolData);
@@ -409,7 +446,7 @@ function ProtocolCreatorPage() {
     }
   }, [id, isEditing]);
 
-  // Gérer les changements de champs simples
+  // Gestionnaires d'événements
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -417,7 +454,6 @@ function ProtocolCreatorPage() {
     }));
   };
 
-  // Gérer les changements dans les paramètres d'acquisition
   const handleAcquisitionParameterChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -428,7 +464,6 @@ function ProtocolCreatorPage() {
     }));
   };
 
-  // Gérer les changements dans les paramètres de contraste
   const handleContrastChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -442,21 +477,13 @@ function ProtocolCreatorPage() {
     }));
   };
 
-  // Ajouter une nouvelle séquence
   const addSequence = () => {
     const newSequence = {
       id: Date.now().toString(),
       name: '',
       description: '',
       justification: '',
-      technicalParameters: {
-        TR: '',
-        TE: '',
-        thickness: '',
-        spacing: '',
-        FOV: '',
-        matrix: ''
-      },
+      technicalParameters: {},
       order: formData.sequences.length + 1,
       duration: ''
     };
@@ -467,15 +494,6 @@ function ProtocolCreatorPage() {
     }));
   };
 
-  // Supprimer une séquence
-  const removeSequence = (sequenceId) => {
-    setFormData(prev => ({
-      ...prev,
-      sequences: prev.sequences.filter(seq => seq.id !== sequenceId)
-    }));
-  };
-
-  // Mettre à jour une séquence
   const updateSequence = (sequenceId, field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -485,91 +503,102 @@ function ProtocolCreatorPage() {
     }));
   };
 
-  // Mettre à jour les paramètres techniques d'une séquence
-  const updateSequenceParameter = (sequenceId, parameterName, value) => {
+  const removeSequence = (sequenceId) => {
     setFormData(prev => ({
       ...prev,
-      sequences: prev.sequences.map(seq =>
-        seq.id === sequenceId
-          ? {
-              ...seq,
-              technicalParameters: {
-                ...seq.technicalParameters,
-                [parameterName]: value
-              }
-            }
-          : seq
-      )
+      sequences: prev.sequences.filter(seq => seq.id !== sequenceId)
     }));
   };
 
-  // Calculer la durée totale estimée
-  const calculateTotalDuration = () => {
+  const addListItem = (listType) => {
+    setFormData(prev => ({
+      ...prev,
+      [listType]: [...prev[listType], '']
+    }));
+  };
+
+  const updateListItem = (listType, index, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [listType]: prev[listType].map((item, i) => i === index ? value : item)
+    }));
+  };
+
+  const removeListItem = (listType, index) => {
+    setFormData(prev => ({
+      ...prev,
+      [listType]: prev[listType].filter((_, i) => i !== index)
+    }));
+  };
+
+  const calculateEstimatedDuration = () => {
     let totalMinutes = 0;
     
     formData.sequences.forEach(sequence => {
       if (sequence.duration) {
-        const durationMatch = sequence.duration.match(/(\d+)min(?:utes?)?/i);
+        const durationMatch = sequence.duration.match(/(\d+)min/);
         if (durationMatch) {
           totalMinutes += parseInt(durationMatch[1]);
         }
       }
     });
+
+    if (totalMinutes === 0) return 'Non spécifiée';
     
-    return totalMinutes > 0 ? `${totalMinutes} minutes` : 'Non spécifiée';
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes > 0 ? minutes + 'min' : ''}`;
+    } else {
+      return `${minutes}min`;
+    }
   };
 
-  // Sauvegarder le protocole
   const handleSave = async () => {
-    if (!formData.title.trim()) {
-      setError('Le titre du protocole est obligatoire');
-      return;
-    }
-
-    if (!formData.imagingType) {
-      setError('Le type d\'imagerie est obligatoire');
-      return;
-    }
-
-    if (!formData.anatomicalRegion) {
-      setError('La région anatomique est obligatoire');
+    // Validation basique
+    if (!formData.title || !formData.imagingType || !formData.anatomicalRegion) {
+      setError('Veuillez remplir tous les champs obligatoires');
       return;
     }
 
     try {
       setSaving(true);
       setError('');
-      
-      // Préparer les données pour l'envoi
-      const dataToSend = {
+
+      // Nettoyer les données avant l'envoi
+      const cleanedData = {
         ...formData,
-        estimatedDuration: calculateTotalDuration()
+        contraindications: formData.contraindications.filter(item => item.trim() !== ''),
+        advantages: formData.advantages.filter(item => item.trim() !== ''),
+        limitations: formData.limitations.filter(item => item.trim() !== ''),
+        estimatedDuration: calculateEstimatedDuration()
       };
 
-      let response;
       if (isEditing) {
-        response = await axios.put(`/protocols/${id}`, dataToSend);
+        await axios.put(`/protocols/${id}`, cleanedData);
       } else {
-        response = await axios.post('/protocols', dataToSend);
+        await axios.post('/protocols', cleanedData);
       }
 
-      // Rediriger vers la page de consultation du protocole
-      navigate(`/protocols/view/${response.data._id || id}`);
+      navigate('/protocols/personal');
     } catch (err) {
       console.error('Erreur lors de la sauvegarde:', err);
-      setError(err.response?.data?.message || 'Erreur lors de la sauvegarde du protocole');
+      setError('Erreur lors de la sauvegarde du protocole');
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) return <LoadingSpinner />;
+  if (loading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <PageContainer>
       <Header>
         <PageTitle>
-          {isEditing ? 'Modifier le Protocole' : 'Créer un Nouveau Protocole'}
+          📋 {isEditing ? 'Modifier le Protocole' : 'Créer un Nouveau Protocole'}
         </PageTitle>
         
         <ActionButtons>
@@ -750,174 +779,173 @@ function ProtocolCreatorPage() {
           <FormGroup className="full-width">
             <Label>Préparation du patient</Label>
             <TextArea
-              placeholder="Instructions de préparation pour le patient..."
+              placeholder="Instructions de préparation (jeûne, médication, etc.)..."
               value={formData.acquisitionParameters.preparation}
               onChange={(e) => handleAcquisitionParameterChange('preparation', e.target.value)}
             />
           </FormGroup>
         </FormGrid>
 
-        {/* Séquences d'acquisition */}
+        {/* Séquences */}
         <SectionTitle>
-          📊 Séquences d'Acquisition
+          🔄 Séquences d'Acquisition
         </SectionTitle>
         
-        <SequencesContainer>
-          {formData.sequences.map((sequence, index) => (
-            <SequenceCard key={sequence.id}>
-              <DeleteSequenceButton onClick={() => removeSequence(sequence.id)}>
-                <Trash2 size={16} />
-              </DeleteSequenceButton>
-              
-              <SequenceHeader>
-                <SequenceNumber>{index + 1}</SequenceNumber>
-                <FormGroup style={{ flex: 1, margin: 0 }}>
-                  <Input
-                    type="text"
-                    placeholder="Nom de la séquence (ex: T1 FLAIR)"
-                    value={sequence.name}
-                    onChange={(e) => updateSequence(sequence.id, 'name', e.target.value)}
-                  />
-                </FormGroup>
-              </SequenceHeader>
+        {formData.sequences.map((sequence, index) => (
+          <SequenceCard key={sequence.id}>
+            <SequenceHeader>
+              <SequenceTitle>Séquence {index + 1}</SequenceTitle>
+              <DeleteButton onClick={() => removeSequence(sequence.id)}>
+                <Trash2 size={14} />
+              </DeleteButton>
+            </SequenceHeader>
+            
+            <FormGrid>
+              <FormGroup>
+                <Label>Nom de la séquence *</Label>
+                <Input
+                  type="text"
+                  placeholder="Ex: T1 FLAIR axial"
+                  value={sequence.name}
+                  onChange={(e) => updateSequence(sequence.id, 'name', e.target.value)}
+                />
+              </FormGroup>
               
               <FormGroup>
-                <Label>Description de la séquence</Label>
+                <Label>Durée estimée</Label>
+                <Input
+                  type="text"
+                  placeholder="Ex: 3min 30s"
+                  value={sequence.duration}
+                  onChange={(e) => updateSequence(sequence.id, 'duration', e.target.value)}
+                />
+              </FormGroup>
+              
+              <FormGroup className="full-width">
+                <Label>Description</Label>
                 <TextArea
-                  placeholder="Décrivez cette séquence d'acquisition..."
+                  placeholder="Décrivez cette séquence..."
                   value={sequence.description}
                   onChange={(e) => updateSequence(sequence.id, 'description', e.target.value)}
                 />
               </FormGroup>
               
-              <FormGroup>
-                <Label>Justification clinique</Label>
+              <FormGroup className="full-width">
+                <Label>Justification médicale *</Label>
                 <TextArea
-                  placeholder="Pourquoi cette séquence est-elle nécessaire ? Que permet-elle de visualiser ?"
+                  placeholder="Pourquoi cette séquence est-elle nécessaire ?"
                   value={sequence.justification}
                   onChange={(e) => updateSequence(sequence.id, 'justification', e.target.value)}
                 />
               </FormGroup>
-              
-              <Label>Paramètres techniques</Label>
-              <ParametersGrid>
-                <ParameterInput>
-                  <ParameterLabel>TR (ms)</ParameterLabel>
-                  <ParameterField
-                    type="text"
-                    placeholder="ex: 2000"
-                    value={(sequence.technicalParameters && sequence.technicalParameters.TR) || ''}
-                    onChange={(e) => updateSequenceParameter(sequence.id, 'TR', e.target.value)}
-                  />
-                </ParameterInput>
-                
-                <ParameterInput>
-                  <ParameterLabel>TE (ms)</ParameterLabel>
-                  <ParameterField
-                    type="text"
-                    placeholder="ex: 30"
-                    value={(sequence.technicalParameters && sequence.technicalParameters.TE) || ''}
-                    onChange={(e) => updateSequenceParameter(sequence.id, 'TE', e.target.value)}
-                  />
-                </ParameterInput>
-                
-                <ParameterInput>
-                  <ParameterLabel>Épaisseur (mm)</ParameterLabel>
-                  <ParameterField
-                    type="text"
-                    placeholder="ex: 5"
-                    value={(sequence.technicalParameters && sequence.technicalParameters.thickness) || ''}
-                    onChange={(e) => updateSequenceParameter(sequence.id, 'thickness', e.target.value)}
-                  />
-                </ParameterInput>
-                
-                <ParameterInput>
-                  <ParameterLabel>Espacement (mm)</ParameterLabel>
-                  <ParameterField
-                    type="text"
-                    placeholder="ex: 0.5"
-                    value={(sequence.technicalParameters && sequence.technicalParameters.spacing) || ''}
-                    onChange={(e) => updateSequenceParameter(sequence.id, 'spacing', e.target.value)}
-                  />
-                </ParameterInput>
-                
-                <ParameterInput>
-                  <ParameterLabel>FOV (mm)</ParameterLabel>
-                  <ParameterField
-                    type="text"
-                    placeholder="ex: 240"
-                    value={(sequence.technicalParameters && sequence.technicalParameters.FOV) || ''}
-                    onChange={(e) => updateSequenceParameter(sequence.id, 'FOV', e.target.value)}
-                  />
-                </ParameterInput>
-                
-                <ParameterInput>
-                  <ParameterLabel>Matrice</ParameterLabel>
-                  <ParameterField
-                    type="text"
-                    placeholder="ex: 256x256"
-                    value={(sequence.technicalParameters && sequence.technicalParameters.matrix) || ''}
-                    onChange={(e) => updateSequenceParameter(sequence.id, 'matrix', e.target.value)}
-                  />
-                </ParameterInput>
-              </ParametersGrid>
-              
-              <FormGroup style={{ marginTop: '1rem' }}>
-                <Label>Durée estimée</Label>
-                <Input
-                  type="text"
-                  placeholder="ex: 5 minutes"
-                  value={sequence.duration}
-                  onChange={(e) => updateSequence(sequence.id, 'duration', e.target.value)}
-                />
-              </FormGroup>
-            </SequenceCard>
-          ))}
-          
-          <AddSequenceButton onClick={addSequence}>
-            <Plus size={20} />
-            Ajouter une séquence
-          </AddSequenceButton>
-        </SequencesContainer>
+            </FormGrid>
+          </SequenceCard>
+        ))}
 
-        {/* Aperçu et informations complémentaires */}
+        <AddButton onClick={addSequence}>
+          <Plus size={16} />
+          Ajouter une séquence
+        </AddButton>
+
+        {/* Contre-indications */}
         <SectionTitle>
-          📊 Informations Complémentaires
+          ⚠️ Contre-indications
         </SectionTitle>
         
-        <FormGrid>
-          <FormGroup>
-            <Label>Statut du protocole</Label>
-            <Select
-              value={formData.status}
-              onChange={(e) => handleInputChange('status', e.target.value)}
-            >
-              <option value="Brouillon">Brouillon</option>
-              <option value="En révision">En révision</option>
-              <option value="Validé">Validé</option>
-            </Select>
-          </FormGroup>
-          
-          <FormGroup>
-            <Label>
-              <input
-                type="checkbox"
-                checked={formData.public}
-                onChange={(e) => handleInputChange('public', e.target.checked)}
-                style={{ marginRight: '0.5rem' }}
+        <ListContainer>
+          {formData.contraindications.map((item, index) => (
+            <ListItem key={index}>
+              <ListInput
+                value={item}
+                placeholder="Saisir une contre-indication..."
+                onChange={(e) => updateListItem('contraindications', index, e.target.value)}
               />
-              Rendre ce protocole public
-            </Label>
-          </FormGroup>
-        </FormGrid>
+              <RemoveItemButton onClick={() => removeListItem('contraindications', index)}>
+                <Trash2 size={14} />
+              </RemoveItemButton>
+            </ListItem>
+          ))}
+          <AddButton onClick={() => addListItem('contraindications')}>
+            <Plus size={16} />
+            Ajouter une contre-indication
+          </AddButton>
+        </ListContainer>
 
-        {/* Aperçu de la durée */}
-        {formData.sequences.length > 0 && (
-          <EstimatedDuration>
-            <Clock size={20} />
-            Durée totale estimée : {calculateTotalDuration()}
-          </EstimatedDuration>
-        )}
+        {/* Avantages */}
+        <SectionTitle>
+          ✅ Avantages du Protocole
+        </SectionTitle>
+        
+        <ListContainer>
+          {formData.advantages.map((item, index) => (
+            <ListItem key={index}>
+              <ListInput
+                value={item}
+                placeholder="Saisir un avantage..."
+                onChange={(e) => updateListItem('advantages', index, e.target.value)}
+              />
+              <RemoveItemButton onClick={() => removeListItem('advantages', index)}>
+                <Trash2 size={14} />
+              </RemoveItemButton>
+            </ListItem>
+          ))}
+          <AddButton onClick={() => addListItem('advantages')}>
+            <Plus size={16} />
+            Ajouter un avantage
+          </AddButton>
+        </ListContainer>
+
+        {/* Limitations */}
+        <SectionTitle>
+          ⚠️ Limitations
+        </SectionTitle>
+        
+        <ListContainer>
+          {formData.limitations.map((item, index) => (
+            <ListItem key={index}>
+              <ListInput
+                value={item}
+                placeholder="Saisir une limitation..."
+                onChange={(e) => updateListItem('limitations', index, e.target.value)}
+              />
+              <RemoveItemButton onClick={() => removeListItem('limitations', index)}>
+                <Trash2 size={14} />
+              </RemoveItemButton>
+            </ListItem>
+          ))}
+          <AddButton onClick={() => addListItem('limitations')}>
+            <Plus size={16} />
+            Ajouter une limitation
+          </AddButton>
+        </ListContainer>
+
+        {/* Paramètres de publication */}
+        <SectionTitle>
+          🌐 Paramètres de Publication
+        </SectionTitle>
+        
+        <StatusToggle>
+          <ToggleSwitch
+            isActive={formData.public}
+            onClick={() => handleInputChange('public', !formData.public)}
+          />
+          <div>
+            <strong>Protocole {formData.public ? 'Public' : 'Privé'}</strong>
+            <p style={{ margin: 0, fontSize: '0.85rem', color: 'gray' }}>
+              {formData.public 
+                ? 'Visible par tous les utilisateurs' 
+                : 'Visible uniquement par vous'
+              }
+            </p>
+          </div>
+          {formData.public ? <Eye /> : <EyeOff />}
+        </StatusToggle>
+
+        {/* Durée estimée */}
+        <EstimatedDuration>
+          <Clock size={16} />
+          <span>Durée totale estimée: {calculateEstimatedDuration()}</span>
+        </EstimatedDuration>
       </FormContainer>
     </PageContainer>
   );
