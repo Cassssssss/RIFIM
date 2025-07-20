@@ -449,8 +449,7 @@ function CaseCardComponent({ cas, showSpoilers }) {
 
   // NOUVEAU : Gestion du clic sur la carte (éviter la navigation lors du clic sur notation)
   const handleCardClick = (e) => {
-    e.preventDefault();
-    // La navigation sera gérée par le Link parent
+    // Ne rien faire ici, la navigation est gérée par le Link parent
   };
 
   return (
@@ -506,7 +505,10 @@ function CaseCardComponent({ cas, showSpoilers }) {
 
         {/* NOUVEAU : Section de notation optimisée */}
         <RatingSection>
-          <div onClick={(e) => e.stopPropagation()}>
+          <div onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}>
             <RatingStars
               itemId={cas._id}
               itemType="case"
