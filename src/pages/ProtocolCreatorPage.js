@@ -217,7 +217,7 @@ const SequenceCard = styled.div`
 
 const SequenceHeader = styled.div`
   display: flex;
-  justify-content: between;
+  justify-content: flex-start;
   align-items: center;
   margin-bottom: 1rem;
   gap: 1rem;
@@ -234,6 +234,7 @@ const SequenceNumber = styled.div`
   justify-content: center;
   font-weight: 600;
   font-size: 0.9rem;
+  flex-shrink: 0;
 `;
 
 const DeleteSequenceButton = styled.button`
@@ -308,14 +309,6 @@ const ParameterField = styled.input`
   }
 `;
 
-const PreviewContainer = styled.div`
-  margin-top: 2rem;
-  padding: 1.5rem;
-  background-color: ${props => props.theme.backgroundSecondary || '#f8fafc'};
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 12px;
-`;
-
 const EstimatedDuration = styled.div`
   display: flex;
   align-items: center;
@@ -339,7 +332,7 @@ function ProtocolCreatorPage() {
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // État du formulaire
+  // État du formulaire - SUPPRESSION DE LA COMPLEXITÉ
   const [formData, setFormData] = useState({
     title: '',
     imagingType: '',
@@ -362,7 +355,6 @@ function ProtocolCreatorPage() {
     contraindications: [],
     advantages: [],
     limitations: [],
-    complexity: 1,
     status: 'Brouillon',
     public: false
   });
@@ -464,7 +456,7 @@ function ProtocolCreatorPage() {
         spacing: '',
         FOV: '',
         matrix: ''
-      }, // Initialiser avec tous les champs
+      },
       order: formData.sequences.length + 1,
       duration: ''
     };
@@ -517,69 +509,61 @@ function ProtocolCreatorPage() {
     
     formData.sequences.forEach(sequence => {
       if (sequence.duration) {
-        const durationMatch = sequence.duration.match(/(\d+)min(?:\s*(\d+)s)?/);
+        const durationMatch = sequence.duration.match(/(\d+)min(?:utes?)?/i);
         if (durationMatch) {
           totalMinutes += parseInt(durationMatch[1]);
-          if (durationMatch[2]) {
-            totalMinutes += parseInt(durationMatch[2]) / 60;
-          }
         }
       }
     });
     
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = Math.round(totalMinutes % 60);
-    
-    if (hours > 0) {
-      return `${hours}h ${minutes}min`;
-    } else {
-      return `${minutes}min`;
-    }
+    return totalMinutes > 0 ? `${totalMinutes} minutes` : 'Non spécifiée';
   };
 
   // Sauvegarder le protocole
   const handleSave = async () => {
+    if (!formData.title.trim()) {
+      setError('Le titre du protocole est obligatoire');
+      return;
+    }
+
+    if (!formData.imagingType) {
+      setError('Le type d\'imagerie est obligatoire');
+      return;
+    }
+
+    if (!formData.anatomicalRegion) {
+      setError('La région anatomique est obligatoire');
+      return;
+    }
+
     try {
       setSaving(true);
       setError('');
-
-      // Validation de base
-      if (!formData.title || !formData.imagingType || !formData.anatomicalRegion || !formData.indication) {
-        throw new Error('Veuillez remplir tous les champs obligatoires');
-      }
-
-      if (formData.sequences.length === 0) {
-        throw new Error('Veuillez ajouter au moins une séquence');
-      }
-
-      // Vérifier que toutes les séquences ont une justification
-      const invalidSequences = formData.sequences.filter(seq => !seq.justification.trim());
-      if (invalidSequences.length > 0) {
-        throw new Error('Toutes les séquences doivent avoir une justification');
-      }
-
-      const dataToSave = {
+      
+      // Préparer les données pour l'envoi
+      const dataToSend = {
         ...formData,
         estimatedDuration: calculateTotalDuration()
       };
 
+      let response;
       if (isEditing) {
-        await axios.put(`/protocols/${id}`, dataToSave);
+        response = await axios.put(`/protocols/${id}`, dataToSend);
       } else {
-        await axios.post('/protocols', dataToSave);
+        response = await axios.post('/protocols', dataToSend);
       }
 
-      navigate('/protocols/personal');
+      // Rediriger vers la page de consultation du protocole
+      navigate(`/protocols/view/${response.data._id || id}`);
     } catch (err) {
       console.error('Erreur lors de la sauvegarde:', err);
-      setError(err.response?.data?.message || err.message || 'Erreur lors de la sauvegarde');
+      setError(err.response?.data?.message || 'Erreur lors de la sauvegarde du protocole');
     } finally {
       setSaving(false);
     }
   };
 
   if (loading) return <LoadingSpinner />;
-  if (error && !formData.title) return <ErrorMessage message={error} />;
 
   return (
     <PageContainer>
@@ -610,7 +594,7 @@ function ProtocolCreatorPage() {
       )}
 
       <FormContainer>
-        {/* Informations générales */}
+        {/* Informations générales - SUPPRESSION DU CHAMP COMPLEXITÉ */}
         <SectionTitle>
           📋 Informations Générales
         </SectionTitle>
@@ -655,22 +639,10 @@ function ProtocolCreatorPage() {
             </Select>
           </FormGroup>
           
-          <FormGroup>
-            <Label>Niveau de complexité</Label>
-            <Select
-              value={formData.complexity}
-              onChange={(e) => handleInputChange('complexity', parseInt(e.target.value))}
-            >
-              <option value={1}>1 - Basique</option>
-              <option value={2}>2 - Facile</option>
-              <option value={3}>3 - Intermédiaire</option>
-              <option value={4}>4 - Avancé</option>
-              <option value={5}>5 - Expert</option>
-            </Select>
-          </FormGroup>
+          {/* LE CHAMP COMPLEXITÉ A ÉTÉ SUPPRIMÉ ICI */}
           
           <FormGroup className="full-width">
-            <Label>Indication clinique *</Label>
+            <Label>Indication clinique</Label>
             <TextArea
               placeholder="Décrivez l'indication clinique pour ce protocole..."
               value={formData.indication}
@@ -679,7 +651,7 @@ function ProtocolCreatorPage() {
           </FormGroup>
           
           <FormGroup className="full-width">
-            <Label>Description générale</Label>
+            <Label>Description du protocole</Label>
             <TextArea
               placeholder="Description détaillée du protocole..."
               value={formData.description}
@@ -695,17 +667,20 @@ function ProtocolCreatorPage() {
         
         <FormGrid>
           <FormGroup>
-            <Label>Force du champ magnétique</Label>
-            <Input
-              type="text"
-              placeholder="Ex: 1.5T, 3T"
+            <Label>Intensité du champ magnétique</Label>
+            <Select
               value={formData.acquisitionParameters.fieldStrength}
               onChange={(e) => handleAcquisitionParameterChange('fieldStrength', e.target.value)}
-            />
+            >
+              <option value="">Sélectionner...</option>
+              <option value="1.5T">1.5T</option>
+              <option value="3T">3T</option>
+              <option value="7T">7T (recherche)</option>
+            </Select>
           </FormGroup>
           
           <FormGroup>
-            <Label>Antenne/Bobine</Label>
+            <Label>Antenne</Label>
             <Input
               type="text"
               placeholder="Ex: Antenne tête 32 canaux"
@@ -716,12 +691,15 @@ function ProtocolCreatorPage() {
           
           <FormGroup>
             <Label>Position du patient</Label>
-            <Input
-              type="text"
-              placeholder="Ex: Décubitus dorsal"
+            <Select
               value={formData.acquisitionParameters.position}
               onChange={(e) => handleAcquisitionParameterChange('position', e.target.value)}
-            />
+            >
+              <option value="">Sélectionner...</option>
+              <option value="Décubitus dorsal">Décubitus dorsal</option>
+              <option value="Décubitus ventral">Décubitus ventral</option>
+              <option value="Décubitus latéral">Décubitus latéral</option>
+            </Select>
           </FormGroup>
           
           <FormGroup>
@@ -732,7 +710,7 @@ function ProtocolCreatorPage() {
                 onChange={(e) => handleContrastChange('used', e.target.checked)}
                 style={{ marginRight: '0.5rem' }}
               />
-              Utilisation de produit de contraste
+              Utiliser un produit de contraste
             </Label>
           </FormGroup>
           
@@ -749,7 +727,7 @@ function ProtocolCreatorPage() {
               </FormGroup>
               
               <FormGroup>
-                <Label>Dosage</Label>
+                <Label>Dose</Label>
                 <Input
                   type="text"
                   placeholder="Ex: 0.1 mmol/kg"
@@ -772,25 +750,22 @@ function ProtocolCreatorPage() {
           <FormGroup className="full-width">
             <Label>Préparation du patient</Label>
             <TextArea
-              placeholder="Instructions de préparation..."
+              placeholder="Instructions de préparation pour le patient..."
               value={formData.acquisitionParameters.preparation}
               onChange={(e) => handleAcquisitionParameterChange('preparation', e.target.value)}
             />
           </FormGroup>
         </FormGrid>
 
-        {/* Séquences */}
+        {/* Séquences d'acquisition */}
         <SectionTitle>
-          🔄 Séquences d'Acquisition
+          📊 Séquences d'Acquisition
         </SectionTitle>
         
         <SequencesContainer>
           {formData.sequences.map((sequence, index) => (
             <SequenceCard key={sequence.id}>
-              <DeleteSequenceButton
-                onClick={() => removeSequence(sequence.id)}
-                title="Supprimer cette séquence"
-              >
+              <DeleteSequenceButton onClick={() => removeSequence(sequence.id)}>
                 <Trash2 size={16} />
               </DeleteSequenceButton>
               
@@ -799,17 +774,9 @@ function ProtocolCreatorPage() {
                 <FormGroup style={{ flex: 1, margin: 0 }}>
                   <Input
                     type="text"
-                    placeholder="Nom de la séquence (ex: T1 MPRAGE)"
+                    placeholder="Nom de la séquence (ex: T1 FLAIR)"
                     value={sequence.name}
                     onChange={(e) => updateSequence(sequence.id, 'name', e.target.value)}
-                  />
-                </FormGroup>
-                <FormGroup style={{ width: '150px', margin: 0 }}>
-                  <Input
-                    type="text"
-                    placeholder="Durée (ex: 3min 30s)"
-                    value={sequence.duration}
-                    onChange={(e) => updateSequence(sequence.id, 'duration', e.target.value)}
                   />
                 </FormGroup>
               </SequenceHeader>
@@ -817,17 +784,14 @@ function ProtocolCreatorPage() {
               <FormGroup>
                 <Label>Description de la séquence</Label>
                 <TextArea
-                  placeholder="Décrivez brièvement cette séquence..."
+                  placeholder="Décrivez cette séquence d'acquisition..."
                   value={sequence.description}
                   onChange={(e) => updateSequence(sequence.id, 'description', e.target.value)}
                 />
               </FormGroup>
               
               <FormGroup>
-                <Label>
-                  Justification * 
-                  <AlertCircle size={14} color="#ef4444" />
-                </Label>
+                <Label>Justification clinique</Label>
                 <TextArea
                   placeholder="Pourquoi cette séquence est-elle nécessaire ? Que permet-elle de visualiser ?"
                   value={sequence.justification}
@@ -871,7 +835,7 @@ function ProtocolCreatorPage() {
                   <ParameterLabel>Espacement (mm)</ParameterLabel>
                   <ParameterField
                     type="text"
-                    placeholder="ex: 1"
+                    placeholder="ex: 0.5"
                     value={(sequence.technicalParameters && sequence.technicalParameters.spacing) || ''}
                     onChange={(e) => updateSequenceParameter(sequence.id, 'spacing', e.target.value)}
                   />
@@ -881,7 +845,7 @@ function ProtocolCreatorPage() {
                   <ParameterLabel>FOV (mm)</ParameterLabel>
                   <ParameterField
                     type="text"
-                    placeholder="ex: 256x256"
+                    placeholder="ex: 240"
                     value={(sequence.technicalParameters && sequence.technicalParameters.FOV) || ''}
                     onChange={(e) => updateSequenceParameter(sequence.id, 'FOV', e.target.value)}
                   />
@@ -891,12 +855,22 @@ function ProtocolCreatorPage() {
                   <ParameterLabel>Matrice</ParameterLabel>
                   <ParameterField
                     type="text"
-                    placeholder="ex: 512x512"
+                    placeholder="ex: 256x256"
                     value={(sequence.technicalParameters && sequence.technicalParameters.matrix) || ''}
                     onChange={(e) => updateSequenceParameter(sequence.id, 'matrix', e.target.value)}
                   />
                 </ParameterInput>
               </ParametersGrid>
+              
+              <FormGroup style={{ marginTop: '1rem' }}>
+                <Label>Durée estimée</Label>
+                <Input
+                  type="text"
+                  placeholder="ex: 5 minutes"
+                  value={sequence.duration}
+                  onChange={(e) => updateSequence(sequence.id, 'duration', e.target.value)}
+                />
+              </FormGroup>
             </SequenceCard>
           ))}
           
