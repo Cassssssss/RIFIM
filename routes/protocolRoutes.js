@@ -5,6 +5,28 @@ const ProtocolRating = require('../models/ProtocolRating'); // Import du modèle
 const authMiddleware = require('../middleware/authMiddleware');
 const mongoose = require('mongoose');
 
+// NOUVEAU : Middleware d'authentification optionnel
+const optionalAuthMiddleware = (req, res, next) => {
+  const token = req.header('x-auth-token') || req.header('Authorization')?.replace('Bearer ', '');
+  
+  if (!token) {
+    // Pas de token = utilisateur non connecté, on continue quand même
+    req.userId = null;
+    return next();
+  }
+
+  try {
+    const jwt = require('jsonwebtoken');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.userId = decoded.userId;
+    next();
+  } catch (error) {
+    // Token invalide = utilisateur non connecté, on continue quand même
+    req.userId = null;
+    next();
+  }
+};
+
 // IMPORTANT: Les routes spécifiques DOIVENT être avant les routes avec paramètres
 
 // Route pour récupérer les protocoles de l'utilisateur connecté
@@ -72,8 +94,8 @@ router.get('/my', authMiddleware, async (req, res) => {
   }
 });
 
-// Route pour récupérer les protocoles publics avec notes
-router.get('/public', async (req, res) => {
+// Route pour récupérer les protocoles publics avec notes - AUTHENTIFICATION OPTIONNELLE
+router.get('/public', optionalAuthMiddleware, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -90,6 +112,7 @@ router.get('/public', async (req, res) => {
     };
 
     console.log('🔍 Recherche de protocoles publics avec filtre:', searchFilter);
+    console.log('👤 Utilisateur connecté:', !!req.userId);
 
     // Recherche textuelle
     if (search.trim()) {
@@ -147,15 +170,20 @@ router.get('/public', async (req, res) => {
     // Si l'utilisateur est connecté, récupérer ses notes
     let userRatings = {};
     if (req.userId) {
-      const userRatingDocs = await ProtocolRating.find({ 
-        user: req.userId,
-        protocol: { $in: safeProtocols.map(p => p._id) }
-      });
-      
-      userRatings = userRatingDocs.reduce((acc, rating) => {
-        acc[rating.protocol.toString()] = rating.rating;
-        return acc;
-      }, {});
+      try {
+        const userRatingDocs = await ProtocolRating.find({ 
+          user: req.userId,
+          protocol: { $in: safeProtocols.map(p => p._id) }
+        });
+        
+        userRatings = userRatingDocs.reduce((acc, rating) => {
+          acc[rating.protocol.toString()] = rating.rating;
+          return acc;
+        }, {});
+      } catch (ratingError) {
+        console.log('Erreur lors de la récupération des notes utilisateur:', ratingError.message);
+        // Continuer sans les notes utilisateur
+      }
     }
 
     // Ajouter des propriétés manquantes si nécessaire
@@ -193,7 +221,7 @@ router.get('/public', async (req, res) => {
 });
 
 // NOUVELLE ROUTE : Obtenir les protocoles les mieux notés
-router.get('/top-rated', async (req, res) => {
+router.get('/top-rated', optionalAuthMiddleware, async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
     
@@ -319,24 +347,38 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 });
 
-// Route pour récupérer un protocole par ID avec la note de l'utilisateur connecté
-router.get('/:id', authMiddleware, async (req, res) => {
+// Route pour récupérer un protocole par ID avec la note de l'utilisateur connecté - AUTHENTIFICATION OPTIONNELLE
+router.get('/:id', optionalAuthMiddleware, async (req, res) => {
   try {
     // Vérifier que l'ID est valide
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ message: 'ID de protocole invalide' });
     }
 
-    const protocol = await Protocol.findOne({
-      _id: req.params.id,
-      $or: [
-        { user: req.userId },
-        { public: true }
-      ]
-    }).populate('user', 'username');
+    // Construire le filtre selon si l'utilisateur est connecté ou non
+    let filter = { _id: req.params.id };
+    
+    if (req.userId) {
+      // Utilisateur connecté : peut voir ses propres protocoles + les publics
+      filter = {
+        _id: req.params.id,
+        $or: [
+          { user: req.userId },
+          { public: true }
+        ]
+      };
+    } else {
+      // Utilisateur non connecté : seulement les protocoles publics
+      filter = {
+        _id: req.params.id,
+        public: true
+      };
+    }
+
+    const protocol = await Protocol.findOne(filter).populate('user', 'username');
     
     if (!protocol) {
-      return res.status(404).json({ message: 'Protocole non trouvé' });
+      return res.status(404).json({ message: 'Protocole non trouvé ou non accessible' });
     }
     
     // Incrémenter les vues si ce n'est pas le propriétaire
@@ -350,11 +392,16 @@ router.get('/:id', authMiddleware, async (req, res) => {
 
     // Ajouter la note de l'utilisateur connecté si applicable
     if (req.userId && protocol.public) {
-      const userRating = await ProtocolRating.findOne({
-        protocol: req.params.id,
-        user: req.userId
-      });
-      protocolObject.userRating = userRating ? userRating.rating : null;
+      try {
+        const userRating = await ProtocolRating.findOne({
+          protocol: req.params.id,
+          user: req.userId
+        });
+        protocolObject.userRating = userRating ? userRating.rating : null;
+      } catch (ratingError) {
+        console.log('Erreur lors de la récupération de la note utilisateur:', ratingError.message);
+        protocolObject.userRating = null;
+      }
     }
     
     res.json(protocolObject);
@@ -560,9 +607,9 @@ router.post('/:id/copy', authMiddleware, async (req, res) => {
   }
 });
 
-// SYSTÈME DE NOTATION SIMPLIFIÉ - VERSION CORRIGÉE
+// SYSTÈME DE NOTATION SIMPLIFIÉ - VERSION CORRIGÉE AVEC AUTHENTIFICATION OBLIGATOIRE
 
-// Noter un protocole public - VERSION SIMPLIFIÉE
+// Noter un protocole public - AUTHENTIFICATION OBLIGATOIRE
 router.post('/:id/rate', authMiddleware, async (req, res) => {
   try {
     console.log('=== DÉBUT NOTATION PROTOCOLE ===');
@@ -664,7 +711,7 @@ router.post('/:id/rate', authMiddleware, async (req, res) => {
   }
 });
 
-// Supprimer sa note - VERSION SIMPLIFIÉE
+// Supprimer sa note - AUTHENTIFICATION OBLIGATOIRE
 router.delete('/:id/rate', authMiddleware, async (req, res) => {
   try {
     console.log('=== SUPPRESSION NOTE PROTOCOLE ===');
@@ -717,8 +764,8 @@ router.delete('/:id/rate', authMiddleware, async (req, res) => {
   }
 });
 
-// NOUVELLE ROUTE : Obtenir les notes d'un protocole
-router.get('/:id/ratings', authMiddleware, async (req, res) => {
+// NOUVELLE ROUTE : Obtenir les notes d'un protocole - AUTHENTIFICATION OPTIONNELLE
+router.get('/:id/ratings', optionalAuthMiddleware, async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ message: 'ID de protocole invalide' });
