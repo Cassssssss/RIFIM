@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Case = require('../models/Case');
+const CaseRating = require('../models/CaseRating'); // NOUVEAU : Import du modèle de notation
 const authMiddleware = require('../middleware/authMiddleware');
 const multer = require('multer');
 const path = require('path');
@@ -23,6 +24,177 @@ const sanitizeTitle = (title) => {
   sanitized = sanitized.replace(/[^a-z0-9]/gi, '_').toLowerCase();
   return sanitized;
 };
+
+// ==================== ROUTES DE NOTATION POUR LES CAS ====================
+
+// Noter un cas public
+router.post('/:id/rate', authMiddleware, async (req, res) => {
+  try {
+    const { rating, comment } = req.body;
+    const caseId = req.params.id;
+    const userId = req.user._id;
+
+    // Validation des données
+    if (rating === undefined || rating === null || rating < 0 || rating > 10) {
+      return res.status(400).json({ 
+        message: 'La note doit être comprise entre 0 et 10' 
+      });
+    }
+
+    // Vérifier que le cas existe et est public
+    const caseDoc = await Case.findById(caseId);
+    if (!caseDoc) {
+      return res.status(404).json({ message: 'Cas non trouvé' });
+    }
+
+    if (!caseDoc.public) {
+      return res.status(403).json({ message: 'Seuls les cas publics peuvent être notés' });
+    }
+
+    // Empêcher l'auto-notation
+    if (caseDoc.user.toString() === userId.toString()) {
+      return res.status(403).json({ message: 'Vous ne pouvez pas noter votre propre cas' });
+    }
+
+    // Vérifier si l'utilisateur a déjà noté ce cas
+    let existingRating = await CaseRating.findOne({ 
+      case: caseId, 
+      user: userId 
+    });
+
+    if (existingRating) {
+      // Mettre à jour la note existante
+      existingRating.rating = rating;
+      existingRating.comment = comment || '';
+      existingRating.updatedAt = new Date();
+      await existingRating.save();
+    } else {
+      // Créer une nouvelle note
+      existingRating = new CaseRating({
+        case: caseId,
+        user: userId,
+        rating: rating,
+        comment: comment || '',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+      await existingRating.save();
+    }
+
+    // Recalculer la note moyenne et le nombre de notes
+    const allRatings = await CaseRating.find({ case: caseId });
+    const averageRating = allRatings.reduce((sum, r) => sum + r.rating, 0) / allRatings.length;
+    const ratingsCount = allRatings.length;
+
+    // Mettre à jour le cas avec les nouvelles statistiques
+    await Case.findByIdAndUpdate(caseId, {
+      averageRating: averageRating,
+      ratingsCount: ratingsCount
+    });
+
+    res.json({
+      averageRating: averageRating,
+      ratingsCount: ratingsCount,
+      userRating: rating,
+      message: 'Note enregistrée avec succès'
+    });
+
+  } catch (error) {
+    console.error('Erreur lors de la notation du cas:', error);
+    res.status(500).json({ message: 'Erreur serveur lors de la notation' });
+  }
+});
+
+// Supprimer la note d'un cas
+router.delete('/:id/rate', authMiddleware, async (req, res) => {
+  try {
+    const caseId = req.params.id;
+    const userId = req.user._id;
+
+    // Supprimer la note de l'utilisateur
+    const deletedRating = await CaseRating.findOneAndDelete({ 
+      case: caseId, 
+      user: userId 
+    });
+
+    if (!deletedRating) {
+      return res.status(404).json({ message: 'Aucune note trouvée pour ce cas' });
+    }
+
+    // Recalculer la note moyenne et le nombre de notes
+    const allRatings = await CaseRating.find({ case: caseId });
+    const averageRating = allRatings.length > 0 
+      ? allRatings.reduce((sum, r) => sum + r.rating, 0) / allRatings.length 
+      : 0;
+    const ratingsCount = allRatings.length;
+
+    // Mettre à jour le cas avec les nouvelles statistiques
+    await Case.findByIdAndUpdate(caseId, {
+      averageRating: averageRating,
+      ratingsCount: ratingsCount
+    });
+
+    res.json({
+      averageRating: averageRating,
+      ratingsCount: ratingsCount,
+      userRating: null,
+      message: 'Note supprimée avec succès'
+    });
+
+  } catch (error) {
+    console.error('Erreur lors de la suppression de la note:', error);
+    res.status(500).json({ message: 'Erreur serveur lors de la suppression' });
+  }
+});
+
+// Route pour copier un cas public
+router.post('/:id/copy', authMiddleware, async (req, res) => {
+  try {
+    const caseId = req.params.id;
+    const userId = req.user._id;
+
+    // Vérifier que le cas existe et est public
+    const originalCase = await Case.findById(caseId);
+    if (!originalCase) {
+      return res.status(404).json({ message: 'Cas non trouvé' });
+    }
+
+    if (!originalCase.public) {
+      return res.status(403).json({ message: 'Seuls les cas publics peuvent être copiés' });
+    }
+
+    // Créer une copie du cas pour l'utilisateur
+    const newCase = new Case({
+      ...originalCase.toObject(),
+      _id: undefined,
+      title: `${originalCase.title} (copie)`,
+      user: userId,
+      public: false, // La copie est privée par défaut
+      averageRating: 0, // Réinitialiser les notes
+      ratingsCount: 0,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    await newCase.save();
+
+    // Incrémenter le compteur de copies du cas original
+    await Case.findByIdAndUpdate(caseId, {
+      $inc: { copies: 1 }
+    });
+
+    res.json({
+      message: 'Cas copié avec succès',
+      case: newCase
+    });
+
+  } catch (error) {
+    console.error('Erreur lors de la copie du cas:', error);
+    res.status(500).json({ message: 'Erreur serveur lors de la copie' });
+  }
+});
+
+// ==================== ROUTES EXISTANTES MODIFIÉES ====================
 
 // GET all cases
 router.get('/', async (req, res) => {
@@ -49,24 +221,53 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET tous les cas publics
+// MODIFIÉ : GET tous les cas publics avec gestion des notes utilisateur
 router.get('/public', async (req, res) => {
   console.log("Route /public des cas appelée");
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 12;
     const skip = (page - 1) * limit;
 
-    const totalCases = await Case.countDocuments({ public: true });
-    const publicCases = await Case.find({ public: true })
+    // Récupérer les cas publics avec pagination
+    const cases = await Case.find({ public: true })
+      .populate('user', 'username')
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .sort({ createdAt: -1 });
+      .lean();
+
+    const totalCases = await Case.countDocuments({ public: true });
+    const totalPages = Math.ceil(totalCases / limit);
+
+    // Si l'utilisateur est connecté, récupérer ses notes
+    let userRatings = {};
+    if (req.user) {
+      const userRatingDocs = await CaseRating.find({ 
+        user: req.user._id,
+        case: { $in: cases.map(c => c._id) }
+      });
+      
+      userRatings = userRatingDocs.reduce((acc, rating) => {
+        acc[rating.case.toString()] = rating.rating;
+        return acc;
+      }, {});
+    }
+
+    // Ajouter les notes utilisateur aux cas
+    const casesWithRatings = cases.map(caseDoc => ({
+      ...caseDoc,
+      averageRating: caseDoc.averageRating || 0,
+      ratingsCount: caseDoc.ratingsCount || 0,
+      userRating: userRatings[caseDoc._id.toString()] || null,
+      views: caseDoc.views || 0,
+      copies: caseDoc.copies || 0
+    }));
 
     res.json({
-      cases: publicCases,
+      cases: casesWithRatings,
       currentPage: page,
-      totalPages: Math.ceil(totalCases / limit),
+      totalPages: totalPages,
       totalCases
     });
   } catch (error) {
@@ -74,12 +275,17 @@ router.get('/public', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
 // POST new case
 router.post('/', async (req, res) => {
   console.log('Tentative de création d\'un nouveau cas:', req.body);
   const newCase = new Case({
     ...req.body,
-    user: req.userId
+    user: req.userId,
+    averageRating: 0, // NOUVEAU : Initialiser les champs de notation
+    ratingsCount: 0,
+    views: 0,
+    copies: 0
   });
 
   try {
@@ -93,7 +299,7 @@ router.post('/', async (req, res) => {
 });
 
 // GET cas spécifique
-router.get('/:id', async (req, res) => {  // Retirez authMiddleware ici
+router.get('/:id', async (req, res) => {
   try {
     const caseDoc = await Case.findById(req.params.id);
     
@@ -106,12 +312,28 @@ router.get('/:id', async (req, res) => {  // Retirez authMiddleware ici
       return res.status(403).json({ message: 'Accès non autorisé' });
     }
 
+    // Incrémenter le compteur de vues si ce n'est pas le propriétaire
+    if (caseDoc.public && req.userId && caseDoc.user.toString() !== req.userId) {
+      await Case.findByIdAndUpdate(req.params.id, {
+        $inc: { views: 1 }
+      });
+    }
+
     const caseObject = caseDoc.toObject();
 
     if (caseDoc.folderMainImages instanceof Map) {
       caseObject.folderMainImages = Object.fromEntries(caseDoc.folderMainImages);
     } else {
       caseObject.folderMainImages = caseDoc.folderMainImages || {};
+    }
+
+    // Ajouter la note de l'utilisateur connecté si applicable
+    if (req.user && caseDoc.public) {
+      const userRating = await CaseRating.findOne({
+        case: req.params.id,
+        user: req.user._id
+      });
+      caseObject.userRating = userRating ? userRating.rating : null;
     }
 
     res.json(caseObject);
@@ -328,6 +550,9 @@ router.delete('/:id', async (req, res) => {
       return res.status(404).json({ message: 'Cas non trouvé' });
     }
 
+    // Supprimer aussi toutes les notes associées à ce cas
+    await CaseRating.deleteMany({ case: req.params.id });
+
     // Suppression des images de DigitalOcean Spaces
     const folder = sanitizeTitle(deletedCase.title);
     const listParams = {
@@ -412,8 +637,6 @@ router.delete('/:id/folders/:folder', async (req, res) => {
     res.status(500).json({ message: 'Erreur serveur lors de la suppression du dossier', error: error.message });
   }
 });
-
-
 
 // PATCH pour rendre un cas public/privé
 router.patch('/:id/togglePublic', authMiddleware, async (req, res) => {
