@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Protocol = require('../models/Protocol');
+const ProtocolRating = require('../models/ProtocolRating'); // Import du modèle de notation
 const authMiddleware = require('../middleware/authMiddleware');
 const mongoose = require('mongoose');
 
@@ -143,6 +144,20 @@ router.get('/public', async (req, res) => {
     // S'assurer que protocols est toujours un tableau
     const safeProtocols = Array.isArray(protocols) ? protocols : [];
 
+    // Si l'utilisateur est connecté, récupérer ses notes
+    let userRatings = {};
+    if (req.userId) {
+      const userRatingDocs = await ProtocolRating.find({ 
+        user: req.userId,
+        protocol: { $in: safeProtocols.map(p => p._id) }
+      });
+      
+      userRatings = userRatingDocs.reduce((acc, rating) => {
+        acc[rating.protocol.toString()] = rating.rating;
+        return acc;
+      }, {});
+    }
+
     // Ajouter des propriétés manquantes si nécessaire
     const protocolsWithStats = safeProtocols.map(protocol => ({
       ...protocol,
@@ -150,7 +165,8 @@ router.get('/public', async (req, res) => {
       copies: protocol.stats?.copies || 0,
       likes: protocol.stats?.likes || 0,
       averageRating: protocol.averageRating || 0,
-      ratingsCount: protocol.ratingsCount || 0
+      ratingsCount: protocol.ratingsCount || 0,
+      userRating: userRatings[protocol._id.toString()] || null
     }));
 
     console.log('✅ Réponse envoyée avec', protocolsWithStats.length, 'protocoles');
@@ -180,7 +196,15 @@ router.get('/public', async (req, res) => {
 router.get('/top-rated', async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
-    const protocols = await Protocol.getTopRated(limit);
+    
+    const protocols = await Protocol.find({ 
+      public: true, 
+      ratingsCount: { $gt: 0 } 
+    })
+    .sort({ averageRating: -1, ratingsCount: -1 })
+    .limit(limit)
+    .populate('user', 'username')
+    .lean();
     
     res.json({
       protocols,
@@ -253,25 +277,45 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
-// Route pour créer un protocole
+// Route pour créer un protocole - VERSION CORRIGÉE
 router.post('/', authMiddleware, async (req, res) => {
   try {
     const protocolData = {
       ...req.body,
       user: req.userId,
       sequences: req.body.sequences || [],
-      tags: req.body.tags || []
+      tags: req.body.tags || [],
+      // Initialiser tous les champs obligatoires
+      public: req.body.public || false,
+      status: req.body.status || 'Brouillon',
+      version: req.body.version || '1.0',
+      changelog: [],
+      stats: { 
+        views: 0, 
+        likes: 0, 
+        copies: 0 
+      },
+      ratings: [], // Système de notation intégré
+      averageRating: 0,
+      ratingsCount: 0,
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
     
     console.log(`Création du protocole : ${protocolData.title}`);
+    console.log('Données complètes:', protocolData);
 
     const protocol = new Protocol(protocolData);
     const newProtocol = await protocol.save();
     
     res.status(201).json(newProtocol);
   } catch (error) {
-    console.error('Erreur lors de la création du protocole:', error);
-    res.status(500).json({ message: 'Erreur lors de la création du protocole' });
+    console.error('Erreur détaillée lors de la création du protocole:', error);
+    res.status(500).json({ 
+      message: 'Erreur lors de la création du protocole',
+      error: error.message,
+      details: error.errors // Afficher les erreurs de validation Mongoose
+    });
   }
 });
 
@@ -289,26 +333,31 @@ router.get('/:id', authMiddleware, async (req, res) => {
         { user: req.userId },
         { public: true }
       ]
-    }).populate('user', 'username')
-      .populate('ratings.user', 'username');
+    }).populate('user', 'username');
     
     if (!protocol) {
       return res.status(404).json({ message: 'Protocole non trouvé' });
     }
     
     // Incrémenter les vues si ce n'est pas le propriétaire
-    if (protocol.user._id.toString() !== req.userId) {
-      await protocol.incrementViews();
+    if (protocol.public && req.userId && protocol.user._id.toString() !== req.userId) {
+      await Protocol.findByIdAndUpdate(req.params.id, {
+        $inc: { 'stats.views': 1 }
+      });
     }
     
-    // Ajouter la note de l'utilisateur connecté
-    const userRating = protocol.getUserRating(req.userId);
-    const protocolWithUserRating = {
-      ...protocol.toObject(),
-      userRating: userRating
-    };
+    const protocolObject = protocol.toObject();
+
+    // Ajouter la note de l'utilisateur connecté si applicable
+    if (req.userId && protocol.public) {
+      const userRating = await ProtocolRating.findOne({
+        protocol: req.params.id,
+        user: req.userId
+      });
+      protocolObject.userRating = userRating ? userRating.rating : null;
+    }
     
-    res.json(protocolWithUserRating);
+    res.json(protocolObject);
   } catch (error) {
     console.error('Erreur lors de la récupération du protocole:', error);
     res.status(500).json({ message: 'Erreur lors de la récupération du protocole' });
@@ -440,6 +489,9 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     if (!protocol) {
       return res.status(404).json({ message: 'Protocole non trouvé' });
     }
+
+    // Supprimer aussi toutes les notes associées à ce protocole
+    await ProtocolRating.deleteMany({ protocol: req.params.id });
     
     res.json({ message: 'Protocole supprimé avec succès' });
   } catch (error) {
@@ -491,8 +543,9 @@ router.post('/:id/copy', authMiddleware, async (req, res) => {
 
     // Incrémenter le compteur de copies du protocole original
     if (originalProtocol.user.toString() !== req.userId) {
-      originalProtocol.stats.copies += 1;
-      await originalProtocol.save();
+      await Protocol.findByIdAndUpdate(req.params.id, {
+        $inc: { 'stats.copies': 1 }
+      });
     }
 
     res.status(201).json({
@@ -507,25 +560,34 @@ router.post('/:id/copy', authMiddleware, async (req, res) => {
   }
 });
 
-// NOUVELLE ROUTE : Noter un protocole (système principal de notation)
+// SYSTÈME DE NOTATION SIMPLIFIÉ - VERSION CORRIGÉE
+
+// Noter un protocole public - VERSION SIMPLIFIÉE
 router.post('/:id/rate', authMiddleware, async (req, res) => {
   try {
+    console.log('=== DÉBUT NOTATION PROTOCOLE ===');
+    console.log('Protocol ID:', req.params.id);
+    console.log('User ID:', req.userId);
+    console.log('Rating data:', req.body);
+
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ message: 'ID de protocole invalide' });
     }
 
     const protocol = await Protocol.findOne({
       _id: req.params.id,
-      public: true,
-      status: 'Validé'
+      public: true
     });
+
+    console.log('Protocol trouvé:', !!protocol);
+    console.log('Protocol public:', protocol?.public);
 
     if (!protocol) {
       return res.status(404).json({ message: 'Protocole non trouvé ou non public' });
     }
 
     // Vérifier que l'utilisateur ne note pas son propre protocole
-    if (protocol.user.toString() === req.userId) { // ✅ CORRIGÉ : utiliser req.userId au lieu de req.user._id
+    if (protocol.user.toString() === req.userId) {
       return res.status(400).json({ message: 'Vous ne pouvez pas noter votre propre protocole' });
     }
 
@@ -536,37 +598,65 @@ router.post('/:id/rate', authMiddleware, async (req, res) => {
       return res.status(400).json({ message: 'La note est requise' });
     }
 
-    if (rating < 0 || rating > 10 || (rating * 2) % 1 !== 0) {
+    if (rating < 0 || rating > 10) {
       return res.status(400).json({ 
-        message: 'La note doit être entre 0 et 10 avec des incréments de 0.5 (ex: 3.5, 7.0, 9.5)' 
+        message: 'La note doit être entre 0 et 10' 
       });
     }
 
-    // Ajouter ou mettre à jour la note
-    await protocol.addOrUpdateRating(req.userId, rating, comment || ''); // ✅ CORRIGÉ : utiliser req.userId
+    // MÉTHODE SIMPLE : Utiliser le modèle ProtocolRating séparé
+    const protocolId = req.params.id;
+    const userId = req.userId;
 
-    // Récupérer le protocole mis à jour
-    const updatedProtocol = await Protocol.findById(req.params.id)
-      .populate('user', 'username')
-      .populate('ratings.user', 'username');
+    // Vérifier si l'utilisateur a déjà noté ce protocole
+    let existingRating = await ProtocolRating.findOne({ 
+      protocol: protocolId, 
+      user: userId 
+    });
 
-    const userRating = updatedProtocol.getUserRating(req.userId); // ✅ CORRIGÉ : utiliser req.userId
-    const hasRated = updatedProtocol.hasUserRated(req.userId); // ✅ CORRIGÉ : utiliser req.userId
+    if (existingRating) {
+      // Mettre à jour la note existante
+      existingRating.rating = rating;
+      existingRating.comment = comment || '';
+      existingRating.updatedAt = new Date();
+      await existingRating.save();
+    } else {
+      // Créer une nouvelle note
+      existingRating = new ProtocolRating({
+        protocol: protocolId,
+        user: userId,
+        rating: rating,
+        comment: comment || '',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+      await existingRating.save();
+    }
+
+    // Recalculer la note moyenne et le nombre de notes
+    const allRatings = await ProtocolRating.find({ protocol: protocolId });
+    const averageRating = allRatings.reduce((sum, r) => sum + r.rating, 0) / allRatings.length;
+    const ratingsCount = allRatings.length;
+
+    // Mettre à jour le protocole avec les nouvelles statistiques
+    await Protocol.findByIdAndUpdate(protocolId, {
+      averageRating: averageRating,
+      ratingsCount: ratingsCount
+    });
+
+    console.log('=== NOTATION RÉUSSIE ===');
+    console.log('Nouvelle moyenne:', averageRating);
+    console.log('Nombre de notes:', ratingsCount);
 
     res.json({
-      message: hasRated ? 'Note mise à jour avec succès' : 'Note ajoutée avec succès',
-      averageRating: updatedProtocol.averageRating,
-      ratingsCount: updatedProtocol.ratingsCount,
-      userRating: userRating,
-      protocol: {
-        _id: updatedProtocol._id,
-        title: updatedProtocol.title,
-        averageRating: updatedProtocol.averageRating,
-        ratingsCount: updatedProtocol.ratingsCount
-      }
+      message: existingRating ? 'Note mise à jour avec succès' : 'Note ajoutée avec succès',
+      averageRating: averageRating,
+      ratingsCount: ratingsCount,
+      userRating: rating
     });
 
   } catch (error) {
+    console.error('=== ERREUR NOTATION ===');
     console.error('Erreur lors de la notation du protocole:', error);
     res.status(500).json({ 
       message: error.message || 'Erreur lors de la notation du protocole' 
@@ -574,37 +664,54 @@ router.post('/:id/rate', authMiddleware, async (req, res) => {
   }
 });
 
-// NOUVELLE ROUTE : Supprimer sa note
+// Supprimer sa note - VERSION SIMPLIFIÉE
 router.delete('/:id/rate', authMiddleware, async (req, res) => {
   try {
+    console.log('=== SUPPRESSION NOTE PROTOCOLE ===');
+    console.log('Protocol ID:', req.params.id);
+    console.log('User ID:', req.userId);
+
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ message: 'ID de protocole invalide' });
     }
 
-    const protocol = await Protocol.findOne({
-      _id: req.params.id,
-      public: true
+    const protocolId = req.params.id;
+    const userId = req.userId;
+
+    // Supprimer la note de l'utilisateur
+    const deletedRating = await ProtocolRating.findOneAndDelete({ 
+      protocol: protocolId, 
+      user: userId 
     });
 
-    if (!protocol) {
-      return res.status(404).json({ message: 'Protocole non trouvé ou non public' });
+    if (!deletedRating) {
+      return res.status(404).json({ message: 'Aucune note trouvée pour ce protocole' });
     }
 
-    // Vérifier que l'utilisateur a bien noté ce protocole
-    if (!protocol.hasUserRated(req.userId)) { // ✅ CORRIGÉ : utiliser req.userId
-      return res.status(400).json({ message: 'Vous n\'avez pas encore noté ce protocole' });
-    }
+    // Recalculer la note moyenne et le nombre de notes
+    const allRatings = await ProtocolRating.find({ protocol: protocolId });
+    const averageRating = allRatings.length > 0 
+      ? allRatings.reduce((sum, r) => sum + r.rating, 0) / allRatings.length 
+      : 0;
+    const ratingsCount = allRatings.length;
 
-    // Supprimer la note
-    await protocol.removeRating(req.userId); // ✅ CORRIGÉ : utiliser req.userId
+    // Mettre à jour le protocole avec les nouvelles statistiques
+    await Protocol.findByIdAndUpdate(protocolId, {
+      averageRating: averageRating,
+      ratingsCount: ratingsCount
+    });
+
+    console.log('=== SUPPRESSION RÉUSSIE ===');
 
     res.json({
       message: 'Note supprimée avec succès',
-      averageRating: protocol.averageRating,
-      ratingsCount: protocol.ratingsCount
+      averageRating: averageRating,
+      ratingsCount: ratingsCount,
+      userRating: null
     });
 
   } catch (error) {
+    console.error('=== ERREUR SUPPRESSION ===');
     console.error('Erreur lors de la suppression de la note:', error);
     res.status(500).json({ message: 'Erreur lors de la suppression de la note' });
   }
@@ -620,19 +727,20 @@ router.get('/:id/ratings', authMiddleware, async (req, res) => {
     const protocol = await Protocol.findOne({
       _id: req.params.id,
       public: true
-    })
-    .populate('ratings.user', 'username')
-    .select('ratings averageRating ratingsCount title');
+    });
 
     if (!protocol) {
       return res.status(404).json({ message: 'Protocole non trouvé ou non public' });
     }
 
-    // Trier les notes par date (plus récentes en premier)
-    const sortedRatings = protocol.ratings.sort((a, b) => new Date(b.date) - new Date(a.date));
+    // Récupérer toutes les notes avec les informations utilisateur
+    const ratings = await ProtocolRating.find({ protocol: req.params.id })
+      .populate('user', 'username')
+      .sort({ createdAt: -1 })
+      .lean();
 
     res.json({
-      ratings: sortedRatings,
+      ratings: ratings,
       averageRating: protocol.averageRating,
       ratingsCount: protocol.ratingsCount,
       protocolTitle: protocol.title
@@ -669,11 +777,37 @@ router.post('/:id/review', authMiddleware, async (req, res) => {
     }
 
     // Vérifier si l'utilisateur a déjà évalué ce protocole
-    if (protocol.hasUserRated(req.userId)) { // ✅ CORRIGÉ : utiliser req.userId
+    const existingRating = await ProtocolRating.findOne({
+      protocol: req.params.id,
+      user: req.userId
+    });
+
+    if (existingRating) {
       return res.status(400).json({ message: 'Vous avez déjà évalué ce protocole' });
     }
 
-    await protocol.addOrUpdateRating(req.userId, rating, comment); // ✅ CORRIGÉ : utiliser req.userId
+    // Créer une nouvelle note
+    const newRating = new ProtocolRating({
+      protocol: req.params.id,
+      user: req.userId,
+      rating: rating,
+      comment: comment || '',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    await newRating.save();
+
+    // Recalculer les statistiques
+    const allRatings = await ProtocolRating.find({ protocol: req.params.id });
+    const averageRating = allRatings.reduce((sum, r) => sum + r.rating, 0) / allRatings.length;
+    const ratingsCount = allRatings.length;
+
+    await Protocol.findByIdAndUpdate(req.params.id, {
+      averageRating: averageRating,
+      ratingsCount: ratingsCount
+    });
+
     res.json({ message: 'Évaluation ajoutée avec succès' });
 
   } catch (error) {
