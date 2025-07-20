@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import axios from '../utils/axiosConfig';
 import { 
@@ -16,7 +16,7 @@ import {
 
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
-import RatingStars from '../components/RatingStars'; // IMPORT AJOUTÉ
+import RatingStars from '../components/RatingStars';
 
 // ==================== STYLES COMPOSANTS ====================
 
@@ -161,14 +161,32 @@ const ProtocolCard = styled.div`
   background-color: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.borderLight};
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 0;
   transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+
+  /* NOUVEAU : Bordure dégradée au dessus comme les autres pages */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  }
 
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    border-color: ${props => props.theme.primary};
+    border-color: ${props => props.theme.primary}50;
   }
+`;
+
+const CardContent = styled.div`
+  padding: 1.5rem;
 `;
 
 const ProtocolHeader = styled.div`
@@ -282,6 +300,11 @@ const ActionButton = styled.button`
     color: white;
     border-color: ${props => props.theme.primary};
   }
+
+  /* Empêcher la propagation du clic vers la carte */
+  &:hover {
+    z-index: 10;
+  }
 `;
 
 const EmptyState = styled.div`
@@ -349,6 +372,7 @@ const PaginationButton = styled.button`
 // ==================== COMPOSANT PRINCIPAL ====================
 
 function ProtocolsPublicPage() {
+  const navigate = useNavigate();
   const [protocols, setProtocols] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -392,13 +416,13 @@ function ProtocolsPublicPage() {
         imagingType: protocol.imagingType ? String(protocol.imagingType) : '',
         anatomicalRegion: protocol.anatomicalRegion ? String(protocol.anatomicalRegion) : '',
         estimatedDuration: protocol.estimatedDuration ? String(protocol.estimatedDuration) : '',
-        complexity: protocol.complexity ? Number(protocol.complexity) : 1,
+        // SUPPRIMÉ : complexity - plus nécessaire
         averageRating: protocol.averageRating ? Number(protocol.averageRating) : 0,
         ratingsCount: protocol.ratingsCount ? Number(protocol.ratingsCount) : 0,
         views: protocol.views || protocol.stats?.views || 0,
         copies: protocol.copies || protocol.stats?.copies || 0,
         user: protocol.user || {},
-        userRating: protocol.userRating || null, // AJOUTÉ
+        userRating: protocol.userRating || null,
         _id: protocol._id ? String(protocol._id) : ''
       }));
       
@@ -421,7 +445,13 @@ function ProtocolsPublicPage() {
     setCurrentPage(1); // Reset page when filters change
   }, [searchTerm, filterType, filterRegion, sortBy]);
 
-  const handleCopy = async (protocolId) => {
+  // NOUVEAU : Gérer le clic sur la carte pour naviguer vers la vue détaillée
+  const handleCardClick = (protocolId) => {
+    navigate(`/protocols/view/${protocolId}`);
+  };
+
+  const handleCopy = async (e, protocolId) => {
+    e.stopPropagation(); // Empêcher la navigation quand on clique sur copier
     try {
       await axios.post(`/protocols/${protocolId}/copy`);
       alert('Protocole copié dans vos protocoles personnels !');
@@ -429,6 +459,11 @@ function ProtocolsPublicPage() {
       console.error('Erreur lors de la copie:', err);
       setError('Erreur lors de la copie du protocole');
     }
+  };
+
+  const handleViewClick = (e, protocolId) => {
+    e.stopPropagation(); // Empêcher la double navigation
+    navigate(`/protocols/view/${protocolId}`);
   };
 
   const isPopular = (protocol) => {
@@ -535,91 +570,91 @@ function ProtocolsPublicPage() {
         <>
           <ProtocolsGrid>
             {protocols.map((protocol) => (
-              <ProtocolCard key={protocol._id || Math.random()}>
-                <ProtocolHeader>
-                  <ProtocolTitle>{protocol.title}</ProtocolTitle>
-                  {isPopular(protocol) && (
-                    <PopularityBadge>
-                      <TrendingUp size={12} />
-                      Populaire
-                    </PopularityBadge>
-                  )}
-                </ProtocolHeader>
-                
-                <AuthorInfo>
-                  <User size={16} />
-                  Par <strong>{protocol.user?.username || 'Utilisateur'}</strong>
-                </AuthorInfo>
-                
-                <ProtocolMeta>
-                  <MetaItem>
-                    <span>📋</span>
-                    {protocol.imagingType}
-                  </MetaItem>
-                  <MetaItem>
-                    <span>🎯</span>
-                    {protocol.anatomicalRegion}
-                  </MetaItem>
-                  {protocol.estimatedDuration && (
-                    <MetaItem>
-                      <Clock size={14} />
-                      {protocol.estimatedDuration}
-                    </MetaItem>
-                  )}
-                  {protocol.complexity && (
-                    <MetaItem>
-                      {Array.from({ length: Number(protocol.complexity) }, (_, i) => (
-                        <Star key={i} size={12} fill="currentColor" />
-                      ))}
-                    </MetaItem>
-                  )}
-                </ProtocolMeta>
-                
-                <ProtocolDescription>
-                  {protocol.description || protocol.indication}
-                </ProtocolDescription>
-
-                {/* NOUVEAU : Section de notation intégrée dans chaque carte */}
-                <RatingSection>
-                  <RatingStars
-                    protocolId={protocol._id}
-                    averageRating={protocol.averageRating}
-                    ratingsCount={protocol.ratingsCount}
-                    userRating={protocol.userRating}
-                    onRatingUpdate={(newRatingData) => handleRatingUpdate(protocol._id, newRatingData)}
-                    size={18}
-                  />
-                </RatingSection>
-                
-                <StatsContainer>
-                  <div style={{ display: 'flex', gap: '1rem' }}>
-                    <StatItem>
-                      <Eye size={14} />
-                      {Number(protocol.views) || 0} vues
-                    </StatItem>
-                    <StatItem>
-                      <Copy size={14} />
-                      {Number(protocol.copies) || 0} copies
-                    </StatItem>
-                  </div>
+              <ProtocolCard 
+                key={protocol._id || Math.random()}
+                onClick={() => handleCardClick(protocol._id)}
+              >
+                <CardContent>
+                  <ProtocolHeader>
+                    <ProtocolTitle>{protocol.title}</ProtocolTitle>
+                    {isPopular(protocol) && (
+                      <PopularityBadge>
+                        <TrendingUp size={12} />
+                        Populaire
+                      </PopularityBadge>
+                    )}
+                  </ProtocolHeader>
                   
-                  <ActionsContainer>
-                    <ActionButton
-                      as={Link}
-                      to={`/protocols/view/${protocol._id}`}
-                      title="Voir les détails"
-                    >
-                      <Eye size={16} />
-                    </ActionButton>
+                  <AuthorInfo>
+                    <User size={16} />
+                    Par <strong>{protocol.user?.username || 'Utilisateur'}</strong>
+                  </AuthorInfo>
+                  
+                  <ProtocolMeta>
+                    <MetaItem>
+                      <span>📋</span>
+                      {protocol.imagingType}
+                    </MetaItem>
+                    <MetaItem>
+                      <span>🎯</span>
+                      {protocol.anatomicalRegion}
+                    </MetaItem>
+                    {protocol.estimatedDuration && (
+                      <MetaItem>
+                        <Clock size={14} />
+                        {protocol.estimatedDuration}
+                      </MetaItem>
+                    )}
+                    {/* SUPPRIMÉ : Affichage de la complexité */}
+                  </ProtocolMeta>
+                  
+                  <ProtocolDescription>
+                    {protocol.description || protocol.indication}
+                  </ProtocolDescription>
+
+                  {/* Section de notation intégrée dans chaque carte */}
+                  <RatingSection>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <RatingStars
+                        protocolId={protocol._id}
+                        averageRating={protocol.averageRating}
+                        ratingsCount={protocol.ratingsCount}
+                        userRating={protocol.userRating}
+                        onRatingUpdate={(newRatingData) => handleRatingUpdate(protocol._id, newRatingData)}
+                        size={18}
+                      />
+                    </div>
+                  </RatingSection>
+                  
+                  <StatsContainer>
+                    <div style={{ display: 'flex', gap: '1rem' }}>
+                      <StatItem>
+                        <Eye size={14} />
+                        {Number(protocol.views) || 0} vues
+                      </StatItem>
+                      <StatItem>
+                        <Copy size={14} />
+                        {Number(protocol.copies) || 0} copies
+                      </StatItem>
+                    </div>
                     
-                    <ActionButton
-                      onClick={() => handleCopy(protocol._id)}
-                      title="Copier"
-                    >
-                      <Copy size={16} />
-                    </ActionButton>
-                  </ActionsContainer>
-                </StatsContainer>
+                    <ActionsContainer>
+                      <ActionButton
+                        onClick={(e) => handleViewClick(e, protocol._id)}
+                        title="Voir les détails"
+                      >
+                        <Eye size={16} />
+                      </ActionButton>
+                      
+                      <ActionButton
+                        onClick={(e) => handleCopy(e, protocol._id)}
+                        title="Copier"
+                      >
+                        <Copy size={16} />
+                      </ActionButton>
+                    </ActionsContainer>
+                  </StatsContainer>
+                </CardContent>
               </ProtocolCard>
             ))}
           </ProtocolsGrid>
