@@ -910,8 +910,8 @@ const QuestionnaireCreator = () => {
           // NE PAS utiliser navigate() pour éviter la perte des données
           // navigate(`/edit/${newId}`); // ← SUPPRIMÉ pour corriger le problème
           
-          alert('✅ Questionnaire créé avec succès ! Vous pouvez continuer à le modifier ou naviguer vers la liste.');
-          return; // Sortir ici pour éviter l'exécution du reste
+alert('✅ Questionnaire créé avec succès !');
+setTimeout(() => navigate('/questionnaires'), 1000);           return; // Sortir ici pour éviter l'exécution du reste
         }
       }
 
