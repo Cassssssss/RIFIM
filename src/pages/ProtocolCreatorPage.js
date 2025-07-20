@@ -348,6 +348,8 @@ function ProtocolCreatorPage() {
     advantages: [],
     limitations: [],
     public: false,
+    status: 'Brouillon',
+    version: '1.0',
     sequences: [],
     acquisitionParameters: {
       fieldStrength: '',
@@ -493,7 +495,19 @@ function ProtocolCreatorPage() {
         name: '',
         description: '',
         duration: '',
-        technicalParameters: {},
+        technicalParameters: {
+          TR: '',
+          TE: '',
+          FOV: '',
+          matrix: '',
+          sliceThickness: '',
+          spacing: '',
+          flipAngle: '',
+          NEX: '',
+          bandwidth: '',
+          plane: '',
+          others: ''
+        },
         justification: ''
       }]
     }));
@@ -513,6 +527,22 @@ function ProtocolCreatorPage() {
       ...prev,
       sequences: prev.sequences.map((seq, i) => 
         i === index ? { ...seq, [field]: value } : seq
+      )
+    }));
+  };
+
+  // Modifier un paramètre technique d'une séquence
+  const updateSequenceTechnicalParameter = (index, parameter, value) => {
+    setFormData(prev => ({
+      ...prev,
+      sequences: prev.sequences.map((seq, i) => 
+        i === index ? { 
+          ...seq, 
+          technicalParameters: {
+            ...seq.technicalParameters,
+            [parameter]: value
+          }
+        } : seq
       )
     }));
   };
@@ -843,6 +873,127 @@ function ProtocolCreatorPage() {
                 />
               </FormGroup>
             </FormGrid>
+
+            {/* Paramètres techniques IRM */}
+            <div style={{ marginTop: '1.5rem' }}>
+              <h4 style={{ color: '#4f5b93', marginBottom: '1rem', fontWeight: '600' }}>
+                ⚙️ Paramètres Techniques
+              </h4>
+              <FormGrid>
+                <FormGroup>
+                  <Label>TR (ms)</Label>
+                  <Input
+                    type="text"
+                    placeholder="Ex: 2000"
+                    value={sequence.technicalParameters?.TR || ''}
+                    onChange={(e) => updateSequenceTechnicalParameter(index, 'TR', e.target.value)}
+                  />
+                </FormGroup>
+                
+                <FormGroup>
+                  <Label>TE (ms)</Label>
+                  <Input
+                    type="text"
+                    placeholder="Ex: 80"
+                    value={sequence.technicalParameters?.TE || ''}
+                    onChange={(e) => updateSequenceTechnicalParameter(index, 'TE', e.target.value)}
+                  />
+                </FormGroup>
+                
+                <FormGroup>
+                  <Label>FOV (mm)</Label>
+                  <Input
+                    type="text"
+                    placeholder="Ex: 240x240"
+                    value={sequence.technicalParameters?.FOV || ''}
+                    onChange={(e) => updateSequenceTechnicalParameter(index, 'FOV', e.target.value)}
+                  />
+                </FormGroup>
+                
+                <FormGroup>
+                  <Label>Matrice</Label>
+                  <Input
+                    type="text"
+                    placeholder="Ex: 256x256"
+                    value={sequence.technicalParameters?.matrix || ''}
+                    onChange={(e) => updateSequenceTechnicalParameter(index, 'matrix', e.target.value)}
+                  />
+                </FormGroup>
+                
+                <FormGroup>
+                  <Label>Épaisseur de coupe (mm)</Label>
+                  <Input
+                    type="text"
+                    placeholder="Ex: 5"
+                    value={sequence.technicalParameters?.sliceThickness || ''}
+                    onChange={(e) => updateSequenceTechnicalParameter(index, 'sliceThickness', e.target.value)}
+                  />
+                </FormGroup>
+                
+                <FormGroup>
+                  <Label>Espacement (mm)</Label>
+                  <Input
+                    type="text"
+                    placeholder="Ex: 1"
+                    value={sequence.technicalParameters?.spacing || ''}
+                    onChange={(e) => updateSequenceTechnicalParameter(index, 'spacing', e.target.value)}
+                  />
+                </FormGroup>
+                
+                <FormGroup>
+                  <Label>Angle de bascule (°)</Label>
+                  <Input
+                    type="text"
+                    placeholder="Ex: 90"
+                    value={sequence.technicalParameters?.flipAngle || ''}
+                    onChange={(e) => updateSequenceTechnicalParameter(index, 'flipAngle', e.target.value)}
+                  />
+                </FormGroup>
+                
+                <FormGroup>
+                  <Label>NEX/NSA</Label>
+                  <Input
+                    type="text"
+                    placeholder="Ex: 2"
+                    value={sequence.technicalParameters?.NEX || ''}
+                    onChange={(e) => updateSequenceTechnicalParameter(index, 'NEX', e.target.value)}
+                  />
+                </FormGroup>
+                
+                <FormGroup>
+                  <Label>Largeur de bande (Hz/px)</Label>
+                  <Input
+                    type="text"
+                    placeholder="Ex: 250"
+                    value={sequence.technicalParameters?.bandwidth || ''}
+                    onChange={(e) => updateSequenceTechnicalParameter(index, 'bandwidth', e.target.value)}
+                  />
+                </FormGroup>
+                
+                <FormGroup>
+                  <Label>Plan d'acquisition</Label>
+                  <Select
+                    value={sequence.technicalParameters?.plane || ''}
+                    onChange={(e) => updateSequenceTechnicalParameter(index, 'plane', e.target.value)}
+                  >
+                    <option value="">Sélectionner...</option>
+                    <option value="Axial">Axial</option>
+                    <option value="Sagittal">Sagittal</option>
+                    <option value="Coronal">Coronal</option>
+                    <option value="Oblique">Oblique</option>
+                  </Select>
+                </FormGroup>
+                
+                <FormGroup className="full-width">
+                  <Label>Autres paramètres</Label>
+                  <TextArea
+                    placeholder="Autres paramètres techniques spécifiques..."
+                    value={sequence.technicalParameters?.others || ''}
+                    onChange={(e) => updateSequenceTechnicalParameter(index, 'others', e.target.value)}
+                  />
+                </FormGroup>
+              </FormGrid>
+            </div>
           </SequenceContainer>
         ))}
         
@@ -938,6 +1089,34 @@ function ProtocolCreatorPage() {
         </AddButton>
 
         {/* Statut de publication */}
+        <SectionTitle>
+          📊 Statut et Publication
+        </SectionTitle>
+        
+        <FormGrid>
+          <FormGroup>
+            <Label>Statut du protocole</Label>
+            <Select
+              value={formData.status || 'Brouillon'}
+              onChange={(e) => handleInputChange('status', e.target.value)}
+            >
+              <option value="Brouillon">Brouillon</option>
+              <option value="En révision">En révision</option>
+              <option value="Validé">Validé</option>
+            </Select>
+          </FormGroup>
+          
+          <FormGroup>
+            <Label>Version</Label>
+            <Input
+              type="text"
+              placeholder="Ex: 1.0, 2.1"
+              value={formData.version || '1.0'}
+              onChange={(e) => handleInputChange('version', e.target.value)}
+            />
+          </FormGroup>
+        </FormGrid>
+
         <StatusToggle>
           <ToggleSwitch
             type="button"
@@ -945,11 +1124,12 @@ function ProtocolCreatorPage() {
             onClick={() => handleInputChange('public', !formData.public)}
           />
           <div>
-            <div style={{ color: formData.public ? '#10b981' : '#6b7280', fontWeight: '600' }}>
+            <div style={{ color: formData.public ? '#10b981' : '#6b7280', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               {formData.public ? <Eye size={16} /> : <EyeOff size={16} />}
-            </div>
-            <div style={{ fontSize: '0.9rem', color: '#6b7280' }}>
               {formData.public ? 'Protocole public' : 'Protocole privé'}
+            </div>
+            <div style={{ fontSize: '0.9rem', color: '#6b7280', marginTop: '0.25rem' }}>
+              {formData.public ? 'Visible par tous les utilisateurs' : 'Visible seulement par vous'}
             </div>
           </div>
         </StatusToggle>
