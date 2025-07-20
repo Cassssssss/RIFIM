@@ -525,7 +525,7 @@ router.post('/:id/rate', authMiddleware, async (req, res) => {
     }
 
     // Vérifier que l'utilisateur ne note pas son propre protocole
-    if (protocol.user.toString() === req.userId) {
+    if (protocol.user.toString() === req.userId) { // ✅ CORRIGÉ : utiliser req.userId au lieu de req.user._id
       return res.status(400).json({ message: 'Vous ne pouvez pas noter votre propre protocole' });
     }
 
@@ -543,15 +543,15 @@ router.post('/:id/rate', authMiddleware, async (req, res) => {
     }
 
     // Ajouter ou mettre à jour la note
-    await protocol.addOrUpdateRating(req.userId, rating, comment || '');
+    await protocol.addOrUpdateRating(req.userId, rating, comment || ''); // ✅ CORRIGÉ : utiliser req.userId
 
     // Récupérer le protocole mis à jour
     const updatedProtocol = await Protocol.findById(req.params.id)
       .populate('user', 'username')
       .populate('ratings.user', 'username');
 
-    const userRating = updatedProtocol.getUserRating(req.userId);
-    const hasRated = updatedProtocol.hasUserRated(req.userId);
+    const userRating = updatedProtocol.getUserRating(req.userId); // ✅ CORRIGÉ : utiliser req.userId
+    const hasRated = updatedProtocol.hasUserRated(req.userId); // ✅ CORRIGÉ : utiliser req.userId
 
     res.json({
       message: hasRated ? 'Note mise à jour avec succès' : 'Note ajoutée avec succès',
@@ -591,12 +591,12 @@ router.delete('/:id/rate', authMiddleware, async (req, res) => {
     }
 
     // Vérifier que l'utilisateur a bien noté ce protocole
-    if (!protocol.hasUserRated(req.userId)) {
+    if (!protocol.hasUserRated(req.userId)) { // ✅ CORRIGÉ : utiliser req.userId
       return res.status(400).json({ message: 'Vous n\'avez pas encore noté ce protocole' });
     }
 
     // Supprimer la note
-    await protocol.removeRating(req.userId);
+    await protocol.removeRating(req.userId); // ✅ CORRIGÉ : utiliser req.userId
 
     res.json({
       message: 'Note supprimée avec succès',
@@ -669,11 +669,11 @@ router.post('/:id/review', authMiddleware, async (req, res) => {
     }
 
     // Vérifier si l'utilisateur a déjà évalué ce protocole
-    if (protocol.hasUserRated(req.userId)) {
+    if (protocol.hasUserRated(req.userId)) { // ✅ CORRIGÉ : utiliser req.userId
       return res.status(400).json({ message: 'Vous avez déjà évalué ce protocole' });
     }
 
-    await protocol.addOrUpdateRating(req.userId, rating, comment);
+    await protocol.addOrUpdateRating(req.userId, rating, comment); // ✅ CORRIGÉ : utiliser req.userId
     res.json({ message: 'Évaluation ajoutée avec succès' });
 
   } catch (error) {
