@@ -619,19 +619,20 @@ function ProtocolsPublicPage() {
                   </ProtocolDescription>
 
                   {/* MODIFICATION : Section de notation optimisée en mode compact */}
-                  <RatingSection>
-                    <div onClick={(e) => e.stopPropagation()}>
-                      <RatingStars
-                        protocolId={protocol._id}
-                        averageRating={protocol.averageRating}
-                        ratingsCount={protocol.ratingsCount}
-                        userRating={protocol.userRating}
-                        onRatingUpdate={(newRatingData) => handleRatingUpdate(protocol._id, newRatingData)}
-                        size={14}
-                        compact={true}
-                      />
-                    </div>
-                  </RatingSection>
+<RatingSection>
+  <div onClick={(e) => e.stopPropagation()}>
+    <RatingStars
+      itemId={protocol._id}
+      itemType="protocol"
+      averageRating={protocol.averageRating}
+      ratingsCount={protocol.ratingsCount}
+      userRating={protocol.userRating}
+      onRatingUpdate={(newRatingData) => handleRatingUpdate(protocol._id, newRatingData)}
+      size={14}
+      compact={true}
+    />
+  </div>
+</RatingSection>
                   
                   <StatsContainer>
                     <div style={{ display: 'flex', gap: '1rem' }}>
