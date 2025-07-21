@@ -54,11 +54,14 @@ const Subtitle = styled.p`
   line-height: 1.6;
 `;
 
-// ==================== SECTION FILTRES (INCHANGÉE) ====================
+// ==================== SECTION FILTRES MODERNISÉE ====================
 
 const FilterSection = styled.div`
   width: 280px;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 
   @media (max-width: 768px) {
     width: 100%;
@@ -66,17 +69,23 @@ const FilterSection = styled.div`
 `;
 
 const FilterGroup = styled.div`
-  margin-bottom: 1.5rem;
+  background-color: ${props => props.theme.card};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px ${props => props.theme.shadow};
 `;
 
 const FilterTitle = styled.h3`
   color: ${props => props.theme.text};
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid ${props => props.theme.borderLight};
 `;
 
 const FilterDropdown = styled.div`
@@ -85,8 +94,8 @@ const FilterDropdown = styled.div`
 
 const DropdownButton = styled.button`
   width: 100%;
-  padding: 0.75rem 1rem;
-  background-color: ${props => props.theme.card};
+  padding: 0.875rem 1rem;
+  background-color: ${props => props.theme.backgroundSecondary};
   border: 2px solid ${props => props.theme.border};
   border-radius: 8px;
   color: ${props => props.theme.text};
@@ -95,16 +104,24 @@ const DropdownButton = styled.button`
   justify-content: space-between;
   align-items: center;
   font-size: 0.9rem;
+  font-weight: 500;
   transition: all 0.2s ease;
 
   &:hover {
     border-color: ${props => props.theme.primary};
+    background-color: ${props => props.theme.card};
   }
 
   &[data-open="true"] {
     border-color: ${props => props.theme.primary};
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
+    background-color: ${props => props.theme.card};
+  }
+
+  span {
+    color: ${props => props.theme.textSecondary};
+    font-weight: 500;
   }
 `;
 
@@ -126,10 +143,12 @@ const DropdownContent = styled.div`
 const DropdownOption = styled.label`
   display: flex;
   align-items: center;
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1rem;
   cursor: pointer;
   transition: background-color 0.2s ease;
   border-bottom: 1px solid ${props => props.theme.borderLight};
+  color: ${props => props.theme.text};
+  font-weight: 500;
 
   &:hover {
     background-color: ${props => props.theme.hover};
@@ -142,18 +161,28 @@ const DropdownOption = styled.label`
   input {
     margin-right: 0.75rem;
     accent-color: ${props => props.theme.primary};
+    transform: scale(1.1);
+  }
+
+  span {
+    color: ${props => props.theme.text};
   }
 `;
 
 const FilterIndicator = styled.div`
-  background-color: ${props => props.theme.infoLight};
+  background-color: ${props => props.theme.card};
+  border: 1px solid ${props => props.theme.primary};
   color: ${props => props.theme.primary};
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  margin-top: 1rem;
-  border: 1px solid ${props => props.theme.primary}30;
+  padding: 1rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px ${props => props.theme.shadow};
+  
+  &::before {
+    content: "🎯 ";
+    margin-right: 0.5rem;
+  }
 `;
 
 // ==================== CONTENU PRINCIPAL ====================
