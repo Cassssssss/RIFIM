@@ -178,7 +178,7 @@
   }
 }
 
-/* ==================== VIEWER TYPES MODERNISÉS ==================== */
+/* ==================== VIEWER TYPES MODERNISÉS + OPTIMISATIONS ==================== */
 .viewer, .viewerHalf, .singleViewer {
   position: relative;
   margin: 0;
@@ -192,6 +192,9 @@
   height: 100%;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  /* OPTIMISATIONS DE PERFORMANCE */
+  will-change: scroll-position;
+  contain: layout style paint; /* Améliore les performances de rendu */
   
   &:hover {
     border-color: rgb(var(--color-primary));
@@ -220,14 +223,14 @@
   }
 }
 
-/* ==================== IMAGES - MODIFICATION POUR PRÉSERVER LES DONNÉES ==================== */
+/* ==================== IMAGES - PRÉSERVATION DES DONNÉES + OPTIMISATIONS PERFORMANCE ==================== */
 .image {
   width: 100%;              /* Occupe toute la largeur disponible */
   height: 100%;             /* Occupe toute la hauteur disponible */
   margin: 0;
   padding: 0;
-  object-fit: contain;      /* ← RETOUR à contain pour préserver toutes les données */
-  object-position: center;  /* ← AJOUTÉ pour centrer l'image */
+  object-fit: contain;      /* Préserve TOUTES les données */
+  object-position: center;  /* Centre l'image */
   display: block;
   transform-origin: center;
   user-select: none;
@@ -236,6 +239,10 @@
   /* Optimisation pour un affichage plus net des images médicales */
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
+  /* OPTIMISATIONS DE PERFORMANCE CRITIQUES */
+  will-change: transform;
+  transform: translateZ(0); /* Force l'accélération matérielle */
+  backface-visibility: hidden; /* Optimise les animations */
 }
 
 .folderLabel {
@@ -583,7 +590,7 @@
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-/* ==================== PERFORMANCE OPTIMIZATIONS ==================== */
+/* ==================== OPTIMISATIONS DE PERFORMANCE ==================== */
 .image {
   will-change: transform;
 }
@@ -594,4 +601,8 @@
 
 .shortcutPopup {
   will-change: opacity, visibility, transform;
+}
+
+.viewer {
+  will-change: scroll-position;
 }
