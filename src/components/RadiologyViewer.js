@@ -164,9 +164,11 @@ function RadiologyViewer() {
     }
   }, [currentCase, setImageSrc, preloadAdjacentImages]);
 
-  // Fonction handleScroll optimisée - CORRIGÉE pour fonctionner
+  // Fonction handleScroll optimisée - CORRIGÉE AVEC DEBUG
   const handleScroll = useCallback((deltaY, slowMode = false, side) => {
     const threshold = slowMode ? 5 : 25; // Seuil réduit pour plus de réactivité
+    
+    console.log('handleScroll called:', { deltaY, side, currentFolderLeft, currentFolderRight, currentIndexLeft, currentIndexRight });
     
     setAccumulatedDelta(prev => {
       const newDelta = prev + deltaY;
@@ -176,7 +178,9 @@ function RadiologyViewer() {
         const currentIndex = side === 'left' || side === 'single' ? currentIndexLeft : currentIndexRight;
         const images = currentCase?.images?.[currentFolder];
         
-        if (images) {
+        console.log('Scroll triggered:', { direction, currentFolder, currentIndex, imagesLength: images?.length });
+        
+        if (images && images.length > 0) {
           let newIndex = currentIndex + direction;
           
           // Empêcher de dépasser les limites
@@ -186,13 +190,20 @@ function RadiologyViewer() {
             newIndex = images.length - 1;
           }
           
+          console.log('New index calculated:', newIndex);
+          
           // Charger uniquement si l'index a changé
           if (newIndex !== currentIndex) {
+            console.log('Loading new image:', { currentFolder, newIndex, side });
             // Utilisation de requestAnimationFrame pour une fluidité optimale
             requestAnimationFrame(() => {
               loadImage(currentFolder, newIndex, side);
             });
+          } else {
+            console.log('Index unchanged, no image load needed');
           }
+        } else {
+          console.log('No images found for folder:', currentFolder);
         }
         return 0;
       }
@@ -445,42 +456,51 @@ function RadiologyViewer() {
     setIsAdjustingContrast(false);
   }, []);
 
-  // ==================== GESTION DES ÉVÉNEMENTS WHEEL - SOLUTION AU PROBLÈME PASSIVE ==================== 
+  // ==================== GESTION DES ÉVÉNEMENTS WHEEL - SOLUTION CORRIGÉE ==================== 
   
   useEffect(() => {
     const handleWheelEvent = (e) => {
       e.preventDefault();
       e.stopPropagation();
       
-      // Identifier quel viewer est ciblé
-      let targetSide = 'single';
-      const target = e.target.closest(`.${styles.viewer}`);
+      // Identifier quel viewer est ciblé - LOGIQUE CORRIGÉE
+      let targetSide = isSingleViewMode ? 'single' : 'left';
       
-      if (!isSingleViewMode && target) {
-        const isLeftViewer = target.querySelector('img') === leftViewerRef.current;
-        const isRightViewer = target.querySelector('img') === rightViewerRef.current;
-        targetSide = isLeftViewer ? 'left' : isRightViewer ? 'right' : 'left';
+      if (!isSingleViewMode) {
+        const target = e.target.closest(`.${styles.viewer}`);
+        if (target) {
+          // Méthode plus fiable pour identifier le viewer
+          const viewers = document.querySelectorAll(`.${styles.viewerHalf}`);
+          const leftViewer = viewers[0];
+          const rightViewer = viewers[1];
+          
+          if (target === rightViewer) {
+            targetSide = 'right';
+          } else {
+            targetSide = 'left';
+          }
+        }
       }
       
       if (e.ctrlKey || e.metaKey) {
         handleZoom(targetSide, -e.deltaY);
       } else {
         // Sensibilité réduite pour un meilleur contrôle
-        const scaledDelta = e.deltaY * 0.8;
+        const scaledDelta = e.deltaY * 1.0; // AUGMENTÉ pour plus de réactivité
         handleScroll(scaledDelta, false, targetSide);
       }
     };
 
-    // Attacher les événements directement au DOM avec { passive: false }
-    const viewerElements = document.querySelectorAll(`.${styles.viewer}`);
-    viewerElements.forEach(viewer => {
-      viewer.addEventListener('wheel', handleWheelEvent, { passive: false });
-    });
+    // Attacher l'événement à l'élément parent principal
+    const mainViewer = document.getElementById('main-viewer');
+    if (mainViewer) {
+      mainViewer.addEventListener('wheel', handleWheelEvent, { passive: false });
+    }
 
     return () => {
-      viewerElements.forEach(viewer => {
-        viewer.removeEventListener('wheel', handleWheelEvent);
-      });
+      if (mainViewer) {
+        mainViewer.removeEventListener('wheel', handleWheelEvent);
+      }
     };
   }, [handleZoom, handleScroll, isSingleViewMode]);
 
@@ -583,16 +603,26 @@ function RadiologyViewer() {
       try {
         const response = await axios.get(`/cases/${caseId}`);
         const caseData = response.data;
+        console.log('Case data loaded:', caseData);
         setCurrentCase(caseData);
+        
         if (caseData.folders && caseData.folders.length > 0) {
-          setCurrentFolderLeft(caseData.folders[0]);
-          setCurrentFolderRight(caseData.folders[0]);
-          loadImage(caseData.folders[0], 0, 'left');
-          if (!isSingleViewMode) {
-            loadImage(caseData.folders[0], 0, 'right');
-          } else {
-            loadImage(caseData.folders[0], 0, 'single');
-          }
+          const firstFolder = caseData.folders[0];
+          console.log('Setting first folder:', firstFolder);
+          setCurrentFolderLeft(firstFolder);
+          setCurrentFolderRight(firstFolder);
+          
+          // Assurer que les index sont à 0 au départ
+          setCurrentIndexLeft(0);
+          setCurrentIndexRight(0);
+          
+          // Charger les images initiales
+          setTimeout(() => {
+            loadImage(firstFolder, 0, isSingleViewMode ? 'single' : 'left');
+            if (!isSingleViewMode) {
+              loadImage(firstFolder, 0, 'right');
+            }
+          }, 100); // Petit délai pour s'assurer que les refs sont prêts
         }
       } catch (error) {
         console.error('Erreur lors de la récupération du cas:', error);
