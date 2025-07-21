@@ -211,7 +211,7 @@
 }
 
 .singleViewer {
-  width: 85%;
+  width: 95%;               /* ← AUGMENTÉ de 85% à 95% pour maximiser l'espace */
   height: 100%;
   margin: 0 auto;
   
@@ -220,18 +220,22 @@
   }
 }
 
-/* ==================== IMAGES - MODIFICATION PRINCIPALE ==================== */
+/* ==================== IMAGES - MODIFICATION POUR PRÉSERVER LES DONNÉES ==================== */
 .image {
-  width: 100%;              /* ← CHANGÉ de max-width à width */
-  height: 100%;             /* ← CHANGÉ de max-height à height */
+  width: 100%;              /* Occupe toute la largeur disponible */
+  height: 100%;             /* Occupe toute la hauteur disponible */
   margin: 0;
   padding: 0;
-  object-fit: cover;        /* ← CHANGÉ de contain à cover */
+  object-fit: contain;      /* ← RETOUR à contain pour préserver toutes les données */
+  object-position: center;  /* ← AJOUTÉ pour centrer l'image */
   display: block;
   transform-origin: center;
   user-select: none;
   -webkit-user-select: none;
   pointer-events: none;
+  /* Optimisation pour un affichage plus net des images médicales */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 .folderLabel {
