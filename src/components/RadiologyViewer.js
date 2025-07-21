@@ -996,8 +996,8 @@ function RadiologyViewer() {
                 <li><strong>2 (é)</strong> Mode 2 viewers</li>
                 <li><strong>3 (")</strong> Mode 3 viewers</li>
                 <li><strong>4 (')</strong> Mode 4 viewers</li>
-                <li><strong>↑ ↓</strong> Navigation</li>
-                <li><strong>Shift + clic</strong> Panoramique</li>
+                <li><strong>↑ ↓</strong> Navigation synchronisée</li>
+                <li><strong>Shift + clic gauche</strong> Déplacer</li>
                 <li><strong>Clic droit</strong> Zoom</li>
                 <li><strong>Shift + clic droit</strong> Contraste</li>
               </ul>
