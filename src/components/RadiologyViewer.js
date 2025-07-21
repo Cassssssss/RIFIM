@@ -290,17 +290,24 @@ function RadiologyViewer() {
   const handleDrop = useCallback((event, side) => {
     event.preventDefault();
     const folder = event.dataTransfer.getData('text');
-    console.log('Dropped folder:', folder);
+    console.log('Dropped folder:', folder, 'on side:', side);
+    
     if (currentCase && currentCase.images && currentCase.images[folder]) {
+      // Charger l'image seulement sur le côté où on a droppé
       loadImage(folder, 0, side);
+      
+      // Mettre à jour seulement le folder du côté concerné
       if (side === 'left' || side === 'single') {
         setCurrentFolderLeft(folder);
-      } else {
+        setCurrentIndexLeft(0); // Reset l'index à 0
+      } else if (side === 'right') {
         setCurrentFolderRight(folder);
+        setCurrentIndexRight(0); // Reset l'index à 0
       }
     } else {
       console.error('Invalid folder or no images in folder:', folder);
     }
+    
     event.target.classList.remove('drag-over');
     document.querySelectorAll('.folder-thumbnail').forEach(el => el.classList.remove('dragging'));
   }, [currentCase, loadImage]);
@@ -489,15 +496,21 @@ function RadiologyViewer() {
     fetchCase();
   }, [caseId]); // SEULEMENT caseId dans les dépendances
 
-  // Effect séparé pour charger les images initiales
+  // Effect séparé pour charger les images initiales - CORRIGÉ
   useEffect(() => {
     if (currentCase && currentFolderLeft && leftViewerRef.current) {
-      loadImage(currentFolderLeft, 0, isSingleViewMode ? 'single' : 'left');
-      if (!isSingleViewMode && rightViewerRef.current) {
-        loadImage(currentFolderLeft, 0, 'right');
-      }
+      // Charger seulement sur le viewer de gauche/single
+      loadImage(currentFolderLeft, currentIndexLeft, isSingleViewMode ? 'single' : 'left');
     }
-  }, [currentCase, currentFolderLeft, isSingleViewMode]); // Dépendances correctes
+  }, [currentCase, currentFolderLeft, currentIndexLeft, isSingleViewMode]); // Ajout currentIndexLeft
+  
+  // Effect séparé pour le viewer de droite
+  useEffect(() => {
+    if (currentCase && currentFolderRight && rightViewerRef.current && !isSingleViewMode) {
+      // Charger seulement sur le viewer de droite
+      loadImage(currentFolderRight, currentIndexRight, 'right');
+    }
+  }, [currentCase, currentFolderRight, currentIndexRight, isSingleViewMode]); // Ajout currentIndexRight
 
   // Effect pour les transformations d'images
   useEffect(() => {
