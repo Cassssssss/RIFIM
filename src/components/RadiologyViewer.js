@@ -71,6 +71,7 @@ function RadiologyViewer() {
   const [lastTouch, setLastTouch] = useState({ x: 0, y: 0 });
 
   const [theme] = useState(document.documentElement.getAttribute('data-theme') || 'light');
+  
   const loadImage = useCallback((folder, index, side) => {
     console.log('Loading image:', folder, index, side);
     if (currentCase && currentCase.images && currentCase.images[folder]) {
@@ -90,11 +91,13 @@ function RadiologyViewer() {
             setCurrentIndexRight(index);
           }
         }
-
       }
     }
   }, [currentCase]);
 
+  // ================================
+  // MODIFICATION PRINCIPALE ICI 🔧
+  // ================================
   const handleScroll = useCallback((deltaY, slowMode = false, side) => {
     const threshold = slowMode ? 10 : 50;
     setAccumulatedDelta(prev => {
@@ -105,8 +108,20 @@ function RadiologyViewer() {
         const currentIndex = side === 'left' || side === 'single' ? currentIndexLeft : currentIndexRight;
         const images = currentCase.images[currentFolder];
         if (images) {
-          const newIndex = (currentIndex + direction + images.length) % images.length;
-          loadImage(currentFolder, newIndex, side);
+          // 🚨 CHANGEMENT : Remplacer le modulo par des limites strictes
+          let newIndex = currentIndex + direction;
+          
+          // Empêcher de dépasser les limites (pas de boucle)
+          if (newIndex < 0) {
+            newIndex = 0; // Bloquer à la première image
+          } else if (newIndex >= images.length) {
+            newIndex = images.length - 1; // Bloquer à la dernière image
+          }
+          
+          // Ne charger l'image que si l'index a changé
+          if (newIndex !== currentIndex) {
+            loadImage(currentFolder, newIndex, side);
+          }
         }
         return 0;
       }
@@ -199,8 +214,6 @@ function RadiologyViewer() {
     }
   }, [isMobile]);
 
-
-
   const fetchFolderThumbnails = useCallback((caseData) => {
     if (!caseData) return;
     const thumbnails = {};
@@ -213,130 +226,133 @@ function RadiologyViewer() {
           const imagePath = firstImagePath.startsWith('http') 
             ? firstImagePath 
             : `${process.env.REACT_APP_SPACES_URL}/${firstImagePath}`;
-          console.log('Chemin de l\'image:', imagePath);
           thumbnails[folder] = imagePath;
-        } else {
-          thumbnails[folder] = `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`;
         }
       } catch (error) {
-        console.error(`Erreur lors de la récupération de la vignette pour le dossier ${folder}:`, error);
-        thumbnails[folder] = `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`;
+        console.error(`Erreur lors du chargement de la thumbnail pour ${folder}:`, error);
       }
     }
-  
     setFolderThumbnails(thumbnails);
   }, []);
 
-  const fetchCase = useCallback(async () => {
-    try {
-      const response = await axios.get(`/cases/${caseId}`);
-      setCurrentCase(response.data);
-      if (response.data.folders && response.data.folders.length > 0) {
-        setCurrentFolderLeft(response.data.folders[0]);
-        setCurrentFolderRight(response.data.folders[0]);
+  useEffect(() => {
+    const fetchCase = async () => {
+      try {
+        const response = await axios.get(`/cases/${caseId}`);
+        setCurrentCase(response.data);
+        fetchFolderThumbnails(response.data);
+        
+        if (response.data.folders && response.data.folders.length > 0) {
+          const firstFolder = response.data.folders[0];
+          setCurrentFolderLeft(firstFolder);
+          setCurrentFolderRight(firstFolder);
+          if (isSingleViewMode) {
+            loadImage(firstFolder, 0, 'single');
+          } else {
+            loadImage(firstFolder, 0, 'left');
+            loadImage(firstFolder, 0, 'right');
+          }
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement du cas:', error);
       }
-      fetchFolderThumbnails(response.data);
-    } catch (error) {
-      console.error('Erreur lors du chargement du cas:', error);
+    };
+
+    if (caseId) {
+      fetchCase();
     }
-  }, [caseId, fetchFolderThumbnails]);
+  }, [caseId, fetchFolderThumbnails, loadImage, isSingleViewMode]);
 
   useEffect(() => {
-    if (currentCase && currentCase.folders && currentCase.folders.length > 0) {
-      const firstFolder = currentCase.folders[0];
-      if (currentCase.images && currentCase.images[firstFolder]) {
-        loadImage(firstFolder, 0, 'left');
-        loadImage(firstFolder, 0, 'right');
-      }
-    }
-  }, [currentCase, loadImage]);
+    Object.keys(imageControls).forEach(side => {
+      applyImageTransforms(side);
+    });
+  }, [imageControls, applyImageTransforms]);
 
-  useEffect(() => {
-    const preventDefault = (e) => {
-      e.preventDefault();
-    };
-  
-    document.body.addEventListener('wheel', preventDefault, { passive: false });
-  
-    return () => {
-      document.body.removeEventListener('wheel', preventDefault);
-    };
+  const handleZoom = useCallback((side, deltaY) => {
+    setImageControls(prev => {
+      const newControls = { ...prev };
+      const zoomFactor = deltaY > 0 ? 1.1 : 0.9;
+      newControls[side] = {
+        ...newControls[side],
+        scale: Math.max(0.1, Math.min(5, newControls[side].scale * zoomFactor))
+      };
+      
+      const imageElement = side === 'left' ? leftViewerRef.current : 
+                           side === 'right' ? rightViewerRef.current : 
+                           singleViewerRef.current;
+      if (imageElement) {
+        imageElement.style.transform = `scale(${newControls[side].scale}) translate(${newControls[side].translateX}px, ${newControls[side].translateY}px)`;
+      }
+      
+      return newControls;
+    });
   }, []);
 
-
-  
-  useEffect(() => {
-    fetchCase();
-  }, [fetchCase]);
-
-
-
-
-  const handleZoom = useCallback((side, delta) => {
+  const handlePan = useCallback((side, deltaX, deltaY) => {
     setImageControls(prev => {
-      const newControls = {...prev};
-      newControls[side].scale = Math.max(0.1, Math.min(5, newControls[side].scale * (1 + delta * 0.001)));
+      const newControls = { ...prev };
+      newControls[side] = {
+        ...newControls[side],
+        translateX: newControls[side].translateX + deltaX,
+        translateY: newControls[side].translateY + deltaY
+      };
+      
+      const imageElement = side === 'left' ? leftViewerRef.current : 
+                           side === 'right' ? rightViewerRef.current : 
+                           singleViewerRef.current;
+      if (imageElement) {
+        imageElement.style.transform = `scale(${newControls[side].scale}) translate(${newControls[side].translateX}px, ${newControls[side].translateY}px)`;
+      }
+      
       return newControls;
     });
-    applyImageTransforms(side);
-  }, [applyImageTransforms]);
+  }, []);
 
-  const handleContrast = useCallback((side, delta) => {
+  const handleContrast = useCallback((side, deltaX) => {
     setImageControls(prev => {
-      const newControls = {...prev};
-      newControls[side].contrast = Math.max(0, Math.min(200, newControls[side].contrast + delta * 0.5));
+      const newControls = { ...prev };
+      const contrastChange = deltaX * 0.5;
+      newControls[side] = {
+        ...newControls[side],
+        contrast: Math.max(0, Math.min(200, newControls[side].contrast + contrastChange))
+      };
+      
+      const imageElement = side === 'left' ? leftViewerRef.current : 
+                           side === 'right' ? rightViewerRef.current : 
+                           singleViewerRef.current;
+      if (imageElement) {
+        imageElement.style.filter = `contrast(${newControls[side].contrast}%) brightness(${newControls[side].brightness}%)`;
+      }
+      
       return newControls;
     });
-    applyImageTransforms(side);
-  }, [applyImageTransforms]);
+  }, []);
 
-const handlePan = useCallback((side, deltaX, deltaY) => {
-  setImageControls(prev => {
-    const newControls = {...prev};
-    // Diviser par le facteur d'échelle pour compenser le zoom
-    const scale = newControls[side].scale;
-    newControls[side].translateX += deltaX / scale;
-    newControls[side].translateY += deltaY / scale;
-    
-    // Application IMMÉDIATE au DOM pour éliminer le décalage
-    const imageElement = side === 'left' ? leftViewerRef.current : 
-                         side === 'right' ? rightViewerRef.current : 
-                         singleViewerRef.current;
-    if (imageElement) {
-      imageElement.style.transform = `scale(${newControls[side].scale}) translate(${newControls[side].translateX}px, ${newControls[side].translateY}px)`;
-    }
-    
-    return newControls;
-  });
-  // Plus besoin d'appeler applyImageTransforms puisqu'on applique directement
-}, []);
-
-const toggleViewMode = useCallback(() => {
-  setIsSingleViewMode(prev => {
-    if (!prev) {
-      // Suppression du setTimeout - transition immédiate
-      if (singleViewerRef.current && leftViewerRef.current) {
-        singleViewerRef.current.src = leftViewerRef.current.src;
-        setImageControls(prevControls => ({
-          ...prevControls,
-          single: {...prevControls.left}
-        }));
+  const toggleViewMode = useCallback(() => {
+    setIsSingleViewMode(prev => {
+      if (!prev) {
+        if (singleViewerRef.current && leftViewerRef.current) {
+          singleViewerRef.current.src = leftViewerRef.current.src;
+          setImageControls(prevControls => ({
+            ...prevControls,
+            single: {...prevControls.left}
+          }));
+        }
+      } else {
+        if (leftViewerRef.current && singleViewerRef.current) {
+          leftViewerRef.current.src = singleViewerRef.current.src;
+          rightViewerRef.current.src = singleViewerRef.current.src;
+          setImageControls(prevControls => ({
+            ...prevControls,
+            left: {...prevControls.single},
+            right: {...prevControls.single}
+          }));
+        }
       }
-    } else {
-      // Suppression du setTimeout - transition immédiate
-      if (leftViewerRef.current && singleViewerRef.current) {
-        leftViewerRef.current.src = singleViewerRef.current.src;
-        rightViewerRef.current.src = singleViewerRef.current.src;
-        setImageControls(prevControls => ({
-          ...prevControls,
-          left: {...prevControls.single},
-          right: {...prevControls.single}
-        }));
-      }
-    }
-    return !prev;
-  });
-}, []);
+      return !prev;
+    });
+  }, []);
 
   const handleDragStart = useCallback((event, folder) => {
     event.dataTransfer.setData('text/plain', folder);
@@ -422,54 +438,51 @@ const toggleViewMode = useCallback(() => {
     };
   }, [handleScroll, isSingleViewMode, toggleViewMode]);
 
-useEffect(() => {
-  if (isTouchDevice) {
-    const viewer = document.querySelector(`.${styles.viewer}`);
-    let touchStartY = 0;
-    let lastScrollTime = 0;
-    const scrollDelay = 0; // Délai minimum entre les défilements
-    
-    const handleTouchStart = (e) => {
-      touchStartY = e.touches[0].clientY;
-    };
-
-    const handleTouchMove = (e) => {
-      e.preventDefault();
-      const currentY = e.touches[0].clientY;
-      const deltaY = touchStartY - currentY;
-      const currentTime = Date.now();
+  useEffect(() => {
+    if (isTouchDevice) {
+      const viewer = document.querySelector(`.${styles.viewer}`);
+      let touchStartY = 0;
+      let lastScrollTime = 0;
+      const scrollDelay = 0;
       
-      if (currentTime - lastScrollTime > scrollDelay) {
-        // Augmenter le seuil et réduire la "force" du défilement
-        if (Math.abs(deltaY) > 1) { // Augmenté de 5 à 15
-          const direction = deltaY > 0 ? 1 : -1;
-          // Réduire la valeur de 100 à 50 pour un défilement plus doux
-          handleScroll(direction * 9, false, isSingleViewMode ? 'single' : 'left');
-          lastScrollTime = currentTime;
+      const handleTouchStart = (e) => {
+        touchStartY = e.touches[0].clientY;
+      };
+
+      const handleTouchMove = (e) => {
+        e.preventDefault();
+        const currentY = e.touches[0].clientY;
+        const deltaY = touchStartY - currentY;
+        const currentTime = Date.now();
+        
+        if (currentTime - lastScrollTime > scrollDelay) {
+          if (Math.abs(deltaY) > 1) {
+            const direction = deltaY > 0 ? 1 : -1;
+            handleScroll(direction * 9, false, isSingleViewMode ? 'single' : 'left');
+            lastScrollTime = currentTime;
+          }
         }
-      }
-      
-      touchStartY = currentY;
-    };
+        
+        touchStartY = currentY;
+      };
 
-    const preventRefresh = (e) => {
-      e.preventDefault();
-    };
+      const preventRefresh = (e) => {
+        e.preventDefault();
+      };
 
-    // Empêcher le rafraîchissement de la page
-    document.body.style.overflow = 'hidden';
-    document.addEventListener('touchmove', preventRefresh, { passive: false });
-    viewer?.addEventListener('touchstart', handleTouchStart, { passive: false });
-    viewer?.addEventListener('touchmove', handleTouchMove, { passive: false });
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('touchmove', preventRefresh, { passive: false });
+      viewer?.addEventListener('touchstart', handleTouchStart, { passive: false });
+      viewer?.addEventListener('touchmove', handleTouchMove, { passive: false });
 
-    return () => {
-      document.body.style.overflow = '';
-      document.removeEventListener('touchmove', preventRefresh);
-      viewer?.removeEventListener('touchstart', handleTouchStart);
-      viewer?.removeEventListener('touchmove', handleTouchMove);
-    };
-  }
-}, [isTouchDevice, handleScroll, isSingleViewMode]);
+      return () => {
+        document.body.style.overflow = '';
+        document.removeEventListener('touchmove', preventRefresh);
+        viewer?.removeEventListener('touchstart', handleTouchStart);
+        viewer?.removeEventListener('touchmove', handleTouchMove);
+      };
+    }
+  }, [isTouchDevice, handleScroll, isSingleViewMode]);
 
   const getTouchDistance = (touches) => {
     return Math.hypot(
@@ -477,79 +490,77 @@ useEffect(() => {
       touches[0].clientY - touches[1].clientY
     );
   };
-  
 
-
-const renderViewer = useCallback((side) => (
-  <div 
-    className={`${styles.viewer} ${styles.viewerHalf}`}
-    onWheel={(e) => {
-      e.preventDefault();
-      if (e.ctrlKey) {
-        handleZoom(side, -e.deltaY);
-      } else {
-        handleScroll(e.deltaY, false, side);
-      }
-    }}
-    onMouseDown={(e) => handleMouseDown(e, side)}
-    onMouseMove={(e) => handleMouseMove(e, side)}
-    onMouseUp={handleMouseUp}
-    onContextMenu={(e) => e.preventDefault()}
-    onDragOver={(e) => e.preventDefault()}
-    onDrop={(e) => handleDrop(e, side)}
-    onTouchStart={(e) => handleTouchStart(e, side)}
-    onTouchMove={(e) => handleTouchMove(e, side)}
-    onTouchEnd={handleTouchEnd}
-  >
-    <div className={styles.folderLabel}>
-      {side === 'left' ? currentFolderLeft : currentFolderRight}
+  const renderViewer = useCallback((side) => (
+    <div 
+      className={`${styles.viewer} ${styles.viewerHalf}`}
+      onWheel={(e) => {
+        e.preventDefault();
+        if (e.ctrlKey) {
+          handleZoom(side, -e.deltaY);
+        } else {
+          handleScroll(e.deltaY, false, side);
+        }
+      }}
+      onMouseDown={(e) => handleMouseDown(e, side)}
+      onMouseMove={(e) => handleMouseMove(e, side)}
+      onMouseUp={handleMouseUp}
+      onContextMenu={(e) => e.preventDefault()}
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => handleDrop(e, side)}
+      onTouchStart={(e) => handleTouchStart(e, side)}
+      onTouchMove={(e) => handleTouchMove(e, side)}
+      onTouchEnd={handleTouchEnd}
+    >
+      <div className={styles.folderLabel}>
+        {side === 'left' ? currentFolderLeft : currentFolderRight}
+      </div>
+      <img 
+        ref={side === 'left' ? leftViewerRef : rightViewerRef}
+        className={styles.image} 
+        alt={`Image médicale ${side}`}
+      />
     </div>
-    <img 
-      ref={side === 'left' ? leftViewerRef : rightViewerRef}
-      className={styles.image} 
-      alt={`Image médicale ${side}`}
-    />
-  </div>
-), [handleZoom, handleScroll, handleMouseDown, handleMouseMove, handleMouseUp, handleDrop, 
-    handleTouchStart, handleTouchMove, handleTouchEnd, currentFolderLeft, currentFolderRight]);
+  ), [handleZoom, handleScroll, handleMouseDown, handleMouseMove, handleMouseUp, handleDrop, 
+      handleTouchStart, handleTouchMove, handleTouchEnd, currentFolderLeft, currentFolderRight]);
 
-const renderFolderThumbnails = useCallback(() => {
-  if (!currentCase || !currentCase.folders) return null;
+  const renderFolderThumbnails = useCallback(() => {
+    if (!currentCase || !currentCase.folders) return null;
 
-  return (
-    <div id="folder-thumbnails" className={styles.folderGrid}>
-      {currentCase.folders.map(folder => (
-        <div 
-          key={folder} 
-          className={styles.folderThumbnail}
-          draggable={!isMobile}
-          onDragStart={(e) => !isMobile && handleDragStart(e, folder)}
-          onClick={() => {
-            if (isMobile) {
-              loadImage(folder, 0, 'single');
-              setCurrentFolderLeft(folder);
-            }
-          }}
-        >
-          <img 
-            src={currentCase.folderMainImages?.[folder] || `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`}
-            alt={`${folder} thumbnail`} 
-            className={styles.folderThumbnailImage}
-            onError={(e) => {
-              if (e.target.src !== `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`) {
-                e.target.src = `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`;
+    return (
+      <div id="folder-thumbnails" className={styles.folderGrid}>
+        {currentCase.folders.map(folder => (
+          <div 
+            key={folder} 
+            className={styles.folderThumbnail}
+            draggable={!isMobile}
+            onDragStart={(e) => !isMobile && handleDragStart(e, folder)}
+            onClick={() => {
+              if (isMobile) {
+                loadImage(folder, 0, 'single');
+                setCurrentFolderLeft(folder);
               }
             }}
-          />
-          <div className={styles.folderThumbnailLabel}>{folder}</div>
-        </div>
-      ))}
-    </div>
-  );
-}, [currentCase, isMobile, handleDragStart, loadImage]);
-    
+          >
+            <img 
+              src={currentCase.folderMainImages?.[folder] || folderThumbnails[folder] || `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`}
+              alt={`${folder} thumbnail`} 
+              className={styles.folderThumbnailImage}
+              onError={(e) => {
+                if (e.target.src !== `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`) {
+                  e.target.src = `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`;
+                }
+              }}
+            />
+            <div className={styles.folderThumbnailLabel}>{folder}</div>
+          </div>
+        ))}
+      </div>
+    );
+  }, [currentCase, isMobile, handleDragStart, loadImage, folderThumbnails]);
+      
   if (!currentCase) return <div>Chargement...</div>;
-    
+      
   return (
     <div className={styles.container}>
       <div className={styles.content}>
@@ -558,29 +569,29 @@ const renderFolderThumbnails = useCallback(() => {
           <div id="main-viewer" className={styles.mainViewer}>
             {isSingleViewMode ? (
               <div 
-  id="single-viewer" 
-  className={`${styles.viewer} ${styles.singleViewer}`}
-  onWheel={(e) => {
-    e.preventDefault();
-    if (e.ctrlKey) {
-      handleZoom('single', -e.deltaY);
-    } else {
-      handleScroll(e.deltaY, false, 'single');
-    }
-  }}
-  onMouseDown={(e) => handleMouseDown(e, 'single')}
-  onMouseMove={(e) => handleMouseMove(e, 'single')}
-  onMouseUp={handleMouseUp}
-  onContextMenu={(e) => e.preventDefault()}
-  onDragOver={(e) => e.preventDefault()}
-  onDrop={(e) => handleDrop(e, 'single')}
-  onTouchStart={(e) => handleTouchStart(e, 'single')}
-  onTouchMove={(e) => handleTouchMove(e, 'single')}
-  onTouchEnd={handleTouchEnd}
->
-  <div className={styles.folderLabel}>{currentFolderLeft}</div>
-  <img ref={singleViewerRef} className={styles.image} alt="Image médicale" />
-</div>
+                id="single-viewer" 
+                className={`${styles.viewer} ${styles.singleViewer}`}
+                onWheel={(e) => {
+                  e.preventDefault();
+                  if (e.ctrlKey) {
+                    handleZoom('single', -e.deltaY);
+                  } else {
+                    handleScroll(e.deltaY, false, 'single');
+                  }
+                }}
+                onMouseDown={(e) => handleMouseDown(e, 'single')}
+                onMouseMove={(e) => handleMouseMove(e, 'single')}
+                onMouseUp={handleMouseUp}
+                onContextMenu={(e) => e.preventDefault()}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => handleDrop(e, 'single')}
+                onTouchStart={(e) => handleTouchStart(e, 'single')}
+                onTouchMove={(e) => handleTouchMove(e, 'single')}
+                onTouchEnd={handleTouchEnd}
+              >
+                <div className={styles.folderLabel}>{currentFolderLeft}</div>
+                <img ref={singleViewerRef} className={styles.image} alt="Image médicale" />
+              </div>
             ) : (
               <div id="dual-viewer" className={styles.dualViewer}>
                 {renderViewer('left')}
@@ -610,30 +621,30 @@ const renderFolderThumbnails = useCallback(() => {
             </div>
           )}
         </div>
-  
-<div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-  <button 
-    className={styles.responseButton}
-    onClick={() => setIsResponseVisible(!isResponseVisible)}
-  >
-    {isResponseVisible ? (
-      <>
-        <EyeOff size={16} />
-        Cacher la réponse
-      </>
-    ) : (
-      <>
-        <Eye size={16} />
-        Voir la réponse
-      </>
-    )}
-  </button>
-  <Link to={`/sheet/${caseId}`} className={styles.sheetLink}>
-    📋 Fiche récapitulative
-  </Link>
-</div>
+
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <button 
+            className={styles.responseButton}
+            onClick={() => setIsResponseVisible(!isResponseVisible)}
+          >
+            {isResponseVisible ? (
+              <>
+                <EyeOff size={16} />
+                Cacher la réponse
+              </>
+            ) : (
+              <>
+                <Eye size={16} />
+                Voir la réponse
+              </>
+            )}
+          </button>
+          <Link to={`/sheet/${caseId}`} className={styles.sheetLink}>
+            📋 Fiche récapitulative
+          </Link>
+        </div>
       </div>
-  
+
       {isResponseVisible && currentCase && currentCase.answer && (
         <div className={styles.responseBox}>
           <p className={styles.responseText}>{currentCase.answer}</p>
