@@ -114,68 +114,69 @@ const DropdownContent = styled.div`
   left: 0;
   right: 0;
   background-color: ${props => props.theme.card};
-  border: 2px solid ${props => props.theme.border};
+  border: 2px solid ${props => props.theme.primary};
   border-top: none;
   border-radius: 0 0 8px 8px;
-  z-index: 10;
   box-shadow: 0 4px 12px ${props => props.theme.shadow};
+  z-index: 1000;
+  max-height: 250px;
+  overflow-y: auto;
 `;
 
 const DropdownOption = styled.label`
   display: flex;
   align-items: center;
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
   cursor: pointer;
-  color: ${props => props.theme.text};
   transition: background-color 0.2s ease;
+  border-bottom: 1px solid ${props => props.theme.borderLight};
 
   &:hover {
     background-color: ${props => props.theme.hover};
   }
 
-  input {
-    margin-right: 0.75rem;
-    width: 16px;
-    height: 16px;
-    accent-color: ${props => props.theme.primary};
+  &:last-child {
+    border-bottom: none;
   }
 
-  span {
-    font-weight: 500;
+  input {
+    margin-right: 0.75rem;
+    accent-color: ${props => props.theme.primary};
   }
 `;
 
 const FilterIndicator = styled.div`
-  margin-top: 1rem;
-  font-size: 0.9rem;
+  background-color: ${props => props.theme.infoLight};
   color: ${props => props.theme.primary};
-  padding: 0.5rem;
-  background-color: ${props => props.theme.background};
-  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-top: 1rem;
+  border: 1px solid ${props => props.theme.primary}30;
 `;
 
-// ==================== SECTION CONTENU PRINCIPAL OPTIMISÉE ====================
+// ==================== CONTENU PRINCIPAL ====================
 
 const ListContainer = styled.div`
   flex: 1;
-  width: 100%;
+  min-width: 0;
 `;
 
 const SearchBar = styled.input`
   width: 100%;
   padding: 1rem 1.5rem;
-  margin-bottom: 2rem;
+  font-size: 1rem;
   border: 2px solid ${props => props.theme.border};
   border-radius: 12px;
-  font-size: 1rem;
   background-color: ${props => props.theme.card};
   color: ${props => props.theme.text};
-  transition: all 0.2s ease;
+  transition: border-color 0.2s ease;
+  margin-bottom: 2rem;
 
   &:focus {
     outline: none;
     border-color: ${props => props.theme.primary};
-    box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
   }
 
   &::placeholder {
@@ -183,21 +184,12 @@ const SearchBar = styled.input`
   }
 `;
 
-// ==================== GRILLE OPTIMISÉE POUR MAXIMISER L'ESPACE ====================
-
+// ==================== GRILLE POUR CARTES CORRIGÉE ====================
 const QuestionnairesGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
-
-  @media (max-width: 1400px) {
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  }
-
-  @media (max-width: 1200px) {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  }
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -220,6 +212,7 @@ const QuestionnaireCard = styled.div`
   flex-direction: column;
   height: fit-content;
 
+  /* CORRECTION : Ajouter la bande dégradé au-dessus comme dans PublicCasesPage */
   &::before {
     content: '';
     position: absolute;
@@ -345,6 +338,8 @@ const ActionButtons = styled.div`
   display: flex;
   gap: 0.5rem;
   margin-top: auto;
+  /* CORRECTION : Ajouter un padding-bottom pour éviter que le tooltip soit rogné */
+  padding-bottom: 10px;
 `;
 
 const ActionButton = styled(Link)`
@@ -373,13 +368,14 @@ const ActionButton = styled(Link)`
   }
 `;
 
-// CORRECTION : Bouton copie avec icône et tooltip comme demandé
+// CORRECTION : Bouton copie avec même couleur que PublicCasesPage et tooltip bien positionné
 const CopyButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0.6rem;
-  background-color: ${props => props.theme.secondary};
+  /* CORRECTION : Même couleur que PublicCasesPage (primary au lieu de secondary) */
+  background-color: ${props => props.theme.primary};
   color: white;
   border: none;
   border-radius: 6px;
@@ -388,24 +384,39 @@ const CopyButton = styled.button`
   position: relative;
 
   &:hover {
-    background-color: ${props => props.theme.secondaryHover};
+    /* CORRECTION : Même couleur de survol que PublicCasesPage */
+    background-color: ${props => props.theme.primaryHover};
     transform: translateY(-1px);
   }
 
+  /* CORRECTION : Tooltip mieux positionné pour éviter d'être rogné */
   &:hover::after {
     content: "Ajouter à mes questionnaires";
     position: absolute;
-    bottom: -35px;
+    bottom: 100%;
     left: 50%;
     transform: translateX(-50%);
     background: ${props => props.theme.text};
     color: ${props => props.theme.background};
-    padding: 0.25rem 0.5rem;
+    padding: 0.4rem 0.6rem;
     border-radius: 4px;
     font-size: 0.7rem;
     white-space: nowrap;
     z-index: 1000;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    margin-bottom: 5px;
+  }
+
+  /* CORRECTION : Ajouter une petite flèche au tooltip */
+  &:hover::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: ${props => props.theme.text};
+    z-index: 1001;
   }
 
   svg {
@@ -526,20 +537,20 @@ function QuestionnaireCardComponent({ questionnaire }) {
 
   const estimateTime = (questionnaire) => {
     const questionCount = questionnaire.questions ? questionnaire.questions.length : 0;
-    return `~${Math.max(1, Math.ceil(questionCount / 3))} min`;
+    const minutes = Math.max(2, Math.ceil(questionCount * 0.75));
+    return `~${minutes} min`;
   };
 
   const getQuestionnaireIcon = (tags) => {
-    if (!tags || !Array.isArray(tags)) return '📋';
-    
-    if (tags.some(tag => tag.toLowerCase().includes('neuro'))) return '🧠';
-    if (tags.some(tag => tag.toLowerCase().includes('cardio'))) return '❤️';
-    if (tags.some(tag => tag.toLowerCase().includes('thorax'))) return '🫁';
-    if (tags.some(tag => tag.toLowerCase().includes('abdo'))) return '🔍';
-    if (tags.some(tag => tag.toLowerCase().includes('pelvis'))) return '🦴';
-    if (tags.some(tag => tag.toLowerCase().includes('ostéo'))) return '🦴';
-    if (tags.some(tag => tag.toLowerCase().includes('séno'))) return '🔬';
-    
+    if (!tags || tags.length === 0) return '📋';
+    if (tags.includes('IRM')) return '🧲';
+    if (tags.includes('TDM')) return '💽';
+    if (tags.includes('Echo')) return '📡';
+    if (tags.includes('Rx')) return '🦴';
+    if (tags.includes('Neuro')) return '🧠';
+    if (tags.includes('Cardiovasc')) return '❤️';
+    if (tags.includes('Thorax')) return '🫁';
+    if (tags.includes('Pelvis')) return '🦴';
     return '📋';
   };
 
@@ -550,7 +561,7 @@ function QuestionnaireCardComponent({ questionnaire }) {
           <QuestionnaireIcon>
             {getQuestionnaireIcon(questionnaire.tags)}
           </QuestionnaireIcon>
-          <span>{questionnaire.title}</span>
+          {questionnaire.title}
           {isPopular(questionnaire) && (
             <PopularityBadge>
               <TrendingUp size={10} />
@@ -567,12 +578,9 @@ function QuestionnaireCardComponent({ questionnaire }) {
 
       {/* Tags */}
       <TagsContainer>
-        {questionnaire.tags && questionnaire.tags.slice(0, 3).map((tag, index) => (
+        {questionnaire.tags && questionnaire.tags.map((tag, index) => (
           <Tag key={index}>{tag}</Tag>
         ))}
-        {questionnaire.tags && questionnaire.tags.length > 3 && (
-          <Tag>+{questionnaire.tags.length - 3}</Tag>
-        )}
       </TagsContainer>
 
       {/* Métadonnées */}
@@ -731,14 +739,13 @@ function PublicQuestionnairesPage() {
   };
 
   const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage);
-    }
+    setCurrentPage(newPage);
+    fetchQuestionnaires(newPage);
   };
 
   return (
     <PageContainer>
-      <Title>🌍 Questionnaires Publics</Title>
+      <Title>🗂️ Questionnaires Publics</Title>
       <Subtitle>
         Découvrez et utilisez les questionnaires partagés par la communauté
       </Subtitle>
@@ -747,7 +754,7 @@ function PublicQuestionnairesPage() {
         {/* SECTION FILTRES */}
         <FilterSection>
           <FilterGroup>
-            <FilterTitle>🏥 Modalité</FilterTitle>
+            <FilterTitle>📊 Modalité</FilterTitle>
             <FilterDropdown>
               <DropdownButton
                 onClick={() => setIsModalityDropdownOpen(!isModalityDropdownOpen)}
@@ -774,7 +781,7 @@ function PublicQuestionnairesPage() {
           </FilterGroup>
 
           <FilterGroup>
-            <FilterTitle>🩺 Spécialité</FilterTitle>
+            <FilterTitle>🏥 Spécialité</FilterTitle>
             <FilterDropdown>
               <DropdownButton
                 onClick={() => setIsSpecialtyDropdownOpen(!isSpecialtyDropdownOpen)}
@@ -857,37 +864,38 @@ function PublicQuestionnairesPage() {
             </ErrorContainer>
           ) : questionnaires.length === 0 ? (
             <EmptyState>
-              <h3>🔍 Aucun questionnaire trouvé</h3>
-              <p>Essayez de modifier vos critères de recherche ou supprimez les filtres.</p>
+              <h3>Aucun questionnaire trouvé</h3>
+              <p>Essayez de modifier vos filtres ou votre recherche.</p>
             </EmptyState>
           ) : (
             <>
               {/* GRILLE DES QUESTIONNAIRES */}
               <QuestionnairesGrid>
                 {questionnaires.map((questionnaire) => (
-                  <QuestionnaireCardComponent key={questionnaire._id} questionnaire={questionnaire} />
+                  <QuestionnaireCardComponent 
+                    key={questionnaire._id} 
+                    questionnaire={questionnaire} 
+                  />
                 ))}
               </QuestionnairesGrid>
 
               {/* PAGINATION */}
               {totalPages > 1 && (
                 <PaginationContainer>
-                  <PaginationButton
-                    onClick={() => handlePageChange(currentPage - 1)}
+                  <PaginationButton 
+                    onClick={() => handlePageChange(currentPage - 1)} 
                     disabled={currentPage === 1}
                   >
-                    Précédent
+                    ← Précédent
                   </PaginationButton>
-                  
                   <PaginationInfo>
-                    Page {currentPage} sur {totalPages}
+                    Page {currentPage} sur {totalPages} • {questionnaires.length} questionnaires
                   </PaginationInfo>
-                  
-                  <PaginationButton
-                    onClick={() => handlePageChange(currentPage + 1)}
+                  <PaginationButton 
+                    onClick={() => handlePageChange(currentPage + 1)} 
                     disabled={currentPage === totalPages}
                   >
-                    Suivant
+                    Suivant →
                   </PaginationButton>
                 </PaginationContainer>
               )}

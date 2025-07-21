@@ -1,17 +1,22 @@
+// PublicCasesPage.js - VERSION CORRIGÉE AVEC BANDE DÉGRADÉE ET BOUTON HARMONISÉ
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { Star, Eye, EyeOff, ChevronDown, TrendingUp, User, Copy, Plus } from 'lucide-react';
+import { ChevronDown, ChevronUp, Star, Eye, Copy, User, TrendingUp, Plus, EyeOff } from 'lucide-react';
 import axios from '../utils/axiosConfig';
-import RatingStars from '../components/RatingStars'; // NOUVEAU : Import du système de notation
+import RatingStars from '../components/RatingStars';
 
-// ==================== STYLED COMPONENTS ====================
+// ==================== STYLES CONTAINER PRINCIPAL ====================
 
 const ModernPageContainer = styled.div`
-  min-height: 100vh;
-  background: ${props => props.theme.background};
-  padding: 2rem;
-  
+  padding: 2rem 3rem;
+  min-height: calc(100vh - 60px);
+  background-color: ${props => props.theme.background};
+
+  @media (max-width: 1200px) {
+    padding: 2rem;
+  }
+
   @media (max-width: 768px) {
     padding: 1rem;
   }
@@ -20,16 +25,12 @@ const ModernPageContainer = styled.div`
 const HeaderSection = styled.div`
   text-align: center;
   margin-bottom: 3rem;
-  padding: 2rem;
-  background: linear-gradient(135deg, ${props => props.theme.primary}15, ${props => props.theme.secondary}15);
-  border-radius: 20px;
-  border: 1px solid ${props => props.theme.primary}20;
 `;
 
 const MainTitle = styled.h1`
   font-size: 2.5rem;
   font-weight: 700;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -39,37 +40,30 @@ const MainTitle = styled.h1`
 const SubTitle = styled.p`
   font-size: 1.2rem;
   color: ${props => props.theme.textSecondary};
+  line-height: 1.6;
   max-width: 600px;
   margin: 0 auto;
-  line-height: 1.6;
 `;
 
-const FilterContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  background-color: ${props => props.theme.card};
-  border-radius: 12px;
-  border: 1px solid ${props => props.theme.border};
-  box-shadow: 0 2px 10px ${props => props.theme.shadow};
-`;
+// ==================== BARRE DE RECHERCHE ====================
 
-const SearchInput = styled.input`
-  flex: 1;
-  min-width: 250px;
-  padding: 0.75rem 1rem;
-  border: 2px solid ${props => props.theme.borderLight};
-  border-radius: 8px;
-  background-color: ${props => props.theme.background};
-  color: ${props => props.theme.text};
+const SearchBar = styled.input`
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto 2rem;
+  padding: 1rem 1.5rem;
   font-size: 1rem;
-  transition: border-color 0.2s ease;
+  border: 2px solid ${props => props.theme.border};
+  border-radius: 50px;
+  background-color: ${props => props.theme.card};
+  color: ${props => props.theme.text};
+  transition: all 0.2s ease;
+  display: block;
 
   &:focus {
     outline: none;
     border-color: ${props => props.theme.primary};
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
   }
 
   &::placeholder {
@@ -77,13 +71,24 @@ const SearchInput = styled.input`
   }
 `;
 
-const FilterDropdown = styled.div`
+// ==================== SECTION FILTRES ====================
+
+const FilterContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  align-items: center;
+`;
+
+const FilterGroup = styled.div`
   position: relative;
 `;
 
 const FilterButton = styled.button`
   padding: 0.75rem 1rem;
-  background-color: ${props => props.active ? props.theme.primary : props.theme.buttonSecondary};
+  background-color: ${props => props.active ? props.theme.primary : props.theme.card};
   color: ${props => props.active ? 'white' : props.theme.buttonSecondaryText};
   border: 2px solid ${props => props.active ? props.theme.primary : props.theme.borderLight};
   border-radius: 8px;
@@ -173,6 +178,18 @@ const ModernCaseCard = styled(Link)`
   transition: all 0.3s ease;
   text-decoration: none;
   border: 1px solid ${props => props.theme.border};
+  position: relative;
+
+  /* CORRECTION : Remettre la bande dégradée au-dessus de chaque carte */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  }
 
   &:hover {
     transform: translateY(-8px);
@@ -272,10 +289,13 @@ const StatItem = styled.div`
 const ActionsContainer = styled.div`
   display: flex;
   gap: 0.5rem;
+  /* CORRECTION : Ajouter padding-bottom pour éviter que le tooltip soit rogné */
+  padding-bottom: 10px;
 `;
 
-// CORRECTION : Bouton d'action avec icône de copie et tooltip
+// CORRECTION : Bouton d'action avec même couleur que PublicQuestionnairesPage
 const ActionButton = styled.button`
+  /* CORRECTION : Même couleur que PublicQuestionnairesPage (primary) */
   background: ${props => props.theme.primary};
   color: white;
   border: none;
@@ -291,25 +311,40 @@ const ActionButton = styled.button`
   position: relative;
 
   &:hover {
-    background: ${props => props.theme.primaryDark || props.theme.primary};
+    /* CORRECTION : Même couleur de survol que PublicQuestionnairesPage */
+    background: ${props => props.theme.primaryHover};
     transform: translateY(-2px);
     box-shadow: 0 4px 12px ${props => props.theme.primary}40;
   }
 
+  /* CORRECTION : Tooltip mieux positionné pour éviter d'être rogné */
   &:hover::after {
     content: "Ajouter à mes cas";
     position: absolute;
-    bottom: -35px;
+    bottom: 100%;
     left: 50%;
     transform: translateX(-50%);
     background: ${props => props.theme.text};
     color: ${props => props.theme.background};
-    padding: 0.25rem 0.5rem;
+    padding: 0.4rem 0.6rem;
     border-radius: 4px;
     font-size: 0.7rem;
     white-space: nowrap;
     z-index: 1000;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    margin-bottom: 5px;
+  }
+
+  /* CORRECTION : Ajouter une petite flèche au tooltip */
+  &:hover::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: ${props => props.theme.text};
+    z-index: 1001;
   }
 
   svg {
@@ -626,26 +661,22 @@ function PublicCasesPage() {
         </SubTitle>
       </HeaderSection>
 
-      <FilterContainer>
-        <SearchInput
-          type="text"
-          placeholder="Rechercher un cas clinique..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+      <SearchBar
+        type="text"
+        placeholder="🔍 Rechercher un cas clinique..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
 
-        {/* Filtre Difficulté */}
-        <FilterDropdown>
+      <FilterContainer>
+        <FilterGroup>
           <FilterButton
             active={difficultyFilter.length !== 5}
             isOpen={showDifficultyDropdown}
-            onClick={() => {
-              setShowDifficultyDropdown(!showDifficultyDropdown);
-              setShowTagDropdown(false);
-            }}
+            onClick={() => setShowDifficultyDropdown(!showDifficultyDropdown)}
           >
-            Difficulté
-            <ChevronDown size={16} />
+            ⭐ Difficulté
+            <ChevronDown />
           </FilterButton>
           {showDifficultyDropdown && (
             <DropdownContent>
@@ -656,25 +687,21 @@ function PublicCasesPage() {
                     checked={difficultyFilter.includes(difficulty)}
                     onChange={() => handleDifficultyChange(difficulty)}
                   />
-                  {'⭐'.repeat(difficulty)}
+                  {difficulty} étoile{difficulty > 1 ? 's' : ''}
                 </DropdownItem>
               ))}
             </DropdownContent>
           )}
-        </FilterDropdown>
+        </FilterGroup>
 
-        {/* Filtre Tags */}
-        <FilterDropdown>
+        <FilterGroup>
           <FilterButton
             active={tagFilter.length > 0}
             isOpen={showTagDropdown}
-            onClick={() => {
-              setShowTagDropdown(!showTagDropdown);
-              setShowDifficultyDropdown(false);
-            }}
+            onClick={() => setShowTagDropdown(!showTagDropdown)}
           >
-            Tags {tagFilter.length > 0 && `(${tagFilter.length})`}
-            <ChevronDown size={16} />
+            🏷️ Tags
+            <ChevronDown />
           </FilterButton>
           {showTagDropdown && (
             <DropdownContent>
@@ -690,7 +717,7 @@ function PublicCasesPage() {
               ))}
             </DropdownContent>
           )}
-        </FilterDropdown>
+        </FilterGroup>
 
         <SpoilerButton onClick={() => setShowSpoilers(!showSpoilers)}>
           {showSpoilers ? <EyeOff size={16} /> : <Eye size={16} />}
