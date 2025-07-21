@@ -409,6 +409,14 @@
   backdrop-filter: blur(10px);
   transition: background-color 0.3s ease, color 0.3s ease;
   
+  /* 🔧 CORRECTION : Conteneur pour les boutons avec alignement parfait */
+  & > div:last-child {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    height: 100%;
+  }
+  
   @media (max-width: 768px) {
     height: 50px;
     padding: 0 12px;
@@ -432,6 +440,11 @@
   transition: all 0.2s ease;
   backdrop-filter: blur(4px);
   margin-left: 8px;
+  /* 🔧 CORRECTION : Alignement vertical parfait */
+  vertical-align: middle;
+  line-height: 1;
+  height: 40px; /* Hauteur fixe pour tous les boutons */
+  box-sizing: border-box;
   
   &:hover {
     background: rgba(255, 255, 255, 0.2);
@@ -450,6 +463,7 @@
     font-size: 12px;
     white-space: nowrap;
     margin-left: 4px;
+    height: 36px; /* Hauteur réduite sur mobile */
   }
 }
 
