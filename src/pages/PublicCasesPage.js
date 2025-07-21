@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { Star, Eye, EyeOff, ChevronDown, TrendingUp, User, Copy } from 'lucide-react';
+import { Star, Eye, EyeOff, ChevronDown, TrendingUp, User, Copy, Plus } from 'lucide-react';
 import axios from '../utils/axiosConfig';
 import RatingStars from '../components/RatingStars'; // NOUVEAU : Import du système de notation
 
@@ -79,101 +79,281 @@ const SearchInput = styled.input`
 
 const FilterDropdown = styled.div`
   position: relative;
-  min-width: 150px;
 `;
 
-const DropdownButton = styled.button`
-  width: 100%;
+const FilterButton = styled.button`
   padding: 0.75rem 1rem;
-  background-color: ${props => props.theme.background};
-  border: 2px solid ${props => props.theme.borderLight};
+  background-color: ${props => props.active ? props.theme.primary : props.theme.buttonSecondary};
+  color: ${props => props.active ? 'white' : props.theme.buttonSecondaryText};
+  border: 2px solid ${props => props.active ? props.theme.primary : props.theme.borderLight};
   border-radius: 8px;
-  color: ${props => props.theme.text};
   cursor: pointer;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  font-size: 0.9rem;
+  gap: 0.5rem;
+  font-weight: 500;
   transition: all 0.2s ease;
+  min-width: 120px;
+  justify-content: space-between;
 
   &:hover {
-    border-color: ${props => props.theme.primary};
+    background-color: ${props => props.active ? props.theme.primaryDark || props.theme.primary : props.theme.hover};
   }
 
-  &[data-open="true"] {
-    border-color: ${props => props.theme.primary};
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
+  svg {
+    transition: transform 0.2s ease;
+    transform: ${props => props.isOpen ? 'rotate(180deg)' : 'rotate(0deg)'};
   }
 `;
 
-const DropdownMenu = styled.div`
+const DropdownContent = styled.div`
   position: absolute;
   top: 100%;
   left: 0;
   right: 0;
   background-color: ${props => props.theme.card};
-  border: 2px solid ${props => props.theme.primary};
-  border-top: none;
-  border-radius: 0 0 8px 8px;
-  z-index: 10;
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 8px;
+  box-shadow: 0 4px 20px ${props => props.theme.shadow};
+  z-index: 1000;
   max-height: 200px;
   overflow-y: auto;
-  box-shadow: 0 4px 15px ${props => props.theme.shadow};
+  margin-top: 4px;
 `;
 
 const DropdownItem = styled.label`
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem;
   cursor: pointer;
   transition: background-color 0.2s ease;
-  color: ${props => props.theme.text};
 
   &:hover {
     background-color: ${props => props.theme.hover};
   }
+`;
 
-  input {
-    width: 16px;
-    height: 16px;
-    accent-color: ${props => props.theme.primary};
-  }
+const DropdownCheckbox = styled.input`
+  margin-right: 0.5rem;
+  accent-color: ${props => props.theme.primary};
 `;
 
 const SpoilerButton = styled.button`
-  padding: 0.75rem 1.5rem;
-  background-color: ${props => props.theme.primary};
+  padding: 0.75rem 1rem;
+  background-color: ${props => props.theme.secondary};
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-weight: 500;
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: ${props => props.theme.primaryDark || props.theme.primary};
-    transform: translateY(-2px);
+    background-color: ${props => props.theme.secondaryDark || props.theme.secondary};
+    transform: translateY(-1px);
   }
+`;
+
+const CasesList = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+`;
+
+const ModernCaseCard = styled(Link)`
+  display: block;
+  background: ${props => props.theme.card};
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px ${props => props.theme.shadow};
+  transition: all 0.3s ease;
+  text-decoration: none;
+  border: 1px solid ${props => props.theme.border};
+
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px ${props => props.theme.shadowMedium};
+    border-color: ${props => props.theme.primary};
+  }
+`;
+
+const CaseImage = styled.img`
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  background-color: ${props => props.theme.borderLight};
+`;
+
+const CaseContent = styled.div`
+  padding: 1.5rem;
+`;
+
+const CaseHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+`;
+
+const CaseTitle = styled.h3`
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: ${props => props.theme.text};
+  margin: 0;
+  flex: 1;
+  line-height: 1.4;
+`;
+
+const PopularityBadge = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: linear-gradient(135deg, #ff6b6b, #feca57);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+  white-space: nowrap;
+`;
+
+const AuthorInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: ${props => props.theme.textSecondary};
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+`;
+
+const StarRating = styled.div`
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+`;
+
+const RatingSection = styled.div`
+  margin-bottom: 1rem;
+  padding: 0.5rem 0;
+`;
+
+const StatsContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid ${props => props.theme.borderLight};
+`;
+
+const StatItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: ${props => props.theme.textSecondary};
+  font-size: 0.8rem;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+`;
+
+const ActionsContainer = styled.div`
+  display: flex;
+  gap: 0.5rem;
+`;
+
+// CORRECTION : Bouton d'action avec icône de copie et tooltip
+const ActionButton = styled.button`
+  background: ${props => props.theme.primary};
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  width: 36px;
+  height: 36px;
+  position: relative;
+
+  &:hover {
+    background: ${props => props.theme.primaryDark || props.theme.primary};
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px ${props => props.theme.primary}40;
+  }
+
+  &:hover::after {
+    content: "Ajouter à mes cas";
+    position: absolute;
+    bottom: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: ${props => props.theme.text};
+    color: ${props => props.theme.background};
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+`;
+
+const TagsContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+`;
+
+// CORRECTION : Tags corrigés pour le mode sombre
+const ModernTag = styled.span`
+  padding: 0.25rem 0.75rem;
+  background-color: ${props => props.theme.tagBackground};
+  color: ${props => props.theme.tagText};
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid ${props => props.theme.tagBackground};
+  
+  /* CORRECTION : S'assurer que les tags sont visibles en mode sombre */
+  ${props => props.theme.background === '#1a202c' && `
+    background-color: #4a5568;
+    color: #e2e8f0;
+    border-color: #4a5568;
+  `}
 `;
 
 const LoadingMessage = styled.div`
   text-align: center;
   padding: 3rem;
   color: ${props => props.theme.textSecondary};
-  font-size: 1.2rem;
+  font-size: 1.1rem;
 `;
 
 const ErrorMessage = styled.div`
   text-align: center;
   padding: 2rem;
   color: #ef4444;
-  font-size: 1.1rem;
   background-color: #fef2f2;
   border: 1px solid #fecaca;
   border-radius: 12px;
@@ -186,194 +366,15 @@ const EmptyState = styled.div`
   color: ${props => props.theme.textSecondary};
 
   h3 {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
     color: ${props => props.theme.text};
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
   }
 
   p {
     font-size: 1.1rem;
     line-height: 1.6;
   }
-`;
-
-const CasesList = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 2rem;
-  margin-bottom: 2rem;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-`;
-
-const ModernCaseCard = styled(Link)`
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 16px;
-  text-decoration: none;
-  color: ${props => props.theme.text};
-  background-color: ${props => props.theme.card};
-  transition: all 0.3s ease;
-  overflow: hidden;
-  position: relative;
-  box-shadow: 0 4px 15px ${props => props.theme.shadow};
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  }
-
-  &:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 12px 30px ${props => props.theme.shadow};
-    border-color: ${props => props.theme.primary}50;
-  }
-`;
-
-const CaseImage = styled.img`
-  width: 100%;
-  height: 220px;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-
-  ${ModernCaseCard}:hover & {
-    transform: scale(1.05);
-  }
-`;
-
-const CaseContent = styled.div`
-  padding: 1.5rem;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-`;
-
-const CaseHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-`;
-
-const CaseTitle = styled.h2`
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: ${props => props.theme.primary};
-  line-height: 1.3;
-  flex: 1;
-  margin: 0;
-  text-align: center;
-`;
-
-const PopularityBadge = styled.span`
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  background-color: ${props => props.theme.success};
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  margin-left: 0.5rem;
-`;
-
-const AuthorInfo = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
-`;
-
-const StarRating = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-bottom: 1rem;
-`;
-
-// NOUVEAU : Section de notation
-const RatingSection = styled.div`
-  padding: 0.5rem 0;
-  border-top: 1px solid ${props => props.theme.borderLight};
-  border-bottom: 1px solid ${props => props.theme.borderLight};
-  margin: 0.75rem 0;
-`;
-
-const StatsContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 1rem;
-`;
-
-const StatItem = styled.span`
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.875rem;
-`;
-
-const ActionsContainer = styled.div`
-  display: flex;
-  gap: 0.5rem;
-`;
-
-const ActionButton = styled.button`
-  padding: 0.5rem 1rem;
-  border: 1px solid ${props => props.theme.borderLight};
-  border-radius: 6px;
-  background-color: ${props => props.theme.background};
-  color: ${props => props.theme.text};
-  cursor: pointer;
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
-
-  &:hover {
-    border-color: ${props => props.theme.primary};
-    background-color: ${props => props.theme.hover};
-  }
-
-  &.primary {
-    background-color: ${props => props.theme.primary};
-    color: white;
-    border-color: ${props => props.theme.primary};
-
-    &:hover {
-      background-color: ${props => props.theme.primaryDark || props.theme.primary};
-    }
-  }
-`;
-
-const TagsContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: auto;
-  justify-content: center;
-`;
-
-const ModernTag = styled.span`
-  background: linear-gradient(135deg, ${props => props.theme.primary}20, ${props => props.theme.secondary}20);
-  color: ${props => props.theme.primary};
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  border: 1px solid ${props => props.theme.primary}30;
 `;
 
 const PaginationContainer = styled.div`
@@ -414,7 +415,7 @@ const PaginationInfo = styled.span`
 
 // ==================== COMPOSANTS ====================
 
-function CaseCardComponent({ cas, showSpoilers }) {
+function CaseCardComponent({ cas, showSpoilers, onCopyCase }) {
   // NOUVEAU : États pour la gestion des notes
   const [caseRating, setCaseRating] = useState({
     averageRating: cas.averageRating || 0,
@@ -509,16 +510,15 @@ function CaseCardComponent({ cas, showSpoilers }) {
           </div>
           
           <ActionsContainer>
+            {/* CORRECTION : Remplacer le bouton texte par une icône avec tooltip */}
             <ActionButton
-              className="primary"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                // Logique de copie du cas
-                handleCopyCase(cas._id);
+                onCopyCase(cas._id);
               }}
             >
-              Copier
+              <Plus size={16} />
             </ActionButton>
           </ActionsContainer>
         </StatsContainer>
@@ -629,48 +629,58 @@ function PublicCasesPage() {
       <FilterContainer>
         <SearchInput
           type="text"
-          placeholder="🔍 Rechercher un cas..."
+          placeholder="Rechercher un cas clinique..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        
+
+        {/* Filtre Difficulté */}
         <FilterDropdown>
-          <DropdownButton 
-            onClick={() => setShowDifficultyDropdown(!showDifficultyDropdown)}
-            data-open={showDifficultyDropdown}
+          <FilterButton
+            active={difficultyFilter.length !== 5}
+            isOpen={showDifficultyDropdown}
+            onClick={() => {
+              setShowDifficultyDropdown(!showDifficultyDropdown);
+              setShowTagDropdown(false);
+            }}
           >
-            Difficulté ({difficultyFilter.length}/5)
+            Difficulté
             <ChevronDown size={16} />
-          </DropdownButton>
+          </FilterButton>
           {showDifficultyDropdown && (
-            <DropdownMenu>
-              {[1, 2, 3, 4, 5].map(level => (
-                <DropdownItem key={level}>
-                  <input
+            <DropdownContent>
+              {[1, 2, 3, 4, 5].map(difficulty => (
+                <DropdownItem key={difficulty}>
+                  <DropdownCheckbox
                     type="checkbox"
-                    checked={difficultyFilter.includes(level)}
-                    onChange={() => handleDifficultyChange(level)}
+                    checked={difficultyFilter.includes(difficulty)}
+                    onChange={() => handleDifficultyChange(difficulty)}
                   />
-                  Niveau {level}
+                  {'⭐'.repeat(difficulty)}
                 </DropdownItem>
               ))}
-            </DropdownMenu>
+            </DropdownContent>
           )}
         </FilterDropdown>
 
+        {/* Filtre Tags */}
         <FilterDropdown>
-          <DropdownButton 
-            onClick={() => setShowTagDropdown(!showTagDropdown)}
-            data-open={showTagDropdown}
+          <FilterButton
+            active={tagFilter.length > 0}
+            isOpen={showTagDropdown}
+            onClick={() => {
+              setShowTagDropdown(!showTagDropdown);
+              setShowDifficultyDropdown(false);
+            }}
           >
-            Tags ({tagFilter.length})
+            Tags {tagFilter.length > 0 && `(${tagFilter.length})`}
             <ChevronDown size={16} />
-          </DropdownButton>
+          </FilterButton>
           {showTagDropdown && (
-            <DropdownMenu>
+            <DropdownContent>
               {allTags.map(tag => (
                 <DropdownItem key={tag}>
-                  <input
+                  <DropdownCheckbox
                     type="checkbox"
                     checked={tagFilter.includes(tag)}
                     onChange={() => handleTagChange(tag)}
@@ -678,7 +688,7 @@ function PublicCasesPage() {
                   {tag}
                 </DropdownItem>
               ))}
-            </DropdownMenu>
+            </DropdownContent>
           )}
         </FilterDropdown>
 
@@ -704,7 +714,12 @@ function PublicCasesPage() {
       ) : (
         <CasesList>
           {filteredCases.map((cas) => (
-            <CaseCardComponent key={cas._id} cas={cas} showSpoilers={showSpoilers} />
+            <CaseCardComponent 
+              key={cas._id} 
+              cas={cas} 
+              showSpoilers={showSpoilers} 
+              onCopyCase={handleCopyCase}
+            />
           ))}
         </CasesList>
       )}

@@ -579,38 +579,38 @@ function QuestionnaireListPage() {
     }
   ];
 
-  // Fonction de récupération des questionnaires
- const fetchQuestionnaires = useCallback(async (page = 1) => {
-  try {
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: '9',
-      search: searchTerm,
-      modality: modalityFilters.join(','),
-      specialty: specialtyFilters.join(','),
-      location: locationFilters.join(',')
-    });
+  // CORRECTION : Fonction de récupération des questionnaires avec limite fixée à 10
+  const fetchQuestionnaires = useCallback(async (page = 1) => {
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: '10', // CORRECTION : Changé de '9' à '10' pour uniformiser
+        search: searchTerm,
+        modality: modalityFilters.join(','),
+        specialty: specialtyFilters.join(','),
+        location: locationFilters.join(',')
+      });
 
-    // CORRECTION : Utiliser la route /my pour récupérer les questionnaires de l'utilisateur connecté
-    const response = await axios.get(`/questionnaires/my?${params}`);
-    
-    // Vérification de sécurité pour s'assurer que questionnaires est un tableau
-    const questionnaires = response.data?.questionnaires;
-    const safeQuestionnaires = Array.isArray(questionnaires) ? questionnaires : [];
+      // CORRECTION : Utiliser la route /my pour récupérer les questionnaires de l'utilisateur connecté
+      const response = await axios.get(`/questionnaires/my?${params}`);
+      
+      // Vérification de sécurité pour s'assurer que questionnaires est un tableau
+      const questionnaires = response.data?.questionnaires;
+      const safeQuestionnaires = Array.isArray(questionnaires) ? questionnaires : [];
 
-    setQuestionnaires(safeQuestionnaires);
-    setCurrentPage(page);
-    setTotalPages(response.data?.totalPages || 0);
-    setTotalQuestionnaires(response.data?.totalQuestionnaires || 0);
+      setQuestionnaires(safeQuestionnaires);
+      setCurrentPage(page);
+      setTotalPages(response.data?.totalPages || 0);
+      setTotalQuestionnaires(response.data?.totalQuestionnaires || 0);
 
-  } catch (error) {
-    console.error('❌ Erreur lors de la récupération des questionnaires:', error);
-    setQuestionnaires([]);
-    setCurrentPage(1);
-    setTotalPages(0);
-    setTotalQuestionnaires(0);
-  }
-}, [searchTerm, modalityFilters, specialtyFilters, locationFilters]);
+    } catch (error) {
+      console.error('❌ Erreur lors de la récupération des questionnaires:', error);
+      setQuestionnaires([]);
+      setCurrentPage(1);
+      setTotalPages(0);
+      setTotalQuestionnaires(0);
+    }
+  }, [searchTerm, modalityFilters, specialtyFilters, locationFilters]);
 
   // Effet pour charger les questionnaires
   useEffect(() => {

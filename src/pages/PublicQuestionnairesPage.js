@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { ChevronDown, ChevronUp, Clock, Users, FileText, TrendingUp, User, Eye, Copy } from 'lucide-react';
+import { ChevronDown, ChevronUp, Clock, Users, FileText, TrendingUp, User, Eye, Copy, Plus } from 'lucide-react';
 import axios from '../utils/axiosConfig';
 import RatingStars from '../components/RatingStars';
 
@@ -373,6 +373,7 @@ const ActionButton = styled(Link)`
   }
 `;
 
+// CORRECTION : Bouton copie avec icône et tooltip comme demandé
 const CopyButton = styled.button`
   display: flex;
   align-items: center;
@@ -384,10 +385,27 @@ const CopyButton = styled.button`
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
+  position: relative;
 
   &:hover {
     background-color: ${props => props.theme.secondaryHover};
     transform: translateY(-1px);
+  }
+
+  &:hover::after {
+    content: "Ajouter à mes questionnaires";
+    position: absolute;
+    bottom: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: ${props => props.theme.text};
+    color: ${props => props.theme.background};
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   }
 
   svg {
@@ -595,14 +613,14 @@ function QuestionnaireCardComponent({ questionnaire }) {
           Utiliser
         </ActionButton>
         
+        {/* CORRECTION : Bouton avec icône Plus et tooltip */}
         <CopyButton
           onClick={(e) => {
             e.preventDefault();
             addToMyQuestionnaires(questionnaire._id);
           }}
-          title="Ajouter à mes questionnaires"
         >
-          <Copy size={14} />
+          <Plus size={14} />
         </CopyButton>
       </ActionButtons>
     </QuestionnaireCard>
@@ -635,6 +653,7 @@ function PublicQuestionnairesPage() {
     "Genou", "Hanche", "Jambe", "Parties molles", "Poignet", "Rachis"
   ];
 
+  // CORRECTION : Uniformiser la limite à 10 comme demandé
   const fetchQuestionnaires = useCallback(async (page = 1) => {
     setIsLoading(true);
     setError(null);
@@ -642,7 +661,7 @@ function PublicQuestionnairesPage() {
       const response = await axios.get('/questionnaires/public', {
         params: {
           page,
-          limit: 12,
+          limit: 10, // CORRECTION : Changé de 12 à 10 pour uniformiser
           search: searchTerm,
           modality: modalityFilters.join(','),
           specialty: specialtyFilters.join(','),
