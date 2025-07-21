@@ -343,8 +343,8 @@ const ActionButtons = styled.div`
   display: flex;
   gap: 0.5rem;
   margin-top: auto;
-  /* CORRECTION : Augmenter le padding-bottom pour laisser plus d'espace pour le tooltip */
-  padding-bottom: 50px;
+  /* CORRECTION : Réduire le padding-bottom, juste assez pour le tooltip */
+  padding-bottom: 5px;
   position: relative;
 `;
 
@@ -395,16 +395,16 @@ const CopyButton = styled.button`
     transform: translateY(-1px);
   }
 
-  /* CORRECTION : Tooltip repositionné au-dessus avec plus d'espace */
+  /* CORRECTION : Tooltip repositionné au-dessus avec espacement optimal */
   &:hover::after {
     content: "Ajouter à mes questionnaires";
     position: absolute;
-    bottom: calc(100% + 15px);
+    bottom: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%);
     background: ${props => props.theme.text};
     color: ${props => props.theme.background};
-    padding: 0.6rem 0.8rem;
+    padding: 0.5rem 0.75rem;
     border-radius: 6px;
     font-size: 0.75rem;
     font-weight: 500;
@@ -418,7 +418,7 @@ const CopyButton = styled.button`
   &:hover::before {
     content: '';
     position: absolute;
-    bottom: calc(100% + 9px);
+    bottom: calc(100% + 2px);
     left: 50%;
     transform: translateX(-50%);
     border: 6px solid transparent;
