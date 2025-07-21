@@ -96,32 +96,45 @@ function RadiologyViewer() {
     }
   }, [currentCase]);
 
-  // 🔧 FONCTION HANDLESCROLL CORRIGÉE
+  // 🔧 FONCTION HANDLESCROLL CORRIGÉE - VERSION SIMPLE POUR DÉBOGUER
   const handleScroll = useCallback((deltaY, slowMode = false, side) => {
     const threshold = slowMode ? 10 : 50;
+    
+    console.log(`🔄 handleScroll appelé: deltaY=${deltaY}, side=${side}, folder=${side === 'left' || side === 'single' ? currentFolderLeft : currentFolderRight}`);
+    
     setAccumulatedDelta(prev => {
       const newDelta = prev + deltaY;
+      console.log(`📊 Accumulated delta: ${newDelta}, threshold: ${threshold}`);
+      
       if (Math.abs(newDelta) >= threshold) {
         const direction = newDelta > 0 ? 1 : -1;
         const currentFolder = side === 'left' || side === 'single' ? currentFolderLeft : currentFolderRight;
         const currentIndex = side === 'left' || side === 'single' ? currentIndexLeft : currentIndexRight;
-        const images = currentCase.images[currentFolder];
         
-        if (images && images.length > 0) {
-          // 🚨 NOUVELLE LOGIQUE : Bloquer aux extrémités
+        console.log(`🎯 Direction: ${direction}, Current folder: ${currentFolder}, Current index: ${currentIndex}`);
+        
+        if (currentCase?.images?.[currentFolder]) {
+          const images = currentCase.images[currentFolder];
+          console.log(`📁 Images dans le dossier: ${images.length}`);
+          
+          // 🚨 LOGIQUE SIMPLIFIÉE : Bloquer aux extrémités
           let newIndex = currentIndex + direction;
           
-          // Empêcher de dépasser les limites (pas de boucle)
+          // Empêcher de dépasser les limites
           if (newIndex < 0) {
-            newIndex = 0; // Bloquer à la première image
+            newIndex = 0;
+            console.log(`🛑 Bloqué à la première image (${newIndex})`);
           } else if (newIndex >= images.length) {
-            newIndex = images.length - 1; // Bloquer à la dernière image
+            newIndex = images.length - 1;
+            console.log(`🛑 Bloqué à la dernière image (${newIndex})`);
+          } else {
+            console.log(`✅ Changement d'image vers l'index ${newIndex}`);
           }
           
-          // Ne charger l'image que si l'index a vraiment changé
-          if (newIndex !== currentIndex) {
-            loadImage(currentFolder, newIndex, side);
-          }
+          // Toujours charger l'image, même si l'index ne change pas (pour debug)
+          loadImage(currentFolder, newIndex, side);
+        } else {
+          console.log(`❌ Aucune image trouvée pour le dossier: ${currentFolder}`);
         }
         return 0;
       }
@@ -474,24 +487,13 @@ function RadiologyViewer() {
     }
   }, [isTouchDevice, handleScroll, isSingleViewMode]);
 
-  // 🔧 PRÉVENTION DU SCROLL DE LA PAGE
-  useEffect(() => {
-    const preventDefault = (e) => {
-      e.preventDefault();
-    };
-  
-    document.body.addEventListener('wheel', preventDefault, { passive: false });
-  
-    return () => {
-      document.body.removeEventListener('wheel', preventDefault);
-    };
-  }, []);
+  // 🔧 PRÉVENTION DU SCROLL DE LA PAGE - SUPPRIMÉ CAR INTERFÈRE AVEC LE DÉFILEMENT
 
   const renderViewer = useCallback((side) => (
     <div 
       className={`${styles.viewer} ${styles.viewerHalf}`}
       onWheel={(e) => {
-        e.preventDefault();
+        e.stopPropagation();
         if (e.ctrlKey) {
           handleZoom(side, -e.deltaY);
         } else {
@@ -568,7 +570,7 @@ function RadiologyViewer() {
                 id="single-viewer" 
                 className={`${styles.viewer} ${styles.singleViewer}`}
                 onWheel={(e) => {
-                  e.preventDefault();
+                  e.stopPropagation();
                   if (e.ctrlKey) {
                     handleZoom('single', -e.deltaY);
                   } else {
