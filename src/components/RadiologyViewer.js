@@ -595,23 +595,25 @@ function RadiologyViewer() {
     setFolderThumbnails(thumbnails);
   }, []);
 
+  const handleWheel = useCallback((e, side) => {
+    e.preventDefault();
+    
+    // Utiliser requestAnimationFrame pour lisser l'animation
+    requestAnimationFrame(() => {
+      if (e.ctrlKey) {
+        handleZoom(side, -e.deltaY);
+      } else {
+        // Réduire la sensibilité pour un défilement plus contrôlé
+        const scaledDelta = e.deltaY * 0.5;
+        handleScroll(scaledDelta, false, side);
+      }
+    });
+  }, [handleZoom, handleScroll]);
+
   const renderViewer = useCallback((side) => (
     <div 
       className={`${styles.viewer} ${styles.viewerHalf}`}
-      onWheel={useCallback((e) => {
-        e.preventDefault();
-        
-        // Utiliser requestAnimationFrame pour lisser l'animation
-        requestAnimationFrame(() => {
-          if (e.ctrlKey) {
-            handleZoom(side, -e.deltaY);
-          } else {
-            // Réduire la sensibilité pour un défilement plus contrôlé
-            const scaledDelta = e.deltaY * 0.5;
-            handleScroll(scaledDelta, false, side);
-          }
-        });
-      }, [handleZoom, handleScroll, side])}
+      onWheel={(e) => handleWheel(e, side)}
       onMouseDown={(e) => handleMouseDown(e, side)}
       onMouseMove={(e) => handleMouseMove(e, side)}
       onMouseUp={handleMouseUp}
@@ -631,7 +633,7 @@ function RadiologyViewer() {
         alt={`Image médicale ${side}`}
       />
     </div>
-  ), [handleZoom, handleScroll, handleMouseDown, handleMouseMove, handleMouseUp, handleDrop, 
+  ), [handleWheel, handleMouseDown, handleMouseMove, handleMouseUp, handleDrop, 
       handleTouchStart, handleTouchMove, handleTouchEnd, currentFolderLeft, currentFolderRight]);
 
   const renderFolderThumbnails = useCallback(() => {
@@ -680,18 +682,7 @@ function RadiologyViewer() {
             {isSingleViewMode ? (
               <div 
                 className={`${styles.viewer} ${styles.singleViewer}`}
-                onWheel={useCallback((e) => {
-                  e.preventDefault();
-                  
-                  requestAnimationFrame(() => {
-                    if (e.ctrlKey) {
-                      handleZoom('single', -e.deltaY);
-                    } else {
-                      const scaledDelta = e.deltaY * 0.5;
-                      handleScroll(scaledDelta, false, 'single');
-                    }
-                  });
-                }, [handleZoom, handleScroll])}
+                onWheel={(e) => handleWheel(e, 'single')}
                 onMouseDown={(e) => handleMouseDown(e, 'single')}
                 onMouseMove={(e) => handleMouseMove(e, 'single')}
                 onMouseUp={handleMouseUp}
