@@ -57,49 +57,73 @@ function RadiologyViewer() {
   const [startY, setStartY] = useState(0);
   const [accumulatedDelta, setAccumulatedDelta] = useState(0);
   const [isShortcutGuideVisible, setIsShortcutGuideVisible] = useState(false);
-  const [folderThumbnails, setFolderThumbnails] = useState({});
-  const isTouchDevice = 'ontouchstart' in window;
-  const [touchDistance, setTouchDistance] = useState(null);
-  const [isMobile] = useState(window.innerWidth < 768);
+  const [theme, setTheme] = useState('dark');
+  const [touchStartPoints, setTouchStartPoints] = useState(null);
+  const [initialScale, setInitialScale] = useState(1);
+  const [lastTouch, setLastTouch] = useState({ x: 0, y: 0 });
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isTouchDevice, setIsTouchDevice] = useState('ontouchstart' in window);
 
   const leftViewerRef = useRef(null);
   const rightViewerRef = useRef(null);
   const singleViewerRef = useRef(null);
 
-  const [touchStartPoints, setTouchStartPoints] = useState(null);
-  const [initialScale, setInitialScale] = useState(1);
-  const [lastTouch, setLastTouch] = useState({ x: 0, y: 0 });
+  // ==================== CHARGEMENT DES DONNÉES ====================
 
-  const [theme] = useState(document.documentElement.getAttribute('data-theme') || 'light');
-
-  // ==================== FONCTION loadImage SIMPLIFIÉE ==================== 
-  
-  const loadImage = useCallback((folder, index, side) => {
-    if (currentCase && currentCase.images && currentCase.images[folder]) {
-      const imagePath = currentCase.images[folder][index];
-      if (imagePath) {
-        const imageUrl = imagePath.startsWith('http') ? imagePath : `${process.env.REACT_APP_SPACES_URL}/${imagePath}`;
-        const imageElement = side === 'left' ? leftViewerRef.current :
-                             side === 'right' ? rightViewerRef.current :
-                             singleViewerRef.current;
+  useEffect(() => {
+    const fetchCase = async () => {
+      if (!caseId) return;
+      
+      try {
+        const response = await axios.get(`/cases/${caseId}`);
+        const caseData = response.data;
         
-        if (imageElement) {
-          imageElement.src = imageUrl;
-          // Mise à jour des index
-          if (side === 'left' || side === 'single') {
-            setCurrentIndexLeft(index);
-          } else if (side === 'right') {
-            setCurrentIndexRight(index);
+        if (caseData && caseData.images) {
+          setCurrentCase(caseData);
+          
+          const folders = Object.keys(caseData.images);
+          if (folders.length > 0) {
+            const firstFolder = folders[0];
+            setCurrentFolderLeft(firstFolder);
+            setCurrentFolderRight(folders.length > 1 ? folders[1] : firstFolder);
+            
+            loadImage(firstFolder, 0, isSingleViewMode ? 'single' : 'left');
+            if (!isSingleViewMode && folders.length > 1) {
+              loadImage(folders[1], 0, 'right');
+            }
           }
         }
+      } catch (error) {
+        console.error('Erreur lors du chargement du cas:', error);
       }
+    };
+
+    fetchCase();
+  }, [caseId, isSingleViewMode]);
+
+  const loadImage = useCallback((folder, index, side) => {
+    if (!currentCase?.images?.[folder]?.[index]) return;
+    
+    const imageUrl = `${process.env.REACT_APP_SPACES_URL}/${currentCase.images[folder][index]}`;
+    
+    if (side === 'left' && leftViewerRef.current) {
+      leftViewerRef.current.src = imageUrl;
+      setCurrentIndexLeft(index);
+    } else if (side === 'right' && rightViewerRef.current) {
+      rightViewerRef.current.src = imageUrl;
+      setCurrentIndexRight(index);
+    } else if (side === 'single' && singleViewerRef.current) {
+      singleViewerRef.current.src = imageUrl;
+      setCurrentIndexLeft(index);
     }
   }, [currentCase]);
 
-  // ==================== FONCTION handleScroll SIMPLIFIÉE ==================== 
-  
-  const handleScroll = useCallback((deltaY, slowMode = false, side) => {
-    const threshold = slowMode ? 10 : 50;
+  // ==================== GESTION DU SCROLL ====================
+
+  const handleScroll = useCallback((deltaY, useAccumulation = false, side) => {
+    if (!currentCase) return;
+    
+    const threshold = useAccumulation ? 30 : 50;
     
     setAccumulatedDelta(prev => {
       const newDelta = prev + deltaY;
@@ -160,24 +184,25 @@ function RadiologyViewer() {
     });
   }, []);
 
+  // 🔧 CORRECTION PRINCIPALE : Application immédiate des transformations pour éliminer le décalage
   const handlePan = useCallback((side, deltaX, deltaY) => {
     setImageControls(prevControls => {
       const newControls = {
         ...prevControls,
         [side]: {
           ...prevControls[side],
-          // CORRECTION : Application directe des deltas sans multiplication
-          // L'image suit exactement la souris maintenant
           translateX: prevControls[side].translateX + deltaX,
           translateY: prevControls[side].translateY + deltaY
         }
       };
       
-      // Application immédiate pour un suivi parfait de la souris
+      // APPLICATION IMMÉDIATE - C'EST ÇA QUI RÈGLE LE PROBLÈME DE DÉCALAGE !
       const imageElement = side === 'left' ? leftViewerRef.current : 
                            side === 'right' ? rightViewerRef.current : 
                            singleViewerRef.current;
+      
       if (imageElement) {
+        // Transformation CSS appliquée INSTANTANÉMENT, pas d'attente de re-render
         imageElement.style.transform = `scale(${newControls[side].scale}) translate(${newControls[side].translateX}px, ${newControls[side].translateY}px)`;
       }
       
@@ -459,227 +484,219 @@ function RadiologyViewer() {
             lastScrollTime = currentTime;
           }
         }
-        
-        touchStartY = currentY;
       };
 
-      const preventRefresh = (e) => {
-        e.preventDefault();
-      };
-
-      document.body.style.overflow = 'hidden';
-      document.addEventListener('touchmove', preventRefresh, { passive: false });
-      viewer?.addEventListener('touchstart', handleTouchStart, { passive: true });
-      viewer?.addEventListener('touchmove', handleTouchMove, { passive: false });
+      if (viewer) {
+        viewer.addEventListener('touchstart', handleTouchStart);
+        viewer.addEventListener('touchmove', handleTouchMove, { passive: false });
+      }
 
       return () => {
-        document.body.style.overflow = '';
-        document.removeEventListener('touchmove', preventRefresh);
-        viewer?.removeEventListener('touchstart', handleTouchStart);
-        viewer?.removeEventListener('touchmove', handleTouchMove);
+        if (viewer) {
+          viewer.removeEventListener('touchstart', handleTouchStart);
+          viewer.removeEventListener('touchmove', handleTouchMove);
+        }
       };
     }
   }, [isTouchDevice, handleScroll, isSingleViewMode]);
 
-  // Effect pour charger le cas - SIMPLIFIÉ SANS BOUCLE
-  useEffect(() => {
-    const fetchCase = async () => {
-      try {
-        const response = await axios.get(`/cases/${caseId}`);
-        const caseData = response.data;
-        setCurrentCase(caseData);
-        
-        if (caseData.folders && caseData.folders.length > 0) {
-          const firstFolder = caseData.folders[0];
-          setCurrentFolderLeft(firstFolder);
-          setCurrentFolderRight(firstFolder);
-          setCurrentIndexLeft(0);
-          setCurrentIndexRight(0);
-        }
-      } catch (error) {
-        console.error('Erreur lors de la récupération du cas:', error);
-      }
-    };
-
-    fetchCase();
-  }, [caseId]); // SEULEMENT caseId dans les dépendances
-
-  // Effect séparé pour charger les images initiales - CORRIGÉ
-  useEffect(() => {
-    if (currentCase && currentFolderLeft && leftViewerRef.current) {
-      // Charger seulement sur le viewer de gauche/single
-      loadImage(currentFolderLeft, currentIndexLeft, isSingleViewMode ? 'single' : 'left');
-    }
-  }, [currentCase, currentFolderLeft, currentIndexLeft, isSingleViewMode]); // Ajout currentIndexLeft
-  
-  // Effect séparé pour le viewer de droite
-  useEffect(() => {
-    if (currentCase && currentFolderRight && rightViewerRef.current && !isSingleViewMode) {
-      // Charger seulement sur le viewer de droite
-      loadImage(currentFolderRight, currentIndexRight, 'right');
-    }
-  }, [currentCase, currentFolderRight, currentIndexRight, isSingleViewMode]); // Ajout currentIndexRight
-
-  // Effect pour les transformations d'images
+  // Effect pour appliquer les transformations
   useEffect(() => {
     applyImageTransforms('left');
     applyImageTransforms('right');
     applyImageTransforms('single');
   }, [imageControls, applyImageTransforms]);
 
-  const renderViewer = useCallback((side) => (
-    <div 
-      className={`${styles.viewer} ${styles.viewerHalf}`}
-      onMouseDown={(e) => handleMouseDown(e, side)}
-      onMouseMove={(e) => handleMouseMove(e, side)}
-      onMouseUp={handleMouseUp}
-      onContextMenu={(e) => e.preventDefault()}
-      onDragOver={(e) => e.preventDefault()}
-      onDrop={(e) => handleDrop(e, side)}
-      onTouchStart={(e) => handleTouchStart(e, side)}
-      onTouchMove={(e) => handleTouchMove(e, side)}
-      onTouchEnd={handleTouchEnd}
-    >
-      <div className={styles.folderLabel}>
-        {side === 'left' ? currentFolderLeft : currentFolderRight}
-      </div>
-      <img 
-        ref={side === 'left' ? leftViewerRef : rightViewerRef}
-        className={styles.image} 
-        alt={`Image médicale ${side}`}
-      />
-    </div>
-  ), [handleMouseDown, handleMouseMove, handleMouseUp, handleDrop, 
-      handleTouchStart, handleTouchMove, handleTouchEnd, currentFolderLeft, currentFolderRight]);
+  // Effect pour gérer le redimensionnement
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
 
-  const renderFolderThumbnails = useCallback(() => {
-    if (!currentCase || !currentCase.folders) return null;
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-    return (
-      <div id="folder-thumbnails" className={styles.folderGrid}>
-        {currentCase.folders.map(folder => (
-          <div 
-            key={folder} 
-            className={styles.folderThumbnail}
-            draggable={!isMobile}
-            onDragStart={(e) => !isMobile && handleDragStart(e, folder)}
-            onClick={() => {
-              if (isMobile) {
-                loadImage(folder, 0, 'single');
-                setCurrentFolderLeft(folder);
-              }
-            }}
-          >
-            <img 
-              src={currentCase.folderMainImages?.[folder] || `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`}
-              alt={`${folder} thumbnail`} 
-              className={styles.folderThumbnailImage}
-              onError={(e) => {
-                if (e.target.src !== `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`) {
-                  e.target.src = `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`;
-                }
-              }}
-            />
-            <div className={styles.folderThumbnailLabel}>{folder}</div>
-          </div>
-        ))}
-      </div>
-    );
-  }, [currentCase, isMobile, handleDragStart, loadImage]);
-      
-  if (!currentCase) return <div>Chargement...</div>;
-      
+  // ==================== RENDER ==================== 
+
+  if (!currentCase) {
+    return <div className={styles.loading}>Chargement du cas...</div>;
+  }
+
+  const currentLeftFolder = currentFolderLeft || Object.keys(currentCase.images)[0];
+  const currentRightFolder = currentFolderRight || Object.keys(currentCase.images)[1] || Object.keys(currentCase.images)[0];
+
   return (
     <div className={styles.container}>
+      {/* En-tête avec navigation */}
+      <div className={styles.header}>
+        <Link to="/cases" className={styles.backButton}>
+          <ChevronLeft size={20} />
+          Retour aux cas
+        </Link>
+        <h1 className={styles.title}>{currentCase.title}</h1>
+        <div className={styles.headerControls}>
+          <button 
+            onClick={toggleViewMode}
+            className={styles.viewModeButton}
+          >
+            {isSingleViewMode ? 'Vue double' : 'Vue simple'}
+          </button>
+          <button 
+            onClick={() => setIsResponseVisible(!isResponseVisible)}
+            className={styles.responseButton}
+          >
+            {isResponseVisible ? <EyeOff size={16} /> : <Eye size={16} />}
+            {isResponseVisible ? 'Cacher' : 'Montrer'} réponse
+          </button>
+        </div>
+      </div>
+
+      {/* Contenu principal */}
       <div className={styles.content}>
         <div className={styles.layout}>
-          {renderFolderThumbnails()}
-          <div id="main-viewer" className={styles.mainViewer}>
+          {/* Galerie de dossiers */}
+          <div className={styles.folderGrid}>
+            {Object.entries(currentCase.images).map(([folder, images]) => {
+              if (!images || images.length === 0) return null;
+              
+              return (
+                <div
+                  key={folder}
+                  className={styles.folderThumbnail}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, folder)}
+                  onClick={() => loadImage(folder, 0, isSingleViewMode ? 'single' : 'left')}
+                >
+                  <img
+                    src={`${process.env.REACT_APP_SPACES_URL}/${images[0]}`}
+                    alt={`${folder} thumbnail`}
+                    className={styles.folderThumbnailImage}
+                  />
+                  <div className={styles.folderThumbnailLabel}>
+                    {folder} ({images.length})
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Viewer principal */}
+          <div className={styles.mainViewer} id="main-viewer">
             {isSingleViewMode ? (
+              /* Vue simple */
               <div 
-                className={`${styles.viewer} ${styles.singleViewer}`}
+                className={styles.singleViewer}
+                onDrop={(e) => handleDrop(e, 'single')}
+                onDragOver={(e) => e.preventDefault()}
                 onMouseDown={(e) => handleMouseDown(e, 'single')}
                 onMouseMove={(e) => handleMouseMove(e, 'single')}
                 onMouseUp={handleMouseUp}
-                onContextMenu={(e) => e.preventDefault()}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => handleDrop(e, 'single')}
                 onTouchStart={(e) => handleTouchStart(e, 'single')}
                 onTouchMove={(e) => handleTouchMove(e, 'single')}
                 onTouchEnd={handleTouchEnd}
               >
-                <div className={styles.folderLabel}>
-                  {currentFolderLeft}
+                <div className={styles.viewer}>
+                  <img
+                    ref={singleViewerRef}
+                    className={styles.image}
+                    alt="Vue radiologique"
+                    draggable={false}
+                  />
+                  <div className={styles.folderLabel}>
+                    {currentLeftFolder} - {currentIndexLeft + 1}/{currentCase.images[currentLeftFolder]?.length || 0}
+                  </div>
                 </div>
-                <img 
-                  ref={singleViewerRef}
-                  className={styles.image} 
-                  alt="Image médicale"
-                />
               </div>
             ) : (
+              /* Vue double */
               <div className={styles.dualViewer}>
-                {renderViewer('left')}
-                {renderViewer('right')}
+                <div 
+                  className={styles.viewerHalf}
+                  onDrop={(e) => handleDrop(e, 'left')}
+                  onDragOver={(e) => e.preventDefault()}
+                  onMouseDown={(e) => handleMouseDown(e, 'left')}
+                  onMouseMove={(e) => handleMouseMove(e, 'left')}
+                  onMouseUp={handleMouseUp}
+                  onTouchStart={(e) => handleTouchStart(e, 'left')}
+                  onTouchMove={(e) => handleTouchMove(e, 'left')}
+                  onTouchEnd={handleTouchEnd}
+                >
+                  <div className={styles.viewer}>
+                    <img
+                      ref={leftViewerRef}
+                      className={styles.image}
+                      alt="Vue radiologique gauche"
+                      draggable={false}
+                    />
+                    <div className={styles.folderLabel}>
+                      {currentLeftFolder} - {currentIndexLeft + 1}/{currentCase.images[currentLeftFolder]?.length || 0}
+                    </div>
+                  </div>
+                </div>
+                
+                <div 
+                  className={styles.viewerHalf}
+                  onDrop={(e) => handleDrop(e, 'right')}
+                  onDragOver={(e) => e.preventDefault()}
+                  onMouseDown={(e) => handleMouseDown(e, 'right')}
+                  onMouseMove={(e) => handleMouseMove(e, 'right')}
+                  onMouseUp={handleMouseUp}
+                  onTouchStart={(e) => handleTouchStart(e, 'right')}
+                  onTouchMove={(e) => handleTouchMove(e, 'right')}
+                  onTouchEnd={handleTouchEnd}
+                >
+                  <div className={styles.viewer}>
+                    <img
+                      ref={rightViewerRef}
+                      className={styles.image}
+                      alt="Vue radiologique droite"
+                      draggable={false}
+                    />
+                    <div className={styles.folderLabel}>
+                      {currentRightFolder} - {currentIndexRight + 1}/{currentCase.images[currentRightFolder]?.length || 0}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
         </div>
-      </div>
 
-      <div className={styles.bottomBar}>
+        {/* Guide des raccourcis */}
         <div className={styles.shortcutGuide}>
-          <div 
-            className={styles.shortcutIcon}
-            onClick={() => setIsShortcutGuideVisible(!isShortcutGuideVisible)}
-            title="Guide des raccourcis"
-          >
-            ?
+          <div className={styles.shortcutGroup}>
+            <span className={styles.shortcutLabel}>Navigation:</span>
+            <span className={styles.shortcutKey}>Molette</span>
+            <span className={styles.shortcutKey}>Flèches ↑↓</span>
           </div>
-          {isShortcutGuideVisible && (
-            <div className={`${styles.shortcutPopup} ${styles.visible}`}>
-              <div className={styles.shortcutTitle}>Raccourcis clavier</div>
-              <ul className={styles.shortcutList}>
-                <li><strong>& (1)</strong> Mode simple</li>
-                <li><strong>é (2)</strong> Mode double</li>
-                <li><strong>↑ ↓</strong> Navigation</li>
-                <li><strong>Shift + clic</strong> Panoramique</li>
-                <li><strong>Clic droit</strong> Zoom</li>
-                <li><strong>Shift + clic droit</strong> Contraste</li>
-              </ul>
-            </div>
-          )}
+          <div className={styles.shortcutGroup}>
+            <span className={styles.shortcutLabel}>Zoom:</span>
+            <span className={styles.shortcutKey}>Ctrl + Molette</span>
+          </div>
+          <div className={styles.shortcutGroup}>
+            <span className={styles.shortcutLabel}>Déplacer:</span>
+            <span className={styles.shortcutKey}>Shift + Clic gauche</span>
+          </div>
+          <div className={styles.shortcutGroup}>
+            <span className={styles.shortcutLabel}>Vue:</span>
+            <span className={styles.shortcutKey}>1/2</span>
+          </div>
         </div>
-        <div>
-          <button 
-            className={styles.responseButton}
-            onClick={() => setIsResponseVisible(!isResponseVisible)}
-          >
-            {isResponseVisible ? (
-              <>
-                <EyeOff size={16} />
-                Cacher la réponse
-              </>
-            ) : (
-              <>
-                <Eye size={16} />
-                Voir la réponse
-              </>
-            )}
-          </button>
-          <Link to={`/sheet/${caseId}`} className={styles.sheetLink}>
-            📋 Fiche récapitulative
-          </Link>
-        </div>
-      </div>
 
-      {isResponseVisible && currentCase && currentCase.answer && (
-        <div className={styles.responseBox}>
-          <p className={styles.responseText}>{currentCase.answer}</p>
-        </div>
-      )}
+        {/* Réponse (si visible) */}
+        {isResponseVisible && currentCase.response && (
+          <div className={styles.responseSection}>
+            <h3>Réponse</h3>
+            <div 
+              className={styles.responseContent}
+              dangerouslySetInnerHTML={{ __html: currentCase.response }}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-export default memo(RadiologyViewer);
+export default RadiologyViewer;
