@@ -664,10 +664,6 @@ function PublicCasesPage() {
     <ModernPageContainer>
       <HeaderSection>
         <MainTitle>📂 Cas Cliniques Publics</MainTitle>
-        <SubTitle>
-          Explorez une collection de cas cliniques partagés par la communauté. 
-          Apprenez, pratiquez et enrichissez vos connaissances en radiologie.
-        </SubTitle>
       </HeaderSection>
 
       <SearchBar

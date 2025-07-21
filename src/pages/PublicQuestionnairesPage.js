@@ -782,9 +782,6 @@ function PublicQuestionnairesPage() {
   return (
     <PageContainer>
       <Title>🗂️ Questionnaires Publics</Title>
-      <Subtitle>
-        Découvrez et utilisez les questionnaires partagés par la communauté
-      </Subtitle>
 
       <ContentWrapper>
         {/* SECTION FILTRES */}
