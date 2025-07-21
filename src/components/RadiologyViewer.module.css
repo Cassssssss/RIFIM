@@ -7,7 +7,8 @@
   width: 100%;
   height: calc(100vh - 60px);
   left: 0;
-  top: 60px;
+  /* 🔧 CORRECTION : Décaler plus bas pour éviter le chevauchement avec le header */
+  top: 80px; /* Augmenté de 60px à 80px */
   display: flex;
   flex-direction: column;
   background: linear-gradient(135deg, rgb(var(--color-background)) 0%, rgb(var(--color-surface)) 100%);
@@ -23,7 +24,8 @@
   background-color: rgb(var(--color-background));
   overflow: hidden;
   margin: 0;
-  padding: 0;
+  /* 🔧 CORRECTION : Ajout d'un padding-top pour plus d'espace */
+  padding: 10px 0 0 0; /* Ajout de 10px de padding en haut */
   min-height: 0;
 }
 
@@ -45,7 +47,8 @@
 
 /* ==================== FOLDER GRID MODERNISÉ ==================== */
 .folderGrid {
-  width: 80px;
+  /* 🔧 CORRECTION : Augmentation de la largeur des miniatures */
+  width: 120px; /* Augmenté de 80px à 120px */
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -78,7 +81,8 @@
   }
   
   @media (max-width: 768px) {
-    width: 60px;
+    /* 🔧 CORRECTION : Aussi plus large sur mobile */
+    width: 80px; /* Augmenté de 60px à 80px */
     padding: 0.25rem;
     gap: 0.25rem;
   }
@@ -87,8 +91,9 @@
 .folderThumbnail {
   width: 100%;
   aspect-ratio: 1;
-  min-height: 60px;
-  max-height: 60px;
+  /* 🔧 CORRECTION : Augmentation de la taille des miniatures */
+  min-height: 90px; /* Augmenté de 60px à 90px */
+  max-height: 90px; /* Augmenté de 60px à 90px */
   border-radius: 8px;
   overflow: hidden;
   position: relative;
@@ -129,9 +134,10 @@
   right: 0;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
   color: white;
-  font-size: 10px;
+  /* 🔧 CORRECTION : Légèrement plus grande la police */
+  font-size: 11px; /* Augmenté de 10px à 11px */
   font-weight: 600;
-  padding: 4px 2px;
+  padding: 6px 4px; /* Augmenté le padding de 4px 2px à 6px 4px */
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -230,31 +236,34 @@
 
 .folderLabel {
   position: absolute;
-  top: 12px;
-  left: 12px;
-  background: rgba(0, 0, 0, 0.75);
-  color: rgba(255, 255, 255, 0.9);
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
+  /* 🔧 CORRECTION : Position du label pour éviter le chevauchement */
+  top: 20px; /* Augmenté de 12px à 20px */
+  left: 15px; /* Augmenté de 12px à 15px */
+  background: rgba(0, 0, 0, 0.85); /* Plus opaque */
+  color: rgba(255, 255, 255, 0.95);
+  padding: 8px 12px; /* Augmenté de 6px 10px à 8px 12px */
+  border-radius: 8px; /* Augmenté de 6px à 8px */
+  /* 🔧 CORRECTION : Police légèrement plus grande */
+  font-size: 14px; /* Augmenté de 12px à 14px */
+  font-weight: 600; /* Augmenté de 500 à 600 */
   z-index: 10;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4); /* Ombre plus marquée */
+  backdrop-filter: blur(10px); /* Plus de flou */
+  border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
   
   /* Style plus discret et professionnel */
   &:hover {
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.9);
     color: white;
+    transform: scale(1.02);
   }
   
   @media (max-width: 768px) {
-    top: 8px;
-    left: 8px;
-    padding: 4px 8px;
-    font-size: 11px;
+    top: 12px;
+    left: 12px;
+    padding: 6px 10px;
+    font-size: 12px;
   }
 }
 
