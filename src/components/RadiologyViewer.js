@@ -107,7 +107,7 @@ function RadiologyViewer() {
         const images = currentCase.images[currentFolder];
         
         if (images) {
-          // 🚨 CHANGEMENT : Pas de modulo, mais des limites strictes
+          // 🚨 CHANGEMENT : Remplacer le modulo par des limites strictes
           let newIndex = currentIndex + direction;
           
           // Empêcher de dépasser les limites (pas de boucle)
@@ -117,10 +117,8 @@ function RadiologyViewer() {
             newIndex = images.length - 1; // Bloquer à la dernière image
           }
           
-          // Charger l'image seulement si l'index a changé
-          if (newIndex !== currentIndex) {
-            loadImage(currentFolder, newIndex, side);
-          }
+          // Charger l'image (même si l'index ne change pas pour être cohérent avec votre code)
+          loadImage(currentFolder, newIndex, side);
         }
         return 0;
       }
