@@ -72,103 +72,34 @@ function RadiologyViewer() {
 
   const [theme] = useState(document.documentElement.getAttribute('data-theme') || 'light');
 
-  // ==================== OPTIMISATIONS DE PERFORMANCE ====================
+  // ==================== FONCTION loadImage SIMPLIFIÉE ==================== 
   
-  // Cache pour les images et queue de préchargement
-  const imageCache = useRef(new Map());
-  const preloadQueue = useRef(new Set());
-
-  // Fonction helper pour définir la source d'image
-  const setImageSrc = useCallback((side, url, index) => {
-    const imageElement = side === 'left' ? leftViewerRef.current :
-                         side === 'right' ? rightViewerRef.current :
-                         singleViewerRef.current;
-    
-    if (imageElement) {
-      imageElement.src = url;
-      if (side === 'left' || side === 'single') {
-        setCurrentIndexLeft(index);
-      } else if (side === 'right') {
-        setCurrentIndexRight(index);
-      }
-    }
-  }, []);
-
-  // Préchargement des images adjacentes
-  const preloadAdjacentImages = useCallback((folder, currentIndex) => {
-    if (!currentCase?.images?.[folder]) return;
-    
-    const images = currentCase.images[folder];
-    const preloadIndices = [];
-    
-    // Précharger 2 images avant et après l'index actuel
-    for (let i = -2; i <= 2; i++) {
-      const index = currentIndex + i;
-      if (index >= 0 && index < images.length && index !== currentIndex) {
-        preloadIndices.push(index);
-      }
-    }
-    
-    preloadIndices.forEach(index => {
-      const cacheKey = `${folder}-${index}`;
-      if (!imageCache.current.has(cacheKey) && !preloadQueue.current.has(cacheKey)) {
-        preloadQueue.current.add(cacheKey);
-        
-        const imagePath = images[index];
-        const imageUrl = imagePath.startsWith('http') ? imagePath : `${process.env.REACT_APP_SPACES_URL}/${imagePath}`;
-        
-        const img = new Image();
-        img.onload = () => {
-          imageCache.current.set(cacheKey, imageUrl);
-          preloadQueue.current.delete(cacheKey);
-        };
-        img.onerror = () => {
-          preloadQueue.current.delete(cacheKey);
-        };
-        img.src = imageUrl;
-      }
-    });
-  }, [currentCase]);
-
-  // Fonction loadImage optimisée avec cache et préchargement
   const loadImage = useCallback((folder, index, side) => {
-    console.log('Loading image:', folder, index, side);
     if (currentCase && currentCase.images && currentCase.images[folder]) {
       const imagePath = currentCase.images[folder][index];
       if (imagePath) {
         const imageUrl = imagePath.startsWith('http') ? imagePath : `${process.env.REACT_APP_SPACES_URL}/${imagePath}`;
-        
-        // Vérifier le cache d'abord
-        const cacheKey = `${folder}-${index}`;
-        if (imageCache.current.has(cacheKey)) {
-          const cachedUrl = imageCache.current.get(cacheKey);
-          setImageSrc(side, cachedUrl, index);
-          return;
-        }
-        
         const imageElement = side === 'left' ? leftViewerRef.current :
                              side === 'right' ? rightViewerRef.current :
                              singleViewerRef.current;
         
         if (imageElement) {
-          // Précharger l'image pour éviter les clignotements
-          const img = new Image();
-          img.onload = () => {
-            imageCache.current.set(cacheKey, imageUrl); // Mettre en cache
-            setImageSrc(side, imageUrl, index);
-            preloadAdjacentImages(folder, index); // Précharger les images adjacentes
-          };
-          img.src = imageUrl;
+          imageElement.src = imageUrl;
+          // Mise à jour des index
+          if (side === 'left' || side === 'single') {
+            setCurrentIndexLeft(index);
+          } else if (side === 'right') {
+            setCurrentIndexRight(index);
+          }
         }
       }
     }
-  }, [currentCase, setImageSrc, preloadAdjacentImages]);
+  }, [currentCase]);
 
-  // Fonction handleScroll optimisée - CORRIGÉE AVEC DEBUG
+  // ==================== FONCTION handleScroll SIMPLIFIÉE ==================== 
+  
   const handleScroll = useCallback((deltaY, slowMode = false, side) => {
-    const threshold = slowMode ? 5 : 25; // Seuil réduit pour plus de réactivité
-    
-    console.log('handleScroll called:', { deltaY, side, currentFolderLeft, currentFolderRight, currentIndexLeft, currentIndexRight });
+    const threshold = slowMode ? 10 : 50;
     
     setAccumulatedDelta(prev => {
       const newDelta = prev + deltaY;
@@ -177,8 +108,6 @@ function RadiologyViewer() {
         const currentFolder = side === 'left' || side === 'single' ? currentFolderLeft : currentFolderRight;
         const currentIndex = side === 'left' || side === 'single' ? currentIndexLeft : currentIndexRight;
         const images = currentCase?.images?.[currentFolder];
-        
-        console.log('Scroll triggered:', { direction, currentFolder, currentIndex, imagesLength: images?.length });
         
         if (images && images.length > 0) {
           let newIndex = currentIndex + direction;
@@ -190,20 +119,10 @@ function RadiologyViewer() {
             newIndex = images.length - 1;
           }
           
-          console.log('New index calculated:', newIndex);
-          
-          // Charger uniquement si l'index a changé
+          // Charger la nouvelle image
           if (newIndex !== currentIndex) {
-            console.log('Loading new image:', { currentFolder, newIndex, side });
-            // Utilisation de requestAnimationFrame pour une fluidité optimale
-            requestAnimationFrame(() => {
-              loadImage(currentFolder, newIndex, side);
-            });
-          } else {
-            console.log('Index unchanged, no image load needed');
+            loadImage(currentFolder, newIndex, side);
           }
-        } else {
-          console.log('No images found for folder:', currentFolder);
         }
         return 0;
       }
@@ -237,16 +156,6 @@ function RadiologyViewer() {
         }
       };
       
-      // Application immédiate pour éviter les décalages
-      requestAnimationFrame(() => {
-        const imageElement = side === 'left' ? leftViewerRef.current : 
-                             side === 'right' ? rightViewerRef.current : 
-                             singleViewerRef.current;
-        if (imageElement) {
-          imageElement.style.transform = `scale(${newControls[side].scale}) translate(${newControls[side].translateX}px, ${newControls[side].translateY}px)`;
-        }
-      });
-      
       return newControls;
     });
   }, []);
@@ -264,16 +173,6 @@ function RadiologyViewer() {
         }
       };
       
-      // Application immédiate pour éviter les décalages
-      requestAnimationFrame(() => {
-        const imageElement = side === 'left' ? leftViewerRef.current : 
-                             side === 'right' ? rightViewerRef.current : 
-                             singleViewerRef.current;
-        if (imageElement) {
-          imageElement.style.transform = `scale(${newControls[side].scale}) translate(${newControls[side].translateX}px, ${newControls[side].translateY}px)`;
-        }
-      });
-      
       return newControls;
     });
   }, []);
@@ -289,16 +188,6 @@ function RadiologyViewer() {
           contrast: Math.max(0, Math.min(300, prevControls[side].contrast + (deltaX * contrastSensitivity)))
         }
       };
-      
-      // Application immédiate pour éviter les décalages
-      requestAnimationFrame(() => {
-        const imageElement = side === 'left' ? leftViewerRef.current : 
-                             side === 'right' ? rightViewerRef.current : 
-                             singleViewerRef.current;
-        if (imageElement) {
-          imageElement.style.filter = `contrast(${newControls[side].contrast}%) brightness(${newControls[side].brightness}%)`;
-        }
-      });
       
       return newControls;
     });
@@ -456,55 +345,33 @@ function RadiologyViewer() {
     setIsAdjustingContrast(false);
   }, []);
 
-  // ==================== GESTION DES ÉVÉNEMENTS WHEEL - SOLUTION CORRIGÉE ==================== 
+  // ==================== GESTION DES ÉVÉNEMENTS WHEEL - VERSION SIMPLIFIÉE ==================== 
   
-  useEffect(() => {
-    const handleWheelEvent = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+  const handleWheelEvent = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Identifier le viewer ciblé
+    let targetSide = isSingleViewMode ? 'single' : 'left';
+    
+    if (!isSingleViewMode) {
+      const viewers = document.querySelectorAll(`.${styles.viewerHalf}`);
+      const leftViewer = viewers[0];
+      const rightViewer = viewers[1];
       
-      // Identifier quel viewer est ciblé - LOGIQUE CORRIGÉE
-      let targetSide = isSingleViewMode ? 'single' : 'left';
-      
-      if (!isSingleViewMode) {
-        const target = e.target.closest(`.${styles.viewer}`);
-        if (target) {
-          // Méthode plus fiable pour identifier le viewer
-          const viewers = document.querySelectorAll(`.${styles.viewerHalf}`);
-          const leftViewer = viewers[0];
-          const rightViewer = viewers[1];
-          
-          if (target === rightViewer) {
-            targetSide = 'right';
-          } else {
-            targetSide = 'left';
-          }
-        }
+      if (e.target.closest(`.${styles.viewer}`) === rightViewer) {
+        targetSide = 'right';
       }
-      
-      if (e.ctrlKey || e.metaKey) {
-        handleZoom(targetSide, -e.deltaY);
-      } else {
-        // Sensibilité réduite pour un meilleur contrôle
-        const scaledDelta = e.deltaY * 1.0; // AUGMENTÉ pour plus de réactivité
-        handleScroll(scaledDelta, false, targetSide);
-      }
-    };
-
-    // Attacher l'événement à l'élément parent principal
-    const mainViewer = document.getElementById('main-viewer');
-    if (mainViewer) {
-      mainViewer.addEventListener('wheel', handleWheelEvent, { passive: false });
     }
+    
+    if (e.ctrlKey || e.metaKey) {
+      handleZoom(targetSide, -e.deltaY);
+    } else {
+      handleScroll(e.deltaY, false, targetSide);
+    }
+  }, [isSingleViewMode, handleZoom, handleScroll]);
 
-    return () => {
-      if (mainViewer) {
-        mainViewer.removeEventListener('wheel', handleWheelEvent);
-      }
-    };
-  }, [handleZoom, handleScroll, isSingleViewMode]);
-
-  // ==================== AUTRES EFFECTS ====================
+  // ==================== EFFECTS ==================== 
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -516,20 +383,21 @@ function RadiologyViewer() {
     }
   }, [isMobile]);
 
-  // Nettoyage du cache périodique
+  // Effect pour gérer la molette - SIMPLIFIÉ
   useEffect(() => {
-    const cleanupInterval = setInterval(() => {
-      if (imageCache.current.size > 50) {
-        const entries = Array.from(imageCache.current.entries());
-        const toKeep = entries.slice(-30);
-        imageCache.current.clear();
-        toKeep.forEach(([key, value]) => imageCache.current.set(key, value));
+    const mainViewer = document.getElementById('main-viewer');
+    if (mainViewer) {
+      mainViewer.addEventListener('wheel', handleWheelEvent, { passive: false });
+    }
+
+    return () => {
+      if (mainViewer) {
+        mainViewer.removeEventListener('wheel', handleWheelEvent);
       }
-    }, 30000);
+    };
+  }, [handleWheelEvent]);
 
-    return () => clearInterval(cleanupInterval);
-  }, []);
-
+  // Effect pour les touches clavier
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "&") {
@@ -551,13 +419,13 @@ function RadiologyViewer() {
     };
   }, [handleScroll, isSingleViewMode, toggleViewMode]);
 
-  // Événements touch optimisés
+  // Effect pour les événements touch
   useEffect(() => {
     if (isTouchDevice) {
       const viewer = document.querySelector(`.${styles.viewer}`);
       let touchStartY = 0;
       let lastScrollTime = 0;
-      const scrollDelay = 16; // ~60fps
+      const scrollDelay = 50;
       
       const handleTouchStart = (e) => {
         touchStartY = e.touches[0].clientY;
@@ -570,9 +438,9 @@ function RadiologyViewer() {
         const currentTime = Date.now();
         
         if (currentTime - lastScrollTime > scrollDelay) {
-          if (Math.abs(deltaY) > 3) {
+          if (Math.abs(deltaY) > 10) {
             const direction = deltaY > 0 ? 1 : -1;
-            handleScroll(direction * 20, false, isSingleViewMode ? 'single' : 'left');
+            handleScroll(direction * 50, false, isSingleViewMode ? 'single' : 'left');
             lastScrollTime = currentTime;
           }
         }
@@ -598,31 +466,20 @@ function RadiologyViewer() {
     }
   }, [isTouchDevice, handleScroll, isSingleViewMode]);
 
+  // Effect pour charger le cas - SIMPLIFIÉ SANS BOUCLE
   useEffect(() => {
     const fetchCase = async () => {
       try {
         const response = await axios.get(`/cases/${caseId}`);
         const caseData = response.data;
-        console.log('Case data loaded:', caseData);
         setCurrentCase(caseData);
         
         if (caseData.folders && caseData.folders.length > 0) {
           const firstFolder = caseData.folders[0];
-          console.log('Setting first folder:', firstFolder);
           setCurrentFolderLeft(firstFolder);
           setCurrentFolderRight(firstFolder);
-          
-          // Assurer que les index sont à 0 au départ
           setCurrentIndexLeft(0);
           setCurrentIndexRight(0);
-          
-          // Charger les images initiales
-          setTimeout(() => {
-            loadImage(firstFolder, 0, isSingleViewMode ? 'single' : 'left');
-            if (!isSingleViewMode) {
-              loadImage(firstFolder, 0, 'right');
-            }
-          }, 100); // Petit délai pour s'assurer que les refs sont prêts
         }
       } catch (error) {
         console.error('Erreur lors de la récupération du cas:', error);
@@ -630,7 +487,24 @@ function RadiologyViewer() {
     };
 
     fetchCase();
-  }, [caseId, loadImage, isSingleViewMode]);
+  }, [caseId]); // SEULEMENT caseId dans les dépendances
+
+  // Effect séparé pour charger les images initiales
+  useEffect(() => {
+    if (currentCase && currentFolderLeft && leftViewerRef.current) {
+      loadImage(currentFolderLeft, 0, isSingleViewMode ? 'single' : 'left');
+      if (!isSingleViewMode && rightViewerRef.current) {
+        loadImage(currentFolderLeft, 0, 'right');
+      }
+    }
+  }, [currentCase, currentFolderLeft, isSingleViewMode]); // Dépendances correctes
+
+  // Effect pour les transformations d'images
+  useEffect(() => {
+    applyImageTransforms('left');
+    applyImageTransforms('right');
+    applyImageTransforms('single');
+  }, [imageControls, applyImageTransforms]);
 
   const renderViewer = useCallback((side) => (
     <div 
