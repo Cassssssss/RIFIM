@@ -930,13 +930,9 @@ function RadiologyViewer() {
       case 3:
         return (
           <div className={styles.tripleViewer}>
-            <div className={styles.tripleTop}>
-              {renderViewer('topLeft', styles.viewerHalf)}
-              {renderViewer('topRight', styles.viewerHalf)}
-            </div>
-            <div className={styles.tripleBottom}>
-              {renderViewer('bottomLeft', styles.viewerFull)}
-            </div>
+            {renderViewer('topLeft', styles.viewerThird)}
+            {renderViewer('topRight', styles.viewerThird)}
+            {renderViewer('bottomLeft', styles.viewerThird)}
           </div>
         );
       

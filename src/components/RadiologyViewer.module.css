@@ -180,15 +180,16 @@
 
 /* ==================== 🔧 NOUVEAUX MODES 3 ET 4 VIEWERS ==================== */
 
-/* Mode 3 viewers */
+/* Mode 3 viewers - 3 côte à côte */
 .tripleViewer {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   width: 100%;
   height: 100%;
   gap: 0.5rem;
   
   @media (max-width: 768px) {
+    flex-direction: column;
     gap: 0.25rem;
   }
 }
@@ -196,21 +197,23 @@
 .tripleTop {
   display: flex;
   width: 100%;
-  height: 50%;
+  height: 100%;
   gap: 0.5rem;
   
   @media (max-width: 768px) {
+    flex-direction: column;
     gap: 0.25rem;
-    height: 60%;
+    height: 100%;
   }
 }
 
 .tripleBottom {
-  width: 100%;
-  height: 50%;
+  width: 33.333%;
+  height: 100%;
   
   @media (max-width: 768px) {
-    height: 40%;
+    width: 100%;
+    height: 33.333%;
   }
 }
 
@@ -247,13 +250,18 @@
   }
 }
 
-.viewerFull {
-  width: 100%;
+.viewerThird {
+  width: 33.333%;
   height: 100%;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 33.333%;
+  }
 }
 
 /* ==================== VIEWER TYPES MODERNISÉS + OPTIMISATIONS ==================== */
-.viewer, .viewerHalf, .singleViewer, .viewerQuarter, .viewerFull {
+.viewer, .viewerHalf, .singleViewer, .viewerQuarter, .viewerThird {
   position: relative;
   margin: 0;
   padding: 0;
@@ -665,7 +673,7 @@
     border-radius: 8px;
   }
   
-  .viewer, .viewerHalf, .singleViewer, .viewerQuarter, .viewerFull {
+  .viewer, .viewerHalf, .singleViewer, .viewerQuarter, .viewerThird {
     border-radius: 8px;
   }
   
@@ -674,7 +682,7 @@
     gap: 0.25rem;
   }
   
-  .viewerQuarter {
+  .viewerThird {
     min-height: 120px; /* Taille minimum sur mobile */
   }
 }
