@@ -161,17 +161,25 @@ function RadiologyViewer() {
   }, []);
 
   const handlePan = useCallback((side, deltaX, deltaY) => {
-    const panSensitivity = 2;
-    
     setImageControls(prevControls => {
       const newControls = {
         ...prevControls,
         [side]: {
           ...prevControls[side],
-          translateX: prevControls[side].translateX + (deltaX * panSensitivity),
-          translateY: prevControls[side].translateY + (deltaY * panSensitivity)
+          // CORRECTION : Application directe des deltas sans multiplication
+          // L'image suit exactement la souris maintenant
+          translateX: prevControls[side].translateX + deltaX,
+          translateY: prevControls[side].translateY + deltaY
         }
       };
+      
+      // Application immédiate pour un suivi parfait de la souris
+      const imageElement = side === 'left' ? leftViewerRef.current : 
+                           side === 'right' ? rightViewerRef.current : 
+                           singleViewerRef.current;
+      if (imageElement) {
+        imageElement.style.transform = `scale(${newControls[side].scale}) translate(${newControls[side].translateX}px, ${newControls[side].translateY}px)`;
+      }
       
       return newControls;
     });

@@ -1,22 +1,22 @@
 /* ==================== VARIABLES CSS POUR LE THÈME ==================== */
 /* Ces variables sont automatiquement définies par le thème dans theme.js */
 
-/* ==================== BASE CONTAINER ==================== */
+/* ==================== BASE CONTAINER - FIXÉ POUR ÉVITER LES DÉCALAGES ==================== */
 .container {
-  position: absolute;
+  position: fixed;          /* ← CHANGÉ de absolute à fixed */
   width: 100%;
   height: calc(100vh - 60px);
   left: 0;
-  /* 🔧 CORRECTION : Décaler plus bas pour éviter le chevauchement avec le header */
-  top: 70px; /* Augmenté de 60px à 80px */
+  top: 70px;
   display: flex;
   flex-direction: column;
   background: linear-gradient(135deg, rgb(var(--color-background)) 0%, rgb(var(--color-surface)) 100%);
-  overflow: hidden;
+  overflow: hidden;         /* Empêche tout scroll */
   color: rgb(var(--color-text));
+  z-index: 100;            /* S'assure qu'il reste au-dessus */
 }
 
-/* ==================== CONTENT ET LAYOUT ==================== */
+/* ==================== CONTENT ET LAYOUT - AJUSTÉS POUR LA BOTTOM BAR FIXE ==================== */
 .content {
   flex: 1;
   display: flex;
@@ -24,15 +24,14 @@
   background-color: rgb(var(--color-background));
   overflow: hidden;
   margin: 0;
-  /* 🔧 CORRECTION : Ajout d'un padding-top pour plus d'espace */
-  padding: 10px 0 0 0; /* Ajout de 10px de padding en haut */
+  padding: 10px 0 70px 0; /* ← AJOUTÉ padding-bottom pour la bottom bar */
   min-height: 0;
 }
 
 .layout {
   flex: 1;
   display: flex;
-  height: calc(100% - 50px);
+  height: calc(100% - 10px); /* ← AJUSTÉ pour tenir compte du padding */
   background-color: rgb(var(--color-background));
   margin: 0;
   padding: 0;
@@ -42,6 +41,7 @@
   @media (max-width: 768px) {
     flex-direction: row;
     gap: 0.25rem;
+    height: calc(100% - 60px); /* ← AJUSTÉ pour mobile */
   }
 }
 
@@ -278,32 +278,29 @@
   }
 }
 
-/* ==================== BOTTOM BAR ADAPTATIVE AU THÈME ==================== */
+/* ==================== BOTTOM BAR - FIXÉE POUR ÉVITER LES DÉCALAGES ==================== */
 .bottomBar {
+  position: fixed;          /* ← AJOUTÉ fixed pour qu'elle reste en place */
+  bottom: 0;                /* ← AJOUTÉ pour la fixer en bas */
+  left: 0;                  /* ← AJOUTÉ pour qu'elle couvre toute la largeur */
   height: 60px;
   width: 100%;
   margin: 0;
   padding: 0 24px;
-  /* CORRIGÉ : Utilise les couleurs du thème au lieu d'une couleur fixe */
   background: var(--header-background, #4f5b93);
   color: var(--header-text, #ffffff);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  z-index: 1000;
+  z-index: 1000;            /* ← AUGMENTÉ pour rester au-dessus */
   box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   transition: background-color 0.3s ease, color 0.3s ease;
   
   @media (max-width: 768px) {
-    position: fixed;
-    bottom: 0;
-    left: 0;
     height: 50px;
     padding: 0 12px;
-    /* Plus opaque sur mobile */
-    background: var(--header-background, #4f5b93);
   }
 }
 
