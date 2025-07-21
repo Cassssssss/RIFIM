@@ -207,7 +207,8 @@ const QuestionnaireCard = styled.div`
   box-shadow: 0 2px 8px ${props => props.theme.shadow};
   transition: all 0.3s ease;
   position: relative;
-  overflow: hidden;
+  /* CORRECTION : Remplacer overflow: hidden par overflow: visible pour permettre aux tooltips de dépasser */
+  overflow: visible;
   display: flex;
   flex-direction: column;
   height: fit-content;
@@ -221,12 +222,16 @@ const QuestionnaireCard = styled.div`
     right: 0;
     height: 3px;
     background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+    /* CORRECTION : S'assurer que la bande reste dans la carte avec overflow */
+    border-radius: 12px 12px 0 0;
   }
 
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px ${props => props.theme.shadow};
     border-color: ${props => props.theme.primary};
+    /* CORRECTION : Augmenter le z-index au survol pour que les tooltips passent au-dessus */
+    z-index: 100;
   }
 `;
 
@@ -338,8 +343,9 @@ const ActionButtons = styled.div`
   display: flex;
   gap: 0.5rem;
   margin-top: auto;
-  /* CORRECTION : Ajouter un padding-bottom pour éviter que le tooltip soit rogné */
-  padding-bottom: 10px;
+  /* CORRECTION : Augmenter le padding-bottom pour laisser plus d'espace pour le tooltip */
+  padding-bottom: 50px;
+  position: relative;
 `;
 
 const ActionButton = styled(Link)`
@@ -389,32 +395,33 @@ const CopyButton = styled.button`
     transform: translateY(-1px);
   }
 
-  /* CORRECTION : Tooltip mieux positionné pour éviter d'être rogné */
+  /* CORRECTION : Tooltip repositionné au-dessus avec plus d'espace */
   &:hover::after {
     content: "Ajouter à mes questionnaires";
     position: absolute;
-    bottom: 100%;
+    bottom: calc(100% + 15px);
     left: 50%;
     transform: translateX(-50%);
     background: ${props => props.theme.text};
     color: ${props => props.theme.background};
-    padding: 0.4rem 0.6rem;
-    border-radius: 4px;
-    font-size: 0.7rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
     white-space: nowrap;
     z-index: 1000;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    margin-bottom: 5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 1px solid ${props => props.theme.border};
   }
 
-  /* CORRECTION : Ajouter une petite flèche au tooltip */
+  /* CORRECTION : Flèche du tooltip repositionnée */
   &:hover::before {
     content: '';
     position: absolute;
-    bottom: 100%;
+    bottom: calc(100% + 9px);
     left: 50%;
     transform: translateX(-50%);
-    border: 4px solid transparent;
+    border: 6px solid transparent;
     border-top-color: ${props => props.theme.text};
     z-index: 1001;
   }
