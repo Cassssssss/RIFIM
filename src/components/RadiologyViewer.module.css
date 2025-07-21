@@ -8,7 +8,7 @@
   height: calc(100vh - 60px);
   left: 0;
   /* 🔧 CORRECTION : Décaler plus bas pour éviter le chevauchement avec le header */
-  top: 80px; /* Augmenté de 60px à 80px */
+  top: 70px; /* Augmenté de 60px à 80px */
   display: flex;
   flex-direction: column;
   background: linear-gradient(135deg, rgb(var(--color-background)) 0%, rgb(var(--color-surface)) 100%);
@@ -237,7 +237,7 @@
 .folderLabel {
   position: absolute;
   /* 🔧 CORRECTION : Position du label pour éviter le chevauchement */
-  top: 20px; /* Augmenté de 12px à 20px */
+  top: 15px; /* Augmenté de 12px à 20px */
   left: 15px; /* Augmenté de 12px à 15px */
   background: rgba(0, 0, 0, 0.85); /* Plus opaque */
   color: rgba(255, 255, 255, 0.95);
