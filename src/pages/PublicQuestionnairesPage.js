@@ -36,8 +36,7 @@ const PageContainer = styled.div`
 `;
 
 const ContentWrapper = styled.div`
-  max-width: 1600px;
-  margin: 0 auto;
+  width: 100%;
   display: flex;
   gap: 2rem;
 
@@ -82,96 +81,59 @@ const FilterTitle = styled.h3`
   color: ${props => props.theme.text};
   font-size: 0.95rem;
   font-weight: 600;
-  margin-bottom: 1rem;
+  margin: 0 0 1rem 0;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid ${props => props.theme.borderLight};
-`;
-
-const FilterDropdown = styled.div`
-  position: relative;
-`;
-
-const DropdownButton = styled.button`
-  width: 100%;
-  padding: 0.875rem 1rem;
-  background-color: ${props => props.theme.backgroundSecondary};
-  border: 2px solid ${props => props.theme.border};
-  border-radius: 8px;
-  color: ${props => props.theme.text};
-  cursor: pointer;
-  display: flex;
   justify-content: space-between;
-  align-items: center;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s ease;
 
   &:hover {
-    border-color: ${props => props.theme.primary};
-    background-color: ${props => props.theme.card};
+    color: ${props => props.theme.primary};
   }
 
-  &[data-open="true"] {
-    border-color: ${props => props.theme.primary};
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    background-color: ${props => props.theme.card};
-  }
-
-  span {
-    color: ${props => props.theme.textSecondary};
-    font-weight: 500;
+  svg {
+    transition: transform 0.2s ease;
+    transform: ${props => props.collapsed ? 'rotate(0deg)' : 'rotate(180deg)'};
   }
 `;
 
-const DropdownContent = styled.div`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background-color: ${props => props.theme.card};
-  border: 2px solid ${props => props.theme.primary};
-  border-top: none;
-  border-radius: 0 0 8px 8px;
-  box-shadow: 0 4px 12px ${props => props.theme.shadow};
-  z-index: 1000;
-  max-height: 250px;
-  overflow-y: auto;
+const FilterContent = styled.div`
+  max-height: ${props => props.collapsed ? '0' : '500px'};
+  overflow: hidden;
+  transition: max-height 0.3s ease;
 `;
 
-const DropdownOption = styled.label`
+const FilterOptions = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+const FilterOption = styled.label`
   display: flex;
   align-items: center;
-  padding: 0.875rem 1rem;
+  gap: 0.75rem;
   cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
   transition: background-color 0.2s ease;
-  border-bottom: 1px solid ${props => props.theme.borderLight};
+  font-size: 0.85rem;
   color: ${props => props.theme.text};
-  font-weight: 500;
 
   &:hover {
     background-color: ${props => props.theme.hover};
   }
 
-  &:last-child {
-    border-bottom: none;
-  }
-
-  input {
-    margin-right: 0.75rem;
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
     accent-color: ${props => props.theme.primary};
-    transform: scale(1.1);
-  }
-
-  span {
-    color: ${props => props.theme.text};
   }
 `;
 
-const FilterIndicator = styled.div`
+const ActiveFiltersIndicator = styled.div`
   background-color: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.primary};
   color: ${props => props.theme.primary};
@@ -360,12 +322,12 @@ const PaginationButton = styled.button`
   transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
-    background-color: ${props => props.theme.primaryDark || props.theme.primary};
-    transform: translateY(-2px);
+    background-color: ${props => props.theme.primaryHover};
+    transform: translateY(-1px);
   }
 
   &:disabled {
-    background-color: ${props => props.theme.textSecondary};
+    opacity: 0.5;
     cursor: not-allowed;
     transform: none;
   }
@@ -376,417 +338,372 @@ const PaginationInfo = styled.span`
   font-size: 0.9rem;
 `;
 
-const LoadingContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 4rem;
+const LoadingMessage = styled.div`
+  text-align: center;
+  padding: 4rem 2rem;
   color: ${props => props.theme.textSecondary};
+  font-size: 1.1rem;
 `;
 
-const ErrorContainer = styled.div`
+const ErrorMessage = styled.div`
   text-align: center;
   padding: 2rem;
-  color: ${props => props.theme.error};
-  background-color: ${props => props.theme.errorLight};
+  color: #dc2626;
+  background-color: #fef2f2;
   border-radius: 8px;
-  border: 1px solid ${props => props.theme.error};
+  margin: 2rem 0;
 `;
 
 const EmptyState = styled.div`
   text-align: center;
   padding: 4rem 2rem;
   color: ${props => props.theme.textSecondary};
-  
-  h3 {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    color: ${props => props.theme.text};
-  }
 
-  p {
-    font-size: 1.1rem;
-    line-height: 1.6;
+  h3 {
+    color: ${props => props.theme.primary};
+    margin-bottom: 1rem;
   }
 `;
-
-// ==================== COMPOSANT CARTE QUESTIONNAIRE ====================
-
-function QuestionnaireCardComponent({ questionnaire }) {
-  const [questionnaireRating, setQuestionnaireRating] = useState({
-    averageRating: questionnaire.averageRating || 0,
-    ratingsCount: questionnaire.ratingsCount || 0,
-    userRating: questionnaire.userRating || null
-  });
-
-  const handleRatingUpdate = (questionnaireId, newRatingData) => {
-    setQuestionnaireRating(newRatingData);
-  };
-
-  const isPopular = (questionnaire) => {
-    const views = Number(questionnaire?.views) || 0;
-    const copies = Number(questionnaire?.copies) || 0;
-    return copies > 10 || views > 100;
-  };
-
-  const addToMyQuestionnaires = async (questionnaireId) => {
-    try {
-      await axios.post(`/questionnaires/${questionnaireId}/copy`);
-      alert('✅ Questionnaire ajouté à votre collection privée avec succès !');
-    } catch (error) {
-      console.error('Erreur lors de l\'ajout du questionnaire:', error);
-      alert('❌ Erreur lors de l\'ajout du questionnaire. Veuillez réessayer.');
-    }
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
-  };
-
-  const estimateTime = (questionnaire) => {
-    const questionCount = questionnaire.questions ? questionnaire.questions.length : 0;
-    const minutes = Math.max(2, Math.ceil(questionCount * 0.75));
-    return `~${minutes} min`;
-  };
-
-  const getQuestionnaireIcon = (tags) => {
-    if (!tags || tags.length === 0) return '📋';
-    if (tags.includes('IRM')) return '🧲';
-    if (tags.includes('TDM')) return '💽';
-    if (tags.includes('Echo')) return '📡';
-    if (tags.includes('Rx')) return '🦴';
-    if (tags.includes('Neuro')) return '🧠';
-    if (tags.includes('Cardiovasc')) return '❤️';
-    if (tags.includes('Thorax')) return '🫁';
-    if (tags.includes('Pelvis')) return '🦴';
-    return '📋';
-  };
-
-  return (
-    <QuestionnaireCard>
-      <CardHeader>
-        <QuestionnaireTitle to={`/use/${questionnaire._id}`}>
-          <QuestionnaireIcon>
-            {getQuestionnaireIcon(questionnaire.tags)}
-          </QuestionnaireIcon>
-          {questionnaire.title}
-          {isPopular(questionnaire) && (
-            <PopularityBadge>
-              <TrendingUp size={10} />
-              Populaire
-            </PopularityBadge>
-          )}
-        </QuestionnaireTitle>
-      </CardHeader>
-
-      <AuthorInfo>
-        <User size={14} />
-        Par <strong>{questionnaire.user?.username || 'Utilisateur'}</strong>
-      </AuthorInfo>
-
-      {/* Tags */}
-      <TagsContainer>
-        {questionnaire.tags && questionnaire.tags.map((tag, index) => (
-          <Tag key={index}>{tag}</Tag>
-        ))}
-      </TagsContainer>
-
-      {/* Métadonnées */}
-      <CardMeta>
-        <MetaItem>
-          <Clock />
-          <span>{formatDate(questionnaire.updatedAt || questionnaire.createdAt)}</span>
-        </MetaItem>
-        <MetaItem>
-          <Users />
-          <span>Public</span>
-        </MetaItem>
-        <MetaItem>
-          <FileText />
-          <span>{questionnaire.questions ? questionnaire.questions.length : 0} questions</span>
-        </MetaItem>
-        <MetaItem>
-          <Eye />
-          <span>{questionnaire.views || 0} vues</span>
-        </MetaItem>
-      </CardMeta>
-
-      {/* Système de notation */}
-      <RatingStars
-        itemId={questionnaire._id}
-        itemType="questionnaire"
-        averageRating={questionnaireRating.averageRating}
-        ratingsCount={questionnaireRating.ratingsCount}
-        userRating={questionnaireRating.userRating}
-        onRatingUpdate={(id, data) => handleRatingUpdate(id, data)}
-        compact={true}
-      />
-
-      {/* Actions */}
-      <ActionButtons style={{ paddingBottom: '5px', position: 'relative' }}>
-        <ActionButton to={`/use/${questionnaire._id}`}>
-          <FileText size={14} />
-          Utiliser
-        </ActionButton>
-        
-        <CopyButton
-          onClick={(e) => {
-            e.preventDefault();
-            addToMyQuestionnaires(questionnaire._id);
-          }}
-        >
-          <Plus size={14} />
-        </CopyButton>
-      </ActionButtons>
-    </QuestionnaireCard>
-  );
-}
 
 // ==================== COMPOSANT PRINCIPAL ====================
 
 function PublicQuestionnairesPage() {
+  // États
   const [questionnaires, setQuestionnaires] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [modalityFilters, setModalityFilters] = useState([]);
-  const [specialtyFilters, setSpecialtyFilters] = useState([]);
-  const [locationFilters, setLocationFilters] = useState([]);
-  
-  // États pour les menus dépliants
-  const [isModalityDropdownOpen, setIsModalityDropdownOpen] = useState(false);
-  const [isSpecialtyDropdownOpen, setIsSpecialtyDropdownOpen] = useState(false);
-  const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
-  
-  const [isLoading, setIsLoading] = useState(true);
+  const [filteredQuestionnaires, setFilteredQuestionnaires] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [questionnairesPerPage] = useState(12);
 
-  const modalityOptions = ['Rx', 'TDM', 'IRM', 'Echo'];
-  const specialtyOptions = ['Cardiovasc', 'Dig', 'Neuro', 'ORL', 'Ostéo','Pedia', 'Pelvis', 'Séno', 'Thorax', 'Uro'];
-  const locationOptions = [
-    "Avant-pied", "Bras", "Bassin", "Cheville", "Coude", "Cuisse", "Doigts", "Epaule", 
-    "Genou", "Hanche", "Jambe", "Parties molles", "Poignet", "Rachis"
-  ];
+  // États des filtres
+  const [modalityFilter, setModalityFilter] = useState([]);
+  const [specialtyFilter, setSpecialtyFilter] = useState([]);
+  const [locationFilter, setLocationFilter] = useState([]);
 
-  const fetchQuestionnaires = useCallback(async (page = 1) => {
-    setIsLoading(true);
-    setError(null);
+  // États de collapse pour les filtres
+  const [modalityCollapsed, setModalityCollapsed] = useState(false);
+  const [specialtyCollapsed, setSpecialtyCollapsed] = useState(false);
+  const [locationCollapsed, setLocationCollapsed] = useState(false);
+
+  // Options de filtres
+  const modalityOptions = ['IRM', 'Scanner', 'Échographie', 'Radiographie', 'Mammographie'];
+  const specialtyOptions = ['Neuroradiologie', 'Cardiologie', 'Orthopédie', 'Gastroentérologie', 'Pneumologie'];
+  const locationOptions = ['Paris', 'Lyon', 'Marseille', 'Toulouse', 'Nice', 'Strasbourg'];
+
+  // Récupération des questionnaires
+  const fetchQuestionnaires = useCallback(async () => {
     try {
-      const response = await axios.get('/questionnaires/public', {
-        params: {
-          page,
-          limit: 12, // Uniformisé avec les autres pages
-          search: searchTerm,
-          modality: modalityFilters.join(','),
-          specialty: specialtyFilters.join(','),
-          location: locationFilters.join(',')
-        }
-      });
-      if (response.data && response.data.questionnaires) {
-        const cleanedQuestionnaires = response.data.questionnaires.map(questionnaire => ({
-          ...questionnaire,
-          averageRating: questionnaire.averageRating ? Number(questionnaire.averageRating) : 0,
-          ratingsCount: questionnaire.ratingsCount ? Number(questionnaire.ratingsCount) : 0,
-          userRating: questionnaire.userRating || null,
-          views: questionnaire.views || questionnaire.stats?.views || 0,
-          copies: questionnaire.copies || questionnaire.stats?.copies || 0,
-        }));
-        
-        setQuestionnaires(cleanedQuestionnaires);
-        setCurrentPage(response.data.currentPage);
-        setTotalPages(response.data.totalPages);
+      setLoading(true);
+      const response = await axios.get('/questionnaires/public');
+      
+      if (response.data && Array.isArray(response.data)) {
+        setQuestionnaires(response.data);
       } else {
-        console.error("Format de réponse inattendu:", response.data);
         setQuestionnaires([]);
       }
     } catch (error) {
-      console.error('Erreur lors de la récupération des questionnaires publics:', error);
-      setError("Impossible de charger les questionnaires publics. Veuillez réessayer plus tard.");
+      console.error('Erreur lors du chargement des questionnaires:', error);
+      setError('Erreur lors du chargement des questionnaires publics.');
       setQuestionnaires([]);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  }, [searchTerm, modalityFilters, specialtyFilters, locationFilters]);
+  }, []);
 
   useEffect(() => {
-    fetchQuestionnaires(currentPage);
-  }, [fetchQuestionnaires, currentPage]);
+    fetchQuestionnaires();
+  }, [fetchQuestionnaires]);
 
+  // Filtrage et recherche
   useEffect(() => {
+    let filtered = questionnaires;
+
+    // Recherche par terme
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(q => 
+        (q.title && q.title.toLowerCase().includes(term)) ||
+        (q.description && q.description.toLowerCase().includes(term)) ||
+        (q.tags && q.tags.some(tag => tag.toLowerCase().includes(term)))
+      );
+    }
+
+    // Filtres par modalité
+    if (modalityFilter.length > 0) {
+      filtered = filtered.filter(q => 
+        q.tags && q.tags.some(tag => modalityFilter.includes(tag))
+      );
+    }
+
+    // Filtres par spécialité
+    if (specialtyFilter.length > 0) {
+      filtered = filtered.filter(q => 
+        q.tags && q.tags.some(tag => specialtyFilter.includes(tag))
+      );
+    }
+
+    // Filtres par localisation
+    if (locationFilter.length > 0) {
+      filtered = filtered.filter(q => 
+        q.tags && q.tags.some(tag => locationFilter.includes(tag))
+      );
+    }
+
+    setFilteredQuestionnaires(filtered);
     setCurrentPage(1);
-  }, [searchTerm, modalityFilters, specialtyFilters, locationFilters]);
+    setTotalPages(Math.ceil(filtered.length / questionnairesPerPage));
+  }, [questionnaires, searchTerm, modalityFilter, specialtyFilter, locationFilter, questionnairesPerPage]);
 
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
-  const handleModalityFilter = (modality) => {
-    setModalityFilters(prev => 
+  // Gestionnaires de filtres
+  const handleModalityChange = (modality) => {
+    setModalityFilter(prev => 
       prev.includes(modality) 
         ? prev.filter(m => m !== modality)
         : [...prev, modality]
     );
   };
 
-  const handleSpecialtyFilter = (specialty) => {
-    setSpecialtyFilters(prev => 
+  const handleSpecialtyChange = (specialty) => {
+    setSpecialtyFilter(prev => 
       prev.includes(specialty) 
         ? prev.filter(s => s !== specialty)
         : [...prev, specialty]
     );
   };
 
-  const handleLocationFilter = (location) => {
-    setLocationFilters(prev => 
+  const handleLocationChange = (location) => {
+    setLocationFilter(prev => 
       prev.includes(location) 
         ? prev.filter(l => l !== location)
         : [...prev, location]
     );
   };
 
-  const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
-    fetchQuestionnaires(newPage);
+  // Copie de questionnaire
+  const handleCopyQuestionnaire = async (questionnaireId) => {
+    try {
+      await axios.post(`/questionnaires/${questionnaireId}/copy`);
+      alert('Questionnaire copié avec succès dans vos questionnaires personnels !');
+    } catch (error) {
+      console.error('Erreur lors de la copie:', error);
+      alert('Erreur lors de la copie du questionnaire.');
+    }
   };
 
+  // Pagination
+  const startIndex = (currentPage - 1) * questionnairesPerPage;
+  const endIndex = startIndex + questionnairesPerPage;
+  const currentQuestionnaires = filteredQuestionnaires.slice(startIndex, endIndex);
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  // Nombre total de filtres actifs
+  const activeFiltersCount = modalityFilter.length + specialtyFilter.length + locationFilter.length;
+
+  // Rendu du composant
   return (
     <PageContainer>
-      <Title>🗂️ Questionnaires Publics</Title>
-
+      <Title>🗃️ Questionnaires Publics</Title>
+      
       <ContentWrapper>
-        {/* SECTION FILTRES */}
+        {/* Section des filtres */}
         <FilterSection>
-          <FilterGroup>
-            <FilterTitle>📊 Modalité</FilterTitle>
-            <FilterDropdown>
-              <DropdownButton
-                onClick={() => setIsModalityDropdownOpen(!isModalityDropdownOpen)}
-                data-open={isModalityDropdownOpen}
-              >
-                <span>{modalityFilters.length > 0 ? `${modalityFilters.length} sélectionnée(s)` : 'Toutes'}</span>
-                {isModalityDropdownOpen ? <ChevronUp /> : <ChevronDown />}
-              </DropdownButton>
-              {isModalityDropdownOpen && (
-                <DropdownContent>
-                  {modalityOptions.map(modality => (
-                    <DropdownOption key={modality}>
-                      <input
-                        type="checkbox"
-                        checked={modalityFilters.includes(modality)}
-                        onChange={() => handleModalityFilter(modality)}
-                      />
-                      <span>{modality}</span>
-                    </DropdownOption>
-                  ))}
-                </DropdownContent>
-              )}
-            </FilterDropdown>
-          </FilterGroup>
-
-          <FilterGroup>
-            <FilterTitle>🏥 Spécialité</FilterTitle>
-            <FilterDropdown>
-              <DropdownButton
-                onClick={() => setIsSpecialtyDropdownOpen(!isSpecialtyDropdownOpen)}
-                data-open={isSpecialtyDropdownOpen}
-              >
-                <span>{specialtyFilters.length > 0 ? `${specialtyFilters.length} sélectionnée(s)` : 'Toutes'}</span>
-                {isSpecialtyDropdownOpen ? <ChevronUp /> : <ChevronDown />}
-              </DropdownButton>
-              {isSpecialtyDropdownOpen && (
-                <DropdownContent>
-                  {specialtyOptions.map(specialty => (
-                    <DropdownOption key={specialty}>
-                      <input
-                        type="checkbox"
-                        checked={specialtyFilters.includes(specialty)}
-                        onChange={() => handleSpecialtyFilter(specialty)}
-                      />
-                      <span>{specialty}</span>
-                    </DropdownOption>
-                  ))}
-                </DropdownContent>
-              )}
-            </FilterDropdown>
-          </FilterGroup>
-
-          <FilterGroup>
-            <FilterTitle>📍 Localisation</FilterTitle>
-            <FilterDropdown>
-              <DropdownButton
-                onClick={() => setIsLocationDropdownOpen(!isLocationDropdownOpen)}
-                data-open={isLocationDropdownOpen}
-              >
-                <span>{locationFilters.length > 0 ? `${locationFilters.length} sélectionnée(s)` : 'Toutes'}</span>
-                {isLocationDropdownOpen ? <ChevronUp /> : <ChevronDown />}
-              </DropdownButton>
-              {isLocationDropdownOpen && (
-                <DropdownContent>
-                  {locationOptions.map(location => (
-                    <DropdownOption key={location}>
-                      <input
-                        type="checkbox"
-                        checked={locationFilters.includes(location)}
-                        onChange={() => handleLocationFilter(location)}
-                      />
-                      <span>{location}</span>
-                    </DropdownOption>
-                  ))}
-                </DropdownContent>
-              )}
-            </FilterDropdown>
-          </FilterGroup>
-
-          {(modalityFilters.length > 0 || specialtyFilters.length > 0 || locationFilters.length > 0) && (
-            <FilterIndicator>
-              Filtres appliqués : 
-              {[...modalityFilters, ...specialtyFilters, ...locationFilters].join(', ')}
-            </FilterIndicator>
+          {activeFiltersCount > 0 && (
+            <ActiveFiltersIndicator>
+              {activeFiltersCount} filtre{activeFiltersCount > 1 ? 's' : ''} actif{activeFiltersCount > 1 ? 's' : ''}
+            </ActiveFiltersIndicator>
           )}
+
+          {/* Filtre Modalité */}
+          <FilterGroup>
+            <FilterTitle 
+              collapsed={modalityCollapsed}
+              onClick={() => setModalityCollapsed(!modalityCollapsed)}
+            >
+              📊 Modalité
+              <ChevronDown size={16} />
+            </FilterTitle>
+            <FilterContent collapsed={modalityCollapsed}>
+              <FilterOptions>
+                {modalityOptions.map(modality => (
+                  <FilterOption key={modality}>
+                    <input
+                      type="checkbox"
+                      checked={modalityFilter.includes(modality)}
+                      onChange={() => handleModalityChange(modality)}
+                    />
+                    {modality}
+                  </FilterOption>
+                ))}
+              </FilterOptions>
+            </FilterContent>
+          </FilterGroup>
+
+          {/* Filtre Spécialité */}
+          <FilterGroup>
+            <FilterTitle 
+              collapsed={specialtyCollapsed}
+              onClick={() => setSpecialtyCollapsed(!specialtyCollapsed)}
+            >
+              🩺 Spécialité
+              <ChevronDown size={16} />
+            </FilterTitle>
+            <FilterContent collapsed={specialtyCollapsed}>
+              <FilterOptions>
+                {specialtyOptions.map(specialty => (
+                  <FilterOption key={specialty}>
+                    <input
+                      type="checkbox"
+                      checked={specialtyFilter.includes(specialty)}
+                      onChange={() => handleSpecialtyChange(specialty)}
+                    />
+                    {specialty}
+                  </FilterOption>
+                ))}
+              </FilterOptions>
+            </FilterContent>
+          </FilterGroup>
+
+          {/* Filtre Localisation */}
+          <FilterGroup>
+            <FilterTitle 
+              collapsed={locationCollapsed}
+              onClick={() => setLocationCollapsed(!locationCollapsed)}
+            >
+              📍 Localisation
+              <ChevronDown size={16} />
+            </FilterTitle>
+            <FilterContent collapsed={locationCollapsed}>
+              <FilterOptions>
+                {locationOptions.map(location => (
+                  <FilterOption key={location}>
+                    <input
+                      type="checkbox"
+                      checked={locationFilter.includes(location)}
+                      onChange={() => handleLocationChange(location)}
+                    />
+                    {location}
+                  </FilterOption>
+                ))}
+              </FilterOptions>
+            </FilterContent>
+          </FilterGroup>
         </FilterSection>
 
-        {/* CONTENU PRINCIPAL */}
+        {/* Liste des questionnaires */}
         <ListContainer>
-          {/* BARRE DE RECHERCHE */}
           <SearchBar
             type="text"
-            placeholder="🔍 Rechercher un questionnaire..."
+            placeholder="Rechercher un questionnaire..."
             value={searchTerm}
-            onChange={handleSearch}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
 
-          {/* CONTENU CONDITIONNEL */}
-          {isLoading ? (
-            <LoadingContainer>
-              <div>Chargement des questionnaires...</div>
-            </LoadingContainer>
+          {loading ? (
+            <LoadingMessage>Chargement des questionnaires...</LoadingMessage>
           ) : error ? (
-            <ErrorContainer>
-              <h3>❌ Erreur</h3>
-              <p>{error}</p>
-            </ErrorContainer>
-          ) : questionnaires.length === 0 ? (
+            <ErrorMessage>{error}</ErrorMessage>
+          ) : currentQuestionnaires.length === 0 ? (
             <EmptyState>
               <h3>Aucun questionnaire trouvé</h3>
-              <p>Essayez de modifier vos filtres ou votre recherche.</p>
+              <p>Essayez de modifier vos critères de recherche ou de filtrage.</p>
             </EmptyState>
           ) : (
             <>
-              {/* GRILLE DES QUESTIONNAIRES */}
               <QuestionnairesGrid>
-                {questionnaires.map((questionnaire) => (
-                  <QuestionnaireCardComponent 
-                    key={questionnaire._id} 
-                    questionnaire={questionnaire} 
-                  />
-                ))}
+                {currentQuestionnaires.map((questionnaire, index) => {
+                  const isPopular = questionnaire.usageCount > 50;
+                  
+                  return (
+                    <QuestionnaireCard key={questionnaire._id || index}>
+                      <CardHeader>
+                        <QuestionnaireTitle to={`/questionnaires/use/${questionnaire._id}`}>
+                          <QuestionnaireIcon>📋</QuestionnaireIcon>
+                          {questionnaire.title || 'Questionnaire sans titre'}
+                          {isPopular && (
+                            <PopularityBadge>
+                              <TrendingUp size={12} />
+                              Populaire
+                            </PopularityBadge>
+                          )}
+                        </QuestionnaireTitle>
+                      </CardHeader>
+
+                      <AuthorInfo>
+                        <User size={14} />
+                        Par {questionnaire.createdBy?.username || questionnaire.createdBy?.email || 'Auteur anonyme'}
+                      </AuthorInfo>
+
+                      <CardMeta>
+                        <MetaItem>
+                          <Clock size={14} />
+                          {new Date(questionnaire.createdAt).toLocaleDateString('fr-FR')}
+                        </MetaItem>
+                        <MetaItem>
+                          <Users size={14} />
+                          Public
+                        </MetaItem>
+                        <MetaItem>
+                          <FileText size={14} />
+                          {questionnaire.questions?.length || 0} questions
+                        </MetaItem>
+                        <MetaItem>
+                          <Eye size={14} />
+                          {questionnaire.usageCount || 0} vues
+                        </MetaItem>
+                      </CardMeta>
+
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <RatingStars
+                          itemId={questionnaire._id}
+                          itemType="questionnaire"
+                          averageRating={questionnaire.averageRating || 0}
+                          ratingsCount={questionnaire.ratingsCount || 0}
+                          userRating={questionnaire.userRating || 0}
+                          onRatingUpdate={() => {}}
+                          size={14}
+                          compact={true}
+                        />
+                      </div>
+
+                      {questionnaire.tags && questionnaire.tags.length > 0 && (
+                        <TagsContainer>
+                          {questionnaire.tags.map((tag, tagIndex) => (
+                            <Tag key={tagIndex}>{tag}</Tag>
+                          ))}
+                        </TagsContainer>
+                      )}
+
+                      <ActionButtons>
+                        <ActionButton to={`/questionnaires/use/${questionnaire._id}`}>
+                          <Eye size={14} />
+                          Utiliser
+                        </ActionButton>
+                        
+                        <CopyButton
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleCopyQuestionnaire(questionnaire._id);
+                          }}
+                          title="Copier dans mes questionnaires"
+                        >
+                          <Plus size={14} />
+                        </CopyButton>
+                      </ActionButtons>
+                    </QuestionnaireCard>
+                  );
+                })}
               </QuestionnairesGrid>
 
-              {/* PAGINATION */}
+              {/* Pagination */}
               {totalPages > 1 && (
                 <PaginationContainer>
                   <PaginationButton 
@@ -795,9 +712,11 @@ function PublicQuestionnairesPage() {
                   >
                     ← Précédent
                   </PaginationButton>
+                  
                   <PaginationInfo>
-                    Page {currentPage} sur {totalPages} • {questionnaires.length} questionnaires
+                    Page {currentPage} sur {totalPages} • {filteredQuestionnaires.length} questionnaires
                   </PaginationInfo>
+                  
                   <PaginationButton 
                     onClick={() => handlePageChange(currentPage + 1)} 
                     disabled={currentPage === totalPages}
