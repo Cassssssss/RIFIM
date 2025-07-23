@@ -25,14 +25,128 @@ const sanitizeTitle = (title) => {
   return sanitized;
 };
 
+// ==================== ROUTES SPÉCIFIQUES EN PREMIER ====================
+// Ces routes doivent être AVANT /:id pour éviter les conflits
+
+// GET /my - DOIT ÊTRE AVANT /:id
+router.get('/my', async (req, res) => {
+  console.log("Route /my appelée pour récupérer les cas de l'utilisateur:", req.userId);
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 12;
+    const skip = (page - 1) * limit;
+
+    // Paramètres de recherche et filtrage
+    const searchTerm = req.query.search || '';
+    const modality = req.query.modality ? req.query.modality.split(',') : [];
+    const specialty = req.query.specialty ? req.query.specialty.split(',') : [];
+    const location = req.query.location ? req.query.location.split(',') : [];
+
+    // Construction de la requête de recherche
+    let searchQuery = { user: req.userId };
+
+    if (searchTerm) {
+      searchQuery.$or = [
+        { title: { $regex: searchTerm, $options: 'i' } },
+        { answer: { $regex: searchTerm, $options: 'i' } },
+        { tags: { $in: [new RegExp(searchTerm, 'i')] } }
+      ];
+    }
+
+    if (modality.length > 0) {
+      searchQuery.modality = { $in: modality };
+    }
+
+    if (specialty.length > 0) {
+      searchQuery.specialty = { $in: specialty };
+    }
+
+    if (location.length > 0) {
+      searchQuery.location = { $in: location };
+    }
+
+    const totalCases = await Case.countDocuments(searchQuery);
+    const cases = await Case.find(searchQuery)
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({
+      cases,
+      currentPage: page,
+      totalPages: Math.ceil(totalCases / limit),
+      totalCases
+    });
+  } catch (error) {
+    console.error('Erreur lors de la récupération des cas de l\'utilisateur:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// GET /public - DOIT ÊTRE AVANT /:id
+router.get('/public', async (req, res) => {
+  console.log("Route /public des cas appelée");
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 12;
+    const skip = (page - 1) * limit;
+
+    // Récupérer les cas publics avec pagination
+    const cases = await Case.find({ public: true })
+      .populate('user', 'username')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const totalCases = await Case.countDocuments({ public: true });
+    const totalPages = Math.ceil(totalCases / limit);
+
+    // Si l'utilisateur est connecté, récupérer ses notes
+    let userRatings = {};
+    if (req.userId) {
+      const userRatingDocs = await CaseRating.find({ 
+        user: req.userId,
+        case: { $in: cases.map(c => c._id) }
+      });
+      
+      userRatings = userRatingDocs.reduce((acc, rating) => {
+        acc[rating.case.toString()] = rating.rating;
+        return acc;
+      }, {});
+    }
+
+    // Ajouter les notes utilisateur aux cas
+    const casesWithRatings = cases.map(caseDoc => ({
+      ...caseDoc,
+      averageRating: caseDoc.averageRating || 0,
+      ratingsCount: caseDoc.ratingsCount || 0,
+      userRating: userRatings[caseDoc._id.toString()] || null,
+      views: caseDoc.views || 0,
+      copies: caseDoc.copies || 0
+    }));
+
+    res.json({
+      cases: casesWithRatings,
+      currentPage: page,
+      totalPages: totalPages,
+      totalCases
+    });
+  } catch (error) {
+    console.error("Erreur lors de la récupération des cas publics:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // ==================== ROUTES DE NOTATION POUR LES CAS ====================
 
-// Noter un cas public
-router.post('/:id/rate', authMiddleware, async (req, res) => {
+// POST /:id/rate - DOIT ÊTRE AVANT /:id
+router.post('/:id/rate', async (req, res) => {
   try {
     const { rating, comment } = req.body;
     const caseId = req.params.id;
-    const userId = req.userId; // ✅ CORRIGÉ : utiliser req.userId au lieu de req.user._id
+    const userId = req.userId;
 
     // Validation des données
     if (rating === undefined || rating === null || rating < 0 || rating > 10) {
@@ -52,7 +166,7 @@ router.post('/:id/rate', authMiddleware, async (req, res) => {
     }
 
     // Empêcher l'auto-notation
-    if (caseDoc.user.toString() === userId) { // ✅ CORRIGÉ : supprimé .toString() sur userId
+    if (caseDoc.user.toString() === userId) {
       return res.status(403).json({ message: 'Vous ne pouvez pas noter votre propre cas' });
     }
 
@@ -105,11 +219,11 @@ router.post('/:id/rate', authMiddleware, async (req, res) => {
   }
 });
 
-// Supprimer la note d'un cas
-router.delete('/:id/rate', authMiddleware, async (req, res) => {
+// DELETE /:id/rate - DOIT ÊTRE AVANT /:id
+router.delete('/:id/rate', async (req, res) => {
   try {
     const caseId = req.params.id;
-    const userId = req.userId; // ✅ CORRIGÉ : utiliser req.userId au lieu de req.user._id
+    const userId = req.userId;
 
     // Supprimer la note de l'utilisateur
     const deletedRating = await CaseRating.findOneAndDelete({ 
@@ -147,11 +261,11 @@ router.delete('/:id/rate', authMiddleware, async (req, res) => {
   }
 });
 
-// Route pour copier un cas public
-router.post('/:id/copy', authMiddleware, async (req, res) => {
+// POST /:id/copy - DOIT ÊTRE AVANT /:id
+router.post('/:id/copy', async (req, res) => {
   try {
     const caseId = req.params.id;
-    const userId = req.userId; // ✅ CORRIGÉ : utiliser req.userId au lieu de req.user._id
+    const userId = req.userId;
 
     // Vérifier que le cas existe et est public
     const originalCase = await Case.findById(caseId);
@@ -194,156 +308,107 @@ router.post('/:id/copy', authMiddleware, async (req, res) => {
   }
 });
 
-// ==================== ROUTES EXISTANTES MODIFIÉES ====================
-
-// GET all cases
-router.get('/', async (req, res) => {
+// PATCH /:id/togglePublic - DOIT ÊTRE AVANT /:id
+router.patch('/:id/togglePublic', async (req, res) => {
+  console.log("Route /togglePublic appelée pour le cas:", req.params.id);
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
-
-    const totalCases = await Case.countDocuments({ user: req.userId });
-    const cases = await Case.find({ user: req.userId })
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 });
-
-    res.json({
-      cases,
-      currentPage: page,
-      totalPages: Math.ceil(totalCases / limit),
-      totalCases
-    });
+    const caseDoc = await Case.findOne({ _id: req.params.id, user: req.userId });
+    if (!caseDoc) {
+      return res.status(404).json({ message: 'Cas non trouvé' });
+    }
+    caseDoc.public = !caseDoc.public;
+    await caseDoc.save();
+    res.json(caseDoc);
   } catch (error) {
-    console.error('Erreur détaillée lors de la récupération des cas:', error);
+    console.error('Erreur lors du basculement de la visibilité:', error);
     res.status(500).json({ message: error.message });
   }
 });
 
-// MODIFIÉ : GET tous les cas publics avec gestion des notes utilisateur
-router.get('/public', async (req, res) => {
-  console.log("Route /public des cas appelée");
+// PATCH /:id/tags - DOIT ÊTRE AVANT /:id
+router.patch('/:id/tags', async (req, res) => {
+  console.log('Tentative de mise à jour des tags:', req.params.id, req.body);
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 12;
-    const skip = (page - 1) * limit;
-
-    // Récupérer les cas publics avec pagination
-    const cases = await Case.find({ public: true })
-      .populate('user', 'username')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
-
-    const totalCases = await Case.countDocuments({ public: true });
-    const totalPages = Math.ceil(totalCases / limit);
-
-    // Si l'utilisateur est connecté, récupérer ses notes
-    let userRatings = {};
-    if (req.userId) { // ✅ CORRIGÉ : utiliser req.userId au lieu de req.user
-      const userRatingDocs = await CaseRating.find({ 
-        user: req.userId, // ✅ CORRIGÉ : utiliser req.userId au lieu de req.user._id
-        case: { $in: cases.map(c => c._id) }
-      });
-      
-      userRatings = userRatingDocs.reduce((acc, rating) => {
-        acc[rating.case.toString()] = rating.rating;
-        return acc;
-      }, {});
+    const { tagToAdd, tagToRemove } = req.body;
+    const caseDoc = await Case.findOne({ _id: req.params.id, user: req.userId });
+    
+    if (!caseDoc) {
+      console.log('Cas non trouvé pour la mise à jour des tags:', req.params.id);
+      return res.status(404).json({ message: 'Cas non trouvé' });
     }
 
-    // Ajouter les notes utilisateur aux cas
-    const casesWithRatings = cases.map(caseDoc => ({
-      ...caseDoc,
-      averageRating: caseDoc.averageRating || 0,
-      ratingsCount: caseDoc.ratingsCount || 0,
-      userRating: userRatings[caseDoc._id.toString()] || null,
-      views: caseDoc.views || 0,
-      copies: caseDoc.copies || 0
-    }));
+    if (tagToAdd && !caseDoc.tags.includes(tagToAdd)) {
+      caseDoc.tags.push(tagToAdd);
+      console.log('Tag ajouté:', tagToAdd);
+    }
 
-    res.json({
-      cases: casesWithRatings,
-      currentPage: page,
-      totalPages: totalPages,
-      totalCases
-    });
+    if (tagToRemove) {
+      caseDoc.tags = caseDoc.tags.filter(tag => tag !== tagToRemove);
+      console.log('Tag supprimé:', tagToRemove);
+    }
+
+    await caseDoc.save();
+    console.log('Tags mis à jour avec succès');
+    res.json(caseDoc);
   } catch (error) {
-    console.error("Erreur lors de la récupération des cas publics:", error);
+    console.error('Erreur lors de la mise à jour des tags:', error);
     res.status(500).json({ message: error.message });
   }
 });
 
-// POST new case
-router.post('/', async (req, res) => {
-  console.log('Tentative de création d\'un nouveau cas:', req.body);
-  const newCase = new Case({
-    ...req.body,
-    user: req.userId,
-    averageRating: 0, // NOUVEAU : Initialiser les champs de notation
-    ratingsCount: 0,
-    views: 0,
-    copies: 0
-  });
-
+// POST /:id/tags - DOIT ÊTRE AVANT /:id
+router.post('/:id/tags', async (req, res) => {
   try {
-    const savedCase = await newCase.save();
-    console.log('Nouveau cas créé avec succès:', savedCase);
-    res.status(201).json(savedCase);
-  } catch (error) {
-    console.error('Erreur lors de la création du cas:', error);
-    res.status(400).json({ message: error.message });
-  }
-});
+    const { tag } = req.body;
+    if (!tag || !tag.trim()) {
+      return res.status(400).json({ message: 'Tag manquant' });
+    }
 
-// GET cas spécifique
-router.get('/:id', async (req, res) => {
-  try {
-    const caseDoc = await Case.findById(req.params.id);
-    
+    const caseDoc = await Case.findOne({ _id: req.params.id, user: req.userId });
     if (!caseDoc) {
       return res.status(404).json({ message: 'Cas non trouvé' });
     }
 
-    // Si le cas n'est pas public et que l'utilisateur n'est pas le propriétaire
-    if (!caseDoc.public && (!req.userId || caseDoc.user.toString() !== req.userId)) {
-      return res.status(403).json({ message: 'Accès non autorisé' });
+    if (!caseDoc.tags) {
+      caseDoc.tags = [];
     }
 
-    // Incrémenter le compteur de vues si ce n'est pas le propriétaire
-    if (caseDoc.public && req.userId && caseDoc.user.toString() !== req.userId) {
-      await Case.findByIdAndUpdate(req.params.id, {
-        $inc: { views: 1 }
-      });
+    const trimmedTag = tag.trim();
+    if (!caseDoc.tags.includes(trimmedTag)) {
+      caseDoc.tags.push(trimmedTag);
+      await caseDoc.save();
     }
 
-    const caseObject = caseDoc.toObject();
-
-    if (caseDoc.folderMainImages instanceof Map) {
-      caseObject.folderMainImages = Object.fromEntries(caseDoc.folderMainImages);
-    } else {
-      caseObject.folderMainImages = caseDoc.folderMainImages || {};
-    }
-
-    // Ajouter la note de l'utilisateur connecté si applicable
-    if (req.userId && caseDoc.public) { // ✅ CORRIGÉ : utiliser req.userId au lieu de req.user
-      const userRating = await CaseRating.findOne({
-        case: req.params.id,
-        user: req.userId // ✅ CORRIGÉ : utiliser req.userId au lieu de req.user._id
-      });
-      caseObject.userRating = userRating ? userRating.rating : null;
-    }
-
-    res.json(caseObject);
+    res.json(caseDoc);
   } catch (error) {
-    console.error('Erreur lors de la récupération du cas:', error);
+    console.error('Erreur lors de l\'ajout du tag:', error);
     res.status(500).json({ message: error.message });
   }
 });
 
-// POST new folder to a case
+// DELETE /:id/tags/:tag - DOIT ÊTRE AVANT /:id
+router.delete('/:id/tags/:tag', async (req, res) => {
+  try {
+    const tagToRemove = decodeURIComponent(req.params.tag);
+    
+    const caseDoc = await Case.findOne({ _id: req.params.id, user: req.userId });
+    if (!caseDoc) {
+      return res.status(404).json({ message: 'Cas non trouvé' });
+    }
+
+    if (caseDoc.tags) {
+      caseDoc.tags = caseDoc.tags.filter(tag => tag !== tagToRemove);
+      await caseDoc.save();
+    }
+
+    res.json(caseDoc);
+  } catch (error) {
+    console.error('Erreur lors de la suppression du tag:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// POST /:id/folders - DOIT ÊTRE AVANT /:id
 router.post('/:id/folders', async (req, res) => {
   console.log('Tentative d\'ajout d\'un nouveau dossier:', req.body);
   try {
@@ -368,7 +433,7 @@ router.post('/:id/folders', async (req, res) => {
   }
 });
 
-// POST images to a case
+// POST /:id/images - DOIT ÊTRE AVANT /:id
 router.post('/:id/images', upload.array('images'), async (req, res) => {
   console.log('Tentative d\'ajout d\'images:', req.params.id, req.body.folder);
   try {
@@ -420,7 +485,7 @@ router.post('/:id/images', upload.array('images'), async (req, res) => {
   }
 });
 
-// POST main image for a case
+// POST /:id/main-image - DOIT ÊTRE AVANT /:id
 router.post('/:id/main-image', upload.single('mainImage'), async (req, res) => {
   console.log('Tentative de définition de l\'image principale:', req.params.id);
   try {
@@ -454,7 +519,7 @@ router.post('/:id/main-image', upload.single('mainImage'), async (req, res) => {
   }
 });
 
-// POST image principale pour un dossier
+// POST /:id/folder-main-image - DOIT ÊTRE AVANT /:id
 router.post('/:id/folder-main-image', upload.single('folderMainImage'), async (req, res) => {
   console.log('Tentative de définition de l\'image principale du dossier:', req.params.id, req.body.folder);
   try {
@@ -495,7 +560,7 @@ router.post('/:id/folder-main-image', upload.single('folderMainImage'), async (r
   }
 });
 
-// DELETE image from a case
+// DELETE /:id/images - DOIT ÊTRE AVANT /:id
 router.delete('/:id/images', async (req, res) => {
   console.log('Tentative de suppression d\'image:', req.params.id, req.body);
   try {
@@ -540,54 +605,7 @@ router.delete('/:id/images', async (req, res) => {
   }
 });
 
-// DELETE a case
-router.delete('/:id', async (req, res) => {
-  console.log('Tentative de suppression du cas:', req.params.id);
-  try {
-    const deletedCase = await Case.findOneAndDelete({ _id: req.params.id, user: req.userId });
-    if (!deletedCase) {
-      console.log('Cas non trouvé pour la suppression:', req.params.id);
-      return res.status(404).json({ message: 'Cas non trouvé' });
-    }
-
-    // Supprimer aussi toutes les notes associées à ce cas
-    await CaseRating.deleteMany({ case: req.params.id });
-
-    // Suppression des images de DigitalOcean Spaces
-    const folder = sanitizeTitle(deletedCase.title);
-    const listParams = {
-      Bucket: process.env.DO_SPACES_BUCKET,
-      Prefix: `rifim/${folder}/`
-    };
-
-    try {
-      const listedObjects = await s3.listObjectsV2(listParams).promise();
-      if (listedObjects.Contents.length > 0) {
-        const deleteParams = {
-          Bucket: process.env.DO_SPACES_BUCKET,
-          Delete: { Objects: [] }
-        };
-
-        listedObjects.Contents.forEach(({ Key }) => {
-          deleteParams.Delete.Objects.push({ Key });
-        });
-
-        await s3.deleteObjects(deleteParams).promise();
-        console.log('Images associées supprimées avec succès');
-      }
-    } catch (spaceError) {
-      console.error('Erreur lors de la suppression des images dans Spaces:', spaceError);
-    }
-
-    console.log('Cas supprimé avec succès:', req.params.id);
-    res.json({ message: 'Cas et images associées supprimés avec succès' });
-  } catch (error) {
-    console.error('Erreur lors de la suppression du cas:', error);
-    res.status(500).json({ message: 'Erreur serveur lors de la suppression du cas', error: error.message });
-  }
-});
-
-// DELETE a folder from a case
+// DELETE /:id/folders/:folder - DOIT ÊTRE AVANT /:id
 router.delete('/:id/folders/:folder', async (req, res) => {
   console.log('Tentative de suppression du dossier:', req.params.id, req.params.folder);
   try {
@@ -638,78 +656,28 @@ router.delete('/:id/folders/:folder', async (req, res) => {
   }
 });
 
-// PATCH pour rendre un cas public/privé
-router.patch('/:id/togglePublic', authMiddleware, async (req, res) => {
-  console.log("Route /togglePublic appelée pour le cas:", req.params.id);
+// PATCH /:id/reorder-images - DOIT ÊTRE AVANT /:id
+router.patch('/:id/reorder-images', async (req, res) => {
   try {
+    const { folder, images } = req.body;
     const caseDoc = await Case.findOne({ _id: req.params.id, user: req.userId });
+
     if (!caseDoc) {
       return res.status(404).json({ message: 'Cas non trouvé' });
     }
-    caseDoc.public = !caseDoc.public;
-    await caseDoc.save();
-    res.json(caseDoc);
-  } catch (error) {
-    console.error('Erreur lors du basculement de la visibilité:', error);
-    res.status(500).json({ message: error.message });
-  }
-});
 
-// PATCH update case difficulty
-router.patch('/:id', async (req, res) => {
-  console.log('Tentative de mise à jour du cas:', req.params.id, req.body);
-  try {
-    const { difficulty, answer, sheet } = req.body;
-    const updatedCase = await Case.findOneAndUpdate(
-      { _id: req.params.id, user: req.userId },
-      { difficulty, answer, sheet },
-      { new: true }
-    );
+    caseDoc.images[folder] = images;
+    caseDoc.markModified('images'); // Important pour les objets imbriqués
 
-    if (!updatedCase) {
-      console.log('Cas non trouvé pour la mise à jour:', req.params.id);
-      return res.status(404).json({ message: 'Cas non trouvé' });
-    }
-
-    console.log('Cas mis à jour avec succès:', updatedCase);
+    const updatedCase = await caseDoc.save();
     res.json(updatedCase);
   } catch (error) {
-    console.error('Erreur lors de la mise à jour du cas:', error);
-    res.status(500).json({ message: 'Erreur lors de la mise à jour du cas', error: error.message });
-  }
-});
-
-router.patch('/:id/tags', async (req, res) => {
-  console.log('Tentative de mise à jour des tags:', req.params.id, req.body);
-  try {
-    const { tagToAdd, tagToRemove } = req.body;
-    const caseDoc = await Case.findOne({ _id: req.params.id, user: req.userId });
-    
-    if (!caseDoc) {
-      console.log('Cas non trouvé pour la mise à jour des tags:', req.params.id);
-      return res.status(404).json({ message: 'Cas non trouvé' });
-    }
-
-    if (tagToAdd && !caseDoc.tags.includes(tagToAdd)) {
-      caseDoc.tags.push(tagToAdd);
-      console.log('Tag ajouté:', tagToAdd);
-    }
-
-    if (tagToRemove) {
-      caseDoc.tags = caseDoc.tags.filter(tag => tag !== tagToRemove);
-      console.log('Tag supprimé:', tagToRemove);
-    }
-
-    await caseDoc.save();
-    console.log('Tags mis à jour avec succès');
-    res.json(caseDoc);
-  } catch (error) {
-    console.error('Erreur lors de la mise à jour des tags:', error);
+    console.error('Erreur lors de la réorganisation des images:', error);
     res.status(500).json({ message: error.message });
   }
 });
 
-// POST images for a sheet
+// POST /:id/sheet-images - DOIT ÊTRE AVANT /:id
 router.post('/:id/sheet-images', upload.single('file'), async (req, res) => {
   console.log('Tentative d\'upload d\'image pour la fiche:', req.params.id);
   try {
@@ -744,7 +712,7 @@ router.post('/:id/sheet-images', upload.single('file'), async (req, res) => {
   }
 });
 
-// GET sheet for a case
+// GET /:id/sheet - DOIT ÊTRE AVANT /:id
 router.get('/:id/sheet', async (req, res) => {
   console.log('Tentative de récupération de la fiche:', req.params.id);
   try {
@@ -761,7 +729,7 @@ router.get('/:id/sheet', async (req, res) => {
   }
 });
 
-// POST update sheet for a case
+// POST /:id/sheet - DOIT ÊTRE AVANT /:id
 router.post('/:id/sheet', async (req, res) => {
   console.log('Tentative de mise à jour de la fiche:', req.params.id);
   try {
@@ -782,45 +750,167 @@ router.post('/:id/sheet', async (req, res) => {
   }
 });
 
-// PATCH pour réorganiser les images
-router.patch('/:id', authMiddleware, async (req, res) => {
+// ==================== ROUTES GÉNÉRALES APRÈS ====================
+// Ces routes utilisent des paramètres et doivent être APRÈS les routes spécifiques
+
+// GET tous les cas de l'utilisateur connecté (route de base)
+router.get('/', async (req, res) => {
   try {
-    const { images } = req.body;
-    const updatedCase = await Case.findOneAndUpdate(
-      { _id: req.params.id, user: req.userId },
-      { $set: { images } },
-      { new: true }
-    );
-    
-    if (!updatedCase) {
-      return res.status(404).json({ message: 'Cas non trouvé' });
-    }
-    
-    res.json(updatedCase);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const totalCases = await Case.countDocuments({ user: req.userId });
+    const cases = await Case.find({ user: req.userId })
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    res.json({
+      cases,
+      currentPage: page,
+      totalPages: Math.ceil(totalCases / limit),
+      totalCases
+    });
   } catch (error) {
-    console.error('Erreur lors de la réorganisation des images:', error);
+    console.error('Erreur détaillée lors de la récupération des cas:', error);
     res.status(500).json({ message: error.message });
   }
 });
 
-// Dans caseRoutes.js, ajoutez une nouvelle route spécifique pour la réorganisation des images
-router.patch('/:id/reorder-images', authMiddleware, async (req, res) => {
-  try {
-    const { folder, images } = req.body;
-    const caseDoc = await Case.findOne({ _id: req.params.id, user: req.userId });
+// POST nouveau cas
+router.post('/', async (req, res) => {
+  console.log('Tentative de création d\'un nouveau cas:', req.body);
+  const newCase = new Case({
+    ...req.body,
+    user: req.userId,
+    averageRating: 0,
+    ratingsCount: 0,
+    views: 0,
+    copies: 0
+  });
 
+  try {
+    const savedCase = await newCase.save();
+    console.log('Nouveau cas créé avec succès:', savedCase);
+    res.status(201).json(savedCase);
+  } catch (error) {
+    console.error('Erreur lors de la création du cas:', error);
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// GET cas spécifique par ID - CETTE ROUTE DOIT ÊTRE À LA FIN
+router.get('/:id', async (req, res) => {
+  try {
+    const caseDoc = await Case.findById(req.params.id);
+    
     if (!caseDoc) {
       return res.status(404).json({ message: 'Cas non trouvé' });
     }
 
-    caseDoc.images[folder] = images;
-    caseDoc.markModified('images'); // Important pour les objets imbriqués
+    // Si le cas n'est pas public et que l'utilisateur n'est pas le propriétaire
+    if (!caseDoc.public && (!req.userId || caseDoc.user.toString() !== req.userId)) {
+      return res.status(403).json({ message: 'Accès non autorisé' });
+    }
 
-    const updatedCase = await caseDoc.save();
+    // Incrémenter le compteur de vues si ce n'est pas le propriétaire
+    if (caseDoc.public && req.userId && caseDoc.user.toString() !== req.userId) {
+      await Case.findByIdAndUpdate(req.params.id, {
+        $inc: { views: 1 }
+      });
+    }
+
+    const caseObject = caseDoc.toObject();
+
+    if (caseDoc.folderMainImages instanceof Map) {
+      caseObject.folderMainImages = Object.fromEntries(caseDoc.folderMainImages);
+    } else {
+      caseObject.folderMainImages = caseDoc.folderMainImages || {};
+    }
+
+    // Ajouter la note de l'utilisateur connecté si applicable
+    if (req.userId && caseDoc.public) {
+      const userRating = await CaseRating.findOne({
+        case: req.params.id,
+        user: req.userId
+      });
+      caseObject.userRating = userRating ? userRating.rating : null;
+    }
+
+    res.json(caseObject);
+  } catch (error) {
+    console.error('Erreur lors de la récupération du cas:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// PATCH mise à jour d'un cas - APRÈS /:id GET
+router.patch('/:id', async (req, res) => {
+  console.log('Tentative de mise à jour du cas:', req.params.id, req.body);
+  try {
+    const updatedCase = await Case.findOneAndUpdate(
+      { _id: req.params.id, user: req.userId },
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedCase) {
+      return res.status(404).json({ message: 'Cas non trouvé' });
+    }
+
+    console.log('Cas mis à jour avec succès:', updatedCase);
     res.json(updatedCase);
   } catch (error) {
-    console.error('Erreur lors de la réorganisation des images:', error);
-    res.status(500).json({ message: error.message });
+    console.error('Erreur lors de la mise à jour du cas:', error);
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// DELETE supprimer un cas - APRÈS /:id GET
+router.delete('/:id', async (req, res) => {
+  console.log('Tentative de suppression du cas:', req.params.id);
+  try {
+    const deletedCase = await Case.findOneAndDelete({ _id: req.params.id, user: req.userId });
+    if (!deletedCase) {
+      console.log('Cas non trouvé pour la suppression:', req.params.id);
+      return res.status(404).json({ message: 'Cas non trouvé' });
+    }
+
+    // Supprimer aussi toutes les notes associées à ce cas
+    await CaseRating.deleteMany({ case: req.params.id });
+
+    // Suppression des images de DigitalOcean Spaces
+    const folder = sanitizeTitle(deletedCase.title);
+    const listParams = {
+      Bucket: process.env.DO_SPACES_BUCKET,
+      Prefix: `rifim/${folder}/`
+    };
+
+    try {
+      const listedObjects = await s3.listObjectsV2(listParams).promise();
+      if (listedObjects.Contents.length > 0) {
+        const deleteParams = {
+          Bucket: process.env.DO_SPACES_BUCKET,
+          Delete: { Objects: [] }
+        };
+
+        listedObjects.Contents.forEach(({ Key }) => {
+          deleteParams.Delete.Objects.push({ Key });
+        });
+
+        await s3.deleteObjects(deleteParams).promise();
+        console.log('Images associées supprimées avec succès');
+      }
+    } catch (spaceError) {
+      console.error('Erreur lors de la suppression des images dans Spaces:', spaceError);
+    }
+
+    console.log('Cas supprimé avec succès:', req.params.id);
+    res.json({ message: 'Cas et images associées supprimés avec succès' });
+  } catch (error) {
+    console.error('Erreur lors de la suppression du cas:', error);
+    res.status(500).json({ message: 'Erreur serveur lors de la suppression du cas', error: error.message });
   }
 });
 
