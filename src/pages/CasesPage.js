@@ -1,5 +1,6 @@
-// CasesPage.js - VERSION AVEC SHARED COMPONENTS UNIFIÉS
+// CasesPage.js - VERSION CORRIGÉE AVEC TOUTES LES FONCTIONNALITÉS
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
 import { 
   Star, Edit, Save, Upload, X, Folder, Image as ImageIcon, 
@@ -133,6 +134,106 @@ const ImagePreview = styled.img`
   }
 `;
 
+// Composant étoile cliquable pour la notation
+const ClickableStar = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s ease;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+`;
+
+const StarRatingContainer = styled.div`
+  display: flex;
+  gap: 2px;
+  margin: 0.5rem 0;
+  align-items: center;
+`;
+
+// Bouton action standard
+const ActionButton = styled.button`
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  text-decoration: none;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+const ViewButton = styled(ActionButton)`
+  background-color: ${props => props.theme.primary};
+  color: white;
+
+  &:hover {
+    background-color: ${props => props.theme.secondary};
+  }
+`;
+
+const CreateSheetButton = styled(ActionButton)`
+  background-color: #2563eb;
+  color: white;
+
+  &:hover {
+    background-color: #1d4ed8;
+  }
+`;
+
+const ManageButton = styled(ActionButton)`
+  background-color: #6b7280;
+  color: white;
+
+  &:hover {
+    background-color: #4b5563;
+  }
+`;
+
+const ToggleButton = styled(ActionButton)`
+  background-color: ${props => props.isPublic ? '#059669' : '#6b7280'};
+  color: white;
+
+  &:hover {
+    background-color: ${props => props.isPublic ? '#047857' : '#4b5563'};
+  }
+`;
+
+const DeleteButton = styled.button`
+  background-color: #dc2626;
+  color: white;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  width: 40px;
+  height: 40px;
+
+  &:hover {
+    background-color: #b91c1c;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);
+  }
+`;
+
 // ==================== COMPOSANT CARTE CAS PRIVÉ ====================
 
 function PrivateCaseCard({ 
@@ -145,15 +246,8 @@ function PrivateCaseCard({
   onLoadCase, 
   onTogglePublic 
 }) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [difficulty, setDifficulty] = useState(cas.difficulty || 1);
   const [answer, setAnswer] = useState(cas.answer || '');
   const [newTag, setNewTag] = useState('');
-
-  const handleDifficultySubmit = () => {
-    onUpdateDifficulty(cas._id, difficulty);
-    setIsEditing(false);
-  };
 
   const handleAnswerSubmit = () => {
     onUpdateAnswer(cas._id, answer);
@@ -186,7 +280,7 @@ function PrivateCaseCard({
             height: '80px', 
             objectFit: 'cover', 
             borderRadius: '8px',
-            border: `1px solid var(--color-border)`
+            border: `1px solid ${props => props.theme?.border || '#e5e7eb'}`
           }}
           onError={(e) => {
             e.target.src = '/images/default.jpg';
@@ -201,56 +295,27 @@ function PrivateCaseCard({
           }}>
             {cas.title || 'Cas sans titre'}
           </h3>
+          
+          {/* Étoiles cliquables pour la difficulté */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
             <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
               Difficulté:
             </span>
-            {isEditing ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <select 
-                  value={difficulty} 
-                  onChange={(e) => setDifficulty(Number(e.target.value))}
-                  style={{ 
-                    padding: '0.25rem',
-                    borderRadius: '4px',
-                    border: '1px solid var(--color-border)'
-                  }}
+            <StarRatingContainer>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <ClickableStar
+                  key={star}
+                  onClick={() => onUpdateDifficulty(cas._id, star)}
+                  title={`Noter ${star} étoile${star > 1 ? 's' : ''}`}
                 >
-                  {[1,2,3,4,5].map(d => (
-                    <option key={d} value={d}>{d}</option>
-                  ))}
-                </select>
-                <button onClick={handleDifficultySubmit} style={{ 
-                  padding: '0.25rem 0.5rem',
-                  backgroundColor: 'var(--color-primary)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}>
-                  <Save size={12} />
-                </button>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                {[...Array(5)].map((_, index) => (
                   <Star
-                    key={index}
                     size={16}
-                    fill={index < (cas.difficulty || 0) ? "gold" : "transparent"}
-                    stroke={index < (cas.difficulty || 0) ? "gold" : "#d1d5db"}
+                    fill={star <= (cas.difficulty || 0) ? "gold" : "transparent"}
+                    stroke={star <= (cas.difficulty || 0) ? "gold" : "#d1d5db"}
                   />
-                ))}
-                <button onClick={() => setIsEditing(true)} style={{ 
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  marginLeft: '0.5rem'
-                }}>
-                  <Edit size={12} />
-                </button>
-              </div>
-            )}
+                </ClickableStar>
+              ))}
+            </StarRatingContainer>
           </div>
         </div>
       </div>
@@ -327,49 +392,34 @@ function PrivateCaseCard({
 
       {/* Actions */}
       <CaseActions>
-        <UnifiedEditButton to={`/radiology-viewer/${cas._id}`}>
+        <ViewButton as={Link} to={`/radiology-viewer/${cas._id}`}>
           <Eye size={14} />
           Voir
-        </UnifiedEditButton>
+        </ViewButton>
         
-        <button
-          onClick={() => onLoadCase(cas._id)}
-          style={{
-            padding: '0.5rem 1rem',
-            backgroundColor: 'var(--color-secondary)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            fontSize: '0.85rem'
-          }}
-        >
+        <CreateSheetButton as={Link} to={`/sheet-editor/${cas._id}`}>
+          <File size={14} />
+          Créer fiche
+        </CreateSheetButton>
+        
+        <ManageButton onClick={() => onLoadCase(cas._id)}>
           <Folder size={14} />
           Gérer
-        </button>
+        </ManageButton>
 
-        <button
+        <ToggleButton 
           onClick={() => onTogglePublic(cas._id)}
-          style={{
-            padding: '0.5rem 1rem',
-            backgroundColor: cas.public ? '#10B981' : '#6B7280',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: '0.85rem'
-          }}
+          isPublic={cas.public}
         >
           {cas.public ? 'Public' : 'Privé'}
-        </button>
+        </ToggleButton>
 
-        <UnifiedDeleteButton onClick={() => onDeleteCase(cas._id)}>
-          <Trash2 size={12} />
-          Supprimer
-        </UnifiedDeleteButton>
+        <DeleteButton 
+          onClick={() => onDeleteCase(cas._id)}
+          title="Supprimer ce cas"
+        >
+          <Trash2 size={16} />
+        </DeleteButton>
       </CaseActions>
     </CaseManagementCard>
   );

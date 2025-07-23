@@ -334,9 +334,6 @@ function PublicCasesPage() {
     <UnifiedPageContainer>
       <PageHeader>
         <UnifiedPageTitle>Cas Cliniques Publics</UnifiedPageTitle>
-        <PageSubtitle>
-          Découvrez et copiez les cas partagés par la communauté
-        </PageSubtitle>
       </PageHeader>
 
       <SearchAndFiltersSection>

@@ -381,6 +381,7 @@ export const UnifiedTag = styled.span`
   display: flex;
   align-items: center;
   gap: 0.25rem;
+  opacity: 0.9;
 `;
 
 // ==================== PAGINATION ====================
@@ -467,7 +468,7 @@ export const UnifiedLoadingMessage = styled.div`
 export const UnifiedErrorMessage = styled.div`
   text-align: center;
   padding: 2rem;
-  color: #ef4444;
+  color: #dc2626;
   background-color: #fef2f2;
   border-radius: 12px;
   margin: 2rem 0;
@@ -536,7 +537,7 @@ export const UnifiedCreateButton = styled(Link)`
 `;
 
 export const UnifiedEditButton = styled(Link)`
-  background-color: ${props => props.theme.secondary};
+  background-color: ${props => props.theme.primary};
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 8px;
@@ -551,7 +552,7 @@ export const UnifiedEditButton = styled(Link)`
   &:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px ${props => props.theme.shadow};
-    opacity: 0.9;
+    background-color: ${props => props.theme.secondary};
   }
 
   svg {
@@ -561,27 +562,27 @@ export const UnifiedEditButton = styled(Link)`
 `;
 
 export const UnifiedDeleteButton = styled.button`
-  background-color: #ef4444;
+  background-color: #dc2626;
   color: white;
-  padding: 0.25rem 0.5rem;
+  padding: 0.5rem;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  font-weight: 500;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 0.25rem;
+  justify-content: center;
   transition: all 0.2s ease;
-  font-size: 0.75rem;
+  width: 36px;
+  height: 36px;
 
   &:hover {
-    background-color: #dc2626;
+    background-color: #b91c1c;
     transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
+    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);
   }
 
   svg {
-    width: 12px;
-    height: 12px;
+    width: 16px;
+    height: 16px;
   }
 `;
