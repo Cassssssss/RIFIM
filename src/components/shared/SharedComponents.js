@@ -111,6 +111,27 @@ export const DropdownOption = styled.label`
   }
 `;
 
+export const DropdownItem = styled.div`
+  padding: 0.75rem;
+  cursor: pointer;
+  color: ${props => props.theme.text};
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &:hover {
+    background-color: ${props => props.theme.hover};
+  }
+`;
+
+export const DropdownCheckbox = styled.input`
+  margin-right: 0.5rem;
+  width: 16px;
+  height: 16px;
+  accent-color: ${props => props.theme.primary};
+`;
+
 export const FilterIndicator = styled.div`
   margin-top: 1rem;
   font-size: 0.9rem;
@@ -179,6 +200,18 @@ export const QuestionnairesGrid = styled.div`
   }
 `;
 
+export const CasesList = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+`;
+
 // ==================== CARTES UNIFIÉES ====================
 
 export const QuestionnaireCard = styled.div`
@@ -205,6 +238,209 @@ export const QuestionnaireCard = styled.div`
     transform: translateY(-2px);
     box-shadow: 0 8px 25px ${props => props.theme.shadow};
     border-color: ${props => props.theme.primary};
+  }
+`;
+
+// ==================== COMPOSANTS CARTE CAS PARTAGÉS ====================
+
+export const CaseCard = styled(Link)`
+  display: block;
+  background-color: ${props => props.theme.surface || props.theme.card};
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px ${props => props.theme.shadow};
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid ${props => props.theme.border};
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px ${props => props.theme.shadow};
+    border-color: ${props => props.theme.primary};
+  }
+`;
+
+export const CaseImage = styled.img`
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+`;
+
+export const CaseContent = styled.div`
+  padding: 1.5rem;
+`;
+
+export const CaseHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+`;
+
+export const CaseTitle = styled.h2`
+  color: ${props => props.theme.text};
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  text-align: center;
+  line-height: 1.4;
+`;
+
+export const StarRating = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 0.25rem;
+  margin: 1rem 0;
+`;
+
+export const PopularityBadge = styled.span`
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+
+export const AuthorInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: ${props => props.theme.textSecondary};
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  justify-content: center;
+
+  svg {
+    color: ${props => props.theme.primary};
+  }
+`;
+
+export const StatsContainer = styled.div`
+  display: flex;
+  justify-content: space-around;
+  margin: 1rem 0;
+  padding: 1rem;
+  background-color: ${props => props.theme.backgroundSecondary || props.theme.background};
+  border-radius: 8px;
+  border: 1px solid ${props => props.theme.border};
+`;
+
+export const StatItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  color: ${props => props.theme.textSecondary};
+  font-size: 0.8rem;
+
+  svg {
+    color: ${props => props.theme.primary};
+  }
+
+  span {
+    font-weight: 600;
+    color: ${props => props.theme.text};
+  }
+`;
+
+export const ActionsContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+`;
+
+export const CopyActionButton = styled.button`
+  background-color: ${props => props.theme.primary};
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: ${props => props.theme.primaryDark || props.theme.secondary};
+    transform: translateY(-1px);
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+`;
+
+export const RatingSection = styled.div`
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid ${props => props.theme.border};
+`;
+
+// ==================== FILTRES ====================
+
+export const FilterContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+`;
+
+export const FilterButton = styled.button`
+  background-color: ${props => props.active ? props.theme.primary : props.theme.backgroundSecondary || props.theme.background};
+  color: ${props => props.active ? 'white' : props.theme.text};
+  border: 1px solid ${props => props.active ? props.theme.primary : props.theme.border};
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: ${props => props.theme.primary};
+    color: white;
+  }
+`;
+
+export const SpoilerButton = styled.button`
+  background-color: ${props => props.active ? '#10b981' : '#6b7280'};
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: ${props => props.active ? '#059669' : '#4b5563'};
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
   }
 `;
 
@@ -264,6 +500,7 @@ export const TagsContainer = styled.div`
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
+  justify-content: center;
 `;
 
 export const Tag = styled.span`
@@ -550,39 +787,4 @@ export const ErrorMessage = styled.div`
   border: 1px solid #fecaca;
   border-radius: 8px;
   margin: 1rem 0;
-`;
-
-// ==================== COMPOSANTS CARTE PARTAGÉS ====================
-
-export const CaseCard = styled(Link)`
-  display: block;
-  background-color: ${props => props.theme.surface || props.theme.card};
-  border-radius: 8px;
-  overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  text-decoration: none;
-  color: inherit;
-
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-  }
-`;
-
-export const CaseImage = styled.img`
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-`;
-
-export const CaseContent = styled.div`
-  padding: 1rem;
-`;
-
-export const CaseTitle = styled.h2`
-  color: ${props => props.theme.text};
-  text-align: center;
-  margin: 0 0 1rem 0;
-  font-size: 1.1rem;
 `;
