@@ -453,12 +453,29 @@ const ImagesGrid = styled.div`
   gap: 0.5rem;
   padding: 1rem;
   background-color: ${props => props.theme.card};
+  min-height: 100px; /* Assure une hauteur minimum pour le drop */
 `;
 
 const ImageWrapper = styled.div`
   position: relative;
   border-radius: 4px;
   overflow: hidden;
+  transition: all 0.2s ease;
+  
+  /* Style pour les éléments en cours de drag */
+  ${props => props.isDragging && `
+    opacity: 0.7;
+    transform: scale(1.05);
+    z-index: 1000;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  `}
+  
+  /* Style au survol pendant le drag */
+  ${props => props.isDraggedOver && `
+    transform: scale(0.95);
+    opacity: 0.5;
+    border: 2px dashed ${props.theme.primary};
+  `}
 `;
 
 const ThumbnailImage = styled.img`
@@ -467,9 +484,10 @@ const ThumbnailImage = styled.img`
   object-fit: cover;
   cursor: pointer;
   transition: transform 0.2s ease;
+  pointer-events: ${props => props.isDragging ? 'none' : 'auto'};
 
   &:hover {
-    transform: scale(1.05);
+    transform: ${props => props.isDragging ? 'none' : 'scale(1.05)'};
   }
 `;
 
@@ -488,6 +506,7 @@ const DeleteButton2 = styled.button`
   justify-content: center;
   cursor: pointer;
   font-size: 0.7rem;
+  z-index: 10;
 
   &:hover {
     background: rgba(220, 38, 38, 1);
@@ -615,6 +634,9 @@ const CollapsibleImageGallery = React.memo(({ folder, images, onImageClick, onDe
     const sourceIndex = result.source.index;
     const destinationIndex = result.destination.index;
     
+    // Si l'élément est déposé au même endroit, ne rien faire
+    if (sourceIndex === destinationIndex) return;
+    
     const reorderedImages = Array.from(images);
     const [movedImage] = reorderedImages.splice(sourceIndex, 1);
     reorderedImages.splice(destinationIndex, 0, movedImage);
@@ -638,14 +660,19 @@ const CollapsibleImageGallery = React.memo(({ folder, images, onImageClick, onDe
         </GalleryHeader>
         
         {isOpen && (
-          <Droppable droppableId={folder} direction="horizontal">
-            {(provided) => (
+          <Droppable droppableId={`folder-${folder}`}>
+            {(provided, snapshot) => (
               <ImagesGrid
                 {...provided.droppableProps}
                 ref={provided.innerRef}
+                style={{
+                  backgroundColor: snapshot.isDraggingOver 
+                    ? 'rgba(59, 130, 246, 0.1)' 
+                    : undefined
+                }}
               >
                 {images.map((image, index) => {
-                  const draggableId = `draggable-${folder}-${index}`;
+                  const draggableId = `${folder}-image-${index}-${image.split('/').pop()}`;
                   return (
                     <Draggable 
                       key={draggableId}
@@ -657,18 +684,37 @@ const CollapsibleImageGallery = React.memo(({ folder, images, onImageClick, onDe
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
+                          isDragging={snapshot.isDragging}
                           style={{
                             ...provided.draggableProps.style,
-                            opacity: snapshot.isDragging ? 0.5 : 1,
+                            // Assure que l'élément reste visible pendant le drag
+                            zIndex: snapshot.isDragging ? 1000 : 'auto',
                           }}
                         >
                           <ThumbnailImage
                             src={imageLoadError[image] ? '/images/placeholder.jpg' : image}
-                            alt={`${folder} image ${index}`}
-                            onClick={() => onImageClick(folder, index)}
+                            alt={`${folder} image ${index + 1}`}
+                            onClick={() => !snapshot.isDragging && onImageClick(folder, index)}
                             onError={() => setImageLoadError(prev => ({ ...prev, [image]: true }))}
+                            isDragging={snapshot.isDragging}
+                            style={{
+                              // Empêche le clic sur l'image pendant le drag
+                              pointerEvents: snapshot.isDragging ? 'none' : 'auto'
+                            }}
                           />
-                          <DeleteButton2 onClick={() => onDeleteImage(caseId, folder, image)}>
+                          <DeleteButton2 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!snapshot.isDragging) {
+                                onDeleteImage(caseId, folder, image);
+                              }
+                            }}
+                            style={{
+                              // Cache le bouton de suppression pendant le drag
+                              opacity: snapshot.isDragging ? 0 : 1,
+                              pointerEvents: snapshot.isDragging ? 'none' : 'auto'
+                            }}
+                          >
                             <X size={12} />
                           </DeleteButton2>
                         </ImageWrapper>
@@ -1153,6 +1199,9 @@ function CasesPage() {
     if (!selectedCase) return;
     
     try {
+      console.log('Réorganisation des images pour le dossier:', folder);
+      console.log('Nouvel ordre:', reorderedImages);
+      
       // Mettre à jour l'état local immédiatement pour une meilleure UX
       setSelectedCase(prevCase => ({
         ...prevCase,
@@ -1185,10 +1234,13 @@ function CasesPage() {
         throw new Error('Échec de la mise à jour');
       }
 
+      console.log('Images réorganisées avec succès');
+
     } catch (error) {
       console.error('Erreur lors de la réorganisation des images:', error);
-      // Recharger le cas en cas d'erreur
+      // Recharger le cas en cas d'erreur pour restaurer l'état correct
       await loadCase(selectedCase._id);
+      setError('Erreur lors de la réorganisation des images');
     }
   }, [selectedCase, loadCase]);
 
