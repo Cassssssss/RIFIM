@@ -1,12 +1,24 @@
-// PublicQuestionnairesPage.js - VERSION CORRIGÉE AVEC CARTES OPTIMISÉES
+// PublicQuestionnairesPage.js - VERSION AVEC SHARED COMPONENTS
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { ChevronDown, ChevronUp, Clock, Users, FileText, TrendingUp, User, Eye, Copy, Plus } from 'lucide-react';
+import { ChevronDown, ChevronUp, Clock, Users, FileText, TrendingUp, User, Eye, Plus } from 'lucide-react';
 import axios from '../utils/axiosConfig';
 import RatingStars from '../components/RatingStars';
 
-// ==================== STYLES CONTAINER PRINCIPAL OPTIMISÉ ====================
+// Import des composants partagés
+import {
+  QuestionnairesGrid,
+  QuestionnaireCard,
+  CardHeader,
+  TagsContainer,
+  Tag,
+  CardMeta,
+  MetaItem,
+  ActionButtons
+} from '../components/shared/SharedComponents';
+
+// ==================== STYLES SPÉCIFIQUES À CETTE PAGE ====================
 
 const PageContainer = styled.div`
   padding: 2rem 3rem;
@@ -45,16 +57,6 @@ const Title = styled.h1`
   background-clip: text;
   text-align: center;
 `;
-
-const Subtitle = styled.p`
-  font-size: 1.2rem;
-  color: ${props => props.theme.textSecondary};
-  margin-bottom: 2rem;
-  text-align: center;
-  line-height: 1.6;
-`;
-
-// ==================== SECTION FILTRES MODERNISÉE ====================
 
 const FilterSection = styled.div`
   width: 280px;
@@ -185,8 +187,6 @@ const FilterIndicator = styled.div`
   }
 `;
 
-// ==================== CONTENU PRINCIPAL ====================
-
 const ListContainer = styled.div`
   flex: 1;
   min-width: 0;
@@ -211,61 +211,6 @@ const SearchBar = styled.input`
   &::placeholder {
     color: ${props => props.theme.textSecondary};
   }
-`;
-
-// ==================== GRILLE POUR CARTES CORRIGÉE ====================
-const QuestionnairesGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-`;
-
-// ==================== CARTES RÉDUITES EN LARGEUR ====================
-
-const QuestionnaireCard = styled.div`
-  background-color: ${props => props.theme.card};
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 12px;
-  padding: 1.25rem;
-  box-shadow: 0 2px 8px ${props => props.theme.shadow};
-  transition: all 0.3s ease;
-  position: relative;
-  /* CORRECTION : Remplacer overflow: hidden par overflow: visible pour permettre aux tooltips de dépasser */
-  overflow: visible;
-  display: flex;
-  flex-direction: column;
-  height: fit-content;
-
-  /* CORRECTION : Ajouter la bande dégradé au-dessus comme dans PublicCasesPage */
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-    /* CORRECTION : S'assurer que la bande reste dans la carte avec overflow */
-    border-radius: 12px 12px 0 0;
-  }
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px ${props => props.theme.shadow};
-    border-color: ${props => props.theme.primary};
-    /* CORRECTION : Augmenter le z-index au survol pour que les tooltips passent au-dessus */
-    z-index: 100;
-  }
-`;
-
-const CardHeader = styled.div`
-  margin-bottom: 1rem;
 `;
 
 const QuestionnaireTitle = styled(Link)`
@@ -315,68 +260,6 @@ const AuthorInfo = styled.div`
   }
 `;
 
-const TagsContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-bottom: 1rem;
-`;
-
-const Tag = styled.span`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  padding: 0.2rem 0.4rem;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  font-weight: 500;
-`;
-
-// ==================== MÉTADONNÉES COMPACTES ====================
-
-const CardMeta = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  padding: 0.75rem;
-  background-color: ${props => props.theme.backgroundSecondary};
-  border-radius: 8px;
-  border: 1px solid ${props => props.theme.border};
-`;
-
-const MetaItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.75rem;
-  font-weight: 500;
-
-  svg {
-    color: ${props => props.theme.primary};
-    flex-shrink: 0;
-    width: 14px;
-    height: 14px;
-  }
-
-  span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-`;
-
-// ==================== ACTIONS COMPACTES ====================
-
-const ActionButtons = styled.div`
-  display: flex;
-  gap: 0.5rem;
-  margin-top: auto;
-  /* CORRECTION : Réduire le padding-bottom, juste assez pour le tooltip */
-  padding-bottom: 5px;
-  position: relative;
-`;
-
 const ActionButton = styled(Link)`
   flex: 1;
   display: flex;
@@ -403,13 +286,11 @@ const ActionButton = styled(Link)`
   }
 `;
 
-// CORRECTION : Bouton copie avec même couleur que PublicCasesPage et tooltip bien positionné
 const CopyButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0.6rem;
-  /* CORRECTION : Même couleur que PublicCasesPage (primary au lieu de secondary) */
   background-color: ${props => props.theme.primary};
   color: white;
   border: none;
@@ -419,12 +300,10 @@ const CopyButton = styled.button`
   position: relative;
 
   &:hover {
-    /* CORRECTION : Même couleur de survol que PublicCasesPage */
     background-color: ${props => props.theme.primaryHover};
     transform: translateY(-1px);
   }
 
-  /* CORRECTION : Tooltip repositionné au-dessus avec espacement optimal */
   &:hover::after {
     content: "Ajouter à mes questionnaires";
     position: absolute;
@@ -443,7 +322,6 @@ const CopyButton = styled.button`
     border: 1px solid ${props => props.theme.border};
   }
 
-  /* CORRECTION : Flèche du tooltip repositionnée */
   &:hover::before {
     content: '';
     position: absolute;
@@ -460,8 +338,6 @@ const CopyButton = styled.button`
     height: 14px;
   }
 `;
-
-// ==================== PAGINATION (INCHANGÉE) ====================
 
 const PaginationContainer = styled.div`
   display: flex;
@@ -534,7 +410,7 @@ const EmptyState = styled.div`
   }
 `;
 
-// ==================== COMPOSANTS ====================
+// ==================== COMPOSANT CARTE QUESTIONNAIRE ====================
 
 function QuestionnaireCardComponent({ questionnaire }) {
   const [questionnaireRating, setQuestionnaireRating] = useState({
@@ -651,13 +527,12 @@ function QuestionnaireCardComponent({ questionnaire }) {
       />
 
       {/* Actions */}
-      <ActionButtons>
+      <ActionButtons style={{ paddingBottom: '5px', position: 'relative' }}>
         <ActionButton to={`/use/${questionnaire._id}`}>
           <FileText size={14} />
           Utiliser
         </ActionButton>
         
-        {/* CORRECTION : Bouton avec icône Plus et tooltip */}
         <CopyButton
           onClick={(e) => {
             e.preventDefault();
@@ -697,7 +572,6 @@ function PublicQuestionnairesPage() {
     "Genou", "Hanche", "Jambe", "Parties molles", "Poignet", "Rachis"
   ];
 
-  // CORRECTION : Uniformiser la limite à 10 comme demandé
   const fetchQuestionnaires = useCallback(async (page = 1) => {
     setIsLoading(true);
     setError(null);
@@ -705,7 +579,7 @@ function PublicQuestionnairesPage() {
       const response = await axios.get('/questionnaires/public', {
         params: {
           page,
-          limit: 10, // CORRECTION : Changé de 12 à 10 pour uniformiser
+          limit: 12, // Uniformisé avec les autres pages
           search: searchTerm,
           modality: modalityFilters.join(','),
           specialty: specialtyFilters.join(','),
