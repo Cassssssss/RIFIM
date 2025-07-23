@@ -214,9 +214,6 @@ function CasesListPage() {
     <UnifiedPageContainer>
       <PageHeader>
         <UnifiedPageTitle>Mes Cas Cliniques</UnifiedPageTitle>
-        <PageSubtitle>
-          Gérez et consultez vos cas cliniques personnels
-        </PageSubtitle>
       </PageHeader>
 
       <SearchAndFiltersSection>
