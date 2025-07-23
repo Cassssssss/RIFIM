@@ -463,6 +463,50 @@ const ImagesGrid = styled.div`
   `}
 `;
 
+const GalleryContainer = styled.div`
+  margin-bottom: 1.5rem;
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 8px;
+  overflow: hidden;
+`;
+
+const GalleryHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: ${props => props.theme.backgroundSecondary};
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: ${props => props.theme.hover};
+  }
+
+  h3 {
+    margin: 0;
+    color: ${props => props.theme.text};
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+`;
+
+const FolderMainImage = styled.img`
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid ${props => props.theme.border};
+`;
+
+const ImagesGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 0.5rem;
+  padding: 1rem;
+  background-color: ${props => props.theme.card};
+`;
+
 const ImageWrapper = styled.div`
   position: relative;
   border-radius: 4px;
