@@ -131,7 +131,7 @@ export const UnifiedFilterButton = styled.button`
 
 export const UnifiedSpoilerButton = styled.button`
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #4F8EDB, #5FBEAA);
+  background: linear-gradient(135deg, #5A9FD4, #6ABFA5);
   color: white;
   border: none;
   border-radius: 12px;
@@ -146,8 +146,8 @@ export const UnifiedSpoilerButton = styled.button`
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(79, 142, 219, 0.3);
-    background: linear-gradient(135deg, #4681C7, #53A896);
+    box-shadow: 0 4px 12px rgba(90, 159, 212, 0.3);
+    background: linear-gradient(135deg, #4E8BC0, #5AAB91);
   }
 
   @media (max-width: 768px) {
