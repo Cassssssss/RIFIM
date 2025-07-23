@@ -687,7 +687,7 @@ const CollapsibleImageGallery = React.memo(({ folder, images, onImageClick, onDe
         </GalleryHeader>
         
         {isOpen && (
-          <Droppable droppableId={`folder-${folder}`} direction="horizontal">
+          <Droppable droppableId={`folder-${folder}`}>
             {(provided, snapshot) => (
               <ImagesGrid
                 {...provided.droppableProps}
@@ -695,7 +695,7 @@ const CollapsibleImageGallery = React.memo(({ folder, images, onImageClick, onDe
                 isDraggingOver={snapshot.isDraggingOver}
               >
                 {images.map((image, index) => {
-                  const draggableId = `${folder}-image-${index}-${image.split('/').pop()}`;
+                  const draggableId = `${folder}-image-${index}-${image.split('/').pop()}-${Date.now()}`;
                   return (
                     <Draggable 
                       key={draggableId}
@@ -708,7 +708,7 @@ const CollapsibleImageGallery = React.memo(({ folder, images, onImageClick, onDe
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
                           isDragging={snapshot.isDragging}
-                          isDropTarget={draggedOverIndex === index}
+                          isDropTarget={draggedOverIndex === index && !snapshot.isDragging}
                           style={{
                             ...provided.draggableProps.style,
                             // Assure que l'élément reste visible pendant le drag
