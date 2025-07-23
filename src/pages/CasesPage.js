@@ -468,28 +468,16 @@ const ImageWrapper = styled.div`
   border-radius: 4px;
   overflow: hidden;
   transition: all 0.2s ease;
+  cursor: grab;
   
   /* Style pour les éléments en cours de drag */
   ${props => props.isDragging && `
-    opacity: 0.7;
+    opacity: 0.8;
     transform: scale(1.05);
     z-index: 1000;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    cursor: grabbing;
   `}
-  
-  /* Style pour les emplacements de drop */
-  ${props => props.isDropTarget && `
-    background-color: rgba(59, 130, 246, 0.2);
-    border: 2px dashed #3b82f6;
-    transform: scale(0.95);
-  `}
-  
-  /* Animation au survol pendant le drag */
-  &.drag-over {
-    background-color: rgba(59, 130, 246, 0.3);
-    border: 2px solid #3b82f6;
-    transform: scale(0.9);
-  }
 `;
 
 const ThumbnailImage = styled.img`
@@ -498,7 +486,7 @@ const ThumbnailImage = styled.img`
   object-fit: cover;
   cursor: pointer;
   transition: transform 0.2s ease;
-  pointer-events: ${props => props.isDragging ? 'none' : 'auto'};
+  user-select: none;
 
   &:hover {
     transform: ${props => props.isDragging ? 'none' : 'scale(1.05)'};
@@ -633,7 +621,6 @@ const CollapsibleImageGallery = React.memo(({ folder, images, onImageClick, onDe
   const [isOpen, setIsOpen] = useState(false);
   const [imageLoadError, setImageLoadError] = useState({});
   const [folderMainImage, setFolderMainImage] = useState(null);
-  const [draggedOverIndex, setDraggedOverIndex] = useState(null);
 
   useEffect(() => {
     const loadFolderMainImage = async () => {
@@ -644,8 +631,6 @@ const CollapsibleImageGallery = React.memo(({ folder, images, onImageClick, onDe
   }, [caseId, folder, fetchFolderMainImage]);
 
   const handleDragEnd = (result) => {
-    setDraggedOverIndex(null);
-    
     if (!result.destination) return;
     
     const sourceIndex = result.source.index;
@@ -663,16 +648,8 @@ const CollapsibleImageGallery = React.memo(({ folder, images, onImageClick, onDe
     onReorderImages(folder, reorderedImages);
   };
 
-  const handleDragUpdate = (update) => {
-    if (update.destination) {
-      setDraggedOverIndex(update.destination.index);
-    } else {
-      setDraggedOverIndex(null);
-    }
-  };
-
   return (
-    <DragDropContext onDragEnd={handleDragEnd} onDragUpdate={handleDragUpdate}>
+    <DragDropContext onDragEnd={handleDragEnd}>
       <GalleryContainer>
         <GalleryHeader onClick={() => setIsOpen(!isOpen)}>
           <h3>{folder}</h3>
@@ -695,10 +672,10 @@ const CollapsibleImageGallery = React.memo(({ folder, images, onImageClick, onDe
                 isDraggingOver={snapshot.isDraggingOver}
               >
                 {images.map((image, index) => {
-                  const draggableId = `${folder}-image-${index}-${image.split('/').pop()}-${Date.now()}`;
+                  const draggableId = `${folder}-${index}-${image.split('/').pop()}`;
                   return (
                     <Draggable 
-                      key={draggableId}
+                      key={`${folder}-${index}`}
                       draggableId={draggableId}
                       index={index}
                     >
@@ -708,10 +685,8 @@ const CollapsibleImageGallery = React.memo(({ folder, images, onImageClick, onDe
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
                           isDragging={snapshot.isDragging}
-                          isDropTarget={draggedOverIndex === index && !snapshot.isDragging}
                           style={{
                             ...provided.draggableProps.style,
-                            // Assure que l'élément reste visible pendant le drag
                             zIndex: snapshot.isDragging ? 1000 : 'auto',
                           }}
                         >
@@ -721,10 +696,6 @@ const CollapsibleImageGallery = React.memo(({ folder, images, onImageClick, onDe
                             onClick={() => !snapshot.isDragging && onImageClick(folder, index)}
                             onError={() => setImageLoadError(prev => ({ ...prev, [image]: true }))}
                             isDragging={snapshot.isDragging}
-                            style={{
-                              // Empêche le clic sur l'image pendant le drag
-                              pointerEvents: snapshot.isDragging ? 'none' : 'auto'
-                            }}
                           />
                           <DeleteButton2 
                             onClick={(e) => {
@@ -734,7 +705,6 @@ const CollapsibleImageGallery = React.memo(({ folder, images, onImageClick, onDe
                               }
                             }}
                             style={{
-                              // Cache le bouton de suppression pendant le drag
                               opacity: snapshot.isDragging ? 0 : 1,
                               pointerEvents: snapshot.isDragging ? 'none' : 'auto'
                             }}
