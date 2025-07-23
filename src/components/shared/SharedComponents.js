@@ -5,67 +5,140 @@ import { Link } from 'react-router-dom';
 // ==================== CONTENEURS PARTAGÉS ====================
 
 export const PageContainer = styled.div`
-  padding: 2rem;
-  background: ${props => props.theme.background};
-  color: ${props => props.theme.text};
+  display: flex;
+  background-color: ${props => props.theme.background};
   min-height: calc(100vh - 60px);
-  transition: all 0.3s ease;
+  padding: 2rem;
 
   @media (max-width: 768px) {
+    flex-direction: column;
     padding: 1rem;
+    gap: 1rem;
   }
 `;
 
-export const ContentContainer = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-`;
-
-export const SectionContainer = styled.div`
-  position: relative;
-  overflow: hidden;
+export const FilterSection = styled.div`
+  width: 280px;
+  margin-right: 2rem;
   background-color: ${props => props.theme.card};
-  border: 1px solid ${props => props.theme.border};
+  padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 4px 20px ${props => props.theme.shadow};
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-    border-radius: 12px 12px 0 0;
+  border: 1px solid ${props => props.theme.border};
+  height: fit-content;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    margin-right: 0;
   }
 `;
 
-// ==================== TITRE UNIFIÉ ====================
-
-export const PageTitle = styled.h1`
-  font-size: 2.5rem;
+export const FilterGroup = styled.div`
   margin-bottom: 2rem;
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-align: center;
-  font-weight: 700;
-  text-shadow: 0 2px 4px ${props => props.theme.shadow};
 `;
 
-export const SectionTitle = styled.h2`
-  font-size: 1.5rem;
-  color: ${props => props.theme.text};
-  margin-bottom: 1.5rem;
+export const FilterTitle = styled.h3`
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
   font-weight: 600;
+  color: ${props => props.theme.primary};
   display: flex;
   align-items: center;
   gap: 0.5rem;
+`;
+
+export const FilterDropdown = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+export const DropdownButton = styled.button`
+  width: 100%;
+  padding: 0.75rem;
+  background-color: ${props => props.theme.background};
+  border: 2px solid ${props => props.theme.border};
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  color: ${props => props.theme.text};
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: ${props => props.theme.primary};
+    background-color: ${props => props.theme.hover};
+  }
+`;
+
+export const DropdownContent = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: ${props => props.theme.card};
+  border: 2px solid ${props => props.theme.border};
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  z-index: 10;
+  box-shadow: 0 4px 12px ${props => props.theme.shadow};
+`;
+
+export const DropdownOption = styled.label`
+  display: flex;
+  align-items: center;
+  padding: 0.75rem;
+  cursor: pointer;
+  color: ${props => props.theme.text};
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: ${props => props.theme.hover};
+  }
+
+  input {
+    margin-right: 0.75rem;
+    width: 16px;
+    height: 16px;
+    accent-color: ${props => props.theme.primary};
+  }
+
+  span {
+    font-weight: 500;
+  }
+`;
+
+export const FilterIndicator = styled.div`
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: ${props => props.theme.primary};
+  padding: 0.5rem;
+  background-color: ${props => props.theme.background};
+  border-radius: 4px;
+`;
+
+export const ListContainer = styled.div`
+  flex: 1;
+  max-width: calc(100% - 300px);
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+  }
+`;
+
+export const TopActionsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-top: 1rem;
+
+  @media (max-width: 768px) {
+    align-items: center;
+  }
 `;
 
 // ==================== INPUTS UNIFIÉS ====================
@@ -79,93 +152,22 @@ export const SearchInput = styled.input`
   font-size: 1rem;
   background-color: ${props => props.theme.card};
   color: ${props => props.theme.text};
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px ${props => props.theme.shadow};
+  transition: all 0.2s ease;
 
   &:focus {
     outline: none;
     border-color: ${props => props.theme.primary};
-    box-shadow: 0 0 0 3px ${props => props.theme.primary}20, 0 4px 12px ${props => props.theme.shadow};
-    transform: translateY(-1px);
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
   }
 
   &::placeholder {
-    color: ${props => props.theme.textSecondary || props.theme.textLight};
+    color: ${props => props.theme.textSecondary};
   }
-`;
-
-// ==================== CARTES UNIFIÉES ====================
-
-export const Card = styled.div`
-  background-color: ${props => props.theme.card};
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 12px;
-  padding: 1.25rem;
-  box-shadow: 0 2px 8px ${props => props.theme.shadow};
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: visible;
-  display: flex;
-  flex-direction: column;
-  height: fit-content;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-    border-radius: 12px 12px 0 0;
-  }
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px ${props => props.theme.shadow};
-    border-color: ${props => props.theme.primary};
-    z-index: 100;
-  }
-`;
-
-export const CardHeader = styled.div`
-  margin-bottom: 1rem;
-`;
-
-export const CardTitle = styled(Link)`
-  color: ${props => props.theme.text};
-  font-size: 1.25rem;
-  font-weight: 600;
-  text-decoration: none;
-  display: block;
-  margin-bottom: 0.5rem;
-  line-height: 1.4;
-  transition: color 0.2s ease;
-
-  &:hover {
-    color: ${props => props.theme.primary};
-  }
-`;
-
-export const CardContent = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-`;
-
-export const CardFooter = styled.div`
-  margin-top: auto;
-  padding-top: 1rem;
-  border-top: 1px solid ${props => props.theme.border};
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
 `;
 
 // ==================== GRILLES UNIFIÉES ====================
 
-export const Grid = styled.div`
+export const QuestionnairesGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: 1.5rem;
@@ -177,266 +179,375 @@ export const Grid = styled.div`
   }
 `;
 
-// ==================== BOUTONS UNIFIÉS ====================
+// ==================== CARTES UNIFIÉES ====================
 
-export const Button = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-decoration: none;
-  
-  background-color: ${props => {
-    if (props.variant === 'primary') return props.theme.primary;
-    if (props.variant === 'secondary') return props.theme.card;
-    if (props.variant === 'danger') return props.theme.error;
-    return props.theme.primary;
-  }};
-  
-  color: ${props => {
-    if (props.variant === 'secondary') return props.theme.text;
-    return 'white';
-  }};
-  
-  border: ${props => {
-    if (props.variant === 'secondary') return `1px solid ${props.theme.border}`;
-    return 'none';
-  }};
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px ${props => {
-      if (props.variant === 'primary') return `${props.theme.primary}40`;
-      if (props.variant === 'danger') return `${props.theme.error}40`;
-      return props.theme.shadow;
-    }};
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
-`;
-
-export const LinkButton = styled(Link)`
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-decoration: none;
-  
-  background-color: ${props => {
-    if (props.variant === 'primary') return props.theme.primary;
-    if (props.variant === 'secondary') return props.theme.card;
-    if (props.variant === 'danger') return props.theme.error;
-    return props.theme.primary;
-  }};
-  
-  color: ${props => {
-    if (props.variant === 'secondary') return props.theme.text;
-    return 'white';
-  }};
-  
-  border: ${props => {
-    if (props.variant === 'secondary') return `1px solid ${props.theme.border}`;
-    return 'none';
-  }};
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px ${props => {
-      if (props.variant === 'primary') return `${props.theme.primary}40`;
-      if (props.variant === 'danger') return `${props.theme.error}40`;
-      return props.theme.shadow;
-    }};
-    color: ${props => {
-      if (props.variant === 'secondary') return props.theme.text;
-      return 'white';
-    }};
-  }
-`;
-
-// ==================== FILTRES UNIFIÉS ====================
-
-export const FilterContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 3rem;
-  flex-wrap: wrap;
-
-  @media (max-width: 768px) {
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-`;
-
-export const FilterButton = styled.button`
-  padding: 0.5rem 1rem;
-  border: 2px solid ${props => props.active ? props.theme.primary : props.theme.border};
-  border-radius: 20px;
-  background-color: ${props => props.active ? props.theme.primary : props.theme.card};
-  color: ${props => props.active ? 'white' : props.theme.text};
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-weight: 500;
-
-  &:hover {
-    border-color: ${props => props.theme.primary};
-    background-color: ${props => props.active ? props.theme.primaryHover : props.theme.hover};
-  }
-`;
-
-// ==================== TAGS UNIFIÉS ====================
-
-export const TagsContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-`;
-
-export const Tag = styled.span`
-  background-color: ${props => {
-    // Couleurs par type de tag
-    if (props.type === 'IRM') return props.theme.primary;
-    if (props.type === 'Ostéo') return props.theme.secondary;
-    if (props.type === 'Genou') return props.theme.accent;
-    if (props.type === 'Thorax') return props.theme.warning;
-    return props.theme.textLight;
-  }};
-  color: white;
-  padding: 0.25rem 0.75rem;
+export const QuestionnaireCard = styled.div`
+  background-color: ${props => props.theme.card};
+  border: 1px solid ${props => props.theme.border};
   border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: uppercase;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px ${props => props.theme.shadow};
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px ${props => props.theme.shadow};
+    border-color: ${props => props.theme.primary};
+  }
 `;
 
-// ==================== MÉTADONNÉES UNIFIÉES ====================
+export const CardHeader = styled.div`
+  margin-bottom: 1rem;
+`;
 
-export const MetaInfo = styled.div`
+export const QuestionnaireTitle = styled.h3`
+  color: ${props => props.theme.text};
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.875rem;
-  margin-bottom: 1rem;
+  gap: 0.75rem;
+  line-height: 1.4;
+`;
+
+export const QuestionnaireIcon = styled.span`
+  font-size: 1.5rem;
+  flex-shrink: 0;
+`;
+
+export const CardMeta = styled.div`
+  display: flex;
   flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: ${props => props.theme.backgroundSecondary};
+  border-radius: 8px;
+  border: 1px solid ${props => props.theme.border};
 `;
 
 export const MetaItem = styled.div`
   display: flex;
   align-items: center;
+  gap: 0.5rem;
+  color: ${props => props.theme.textSecondary};
+  font-size: 0.85rem;
+  font-weight: 500;
+
+  svg {
+    color: ${props => props.theme.primary};
+    flex-shrink: 0;
+  }
+`;
+
+// ==================== TAGS UNIFIÉS ====================
+
+export const TagsSection = styled.div`
+  margin: 1rem 0;
+`;
+
+export const TagsContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+`;
+
+export const Tag = styled.span`
+  background-color: ${props => props.theme.primary};
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
   gap: 0.25rem;
 `;
 
-// ==================== PAGINATION UNIFIÉE ====================
-
-export const PaginationContainer = styled.div`
+export const RemoveTagButton = styled.button`
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0;
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 1rem;
-  margin-top: 2rem;
-  padding: 1rem;
+  
+  &:hover {
+    opacity: 0.7;
+  }
 `;
 
-export const PaginationButton = styled.button`
-  padding: 0.5rem 1rem;
+export const AddTagSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+`;
+
+export const AddTagButton = styled.button`
+  background-color: ${props => props.theme.primary};
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  
+  &:hover {
+    background-color: ${props => props.theme.secondary};
+  }
+`;
+
+export const TagInput = styled.input`
+  padding: 0.25rem 0.5rem;
   border: 1px solid ${props => props.theme.border};
-  border-radius: 6px;
-  background-color: ${props => props.active ? props.theme.primary : props.theme.card};
-  color: ${props => props.active ? 'white' : props.theme.text};
+  border-radius: 4px;
+  font-size: 0.75rem;
+  width: 120px;
+`;
+
+export const TagForm = styled.form`
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+`;
+
+export const SubmitTagButton = styled.button`
+  background-color: ${props => props.theme.primary};
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  
+  &:hover {
+    background-color: ${props => props.theme.secondary};
+  }
+`;
+
+export const CancelTagButton = styled.button`
+  background-color: #6b7280;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  
+  &:hover {
+    background-color: #4b5563;
+  }
+`;
+
+// ==================== BOUTONS UNIFIÉS ====================
+
+export const ActionButtons = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+`;
+
+export const ActionButton = styled(Link)`
+  background-color: ${props => {
+    switch(props.variant) {
+      case 'primary': return props.theme.primary;
+      case 'secondary': return props.theme.backgroundSecondary;
+      case 'danger': return '#ef4444';
+      default: return props.theme.primary;
+    }
+  }};
+  color: ${props => {
+    switch(props.variant) {
+      case 'secondary': return props.theme.text;
+      default: return 'white';
+    }
+  }};
+  padding: ${props => props.size === 'large' ? '0.75rem 1.5rem' : '0.5rem 1rem'};
+  border: 1px solid ${props => {
+    switch(props.variant) {
+      case 'secondary': return props.theme.border;
+      default: return 'transparent';
+    }
+  }};
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: ${props => props.size === 'large' ? '0.95rem' : '0.85rem'};
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-weight: ${props => props.active ? '600' : '400'};
 
-  &:hover:not(:disabled) {
-    background-color: ${props => props.active ? props.theme.primaryHover : props.theme.hover};
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px ${props => props.theme.shadow};
+    opacity: 0.9;
   }
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  svg {
+    width: 16px;
+    height: 16px;
   }
 `;
 
-export const PaginationInfo = styled.span`
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.875rem;
-`;
-
-// ==================== INDICATEURS DE STATUT UNIFIÉS ====================
-
-export const StatusBadge = styled.span`
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  
-  ${props => {
-    if (props.status === 'public') {
-      return `
-        background-color: ${props.theme.statusPublic || props.theme.successLight};
-        color: ${props.theme.statusPublicText || props.theme.success};
-      `;
+export const Button = styled.button`
+  background-color: ${props => {
+    switch(props.variant) {
+      case 'primary': return props.theme.primary;
+      case 'secondary': return props.theme.backgroundSecondary;
+      case 'danger': return '#ef4444';
+      default: return props.theme.primary;
     }
-    if (props.status === 'private') {
-      return `
-        background-color: ${props.theme.statusPrivate || props.theme.warningLight};
-        color: ${props.theme.statusPrivateText || props.theme.warning};
-      `;
+  }};
+  color: ${props => {
+    switch(props.variant) {
+      case 'secondary': return props.theme.text;
+      default: return 'white';
     }
-    if (props.status === 'draft') {
-      return `
-        background-color: ${props.theme.statusDraft || props.theme.cardSecondary};
-        color: ${props.theme.statusDraftText || props.theme.textSecondary};
-      `;
+  }};
+  padding: ${props => props.variant === 'danger' ? '0.25rem 0.5rem' : '0.5rem 1rem'};
+  border: 1px solid ${props => {
+    switch(props.variant) {
+      case 'secondary': return props.theme.border;
+      default: return 'transparent';
     }
-    return `
-      background-color: ${props.theme.cardSecondary};
-      color: ${props.theme.textSecondary};
-    `;
-  }}
-`;
-
-// ==================== INDICATEURS DE TEMPS UNIFIÉ ====================
-
-export const TimeIndicator = styled.div`
+  }};
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: ${props => props.variant === 'danger' ? '0.75rem' : '0.85rem'};
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.875rem;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px ${props => props.theme.shadow};
+    opacity: 0.9;
+  }
+
+  svg {
+    width: ${props => props.variant === 'danger' ? '12px' : '16px'};
+    height: ${props => props.variant === 'danger' ? '12px' : '16px'};
+  }
 `;
 
-// ==================== WRAPPER POUR ICÔNES UNIFIÉ ====================
-
-export const IconWrapper = styled.div`
+export const DeleteButton = styled.button`
+  background-color: #ef4444;
+  color: white;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  background-color: ${props => props.theme.primary}20;
-  color: ${props => props.theme.primary};
-  flex-shrink: 0;
+  transition: all 0.2s ease;
+  width: 40px;
+  height: 40px;
+
+  &:hover {
+    background-color: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+`;
+
+export const TutorialButton = styled.button`
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  text-align: center;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+  }
+`;
+
+export const VideoContainer = styled.div`
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: ${props => props.theme.card};
+  border-radius: 12px;
+  border: 1px solid ${props => props.theme.border};
+
+  h3 {
+    color: ${props => props.theme.text};
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    border-radius: 8px;
+
+    iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 8px;
+    }
+  }
+`;
+
+// ==================== MESSAGES ====================
+
+export const LoadingMessage = styled.div`
+  text-align: center;
+  padding: 2rem;
+  color: ${props => props.theme.textSecondary};
+  font-size: 1.1rem;
+`;
+
+export const ErrorMessage = styled.div`
+  text-align: center;
+  padding: 2rem;
+  color: #ef4444;
+  font-size: 1.1rem;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  margin: 1rem 0;
 `;

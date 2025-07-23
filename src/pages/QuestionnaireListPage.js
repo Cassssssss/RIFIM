@@ -1,545 +1,50 @@
-// pages/QuestionnaireListPage.js - VERSION COMPLÈTE AVEC GESTION DES TAGS ET BOUTONS REPOSITIONNÉS
+// pages/QuestionnaireListPage.js - VERSION COMPLÈTE AVEC SHARED COMPONENTS
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
-import styled from 'styled-components';
 import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/CasesPage.styles';
 import { ChevronDown, ChevronUp, Edit, FileText, Copy, Trash2, Eye, EyeOff, Clock, Users, Plus, X } from 'lucide-react';
 import TutorialOverlay from './TutorialOverlay';
 
-// ==================== STYLED COMPONENTS ====================
-
-const PageContainer = styled.div`
-  display: flex;
-  background-color: ${props => props.theme.background};
-  min-height: calc(100vh - 60px);
-  padding: 2rem;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    padding: 1rem;
-    gap: 1rem;
-  }
-`;
-
-const FilterSection = styled.div`
-  width: 280px;
-  margin-right: 2rem;
-  background-color: ${props => props.theme.card};
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px ${props => props.theme.shadow};
-  border: 1px solid ${props => props.theme.border};
-  height: fit-content;
-
-  @media (max-width: 768px) {
-    width: 100%;
-    margin-right: 0;
-  }
-`;
-
-const FilterGroup = styled.div`
-  margin-bottom: 2rem;
-`;
-
-const FilterTitle = styled.h3`
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: ${props => props.theme.primary};
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-`;
-
-const FilterDropdown = styled.div`
-  position: relative;
-  width: 100%;
-`;
-
-const DropdownButton = styled.button`
-  width: 100%;
-  padding: 0.75rem;
-  background-color: ${props => props.theme.background};
-  border: 2px solid ${props => props.theme.border};
-  border-radius: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  color: ${props => props.theme.text};
-  font-weight: 500;
-  transition: all 0.2s ease;
-
-  &:hover {
-    border-color: ${props => props.theme.primary};
-    background-color: ${props => props.theme.hover};
-  }
-`;
-
-const DropdownContent = styled.div`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  max-height: 200px;
-  overflow-y: auto;
-  background-color: ${props => props.theme.card};
-  border: 2px solid ${props => props.theme.border};
-  border-top: none;
-  border-radius: 0 0 8px 8px;
-  z-index: 10;
-  box-shadow: 0 4px 12px ${props => props.theme.shadow};
-`;
-
-const DropdownOption = styled.label`
-  display: flex;
-  align-items: center;
-  padding: 0.75rem;
-  cursor: pointer;
-  color: ${props => props.theme.text};
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: ${props => props.theme.hover};
-  }
-
-  input {
-    margin-right: 0.75rem;
-    width: 16px;
-    height: 16px;
-    accent-color: ${props => props.theme.primary};
-  }
-
-  span {
-    font-weight: 500;
-  }
-`;
-
-const TopActionsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  padding-top: 1rem;
-
-  @media (max-width: 768px) {
-    align-items: center;
-  }
-`;
-
-const ListContainer = styled.div`
-  flex: 1;
-  max-width: calc(100% - 300px);
-
-  @media (max-width: 768px) {
-    max-width: 100%;
-  }
-`;
-
-const SearchBar = styled.input`
-  width: 100%;
-  padding: 1rem 1.5rem;
-  margin-bottom: 2rem;
-  border: 2px solid ${props => props.theme.border};
-  border-radius: 12px;
-  font-size: 1rem;
-  background-color: ${props => props.theme.card};
-  color: ${props => props.theme.text};
-  transition: all 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.primary};
-    box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
-  }
-
-  &::placeholder {
-    color: ${props => props.theme.textSecondary};
-  }
-`;
-
-const QuestionnairesGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-`;
-
-const QuestionnaireCard = styled.div`
-  background-color: ${props => props.theme.card};
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 12px ${props => props.theme.shadow};
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  }
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px ${props => props.theme.shadow};
-    border-color: ${props => props.theme.primary};
-  }
-`;
-
-const CardHeader = styled.div`
-  margin-bottom: 1rem;
-`;
-
-const QuestionnaireTitle = styled.h3`
-  color: ${props => props.theme.text};
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  line-height: 1.4;
-`;
-
-const QuestionnaireIcon = styled.span`
-  font-size: 1.5rem;
-  flex-shrink: 0;
-`;
-
-const CardMeta = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background-color: ${props => props.theme.backgroundSecondary};
-  border-radius: 8px;
-  border: 1px solid ${props => props.theme.border};
-`;
-
-const MetaItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.85rem;
-  font-weight: 500;
-
-  svg {
-    color: ${props => props.theme.primary};
-    flex-shrink: 0;
-  }
-`;
-
-const ActionButtons = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1rem;
-`;
-
-const ActionButton = styled(Link)`
-  background-color: ${props => {
-    switch(props.variant) {
-      case 'primary': return props.theme.primary;
-      case 'secondary': return props.theme.backgroundSecondary;
-      case 'danger': return '#ef4444';
-      default: return props.theme.primary;
-    }
-  }};
-  color: ${props => {
-    switch(props.variant) {
-      case 'secondary': return props.theme.text;
-      default: return 'white';
-    }
-  }};
-  padding: ${props => props.size === 'large' ? '0.75rem 1.5rem' : '0.5rem 1rem'};
-  border: 1px solid ${props => {
-    switch(props.variant) {
-      case 'secondary': return props.theme.border;
-      default: return 'transparent';
-    }
-  }};
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 500;
-  font-size: ${props => props.size === 'large' ? '0.95rem' : '0.85rem'};
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px ${props => props.theme.shadow};
-    opacity: 0.9;
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-`;
-
-const Button = styled.button`
-  background-color: ${props => {
-    switch(props.variant) {
-      case 'primary': return props.theme.primary;
-      case 'secondary': return props.theme.backgroundSecondary;
-      case 'danger': return '#ef4444';
-      default: return props.theme.primary;
-    }
-  }};
-  color: ${props => {
-    switch(props.variant) {
-      case 'secondary': return props.theme.text;
-      default: return 'white';
-    }
-  }};
-  padding: ${props => props.variant === 'danger' ? '0.25rem 0.5rem' : '0.5rem 1rem'};
-  border: 1px solid ${props => {
-    switch(props.variant) {
-      case 'secondary': return props.theme.border;
-      default: return 'transparent';
-    }
-  }};
-  border-radius: 8px;
-  font-weight: 500;
-  font-size: ${props => props.variant === 'danger' ? '0.75rem' : '0.85rem'};
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px ${props => props.theme.shadow};
-    opacity: 0.9;
-  }
-
-  svg {
-    width: ${props => props.variant === 'danger' ? '12px' : '16px'};
-    height: ${props => props.variant === 'danger' ? '12px' : '16px'};
-  }
-`;
-
-const TutorialButton = styled.button`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-  text-align: center;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
-  }
-`;
-
-const VideoContainer = styled.div`
-  margin-top: 2rem;
-  padding: 1.5rem;
-  background-color: ${props => props.theme.card};
-  border-radius: 12px;
-  border: 1px solid ${props => props.theme.border};
-
-  h3 {
-    color: ${props => props.theme.text};
-    margin-bottom: 1rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-  }
-
-  .video-wrapper {
-    position: relative;
-    padding-bottom: 56.25%;
-    height: 0;
-    overflow: hidden;
-    border-radius: 8px;
-
-    iframe {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border-radius: 8px;
-    }
-  }
-`;
-
-// ==================== STYLED COMPONENTS POUR LES TAGS ====================
-
-const TagsSection = styled.div`
-  margin: 1rem 0;
-`;
-
-const TagsContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-`;
-
-const Tag = styled.span`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-`;
-
-const RemoveTagButton = styled.button`
-  background: none;
-  border: none;
-  color: white;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  
-  &:hover {
-    opacity: 0.7;
-  }
-`;
-
-const AddTagSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-`;
-
-const AddTagButton = styled.button`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0.25rem 0.5rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.75rem;
-  
-  &:hover {
-    background-color: ${props => props.theme.secondary};
-  }
-`;
-
-const TagInput = styled.input`
-  padding: 0.25rem 0.5rem;
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 4px;
-  font-size: 0.75rem;
-  width: 120px;
-`;
-
-const TagForm = styled.form`
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-`;
-
-const SubmitTagButton = styled.button`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0.25rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  
-  &:hover {
-    background-color: ${props => props.theme.secondary};
-  }
-`;
-
-const CancelTagButton = styled.button`
-  background-color: #6b7280;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0.25rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  
-  &:hover {
-    background-color: #4b5563;
-  }
-`;
-
-// ========== BOUTON SUPPRIMER RÉDUIT À L'ICÔNE SEULEMENT ====================
-const DeleteButton = styled.button`
-  background-color: #ef4444;
-  color: white;
-  padding: 0.5rem;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  width: 40px;
-  height: 40px;
-
-  &:hover {
-    background-color: #dc2626;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-  }
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
-`;
-
-const LoadingMessage = styled.div`
-  text-align: center;
-  padding: 2rem;
-  color: ${props => props.theme.textSecondary};
-  font-size: 1.1rem;
-`;
-
-const ErrorMessage = styled.div`
-  text-align: center;
-  padding: 2rem;
-  color: #ef4444;
-  font-size: 1.1rem;
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 8px;
-  margin: 1rem 0;
-`;
-
-// ==================== COMPOSANT PRINCIPAL ====================
+// Import des composants partagés
+import {
+  PageContainer,
+  FilterSection,
+  FilterGroup,
+  FilterTitle,
+  FilterDropdown,
+  DropdownButton,
+  DropdownContent,
+  DropdownOption,
+  TopActionsContainer,
+  ListContainer,
+  SearchInput,
+  QuestionnairesGrid,
+  QuestionnaireCard,
+  CardHeader,
+  QuestionnaireTitle,
+  QuestionnaireIcon,
+  CardMeta,
+  MetaItem,
+  TagsSection,
+  TagsContainer,
+  Tag,
+  RemoveTagButton,
+  AddTagSection,
+  AddTagButton,
+  TagInput,
+  TagForm,
+  SubmitTagButton,
+  CancelTagButton,
+  ActionButtons,
+  ActionButton,
+  Button,
+  DeleteButton,
+  TutorialButton,
+  VideoContainer,
+  LoadingMessage,
+  ErrorMessage
+} from '../components/shared/SharedComponents';
 
 function QuestionnaireListPage() {
   const [questionnaires, setQuestionnaires] = useState([]);
@@ -579,22 +84,19 @@ function QuestionnaireListPage() {
     }
   ];
 
-  // CORRECTION : Fonction de récupération des questionnaires avec limite fixée à 10
   const fetchQuestionnaires = useCallback(async (page = 1) => {
     try {
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: '12', // CORRECTION : Changé de '9' à '10' pour uniformiser
+        limit: '12', // Uniformisé avec les autres pages
         search: searchTerm,
         modality: modalityFilters.join(','),
         specialty: specialtyFilters.join(','),
         location: locationFilters.join(',')
       });
 
-      // CORRECTION : Utiliser la route /my pour récupérer les questionnaires de l'utilisateur connecté
       const response = await axios.get(`/questionnaires/my?${params}`);
       
-      // Vérification de sécurité pour s'assurer que questionnaires est un tableau
       const questionnaires = response.data?.questionnaires;
       const safeQuestionnaires = Array.isArray(questionnaires) ? questionnaires : [];
 
@@ -612,13 +114,11 @@ function QuestionnaireListPage() {
     }
   }, [searchTerm, modalityFilters, specialtyFilters, locationFilters]);
 
-  // Effet pour charger les questionnaires
   useEffect(() => {
     fetchQuestionnaires(1);
   }, [fetchQuestionnaires]);
 
-  // ========== FONCTIONS POUR LA GESTION DES TAGS ==========
-
+  // Fonctions pour la gestion des tags
   const handleAddTag = async (questionnaireId, tag) => {
     if (!tag || !tag.trim()) return;
     
@@ -693,7 +193,6 @@ function QuestionnaireListPage() {
     );
   };
 
-  // Fonction de changement de visibilité
   const toggleVisibility = async (id, isPublic) => {
     try {
       await axios.patch(`/questionnaires/${id}/togglePublic`);
@@ -704,7 +203,6 @@ function QuestionnaireListPage() {
     }
   };
 
-  // Fonction de suppression
   const deleteQuestionnaire = async (id) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce questionnaire ?')) {
       try {
@@ -717,7 +215,6 @@ function QuestionnaireListPage() {
     }
   };
 
-  // Fonctions utilitaires
   const getQuestionnaireIcon = (tags) => {
     if (!tags || tags.length === 0) return '📋';
     if (tags.includes('IRM') || tags.includes('irm')) return '🧲';
@@ -837,7 +334,7 @@ function QuestionnaireListPage() {
       {/* CONTENU PRINCIPAL */}
       <ListContainer>
         {/* BARRE DE RECHERCHE */}
-        <SearchBar
+        <SearchInput
           className="search-bar"
           type="text"
           placeholder="🔍 Rechercher un questionnaire..."
@@ -858,7 +355,7 @@ function QuestionnaireListPage() {
                 </QuestionnaireTitle>
               </CardHeader>
 
-              {/* ========== SECTION TAGS AVEC GESTION ========== */}
+              {/* Section Tags avec gestion */}
               <TagsSection>
                 <TagsContainer>
                   {questionnaire.tags && questionnaire.tags.map((tag, index) => (
@@ -933,7 +430,7 @@ function QuestionnaireListPage() {
                 </MetaItem>
               </CardMeta>
 
-              {/* Actions - LIENS ORIGINAUX CONSERVÉS */}
+              {/* Actions */}
               <ActionButtons>
                 <ActionButton 
                   to={`/use/${questionnaire._id}`}
@@ -963,7 +460,6 @@ function QuestionnaireListPage() {
                   variant="secondary"
                   onClick={(e) => {
                     e.preventDefault();
-                    // TODO: Logique de duplication
                     console.log('Dupliquer:', questionnaire._id);
                   }}
                 >
