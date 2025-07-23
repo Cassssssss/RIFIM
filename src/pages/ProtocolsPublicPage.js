@@ -1,30 +1,17 @@
+// ProtocolsPublicPage.js - VERSION AVEC AFFICHAGE CORRECT DU NOM D'UTILISATEUR
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
-import { 
-  Search as SearchIcon, 
-  Eye, 
-  Copy, 
-  Star, 
-  Clock, 
-  User, 
-  TrendingUp, 
-  Plus,
-  ThumbsUp
-} from 'lucide-react';
-
-import LoadingSpinner from '../components/LoadingSpinner';
-import ErrorMessage from '../components/ErrorMessage';
+import styled from 'styled-components';
+import { Search, Clock, Star, Eye, Copy, User, TrendingUp } from 'lucide-react';
 import RatingStars from '../components/RatingStars';
 
-// ==================== STYLES COMPOSANTS ====================
+// ==================== STYLES ====================
 
-// MODIFICATION : Retirer max-width et utiliser plus d'espace comme les autres pages
 const PageContainer = styled.div`
   padding: 2rem 3rem;
-  width: 100%;
   min-height: calc(100vh - 60px);
+  background-color: ${props => props.theme.background};
 
   @media (max-width: 1200px) {
     padding: 2rem;
@@ -35,45 +22,73 @@ const PageContainer = styled.div`
   }
 `;
 
-const PageTitle = styled.h1`
+const Header = styled.div`
+  text-align: center;
+  margin-bottom: 3rem;
+`;
+
+const Title = styled.h1`
   font-size: 2.5rem;
   font-weight: 700;
-  color: ${props => props.theme.text};
-  margin-bottom: 2rem;
-  text-align: center;
+  margin-bottom: 0.5rem;
   background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 `;
 
-const ActionBar = styled.div`
+const StatsContainer = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  gap: 1rem;
+  justify-content: center;
+  gap: 3rem;
+  margin: 2rem 0;
 
   @media (max-width: 768px) {
     flex-direction: column;
-    align-items: stretch;
+    gap: 1rem;
+    align-items: center;
+  }
+`;
+
+const StatBox = styled.div`
+  text-align: center;
+`;
+
+const StatNumber = styled.div`
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: ${props => props.theme.primary};
+`;
+
+const StatLabel = styled.div`
+  font-size: 0.9rem;
+  color: ${props => props.theme.textSecondary};
+  margin-top: 0.25rem;
+`;
+
+const FiltersContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: ${props => props.theme.card};
+  border-radius: 12px;
+  box-shadow: 0 2px 8px ${props => props.theme.shadow};
+
+  @media (max-width: 768px) {
+    flex-direction: column;
   }
 `;
 
 const SearchContainer = styled.div`
-  display: flex;
-  gap: 1rem;
-  flex: 1;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
-`;
-
-const SearchWrapper = styled.div`
   position: relative;
   flex: 1;
-  max-width: 400px;
+  min-width: 300px;
+
+  @media (max-width: 768px) {
+    min-width: 100%;
+  }
 `;
 
 const SearchInput = styled.input`
@@ -81,9 +96,9 @@ const SearchInput = styled.input`
   padding: 0.75rem 1rem 0.75rem 3rem;
   border: 2px solid ${props => props.theme.borderLight};
   border-radius: 8px;
-  font-size: 1rem;
   background-color: ${props => props.theme.background};
   color: ${props => props.theme.text};
+  font-size: 1rem;
   transition: border-color 0.2s ease;
 
   &:focus {
@@ -144,56 +159,19 @@ const SortButton = styled.button`
 
   &:hover {
     border-color: ${props => props.theme.primary};
-    background-color: ${props => props.isActive ? props.theme.primary : props.theme.cardHover};
+    background-color: ${props => props.isActive ? props.theme.primary : props.theme.hover};
   }
 `;
 
-const StatsContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background-color: ${props => props.theme.card};
-  border-radius: 12px;
-  border: 1px solid ${props => props.theme.borderLight};
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 1rem;
-    text-align: center;
-  }
-`;
-
-const StatItem = styled.div`
-  text-align: center;
-`;
-
-const StatNumber = styled.div`
-  font-size: 2rem;
-  font-weight: 700;
-  color: ${props => props.theme.primary};
-`;
-
-const StatLabel = styled.div`
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.9rem;
-`;
-
-// MODIFICATION : Grille plus large et responsive améliorée
 const ProtocolsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
   margin-bottom: 2rem;
-
-  @media (max-width: 1400px) {
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  }
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 1.5rem;
   }
 `;
 
@@ -201,18 +179,11 @@ const ProtocolCard = styled.div`
   background-color: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.borderLight};
   border-radius: 12px;
-  padding: 1.5rem;
+  overflow: hidden;
+  box-shadow: 0 2px 8px ${props => props.theme.shadow};
   transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
-  overflow: hidden;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    border-color: ${props => props.theme.primary};
-    background-color: ${props => props.theme.cardHover};
-  }
 
   &::before {
     content: '';
@@ -223,33 +194,45 @@ const ProtocolCard = styled.div`
     height: 4px;
     background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
   }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px ${props => props.theme.shadow};
+    border-color: ${props => props.theme.primary};
+  }
 `;
 
 const CardContent = styled.div`
-  position: relative;
-  z-index: 1;
+  padding: 1.5rem;
+`;
+
+const CardHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
 `;
 
 const ProtocolTitle = styled.h3`
-  font-size: 1.25rem;
-  font-weight: 600;
   color: ${props => props.theme.text};
-  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.4;
   flex: 1;
-  line-height: 1.3;
 `;
 
-const PopularityBadge = styled.span`
+const PopularityBadge = styled.div`
+  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  background-color: ${props => props.theme.success};
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  margin-left: 0.5rem;
+  white-space: nowrap;
 `;
 
 const AuthorInfo = styled.div`
@@ -257,57 +240,71 @@ const AuthorInfo = styled.div`
   align-items: center;
   gap: 0.5rem;
   color: ${props => props.theme.textSecondary};
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   margin-bottom: 1rem;
+
+  svg {
+    color: ${props => props.theme.primary};
+  }
 `;
 
 const ProtocolMeta = styled.div`
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
   flex-wrap: wrap;
+  gap: 1rem;
+  margin: 1rem 0;
+  padding: 0.75rem;
+  background-color: ${props => props.theme.backgroundSecondary};
+  border-radius: 8px;
 `;
 
 const MetaItem = styled.div`
   display: flex;
   align-items: center;
   gap: 0.25rem;
+  font-size: 0.8rem;
   color: ${props => props.theme.textSecondary};
-  font-size: 0.875rem;
+
+  strong {
+    color: ${props => props.theme.text};
+  }
 `;
 
-const ProtocolDescription = styled.p`
+const Description = styled.p`
   color: ${props => props.theme.textSecondary};
   font-size: 0.9rem;
   line-height: 1.5;
-  margin-bottom: 1rem;
+  margin: 1rem 0;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 `;
 
-// MODIFICATION : Section de notation plus compacte
-const RatingSection = styled.div`
-  padding: 0.5rem 0;
-  border-top: 1px solid ${props => props.theme.borderLight};
-  border-bottom: 1px solid ${props => props.theme.borderLight};
-  margin: 0.75rem 0;
-`;
-
 const StatsBottomContainer = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid ${props => props.theme.borderLight};
 `;
 
-const StatBottomItem = styled.span`
+const StatsGroup = styled.div`
+  display: flex;
+  gap: 1rem;
+`;
+
+const StatItem = styled.div`
   display: flex;
   align-items: center;
   gap: 0.25rem;
   color: ${props => props.theme.textSecondary};
-  font-size: 0.875rem;
+  font-size: 0.8rem;
+
+  svg {
+    color: ${props => props.theme.primary};
+  }
 `;
 
 const ActionsContainer = styled.div`
@@ -316,23 +313,54 @@ const ActionsContainer = styled.div`
 `;
 
 const ActionButton = styled.button`
+  background-color: ${props => props.theme.primary};
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid ${props => props.theme.borderLight};
-  border-radius: 6px;
-  background-color: ${props => props.theme.background};
-  color: ${props => props.theme.textSecondary};
-  cursor: pointer;
   transition: all 0.2s ease;
+  width: 32px;
+  height: 32px;
 
   &:hover {
-    background-color: ${props => props.theme.primary};
-    color: white;
-    border-color: ${props => props.theme.primary};
-    transform: scale(1.1);
+    background-color: ${props => props.theme.secondary};
+    transform: translateY(-1px);
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+`;
+
+const LoadingMessage = styled.div`
+  text-align: center;
+  padding: 4rem 2rem;
+  color: ${props => props.theme.textSecondary};
+  font-size: 1.1rem;
+`;
+
+const ErrorMessage = styled.div`
+  text-align: center;
+  padding: 2rem;
+  color: #dc2626;
+  background-color: #fef2f2;
+  border-radius: 8px;
+  margin: 2rem 0;
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 4rem 2rem;
+  color: ${props => props.theme.textSecondary};
+
+  h3 {
+    color: ${props => props.theme.primary};
+    margin-bottom: 1rem;
   }
 `;
 
@@ -346,17 +374,16 @@ const PaginationContainer = styled.div`
 
 const PaginationButton = styled.button`
   padding: 0.75rem 1.5rem;
-  border: 1px solid ${props => props.theme.borderLight};
+  background-color: ${props => props.theme.primary};
+  color: white;
+  border: none;
   border-radius: 8px;
-  background-color: ${props => props.theme.background};
-  color: ${props => props.theme.text};
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
-    background-color: ${props => props.theme.primary};
-    color: white;
-    border-color: ${props => props.theme.primary};
+    background-color: ${props => props.theme.secondary};
+    transform: translateY(-1px);
   }
 
   &:disabled {
@@ -374,13 +401,30 @@ function ProtocolsPublicPage() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [modalityFilter, setModalityFilter] = useState('');
-  const [specialtyFilter, setSpecialtyFilter] = useState('');
+  const [specialtyFilter, setSpecialtyFilter] = useState(''); 
   const [sortBy, setSortBy] = useState('popular');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [stats, setStats] = useState({ total: 0, authors: 0 });
 
   const navigate = useNavigate();
+
+  // Fonction pour obtenir le nom d'affichage de l'auteur
+  const getAuthorDisplayName = (protocol) => {
+    if (!protocol.user) return 'Auteur anonyme';
+    
+    // Si l'utilisateur est un objet avec des propriétés
+    if (typeof protocol.user === 'object') {
+      return protocol.user.username || protocol.user.name || protocol.user.email || 'Auteur anonyme';
+    }
+    
+    // Si l'utilisateur est juste une chaîne de caractères
+    if (typeof protocol.user === 'string') {
+      return protocol.user;
+    }
+    
+    return 'Auteur anonyme';
+  };
 
   // Chargement des protocoles
   const fetchProtocols = useCallback(async (page = 1) => {
@@ -466,76 +510,52 @@ function ProtocolsPublicPage() {
     ));
   };
 
-  // Options de filtre
-  const modalityOptions = [
-    { value: '', label: 'Toutes les modalités' },
-    { value: 'IRM', label: 'IRM' },
-    { value: 'TDM', label: 'TDM' },
-    { value: 'Rx', label: 'Radiographie' },
-    { value: 'Echo', label: 'Échographie' }
-  ];
-
-  const specialtyOptions = [
-    { value: '', label: 'Toutes les spécialités' },
-    { value: 'Cardiovasc', label: 'Cardiovasculaire' },
-    { value: 'Dig', label: 'Digestif' },
-    { value: 'Neuro', label: 'Neurologie' },
-    { value: 'ORL', label: 'ORL' },
-    { value: 'Ostéo', label: 'Ostéo-articulaire' },
-    { value: 'Pedia', label: 'Pédiatrie' },
-    { value: 'Pelvis', label: 'Pelvis' },
-    { value: 'Séno', label: 'Sénologie' },
-    { value: 'Thorax', label: 'Thorax' },
-    { value: 'Uro', label: 'Urologie' }
-  ];
-
+  // Rendu du composant
   return (
     <PageContainer>
-      <PageTitle>Protocoles Publics</PageTitle>
+      <Header>
+        <Title>Protocoles Publics</Title>
+        
+        <StatsContainer>
+          <StatBox>
+            <StatNumber>{stats.total}</StatNumber>
+            <StatLabel>Protocoles disponibles</StatLabel>
+          </StatBox>
+          <StatBox>
+            <StatNumber>{stats.authors}</StatNumber>
+            <StatLabel>Auteurs contributeurs</StatLabel>
+          </StatBox>
+        </StatsContainer>
+      </Header>
 
-      {/* Statistiques */}
-      <StatsContainer>
-        <StatItem>
-          <StatNumber>{stats.total}</StatNumber>
-          <StatLabel>Protocoles disponibles</StatLabel>
-        </StatItem>
-        <StatItem>
-          <StatNumber>{stats.authors}</StatNumber>
-          <StatLabel>Auteurs contributeurs</StatLabel>
-        </StatItem>
-      </StatsContainer>
-
-      {/* Barre d'actions */}
-      <ActionBar>
+      <FiltersContainer>
         <SearchContainer>
-          <SearchWrapper>
-            <SearchIconWrapper>
-              <SearchIcon size={20} />
-            </SearchIconWrapper>
-            <SearchInput
-              type="text"
-              placeholder="Rechercher un protocole..."
-              value={searchTerm}
-              onChange={handleSearch}
-            />
-          </SearchWrapper>
-
-          <FilterSelect value={modalityFilter} onChange={handleModalityChange}>
-            {modalityOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </FilterSelect>
-
-          <FilterSelect value={specialtyFilter} onChange={handleSpecialtyChange}>
-            {specialtyOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </FilterSelect>
+          <SearchIconWrapper>
+            <Search size={20} />
+          </SearchIconWrapper>
+          <SearchInput
+            type="text"
+            placeholder="Rechercher un protocole..."
+            value={searchTerm}
+            onChange={handleSearch}
+          />
         </SearchContainer>
+
+        <FilterSelect value={modalityFilter} onChange={handleModalityChange}>
+          <option value="">Toutes les modalités</option>
+          <option value="IRM">IRM</option>
+          <option value="Scanner">Scanner</option>
+          <option value="Échographie">Échographie</option>
+          <option value="Radiographie">Radiographie</option>
+        </FilterSelect>
+
+        <FilterSelect value={specialtyFilter} onChange={handleSpecialtyChange}>
+          <option value="">Toutes les spécialités</option>
+          <option value="Neurologie">Neurologie</option>
+          <option value="Cardiologie">Cardiologie</option>
+          <option value="Orthopédie">Orthopédie</option>
+          <option value="Gastroentérologie">Gastroentérologie</option>
+        </FilterSelect>
 
         <SortContainer>
           <SortButton
@@ -545,6 +565,7 @@ function ProtocolsPublicPage() {
             <TrendingUp size={16} />
             Populaires
           </SortButton>
+          
           <SortButton
             isActive={sortBy === 'recent'}
             onClick={() => handleSortChange('recent')}
@@ -552,6 +573,7 @@ function ProtocolsPublicPage() {
             <Clock size={16} />
             Récents
           </SortButton>
+          
           <SortButton
             isActive={sortBy === 'rating'}
             onClick={() => handleSortChange('rating')}
@@ -560,109 +582,117 @@ function ProtocolsPublicPage() {
             Mieux notés
           </SortButton>
         </SortContainer>
-      </ActionBar>
+      </FiltersContainer>
 
-      {/* Contenu */}
       {loading ? (
-        <LoadingSpinner />
+        <LoadingMessage>Chargement des protocoles...</LoadingMessage>
       ) : error ? (
-        <ErrorMessage message={error} />
+        <ErrorMessage>{error}</ErrorMessage>
       ) : protocols.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '3rem 0', color: 'var(--color-text-secondary)' }}>
+        <EmptyState>
           <h3>Aucun protocole trouvé</h3>
           <p>Essayez de modifier vos critères de recherche.</p>
-        </div>
+        </EmptyState>
       ) : (
         <>
           <ProtocolsGrid>
-            {protocols.map(protocol => (
-              <ProtocolCard key={protocol._id} onClick={() => handleProtocolClick(protocol._id)}>
-                <CardContent>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                    <ProtocolTitle>{protocol.title}</ProtocolTitle>
-                    {protocol.isPopular && (
-                      <PopularityBadge>
-                        <ThumbsUp size={12} />
-                        Populaire
-                      </PopularityBadge>
-                    )}
-                  </div>
+            {protocols.map((protocol) => {
+              const isPopular = (protocol.stats?.views || 0) > 50 || (protocol.stats?.copies || 0) > 10;
+              
+              return (
+                <ProtocolCard
+                  key={protocol._id}
+                  onClick={() => handleProtocolClick(protocol._id)}
+                >
+                  <CardContent>
+                    <CardHeader>
+                      <ProtocolTitle>{protocol.title}</ProtocolTitle>
+                      {isPopular && (
+                        <PopularityBadge>
+                          <TrendingUp size={12} />
+                          Populaire
+                        </PopularityBadge>
+                      )}
+                    </CardHeader>
 
-                  <AuthorInfo>
-                    <User size={14} />
-                    Par {protocol.author?.nom || 'Auteur inconnu'}
-                  </AuthorInfo>
+                    <AuthorInfo>
+                      <User size={14} />
+                      Par {getAuthorDisplayName(protocol)}
+                    </AuthorInfo>
 
-                  <ProtocolMeta>
-                    {protocol.modality && (
-                      <MetaItem>
-                        🔬 {protocol.modality}
-                      </MetaItem>
-                    )}
-                    {protocol.specialty && (
-                      <MetaItem>
-                        🏥 {protocol.specialty}
-                      </MetaItem>
-                    )}
-                    {protocol.estimatedTime && (
-                      <MetaItem>
-                        <Clock size={14} />
-                        {protocol.estimatedTime} min
-                      </MetaItem>
-                    )}
-                  </ProtocolMeta>
-                  
-                  <ProtocolDescription>
-                    {protocol.description || protocol.indication}
-                  </ProtocolDescription>
+                    <ProtocolMeta>
+                      {protocol.imagingType && (
+                        <MetaItem>
+                          <strong>Modalité:</strong> {protocol.imagingType}
+                        </MetaItem>
+                      )}
+                      {protocol.anatomicalRegion && (
+                        <MetaItem>
+                          <strong>Région:</strong> {protocol.anatomicalRegion}
+                        </MetaItem>
+                      )}
+                      {protocol.status && (
+                        <MetaItem>
+                          <strong>Statut:</strong> {protocol.status}
+                        </MetaItem>
+                      )}
+                      {protocol.duration && (
+                        <MetaItem>
+                          <Clock size={12} />
+                          <strong>{protocol.duration} min</strong>
+                        </MetaItem>
+                      )}
+                    </ProtocolMeta>
 
-                  {/* MODIFICATION : Section de notation optimisée en mode compact */}
-                  <RatingSection>
+                    {protocol.description && (
+                      <Description>{protocol.description}</Description>
+                    )}
+
                     <div onClick={(e) => e.stopPropagation()}>
                       <RatingStars
                         itemId={protocol._id}
                         itemType="protocol"
-                        averageRating={protocol.averageRating}
-                        ratingsCount={protocol.ratingsCount}
-                        userRating={protocol.userRating}
+                        averageRating={protocol.averageRating || 0}
+                        ratingsCount={protocol.ratingsCount || 0}
+                        userRating={protocol.userRating || 0}
                         onRatingUpdate={(newRatingData) => handleRatingUpdate(protocol._id, newRatingData)}
                         size={14}
                         compact={true}
                       />
                     </div>
-                  </RatingSection>
-                  
-                  <StatsBottomContainer>
-                    <div style={{ display: 'flex', gap: '1rem' }}>
-                      <StatBottomItem>
-                        <Eye size={14} />
-                        {Number(protocol.views) || 0} vues
-                      </StatBottomItem>
-                      <StatBottomItem>
-                        <Copy size={14} />
-                        {Number(protocol.copies) || 0} copies
-                      </StatBottomItem>
-                    </div>
-                    
-                    <ActionsContainer>
-                      <ActionButton
-                        onClick={(e) => handleViewClick(e, protocol._id)}
-                        title="Voir les détails"
-                      >
-                        <Eye size={16} />
-                      </ActionButton>
+
+                    <StatsBottomContainer>
+                      <StatsGroup>
+                        <StatItem>
+                          <Eye size={12} />
+                          {protocol.stats?.views || 0} vues
+                        </StatItem>
+                        <StatItem>
+                          <Copy size={12} />
+                          {protocol.stats?.copies || 0} copies
+                        </StatItem>
+                      </StatsGroup>
                       
-                      <ActionButton
-                        onClick={(e) => handleCopy(e, protocol._id)}
-                        title="Copier"
-                      >
-                        <Copy size={16} />
-                      </ActionButton>
-                    </ActionsContainer>
-                  </StatsBottomContainer>
-                </CardContent>
-              </ProtocolCard>
-            ))}
+                      <ActionsContainer>
+                        <ActionButton
+                          onClick={(e) => handleViewClick(e, protocol._id)}
+                          title="Voir les détails"
+                        >
+                          <Eye size={16} />
+                        </ActionButton>
+                        
+                        <ActionButton
+                          onClick={(e) => handleCopy(e, protocol._id)}
+                          title="Copier"
+                        >
+                          <Copy size={16} />
+                        </ActionButton>
+                      </ActionsContainer>
+                    </StatsBottomContainer>
+                  </CardContent>
+                </ProtocolCard>
+              );
+            })}
           </ProtocolsGrid>
 
           {totalPages > 1 && (

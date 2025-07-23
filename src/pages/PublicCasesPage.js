@@ -56,6 +56,23 @@ function PublicCaseCardComponent({ cas, showSpoilers, onCopyCase, caseRating, on
 
   const isPopular = cas.views > 100 || cas.copies > 20;
 
+  // Fonction pour obtenir le nom d'affichage de l'auteur
+  const getAuthorDisplayName = (cas) => {
+    if (!cas.author) return 'Auteur anonyme';
+    
+    // Si l'auteur est un objet avec des propriétés name ou email
+    if (typeof cas.author === 'object') {
+      return cas.author.name || cas.author.email || 'Auteur anonyme';
+    }
+    
+    // Si l'auteur est juste une chaîne de caractères
+    if (typeof cas.author === 'string') {
+      return cas.author;
+    }
+    
+    return 'Auteur anonyme';
+  };
+
   return (
     <UnifiedCaseCard to={`/radiology-viewer/${cas._id}`}>
       <UnifiedCaseImage 
@@ -93,12 +110,10 @@ function PublicCaseCardComponent({ cas, showSpoilers, onCopyCase, caseRating, on
           ))}
         </UnifiedStarRating>
 
-        {cas.author && (
-          <UnifiedAuthorInfo>
-            <User size={14} />
-            Par {cas.author.name || cas.author.email || 'Auteur anonyme'}
-          </UnifiedAuthorInfo>
-        )}
+        <UnifiedAuthorInfo>
+          <User size={14} />
+          Par {getAuthorDisplayName(cas)}
+        </UnifiedAuthorInfo>
 
         <UnifiedRatingSection>
           <div onClick={(e) => {
@@ -245,8 +260,11 @@ function PublicCasesPage() {
         (cas.title && cas.title.toLowerCase().includes(term)) ||
         (cas.tags && cas.tags.some(tag => tag.toLowerCase().includes(term))) ||
         (cas.author && (
-          (cas.author.name && cas.author.name.toLowerCase().includes(term)) ||
-          (cas.author.email && cas.author.email.toLowerCase().includes(term))
+          (typeof cas.author === 'object' && (
+            (cas.author.name && cas.author.name.toLowerCase().includes(term)) ||
+            (cas.author.email && cas.author.email.toLowerCase().includes(term))
+          )) ||
+          (typeof cas.author === 'string' && cas.author.toLowerCase().includes(term))
         ))
       );
     }
@@ -376,39 +394,37 @@ function PublicCasesPage() {
           </UnifiedFilterSection>
 
           {/* Filtre par tags */}
-          {allTags.length > 0 && (
-            <UnifiedFilterSection>
-              <UnifiedFilterButton
-                active={tagFilter.length > 0}
-                isOpen={showTagDropdown}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowTagDropdown(!showTagDropdown);
-                  setShowDifficultyDropdown(false);
-                }}
-              >
-                🏷️ Tags
-                <ChevronDown />
-              </UnifiedFilterButton>
-              {showTagDropdown && (
-                <UnifiedDropdownContent>
-                  {allTags.map(tag => (
-                    <UnifiedDropdownItem key={tag}>
-                      <UnifiedDropdownCheckbox
-                        type="checkbox"
-                        checked={tagFilter.includes(tag)}
-                        onChange={() => handleTagChange(tag)}
-                      />
-                      {tag}
-                    </UnifiedDropdownItem>
-                  ))}
-                </UnifiedDropdownContent>
-              )}
-            </UnifiedFilterSection>
-          )}
+          <UnifiedFilterSection>
+            <UnifiedFilterButton
+              active={tagFilter.length > 0}
+              isOpen={showTagDropdown}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowTagDropdown(!showTagDropdown);
+                setShowDifficultyDropdown(false);
+              }}
+            >
+              🏷️ Tags
+              <ChevronDown />
+            </UnifiedFilterButton>
+            {showTagDropdown && (
+              <UnifiedDropdownContent>
+                {allTags.map(tag => (
+                  <UnifiedDropdownItem key={tag}>
+                    <UnifiedDropdownCheckbox
+                      type="checkbox"
+                      checked={tagFilter.includes(tag)}
+                      onChange={() => handleTagChange(tag)}
+                    />
+                    {tag}
+                  </UnifiedDropdownItem>
+                ))}
+              </UnifiedDropdownContent>
+            )}
+          </UnifiedFilterSection>
 
-          {/* Bouton spoiler */}
-          <UnifiedSpoilerButton 
+          {/* Bouton Spoiler */}
+          <UnifiedSpoilerButton
             onClick={() => setShowSpoilers(!showSpoilers)}
           >
             {showSpoilers ? <EyeOff size={16} /> : <Eye size={16} />}
