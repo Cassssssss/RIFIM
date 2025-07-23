@@ -158,7 +158,7 @@ const SearchBar = styled.input`
 // ==================== NOUVELLE GRILLE POUR CARTES ====================
 const QuestionnairesGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
 
@@ -347,8 +347,7 @@ function QuestionnairePage() {
       const response = await axios.get('/questionnaires/my', {
         params: {
           page,
-          limit: 10, // CORRECTION : Uniformisé à 10 comme QuestionnaireListPage
-          search: searchTerm,
+          limit: 12, // Uniformisé avec les autres pages          search: searchTerm,
           modality: modalityFilters.join(','),
           specialty: specialtyFilters.join(','),
           location: locationFilters.join(',')

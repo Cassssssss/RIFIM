@@ -161,7 +161,7 @@ const SearchBar = styled.input`
 
 const QuestionnairesGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
 
@@ -584,7 +584,7 @@ function QuestionnaireListPage() {
     try {
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: '10', // CORRECTION : Changé de '9' à '10' pour uniformiser
+        limit: '12', // CORRECTION : Changé de '9' à '10' pour uniformiser
         search: searchTerm,
         modality: modalityFilters.join(','),
         specialty: specialtyFilters.join(','),
