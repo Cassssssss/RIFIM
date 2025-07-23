@@ -634,9 +634,6 @@ const CollapsibleImageGallery = React.memo(({ folder, images, onImageClick, onDe
   const [isOpen, setIsOpen] = useState(false);
   const [imageLoadError, setImageLoadError] = useState({});
   const [folderMainImage, setFolderMainImage] = useState(null);
-  const [draggedIndex, setDraggedIndex] = useState(null);
-  const [dragOverIndex, setDragOverIndex] = useState(null);
-  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     const loadFolderMainImage = async () => {
@@ -646,138 +643,99 @@ const CollapsibleImageGallery = React.memo(({ folder, images, onImageClick, onDe
     loadFolderMainImage();
   }, [caseId, folder, fetchFolderMainImage]);
 
-  // Drag and drop avec délai pour éviter les conflits
-  const handleMouseDown = (e, index) => {
-    e.preventDefault();
-    let dragTimer = null;
-    let hasDragged = false;
-
-    const startDrag = () => {
-      hasDragged = true;
-      setIsDragging(true);
-      setDraggedIndex(index);
-    };
-
-    const handleMouseMove = (e) => {
-      if (!dragTimer && !hasDragged) {
-        dragTimer = setTimeout(startDrag, 150); // 150ms de délai
-      }
-    };
-
-    const handleMouseUp = (e) => {
-      if (dragTimer) {
-        clearTimeout(dragTimer);
-      }
-      
-      if (!hasDragged) {
-        // C'était un clic, pas un drag
-        onImageClick(folder, index);
-      }
-      
-      // Nettoyage
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      setIsDragging(false);
-      setDraggedIndex(null);
-      setDragOverIndex(null);
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  };
-
-  const handleMouseEnter = (index) => {
-    if (isDragging && draggedIndex !== null) {
-      setDragOverIndex(index);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (isDragging) {
-      setDragOverIndex(null);
-    }
-  };
-
-  const handleDrop = (dropIndex) => {
-    if (draggedIndex === null || draggedIndex === dropIndex) {
-      return;
-    }
-
-    console.log(`Déplacement de l'index ${draggedIndex} vers l'index ${dropIndex}`);
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
+    
+    const sourceIndex = result.source.index;
+    const destinationIndex = result.destination.index;
+    
+    // Si l'élément est déposé au même endroit, ne rien faire
+    if (sourceIndex === destinationIndex) return;
+    
+    console.log(`Déplacement de l'index ${sourceIndex} vers l'index ${destinationIndex}`);
     
     const reorderedImages = Array.from(images);
-    const [movedImage] = reorderedImages.splice(draggedIndex, 1);
-    reorderedImages.splice(dropIndex, 0, movedImage);
+    const [movedImage] = reorderedImages.splice(sourceIndex, 1);
+    reorderedImages.splice(destinationIndex, 0, movedImage);
     
     onReorderImages(folder, reorderedImages);
   };
 
-  const handleImageClick = (index, e) => {
-    e.stopPropagation();
-    if (!isDragging && draggedIndex === null) {
-      onImageClick(folder, index);
-    }
-  };
-
   return (
-    <GalleryContainer>
-      <GalleryHeader onClick={() => setIsOpen(!isOpen)}>
-        <h3>{folder}</h3>
-        {folderMainImage && (
-          <FolderMainImage 
-            src={folderMainImage} 
-            alt={`Image principale de ${folder}`} 
-            onError={() => setImageLoadError(prev => ({ ...prev, [folderMainImage]: true }))}
-          />
-        )}
-        {isOpen ? <ChevronUp /> : <ChevronDown />}
-      </GalleryHeader>
-      
-      {isOpen && (
-        <ImagesGrid>
-          {images.map((image, index) => (
-            <ImageWrapper
-              key={`${folder}-${index}`}
-              onMouseDown={(e) => handleMouseDown(e, index)}
-              onMouseEnter={() => handleMouseEnter(index)}
-              onMouseLeave={handleMouseLeave}
-              onClick={() => isDragging && dragOverIndex === index && handleDrop(index)}
-              isDragging={draggedIndex === index}
-              isDropTarget={dragOverIndex === index && draggedIndex !== index}
-              style={{
-                cursor: isDragging ? 'grabbing' : 'pointer',
-                opacity: draggedIndex === index ? 0.6 : 1,
-              }}
-            >
-              <ThumbnailImage
-                src={imageLoadError[image] ? '/images/placeholder.jpg' : image}
-                alt={`${folder} image ${index + 1}`}
-                onClick={(e) => handleImageClick(index, e)}
-                onError={() => setImageLoadError(prev => ({ ...prev, [image]: true }))}
-                onDragStart={(e) => e.preventDefault()} // Empêche le drag natif de l'image
-                style={{
-                  pointerEvents: draggedIndex === index ? 'none' : 'auto'
-                }}
-              />
-              <DeleteButton2 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (!isDragging && draggedIndex === null) {
-                    onDeleteImage(caseId, folder, image);
-                  }
-                }}
-                style={{
-                  opacity: draggedIndex === index ? 0 : 1,
-                  pointerEvents: draggedIndex === index ? 'none' : 'auto'
-                }}
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <GalleryContainer>
+        <GalleryHeader onClick={() => setIsOpen(!isOpen)}>
+          <h3>{folder}</h3>
+          {folderMainImage && (
+            <FolderMainImage 
+              src={folderMainImage} 
+              alt={`Image principale de ${folder}`} 
+              onError={() => setImageLoadError(prev => ({ ...prev, [folderMainImage]: true }))}
+            />
+          )}
+          {isOpen ? <ChevronUp /> : <ChevronDown />}
+        </GalleryHeader>
+        
+        {isOpen && (
+          <Droppable droppableId={`folder-${folder}`}>
+            {(provided, snapshot) => (
+              <ImagesGrid
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+                isDraggingOver={snapshot.isDraggingOver}
               >
-                <X size={12} />
-              </DeleteButton2>
-            </ImageWrapper>
-          ))}
-        </ImagesGrid>
-      )}
-    </GalleryContainer>
+                {images.map((image, index) => {
+                  const draggableId = `${folder}-${index}-${image.split('/').pop()}`;
+                  return (
+                    <Draggable 
+                      key={`${folder}-${index}-${image}`}
+                      draggableId={draggableId}
+                      index={index}
+                    >
+                      {(provided, snapshot) => (
+                        <ImageWrapper
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          isDragging={snapshot.isDragging}
+                          style={{
+                            ...provided.draggableProps.style,
+                            zIndex: snapshot.isDragging ? 1000 : 'auto',
+                          }}
+                        >
+                          <ThumbnailImage
+                            src={imageLoadError[image] ? '/images/placeholder.jpg' : image}
+                            alt={`${folder} image ${index + 1}`}
+                            onClick={() => !snapshot.isDragging && onImageClick(folder, index)}
+                            onError={() => setImageLoadError(prev => ({ ...prev, [image]: true }))}
+                            isDragging={snapshot.isDragging}
+                          />
+                          <DeleteButton2 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!snapshot.isDragging) {
+                                onDeleteImage(caseId, folder, image);
+                              }
+                            }}
+                            style={{
+                              opacity: snapshot.isDragging ? 0 : 1,
+                              pointerEvents: snapshot.isDragging ? 'none' : 'auto'
+                            }}
+                          >
+                            <X size={12} />
+                          </DeleteButton2>
+                        </ImageWrapper>
+                      )}
+                    </Draggable>
+                  );
+                })}
+                {provided.placeholder}
+              </ImagesGrid>
+            )}
+          </Droppable>
+        )}
+      </GalleryContainer>
+    </DragDropContext>
   );
 });
 
