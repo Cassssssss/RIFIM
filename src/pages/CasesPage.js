@@ -1,4 +1,4 @@
-// CasesPage.js - VERSION CORRIGÉE AVEC TOUTES LES FONCTIONNALITÉS
+// CasesPage.js - VERSION COMPLÈTE AVEC TOUTE LA GESTION DES CAS
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
@@ -53,7 +53,283 @@ import * as S from './CasesPage.styles';
 import { CasesGrid, FoldersSection } from './CasesPage.styles';
 import styled from 'styled-components';
 
-// ==================== STYLES SPÉCIFIQUES POUR LA GESTION PRIVÉE ====================
+// ==================== STYLES SPÉCIFIQUES POUR LA GESTION ====================
+
+const CreationSection = styled(UnifiedSectionContainer)`
+  margin-bottom: 2rem;
+`;
+
+const InputGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+  }
+`;
+
+const Input = styled.input`
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 2px solid ${props => props.theme.border};
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: ${props => props.theme.inputBackground || props.theme.background};
+  color: ${props => props.theme.text};
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary};
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
+  }
+
+  &::placeholder {
+    color: ${props => props.theme.textSecondary || props.theme.textLight};
+  }
+`;
+
+const Select = styled.select`
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-top: 1rem;
+  border: 2px solid ${props => props.theme.border};
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: ${props => props.theme.inputBackground || props.theme.background};
+  color: ${props => props.theme.text};
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary};
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
+  }
+`;
+
+const PrimaryButton = styled.button`
+  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.primaryHover || props.theme.secondary});
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px ${props => props.theme.primary}30;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px ${props => props.theme.primary}40;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    background: ${props => props.theme.disabled || '#9ca3af'};
+    box-shadow: none;
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+`;
+
+const SecondaryButton = styled.button`
+  background-color: ${props => props.theme.buttonSecondary || props.theme.background};
+  color: ${props => props.theme.buttonSecondaryText || props.theme.text};
+  border: 2px solid ${props => props.theme.border};
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+
+  &:hover:not(:disabled) {
+    background-color: ${props => props.theme.hover};
+    border-color: ${props => props.theme.primary};
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px ${props => props.theme.shadow};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+`;
+
+const UploadButton = styled.label`
+  background: linear-gradient(135deg, ${props => props.theme.secondary}, ${props => props.theme.secondaryHover || props.theme.primary});
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px ${props => props.theme.secondary}30;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px ${props => props.theme.secondary}40;
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+`;
+
+const MainImageButton = styled.label`
+  background: linear-gradient(135deg, ${props => props.theme.accent || '#f59e0b'}, #d97706);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px ${props => props.theme.accent || '#f59e0b'}30;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px ${props => props.theme.accent || '#f59e0b'}40;
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+`;
+
+const FolderContainer = styled.div`
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  background-color: ${props => props.theme.card};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 12px;
+  box-shadow: 0 2px 10px ${props => props.theme.shadow};
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 4px 20px ${props => props.theme.shadow};
+    border-color: ${props => props.theme.primary}50;
+  }
+`;
+
+const FolderHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid ${props => props.theme.border};
+`;
+
+const FolderTitle = styled.h3`
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: ${props => props.theme.primary};
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &::before {
+    content: '📁';
+    font-size: 1.5rem;
+  }
+`;
+
+const FolderActions = styled.div`
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.75rem;
+    
+    button, label {
+      width: 100%;
+    }
+  }
+`;
+
+const FileInput = styled.input`
+  display: none;
+`;
+
+const ImagePreviewContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+`;
+
+const ImagePreview = styled.div`
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px ${props => props.theme.shadow};
+`;
+
+const PreviewImage = styled.img`
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  display: block;
+`;
+
+const RemoveImageButton = styled.button`
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(220, 38, 38, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(220, 38, 38, 1);
+    transform: scale(1.1);
+  }
+`;
 
 const PrivateManagementSection = styled(UnifiedSectionContainer)`
   margin-bottom: 2rem;
@@ -121,7 +397,7 @@ const ImagePreviewGrid = styled.div`
   margin-top: 0.5rem;
 `;
 
-const ImagePreview = styled.img`
+const ImagePreview2 = styled.img`
   width: 60px;
   height: 60px;
   object-fit: cover;
@@ -131,6 +407,90 @@ const ImagePreview = styled.img`
 
   &:hover {
     border-color: ${props => props.theme.primary};
+  }
+`;
+
+// Composants pour la galerie d'images
+const GalleryContainer = styled.div`
+  margin-bottom: 1.5rem;
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 8px;
+  overflow: hidden;
+`;
+
+const GalleryHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: ${props => props.theme.backgroundSecondary};
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: ${props => props.theme.hover};
+  }
+
+  h3 {
+    margin: 0;
+    color: ${props => props.theme.text};
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+`;
+
+const FolderMainImage = styled.img`
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid ${props => props.theme.border};
+`;
+
+const ImagesGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 0.5rem;
+  padding: 1rem;
+  background-color: ${props => props.theme.card};
+`;
+
+const ImageWrapper = styled.div`
+  position: relative;
+  border-radius: 4px;
+  overflow: hidden;
+`;
+
+const ThumbnailImage = styled.img`
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+`;
+
+const DeleteButton2 = styled.button`
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: rgba(220, 38, 38, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.7rem;
+
+  &:hover {
+    background: rgba(220, 38, 38, 1);
   }
 `;
 
@@ -234,6 +594,98 @@ const DeleteButton = styled.button`
   }
 `;
 
+// ==================== COMPOSANT GALERIE D'IMAGES COLLAPSIBLE ====================
+
+const CollapsibleImageGallery = React.memo(({ folder, images, onImageClick, onDeleteImage, caseId, fetchFolderMainImage, onReorderImages }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [imageLoadError, setImageLoadError] = useState({});
+  const [folderMainImage, setFolderMainImage] = useState(null);
+
+  useEffect(() => {
+    const loadFolderMainImage = async () => {
+      const imageUrl = await fetchFolderMainImage(caseId, folder);
+      setFolderMainImage(imageUrl);
+    };
+    loadFolderMainImage();
+  }, [caseId, folder, fetchFolderMainImage]);
+
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
+    
+    const sourceIndex = result.source.index;
+    const destinationIndex = result.destination.index;
+    
+    const reorderedImages = Array.from(images);
+    const [movedImage] = reorderedImages.splice(sourceIndex, 1);
+    reorderedImages.splice(destinationIndex, 0, movedImage);
+    
+    onReorderImages(folder, reorderedImages);
+  };
+
+  return (
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <GalleryContainer>
+        <GalleryHeader onClick={() => setIsOpen(!isOpen)}>
+          <h3>{folder}</h3>
+          {folderMainImage && (
+            <FolderMainImage 
+              src={folderMainImage} 
+              alt={`Image principale de ${folder}`} 
+              onError={() => setImageLoadError(prev => ({ ...prev, [folderMainImage]: true }))}
+            />
+          )}
+          {isOpen ? <ChevronUp /> : <ChevronDown />}
+        </GalleryHeader>
+        
+        {isOpen && (
+          <Droppable droppableId={folder} direction="horizontal">
+            {(provided) => (
+              <ImagesGrid
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+              >
+                {images.map((image, index) => {
+                  const draggableId = `draggable-${folder}-${index}`;
+                  return (
+                    <Draggable 
+                      key={draggableId}
+                      draggableId={draggableId}
+                      index={index}
+                    >
+                      {(provided, snapshot) => (
+                        <ImageWrapper
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          style={{
+                            ...provided.draggableProps.style,
+                            opacity: snapshot.isDragging ? 0.5 : 1,
+                          }}
+                        >
+                          <ThumbnailImage
+                            src={imageLoadError[image] ? '/images/placeholder.jpg' : image}
+                            alt={`${folder} image ${index}`}
+                            onClick={() => onImageClick(folder, index)}
+                            onError={() => setImageLoadError(prev => ({ ...prev, [image]: true }))}
+                          />
+                          <DeleteButton2 onClick={() => onDeleteImage(caseId, folder, image)}>
+                            <X size={12} />
+                          </DeleteButton2>
+                        </ImageWrapper>
+                      )}
+                    </Draggable>
+                  );
+                })}
+                {provided.placeholder}
+              </ImagesGrid>
+            )}
+          </Droppable>
+        )}
+      </GalleryContainer>
+    </DragDropContext>
+  );
+});
+
 // ==================== COMPOSANT CARTE CAS PRIVÉ ====================
 
 function PrivateCaseCard({ 
@@ -280,7 +732,7 @@ function PrivateCaseCard({
             height: '80px', 
             objectFit: 'cover', 
             borderRadius: '8px',
-            border: `1px solid ${props => props.theme?.border || '#e5e7eb'}`
+            border: `1px solid var(--color-border)`
           }}
           onError={(e) => {
             e.target.src = '/images/default.jpg';
@@ -438,13 +890,18 @@ function CasesPage() {
   const [difficultyFilter, setDifficultyFilter] = useState([1, 2, 3, 4, 5]);
   const [tagFilter, setTagFilter] = useState([]);
   const [allTags, setAllTags] = useState([]);
-  const [showSpoilers, setShowSpoilers] = useState(true); // Toujours visible pour les cas privés
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // États pour la création de cas
+  const [newCaseTitle, setNewCaseTitle] = useState('');
+  const [newFolderName, setNewFolderName] = useState('');
 
   // États pour la gestion des images
   const [newImages, setNewImages] = useState({});
   const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
+  const [currentFolder, setCurrentFolder] = useState(null);
   const [imageDetails, setImageDetails] = useState(null);
 
   // États des dropdowns
@@ -460,7 +917,7 @@ function CasesPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`/cases/my?page=${page}&limit=12`);
+      const response = await axios.get(`/cases?page=${page}&limit=12`);
       
       if (response.data && Array.isArray(response.data.cases)) {
         setCases(response.data.cases);
@@ -492,11 +949,292 @@ function CasesPage() {
     try {
       const response = await axios.get(`/cases/${caseId}`);
       setSelectedCase(response.data);
+      setCases(prevCases => prevCases.map(c => c._id === caseId ? response.data : c));
     } catch (error) {
       console.error('Erreur lors du chargement du cas:', error);
       alert('Erreur lors du chargement du cas');
     }
   };
+
+  // ==================== GESTION DES CAS ====================
+
+  const addNewCase = useCallback(async () => {
+    let sanitizedTitle = newCaseTitle.trim();
+    if (sanitizedTitle.toLowerCase().startsWith('rifim/')) {
+      sanitizedTitle = sanitizedTitle.substring('rifim/'.length);
+    }
+    if (sanitizedTitle === '') return;
+    
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await axios.post(`/cases`, { 
+        title: sanitizedTitle,
+        folders: [],
+        images: {},
+        difficulty: 1,
+        answer: ''
+      });
+      setCases(prevCases => [...prevCases, response.data]);
+      setNewCaseTitle('');
+      setSelectedCase(response.data);
+    } catch (error) {
+      setError('Erreur lors de l\'ajout d\'un nouveau cas');
+      console.error('Erreur lors de l\'ajout d\'un nouveau cas:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [newCaseTitle]);
+
+  const addNewFolder = useCallback(async () => {
+    if (!selectedCase || newFolderName.trim() === '') return;
+    
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await axios.post(`/cases/${selectedCase._id}/folders`, { folderName: newFolderName });
+      setCases(prevCases => prevCases.map(c => c._id === selectedCase._id ? response.data : c));
+      setSelectedCase(response.data);
+      setNewFolderName('');
+    } catch (error) {
+      setError('Erreur lors de l\'ajout d\'un nouveau dossier');
+      console.error('Erreur lors de l\'ajout d\'un nouveau dossier:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedCase, newFolderName]);
+
+  // ==================== GESTION DES IMAGES ====================
+
+  const handleImageUpload = useCallback((event, folder) => {
+    const files = Array.from(event.target.files);
+    setNewImages(prev => ({
+      ...prev,
+      [folder]: [
+        ...(prev[folder] || []),
+        ...files.map(file => ({
+          file,
+          preview: URL.createObjectURL(file)
+        }))
+      ]
+    }));
+  }, []);
+
+  const removeImage = useCallback((folder, index) => {
+    setNewImages(prev => ({
+      ...prev,
+      [folder]: prev[folder].filter((_, i) => i !== index)
+    }));
+  }, []);
+
+  const addImagesToCase = useCallback(async () => {
+    if (!selectedCase) return;
+    
+    setIsLoading(true);
+    setError(null);
+    try {
+      for (const [folder, images] of Object.entries(newImages)) {
+        const formData = new FormData();
+        images.forEach((image, index) => {
+          formData.append('images', image.file);
+        });
+        formData.append('folder', folder);
+
+        const response = await axios.post(`/cases/${selectedCase._id}/images`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      }
+      const updatedCase = await axios.get(`/cases/${selectedCase._id}`);
+      setCases(prevCases => prevCases.map(c => c._id === selectedCase._id ? updatedCase.data : c));
+      setSelectedCase(updatedCase.data);
+      setNewImages({});
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout des images:', error.response?.data || error.message);
+      setError('Erreur lors de l\'ajout des images au cas');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedCase, newImages]);
+
+  const setMainImage = useCallback(async (event) => {
+    const file = event.target.files[0];
+    if (file && selectedCase) {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const formData = new FormData();
+        formData.append('mainImage', file);
+        const response = await axios.post(`/cases/${selectedCase._id}/main-image`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        setCases(prevCases => prevCases.map(c => c._id === selectedCase._id ? response.data : c));
+        setSelectedCase(response.data);
+      } catch (error) {
+        setError('Erreur lors de la définition de l\'image principale');
+        console.error('Erreur lors de la définition de l\'image principale:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  }, [selectedCase]);
+
+  const setFolderMainImage = useCallback(async (event, folder) => {
+    const file = event.target.files[0];
+    if (file && selectedCase) {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const formData = new FormData();
+        formData.append('folderMainImage', file);
+        formData.append('folder', folder);
+        const response = await axios.post(`/cases/${selectedCase._id}/folder-main-image`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        setCases(prevCases => prevCases.map(c => 
+          c._id === selectedCase._id 
+            ? response.data
+            : c
+        ));
+
+        setSelectedCase(response.data);
+
+      } catch (error) {
+        setError('Erreur lors de la définition de l\'image principale du dossier');
+        console.error('Erreur lors de la définition de l\'image principale du dossier:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  }, [selectedCase]);
+
+  const deleteFolder = useCallback(async (folder) => {
+    if (window.confirm(`Êtes-vous sûr de vouloir supprimer le dossier "${folder}" ?`)) {
+      try {
+        await axios.delete(`/cases/${selectedCase._id}/folders/${folder}`);
+        const updatedCase = await axios.get(`/cases/${selectedCase._id}`);
+        setCases(prevCases => prevCases.map(c => c._id === selectedCase._id ? updatedCase.data : c));
+        setSelectedCase(updatedCase.data);
+      } catch (error) {
+        console.error('Erreur lors de la suppression du dossier:', error);
+        setError('Erreur lors de la suppression du dossier');
+      }
+    }
+  }, [selectedCase]);
+
+  const fetchFolderMainImage = useCallback(async (caseId, folder) => {
+    try {
+      const response = await axios.get(`/cases/${caseId}`);
+      if (response.data && response.data.folderMainImages && response.data.folderMainImages[folder]) {
+        return response.data.folderMainImages[folder];
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des données du cas:', error);
+    }
+    return null;
+  }, []);
+
+  const deleteExistingImage = useCallback(async (caseId, folder, imagePath) => {
+    try {
+      const fileName = imagePath.split('/').pop();
+      await axios.delete(`/cases/${caseId}/images`, {
+        data: { folder, fileName }
+      });
+      const updatedCase = await axios.get(`/cases/${caseId}`);
+      setCases(prevCases => prevCases.map(c => c._id === caseId ? updatedCase.data : c));
+      setSelectedCase(updatedCase.data);
+    } catch (error) {
+      console.error('Erreur lors de la suppression de l\'image:', error);
+      setError('Erreur lors de la suppression de l\'image');
+    }
+  }, []);
+
+  const handleReorderImages = useCallback(async (folder, reorderedImages) => {
+    if (!selectedCase) return;
+    
+    try {
+      // Mettre à jour l'état local immédiatement pour une meilleure UX
+      setSelectedCase(prevCase => ({
+        ...prevCase,
+        images: {
+          ...prevCase.images,
+          [folder]: reorderedImages
+        }
+      }));
+
+      // Mettre à jour les cas dans la liste
+      setCases(prevCases => prevCases.map(c => 
+        c._id === selectedCase._id 
+          ? {
+              ...c,
+              images: {
+                ...c.images,
+                [folder]: reorderedImages
+              }
+            }
+          : c
+      ));
+
+      // Appeler l'API avec la nouvelle route
+      const response = await axios.patch(`/cases/${selectedCase._id}/reorder-images`, {
+        folder,
+        images: reorderedImages
+      });
+
+      if (!response.data) {
+        throw new Error('Échec de la mise à jour');
+      }
+
+    } catch (error) {
+      console.error('Erreur lors de la réorganisation des images:', error);
+      // Recharger le cas en cas d'erreur
+      await loadCase(selectedCase._id);
+    }
+  }, [selectedCase, loadCase]);
+
+  // ==================== GESTION DES ÉVÉNEMENTS D'IMAGES ====================
+
+  const handleImageClick = useCallback((folder, index) => {
+    setSelectedImage(selectedCase.images[folder][index]);
+    setSelectedImageIndex(index);
+    setCurrentFolder(folder);
+  }, [selectedCase]);
+
+  const closeImage = useCallback(() => {
+    setSelectedImage(null);
+    setSelectedImageIndex(null);
+    setCurrentFolder(null);
+  }, []);
+
+  const navigateImage = useCallback((direction) => {
+    if (!currentFolder || selectedImageIndex === null || !selectedCase || !selectedCase.images) return;
+    const images = selectedCase.images[currentFolder];
+    let newIndex = selectedImageIndex + direction;
+    if (newIndex < 0) newIndex = images.length - 1;
+    if (newIndex >= images.length) newIndex = 0;
+    setSelectedImage(images[newIndex]);
+    setSelectedImageIndex(newIndex);
+  }, [currentFolder, selectedImageIndex, selectedCase]);
+
+  // Navigation au clavier
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (selectedImage) {
+        if (event.key === 'ArrowLeft') {
+          navigateImage(-1);
+        } else if (event.key === 'ArrowRight') {
+          navigateImage(1);
+        } else if (event.key === 'Escape') {
+          closeImage();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedImage, navigateImage, closeImage]);
 
   // ==================== EFFETS ====================
 
@@ -639,17 +1377,6 @@ function CasesPage() {
     }
   };
 
-  // Gestion des images
-  const handleImageClick = (folder, imageIndex) => {
-    if (selectedCase && selectedCase.images && selectedCase.images[folder]) {
-      setSelectedImage(selectedCase.images[folder][imageIndex]);
-    }
-  };
-
-  const closeImage = () => {
-    setSelectedImage(null);
-  };
-
   // Fermeture des dropdowns au clic extérieur
   useEffect(() => {
     const handleClickOutside = () => {
@@ -666,22 +1393,16 @@ function CasesPage() {
   return (
     <UnifiedPageContainer>
       <PageHeader>
-        <UnifiedPageTitle>Gestion des Cas Cliniques</UnifiedPageTitle>
+        <UnifiedPageTitle>🎯 Création de cas</UnifiedPageTitle>
         <PageSubtitle>
           Créez, modifiez et gérez vos cas cliniques personnels
         </PageSubtitle>
-        <div style={{ marginTop: '1rem' }}>
-          <UnifiedCreateButton to="/cases/create">
-            <Plus size={20} />
-            Créer un nouveau cas
-          </UnifiedCreateButton>
-        </div>
       </PageHeader>
 
       <SearchAndFiltersSection>
         <UnifiedSearchInput
           type="text"
-          placeholder="Rechercher dans vos cas (titre, tags, réponse...)"
+          placeholder="🔍 Rechercher un cas..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -751,140 +1472,211 @@ function CasesPage() {
         </UnifiedFilterContainer>
       </SearchAndFiltersSection>
 
-      {/* Contenu principal */}
-      {isLoading ? (
-        <UnifiedLoadingMessage>
-          Chargement de vos cas...
-        </UnifiedLoadingMessage>
-      ) : error ? (
-        <UnifiedErrorMessage>
-          {error}
-        </UnifiedErrorMessage>
-      ) : (
-        <>
-          {/* Section de gestion des cas */}
-          <PrivateManagementSection>
-            <UnifiedSectionTitle>
-              📋 Vos Cas Cliniques ({filteredCases.length})
-            </UnifiedSectionTitle>
-            
-            {filteredCases.length === 0 ? (
-              <UnifiedEmptyState>
-                <h3>Aucun cas trouvé</h3>
-                <p>
-                  {cases.length === 0 
-                    ? "Vous n'avez pas encore créé de cas. Commencez par créer votre premier cas !" 
-                    : "Aucun cas ne correspond à vos critères de recherche. Essayez de modifier vos filtres."
-                  }
-                </p>
-              </UnifiedEmptyState>
-            ) : (
-              <CaseManagementGrid>
-                {filteredCases.map((cas) => (
-                  <PrivateCaseCard
-                    key={cas._id}
-                    cas={cas}
-                    onUpdateDifficulty={updateCaseDifficulty}
-                    onUpdateAnswer={updateCaseAnswer}
-                    onAddTag={handleAddTag}
-                    onRemoveTag={handleRemoveTag}
-                    onDeleteCase={deleteCase}
-                    onLoadCase={loadCase}
-                    onTogglePublic={handleTogglePublic}
-                  />
-                ))}
-              </CaseManagementGrid>
-            )}
-          </PrivateManagementSection>
+      {/* SECTION CRÉATION DE CAS */}
+      <CreationSection>
+        <UnifiedSectionTitle>
+          ➕ Créer un nouveau cas
+        </UnifiedSectionTitle>
+        
+        <InputGroup>
+          <Input
+            type="text"
+            value={newCaseTitle}
+            onChange={(e) => setNewCaseTitle(e.target.value)}
+            placeholder="Titre du nouveau cas"
+          />
+          <PrimaryButton onClick={addNewCase}>
+            <Plus size={18} />
+            Créer un nouveau cas
+          </PrimaryButton>
+        </InputGroup>
 
-          {/* Section de gestion des dossiers et images */}
-          {selectedCase && (
-            <FolderSection>
-              <UnifiedSectionTitle>
-                🗂️ Gestion des images - {selectedCase.title}
-              </UnifiedSectionTitle>
-              
-              {selectedCase.folders && selectedCase.folders.length > 0 ? (
-                <FolderGrid>
-                  {selectedCase.folders.map(folder => (
-                    <FolderCard key={folder}>
-                      <h4 style={{ 
-                        color: 'var(--color-primary)', 
-                        marginBottom: '0.5rem',
-                        fontSize: '1rem'
-                      }}>
-                        📁 {folder}
-                      </h4>
-                      
-                      {selectedCase.images && selectedCase.images[folder] && (
-                        <div>
-                          <p style={{ 
-                            fontSize: '0.85rem', 
-                            color: 'var(--color-text-secondary)',
-                            marginBottom: '0.5rem'
-                          }}>
-                            {selectedCase.images[folder].length} image(s)
-                          </p>
-                          
-                          <ImagePreviewGrid>
-                            {selectedCase.images[folder].slice(0, 6).map((image, index) => (
-                              <ImagePreview
-                                key={index}
-                                src={image}
-                                alt={`${folder} ${index + 1}`}
-                                onClick={() => handleImageClick(folder, index)}
-                                onError={(e) => {
-                                  e.target.src = '/images/default.jpg';
-                                }}
-                              />
-                            ))}
-                          </ImagePreviewGrid>
-                          
-                          {selectedCase.images[folder].length > 6 && (
-                            <p style={{ 
-                              fontSize: '0.75rem', 
-                              color: 'var(--color-text-secondary)',
-                              marginTop: '0.25rem'
-                            }}>
-                              +{selectedCase.images[folder].length - 6} autres images
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </FolderCard>
+        <Select
+          value={selectedCase?._id || ''}
+          onChange={(e) => loadCase(e.target.value)}
+        >
+          <option value="">Sélectionner un cas</option>
+          {cases.map(cas => (
+            <option key={cas._id} value={cas._id}>{cas.title}</option>
+          ))}
+        </Select>
+      </CreationSection>
+
+      {/* SECTION GESTION D'UN CAS SÉLECTIONNÉ */}
+      {selectedCase && (
+        <CreationSection>
+          <UnifiedSectionTitle>
+            🛠️ Gestion du cas: {selectedCase.title}
+          </UnifiedSectionTitle>
+          
+          <InputGroup>
+            <MainImageButton>
+              <ImageIcon size={20} />
+              Choisir l'image principale du cas
+              <FileInput
+                type="file"
+                accept="image/*"
+                onChange={setMainImage}
+              />
+            </MainImageButton>
+          </InputGroup>
+
+          <InputGroup>
+            <Input
+              type="text"
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+              placeholder="Nom du nouveau dossier"
+            />
+            <PrimaryButton onClick={addNewFolder}>
+              <Folder size={20} />
+              Ajouter un dossier
+            </PrimaryButton>
+          </InputGroup>
+
+          {selectedCase.folders.map(folder => (
+            <FolderContainer key={folder}>
+              <FolderHeader>
+                <FolderTitle>{folder}</FolderTitle>
+                <FolderActions>
+                  <UploadButton>
+                    <Upload size={20} />
+                    Ajouter des images
+                    <FileInput 
+                      type="file" 
+                      accept="image/*" 
+                      multiple
+                      onChange={(e) => handleImageUpload(e, folder)} 
+                    />
+                  </UploadButton>
+                  <MainImageButton as="label">
+                    <ImageIcon size={20} />
+                    Image principale
+                    <FileInput
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setFolderMainImage(e, folder)}
+                    />
+                  </MainImageButton>
+                  <SecondaryButton onClick={() => deleteFolder(folder)}>
+                    <Trash2 size={20} />
+                    Supprimer
+                  </SecondaryButton>
+                </FolderActions>
+              </FolderHeader>
+              {newImages[folder] && newImages[folder].length > 0 && (
+                <ImagePreviewContainer>
+                  {newImages[folder].map((img, index) => (
+                    <ImagePreview key={index}>
+                      <PreviewImage src={img.preview} alt={`Preview ${index}`} />
+                      <RemoveImageButton onClick={() => removeImage(folder, index)}>
+                        <X size={12} />
+                      </RemoveImageButton>
+                    </ImagePreview>
                   ))}
-                </FolderGrid>
-              ) : (
-                <p style={{ color: 'var(--color-text-secondary)' }}>
-                  Aucun dossier d'images pour ce cas.
-                </p>
+                </ImagePreviewContainer>
               )}
-            </FolderSection>
-          )}
+            </FolderContainer>
+          ))}
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <UnifiedPaginationContainer>
-              <UnifiedPaginationButton 
-                onClick={() => handlePageChange(currentPage - 1)} 
-                disabled={currentPage === 1}
-              >
-                ← Précédent
-              </UnifiedPaginationButton>
-              
-              <UnifiedPaginationInfo>
-                Page {currentPage} sur {totalPages} • {filteredCases.length} cas
-              </UnifiedPaginationInfo>
-              
-              <UnifiedPaginationButton 
-                onClick={() => handlePageChange(currentPage + 1)} 
-                disabled={currentPage === totalPages}
-              >
-                Suivant →
-              </UnifiedPaginationButton>
-            </UnifiedPaginationContainer>
-          )}
-        </>
+          <PrimaryButton 
+            onClick={addImagesToCase} 
+            disabled={Object.values(newImages).every(arr => !arr || arr.length === 0)}
+          >
+            <Upload size={18} />
+            Ajouter les images au cas
+          </PrimaryButton>
+        </CreationSection>
+      )}
+
+      {/* SECTION LISTE DES CAS */}
+      <PrivateManagementSection>
+        <UnifiedSectionTitle>
+          📋 Vos Cas Cliniques ({filteredCases.length})
+        </UnifiedSectionTitle>
+        
+        {isLoading ? (
+          <UnifiedLoadingMessage>
+            Chargement de vos cas...
+          </UnifiedLoadingMessage>
+        ) : error ? (
+          <UnifiedErrorMessage>
+            {error}
+          </UnifiedErrorMessage>
+        ) : filteredCases.length === 0 ? (
+          <UnifiedEmptyState>
+            <h3>Aucun cas trouvé</h3>
+            <p>
+              {cases.length === 0 
+                ? "Vous n'avez pas encore créé de cas. Commencez par créer votre premier cas !" 
+                : "Aucun cas ne correspond à vos critères de recherche. Essayez de modifier vos filtres."
+              }
+            </p>
+          </UnifiedEmptyState>
+        ) : (
+          <CaseManagementGrid>
+            {filteredCases.map((cas) => (
+              <PrivateCaseCard
+                key={cas._id}
+                cas={cas}
+                onUpdateDifficulty={updateCaseDifficulty}
+                onUpdateAnswer={updateCaseAnswer}
+                onAddTag={handleAddTag}
+                onRemoveTag={handleRemoveTag}
+                onDeleteCase={deleteCase}
+                onLoadCase={loadCase}
+                onTogglePublic={handleTogglePublic}
+              />
+            ))}
+          </CaseManagementGrid>
+        )}
+      </PrivateManagementSection>
+
+      {/* SECTION GESTION DES IMAGES DU CAS SÉLECTIONNÉ */}
+      {selectedCase && selectedCase.images && (
+        <FolderSection>
+          <UnifiedSectionTitle>
+            🗂️ Gestion des images - {selectedCase.title}
+          </UnifiedSectionTitle>
+          
+          {selectedCase.folders.map(folder => (
+            selectedCase.images[folder] && (
+              <CollapsibleImageGallery
+                key={folder}
+                folder={folder}
+                images={selectedCase.images[folder]}
+                onImageClick={handleImageClick}
+                onDeleteImage={deleteExistingImage}
+                caseId={selectedCase._id}
+                fetchFolderMainImage={fetchFolderMainImage}
+                onReorderImages={handleReorderImages}
+              />
+            )
+          ))}
+        </FolderSection>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <UnifiedPaginationContainer>
+          <UnifiedPaginationButton 
+            onClick={() => handlePageChange(currentPage - 1)} 
+            disabled={currentPage === 1}
+          >
+            ← Précédent
+          </UnifiedPaginationButton>
+          
+          <UnifiedPaginationInfo>
+            Page {currentPage} sur {totalPages} • {filteredCases.length} cas
+          </UnifiedPaginationInfo>
+          
+          <UnifiedPaginationButton 
+            onClick={() => handlePageChange(currentPage + 1)} 
+            disabled={currentPage === totalPages}
+          >
+            Suivant →
+          </UnifiedPaginationButton>
+        </UnifiedPaginationContainer>
       )}
 
       {/* Modal d'image agrandie */}
@@ -935,6 +1727,81 @@ function CasesPage() {
           >
             <X size={24} />
           </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); navigateImage(-1); }}
+            style={{
+              position: 'absolute',
+              left: '20px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'rgba(0, 0, 0, 0.5)',
+              border: 'none',
+              color: 'white',
+              padding: '0.5rem',
+              borderRadius: '50%',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <ChevronLeft size={24} />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); navigateImage(1); }}
+            style={{
+              position: 'absolute',
+              right: '20px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'rgba(0, 0, 0, 0.5)',
+              border: 'none',
+              color: 'white',
+              padding: '0.5rem',
+              borderRadius: '50%',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <ChevronRight size={24} />
+          </button>
+        </div>
+      )}
+
+      {/* Spinner de chargement global */}
+      {isLoading && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <LoadingSpinner />
+        </div>
+      )}
+
+      {/* Message d'erreur global */}
+      {error && (
+        <div style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          backgroundColor: '#ef4444',
+          color: 'white',
+          padding: '1rem',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          zIndex: 1000
+        }}>
+          <ErrorMessage>{error}</ErrorMessage>
         </div>
       )}
     </UnifiedPageContainer>
