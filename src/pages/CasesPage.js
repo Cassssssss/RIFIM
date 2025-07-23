@@ -454,6 +454,13 @@ const ImagesGrid = styled.div`
   padding: 1rem;
   background-color: ${props => props.theme.card};
   min-height: 100px; /* Assure une hauteur minimum pour le drop */
+  
+  /* Style pour la zone de drop active */
+  ${props => props.isDraggingOver && `
+    background-color: rgba(59, 130, 246, 0.1);
+    border: 2px dashed #3b82f6;
+    border-radius: 8px;
+  `}
 `;
 
 const ImageWrapper = styled.div`
@@ -470,12 +477,19 @@ const ImageWrapper = styled.div`
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   `}
   
-  /* Style au survol pendant le drag */
-  ${props => props.isDraggedOver && `
+  /* Style pour les emplacements de drop */
+  ${props => props.isDropTarget && `
+    background-color: rgba(59, 130, 246, 0.2);
+    border: 2px dashed #3b82f6;
     transform: scale(0.95);
-    opacity: 0.5;
-    border: 2px dashed ${props.theme.primary};
   `}
+  
+  /* Animation au survol pendant le drag */
+  &.drag-over {
+    background-color: rgba(59, 130, 246, 0.3);
+    border: 2px solid #3b82f6;
+    transform: scale(0.9);
+  }
 `;
 
 const ThumbnailImage = styled.img`
@@ -619,6 +633,7 @@ const CollapsibleImageGallery = React.memo(({ folder, images, onImageClick, onDe
   const [isOpen, setIsOpen] = useState(false);
   const [imageLoadError, setImageLoadError] = useState({});
   const [folderMainImage, setFolderMainImage] = useState(null);
+  const [draggedOverIndex, setDraggedOverIndex] = useState(null);
 
   useEffect(() => {
     const loadFolderMainImage = async () => {
@@ -629,6 +644,8 @@ const CollapsibleImageGallery = React.memo(({ folder, images, onImageClick, onDe
   }, [caseId, folder, fetchFolderMainImage]);
 
   const handleDragEnd = (result) => {
+    setDraggedOverIndex(null);
+    
     if (!result.destination) return;
     
     const sourceIndex = result.source.index;
@@ -637,6 +654,8 @@ const CollapsibleImageGallery = React.memo(({ folder, images, onImageClick, onDe
     // Si l'élément est déposé au même endroit, ne rien faire
     if (sourceIndex === destinationIndex) return;
     
+    console.log(`Déplacement de l'index ${sourceIndex} vers l'index ${destinationIndex}`);
+    
     const reorderedImages = Array.from(images);
     const [movedImage] = reorderedImages.splice(sourceIndex, 1);
     reorderedImages.splice(destinationIndex, 0, movedImage);
@@ -644,8 +663,16 @@ const CollapsibleImageGallery = React.memo(({ folder, images, onImageClick, onDe
     onReorderImages(folder, reorderedImages);
   };
 
+  const handleDragUpdate = (update) => {
+    if (update.destination) {
+      setDraggedOverIndex(update.destination.index);
+    } else {
+      setDraggedOverIndex(null);
+    }
+  };
+
   return (
-    <DragDropContext onDragEnd={handleDragEnd}>
+    <DragDropContext onDragEnd={handleDragEnd} onDragUpdate={handleDragUpdate}>
       <GalleryContainer>
         <GalleryHeader onClick={() => setIsOpen(!isOpen)}>
           <h3>{folder}</h3>
@@ -660,16 +687,12 @@ const CollapsibleImageGallery = React.memo(({ folder, images, onImageClick, onDe
         </GalleryHeader>
         
         {isOpen && (
-          <Droppable droppableId={`folder-${folder}`}>
+          <Droppable droppableId={`folder-${folder}`} direction="horizontal">
             {(provided, snapshot) => (
               <ImagesGrid
                 {...provided.droppableProps}
                 ref={provided.innerRef}
-                style={{
-                  backgroundColor: snapshot.isDraggingOver 
-                    ? 'rgba(59, 130, 246, 0.1)' 
-                    : undefined
-                }}
+                isDraggingOver={snapshot.isDraggingOver}
               >
                 {images.map((image, index) => {
                   const draggableId = `${folder}-image-${index}-${image.split('/').pop()}`;
@@ -685,6 +708,7 @@ const CollapsibleImageGallery = React.memo(({ folder, images, onImageClick, onDe
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
                           isDragging={snapshot.isDragging}
+                          isDropTarget={draggedOverIndex === index}
                           style={{
                             ...provided.draggableProps.style,
                             // Assure que l'élément reste visible pendant le drag
