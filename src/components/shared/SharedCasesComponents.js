@@ -131,7 +131,7 @@ export const UnifiedFilterButton = styled.button`
 
 export const UnifiedSpoilerButton = styled.button`
   padding: 0.75rem 1.5rem;
-  background-color: ${props => props.theme.secondary};
+  background: linear-gradient(135deg, #4F8EDB, #5FBEAA);
   color: white;
   border: none;
   border-radius: 12px;
@@ -146,8 +146,8 @@ export const UnifiedSpoilerButton = styled.button`
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px ${props => props.theme.shadow};
-    opacity: 0.9;
+    box-shadow: 0 4px 12px rgba(79, 142, 219, 0.3);
+    background: linear-gradient(135deg, #4681C7, #53A896);
   }
 
   @media (max-width: 768px) {
@@ -261,6 +261,7 @@ export const UnifiedCaseTitle = styled.h3`
   margin: 0 0 0.5rem 0;
   line-height: 1.4;
   flex: 1;
+  text-align: center;
 `;
 
 export const UnifiedStarRating = styled.div`
