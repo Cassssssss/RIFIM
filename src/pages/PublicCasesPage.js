@@ -1,514 +1,85 @@
-// PublicCasesPage.js - VERSION CORRIGÉE AVEC BANDE DÉGRADÉE ET BOUTON HARMONISÉ
+// PublicCasesPage.js - VERSION AVEC SHARED COMPONENTS UNIFIÉS
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import styled from 'styled-components';
-import { ChevronDown, ChevronUp, Star, Eye, Copy, User, TrendingUp, Plus, EyeOff } from 'lucide-react';
 import axios from '../utils/axiosConfig';
+import { ChevronDown, Star, Eye, Copy, User, TrendingUp, Plus, EyeOff } from 'lucide-react';
 import RatingStars from '../components/RatingStars';
 
-// ==================== STYLES CONTAINER PRINCIPAL ====================
+// Import des composants partagés unifiés
+import {
+  UnifiedPageContainer,
+  PageHeader,
+  UnifiedPageTitle,
+  PageSubtitle,
+  SearchAndFiltersSection,
+  UnifiedSearchInput,
+  UnifiedFilterContainer,
+  UnifiedFilterSection,
+  UnifiedFilterButton,
+  UnifiedSpoilerButton,
+  UnifiedDropdownContent,
+  UnifiedDropdownItem,
+  UnifiedDropdownCheckbox,
+  UnifiedCasesList,
+  UnifiedCaseCard,
+  UnifiedCaseImage,
+  UnifiedCaseContent,
+  UnifiedCaseHeader,
+  UnifiedCaseTitle,
+  UnifiedStarRating,
+  UnifiedPopularityBadge,
+  UnifiedAuthorInfo,
+  UnifiedStatsContainer,
+  UnifiedStatItem,
+  UnifiedActionsContainer,
+  UnifiedActionButton,
+  UnifiedRatingSection,
+  UnifiedTagsContainer,
+  UnifiedTag,
+  UnifiedPaginationContainer,
+  UnifiedPaginationButton,
+  UnifiedPaginationInfo,
+  UnifiedEmptyState,
+  UnifiedLoadingMessage,
+  UnifiedErrorMessage
+} from '../components/shared/SharedCasesComponents';
 
-const ModernPageContainer = styled.div`
-  padding: 2rem 3rem;
-  min-height: calc(100vh - 60px);
-  background-color: ${props => props.theme.background};
+// ==================== COMPOSANT CARTE CAS PUBLIC ====================
 
-  @media (max-width: 1200px) {
-    padding: 2rem;
-  }
-
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
-`;
-
-const HeaderSection = styled.div`
-  text-align: center;
-  margin-bottom: 3rem;
-`;
-
-const MainTitle = styled.h1`
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-`;
-
-const SubTitle = styled.p`
-  font-size: 1.2rem;
-  color: ${props => props.theme.textSecondary};
-  line-height: 1.6;
-  max-width: 600px;
-  margin: 0 auto;
-`;
-
-// ==================== BARRE DE RECHERCHE ====================
-
-const SearchBar = styled.input`
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto 2rem;
-  padding: 1rem 1.5rem;
-  font-size: 1rem;
-  border: 2px solid ${props => props.theme.border};
-  border-radius: 50px;
-  background-color: ${props => props.theme.card};
-  color: ${props => props.theme.text};
-  transition: all 0.2s ease;
-  display: block;
-
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.primary};
-    box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
-  }
-
-  &::placeholder {
-    color: ${props => props.theme.textSecondary};
-  }
-`;
-
-// ==================== SECTION FILTRES ====================
-
-const FilterContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  align-items: center;
-`;
-
-const FilterGroup = styled.div`
-  position: relative;
-`;
-
-const FilterButton = styled.button`
-  padding: 0.75rem 1rem;
-  background-color: ${props => props.active ? props.theme.primary : props.theme.card};
-  color: ${props => props.active ? 'white' : props.theme.buttonSecondaryText};
-  border: 2px solid ${props => props.active ? props.theme.primary : props.theme.borderLight};
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  min-width: 120px;
-  justify-content: space-between;
-
-  &:hover {
-    background-color: ${props => props.active ? props.theme.primaryDark || props.theme.primary : props.theme.hover};
-  }
-
-  svg {
-    transition: transform 0.2s ease;
-    transform: ${props => props.isOpen ? 'rotate(180deg)' : 'rotate(0deg)'};
-  }
-`;
-
-const DropdownContent = styled.div`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background-color: ${props => props.theme.card};
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 8px;
-  box-shadow: 0 4px 20px ${props => props.theme.shadow};
-  z-index: 1000;
-  max-height: 200px;
-  overflow-y: auto;
-  margin-top: 4px;
-`;
-
-const DropdownItem = styled.label`
-  display: flex;
-  align-items: center;
-  padding: 0.75rem;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: ${props => props.theme.hover};
-  }
-`;
-
-const DropdownCheckbox = styled.input`
-  margin-right: 0.5rem;
-  accent-color: ${props => props.theme.primary};
-`;
-
-const SpoilerButton = styled.button`
-  padding: 0.75rem 1rem;
-  background-color: ${props => props.theme.secondary};
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: ${props => props.theme.secondaryDark || props.theme.secondary};
-    transform: translateY(-1px);
-  }
-`;
-
-const CasesList = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 2rem;
-  margin-bottom: 2rem;
-`;
-
-const ModernCaseCard = styled(Link)`
-  display: block;
-  background: ${props => props.theme.card};
-  border-radius: 16px;
-  /* CORRECTION : Remplacer overflow: hidden par overflow: visible pour permettre aux tooltips de dépasser */
-  overflow: visible;
-  box-shadow: 0 4px 20px ${props => props.theme.shadow};
-  transition: all 0.3s ease;
-  text-decoration: none;
-  border: 1px solid ${props => props.theme.border};
-  position: relative;
-
-  /* CORRECTION : Remettre la bande dégradée au-dessus de chaque carte */
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-    /* CORRECTION : S'assurer que la bande reste dans la carte avec overflow */
-    border-radius: 16px 16px 0 0;
-  }
-
-  &:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 40px ${props => props.theme.shadowMedium};
-    border-color: ${props => props.theme.primary};
-    /* CORRECTION : Augmenter le z-index au survol pour que les tooltips passent au-dessus */
-    z-index: 100;
-  }
-`;
-
-const CaseImage = styled.img`
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  background-color: ${props => props.theme.borderLight};
-  /* CORRECTION : Ajouter overflow: hidden seulement pour l'image */
-  border-radius: 16px 16px 0 0;
-`;
-
-const CaseContent = styled.div`
-  padding: 1.5rem;
-`;
-
-const CaseHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
-`;
-
-const CaseTitle = styled.h3`
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: ${props => props.theme.text};
-  margin: 0;
-  flex: 1;
-  line-height: 1.4;
-`;
-
-const PopularityBadge = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  background: linear-gradient(135deg, #ff6b6b, #feca57);
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  margin-left: 0.5rem;
-  white-space: nowrap;
-`;
-
-const AuthorInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.9rem;
-  margin-bottom: 1rem;
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-`;
-
-const StarRating = styled.div`
-  display: flex;
-  gap: 0.25rem;
-  margin-bottom: 1rem;
-`;
-
-const RatingSection = styled.div`
-  margin-bottom: 1rem;
-  padding: 0.5rem 0;
-`;
-
-const StatsContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  padding: 0.75rem 0;
-  border-top: 1px solid ${props => props.theme.borderLight};
-`;
-
-const StatItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.8rem;
-
-  svg {
-    width: 14px;
-    height: 14px;
-  }
-`;
-
-const ActionsContainer = styled.div`
-  display: flex;
-  gap: 0.5rem;
-  /* CORRECTION : Réduire le padding-bottom, juste assez pour le tooltip */
-  padding-bottom: 5px;
-  position: relative;
-`;
-
-// CORRECTION : Bouton d'action avec même couleur que PublicQuestionnairesPage
-const ActionButton = styled.button`
-  /* CORRECTION : Même couleur que PublicQuestionnairesPage (primary) */
-  background: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 0.5rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  width: 36px;
-  height: 36px;
-  position: relative;
-
-  &:hover {
-    /* CORRECTION : Même couleur de survol que PublicQuestionnairesPage */
-    background: ${props => props.theme.primaryHover};
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px ${props => props.theme.primary}40;
-  }
-
-  /* CORRECTION : Tooltip repositionné au-dessus avec espacement optimal */
-  &:hover::after {
-    content: "Ajouter à mes cas";
-    position: absolute;
-    bottom: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: ${props => props.theme.text};
-    color: ${props => props.theme.background};
-    padding: 0.5rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    white-space: nowrap;
-    z-index: 1000;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    border: 1px solid ${props => props.theme.border};
-  }
-
-  /* CORRECTION : Flèche du tooltip repositionnée */
-  &:hover::before {
-    content: '';
-    position: absolute;
-    bottom: calc(100% + 2px);
-    left: 50%;
-    transform: translateX(-50%);
-    border: 6px solid transparent;
-    border-top-color: ${props => props.theme.text};
-    z-index: 1001;
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-`;
-
-const TagsContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-`;
-
-// CORRECTION : Tags corrigés pour le mode sombre
-const ModernTag = styled.span`
-  padding: 0.25rem 0.75rem;
-  background-color: ${props => props.theme.tagBackground};
-  color: ${props => props.theme.tagText};
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  border: 1px solid ${props => props.theme.tagBackground};
-  
-  /* CORRECTION : S'assurer que les tags sont visibles en mode sombre */
-  ${props => props.theme.background === '#1a202c' && `
-    background-color: #4a5568;
-    color: #e2e8f0;
-    border-color: #4a5568;
-  `}
-`;
-
-const LoadingMessage = styled.div`
-  text-align: center;
-  padding: 3rem;
-  color: ${props => props.theme.textSecondary};
-  font-size: 1.1rem;
-`;
-
-const ErrorMessage = styled.div`
-  text-align: center;
-  padding: 2rem;
-  color: #ef4444;
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 12px;
-  margin: 2rem 0;
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 4rem 2rem;
-  color: ${props => props.theme.textSecondary};
-
-  h3 {
-    color: ${props => props.theme.text};
-    margin-bottom: 1rem;
-    font-size: 1.5rem;
-  }
-
-  p {
-    font-size: 1.1rem;
-    line-height: 1.6;
-  }
-`;
-
-const PaginationContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 3rem;
-  padding: 2rem;
-`;
-
-const PaginationButton = styled.button`
-  padding: 0.75rem 1.5rem;
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
-
-  &:hover:not(:disabled) {
-    background-color: ${props => props.theme.primaryDark || props.theme.primary};
-    transform: translateY(-2px);
-  }
-
-  &:disabled {
-    background-color: ${props => props.theme.textSecondary};
-    cursor: not-allowed;
-    transform: none;
-  }
-`;
-
-const PaginationInfo = styled.span`
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.9rem;
-`;
-
-// ==================== COMPOSANTS ====================
-
-function CaseCardComponent({ cas, showSpoilers, onCopyCase }) {
-  // NOUVEAU : États pour la gestion des notes
-  const [caseRating, setCaseRating] = useState({
-    averageRating: cas.averageRating || 0,
-    ratingsCount: cas.ratingsCount || 0,
-    userRating: cas.userRating || null
-  });
-
-  // NOUVEAU : Gestion de la mise à jour des notes
-  const handleRatingUpdate = (caseId, newRatingData) => {
-    setCaseRating(newRatingData);
+function PublicCaseCardComponent({ cas, showSpoilers, onCopyCase, caseRating, onRatingUpdate }) {
+  const getImageSrc = (cas) => {
+    if (cas.mainImage) return cas.mainImage;
+    if (cas.folders && cas.folders[0] && cas.folderMainImages && cas.folderMainImages[cas.folders[0]]) {
+      return cas.folderMainImages[cas.folders[0]];
+    }
+    return '/images/default.jpg';
   };
 
-  // NOUVEAU : Fonction pour déterminer si un cas est populaire
-  const isPopular = (cas) => {
-    const views = Number(cas?.views) || 0;
-    const copies = Number(cas?.copies) || 0;
-    return copies > 5 || views > 50;
-  };
-
-  // NOUVEAU : Gestion du clic sur la carte (éviter la navigation lors du clic sur notation)
-  const handleCardClick = (e) => {
-    // Ne rien faire ici, la navigation est gérée par le Link parent
-  };
+  const isPopular = cas.views > 100 || cas.copies > 20;
 
   return (
-    <ModernCaseCard to={`/radiology-viewer/${cas._id}`} onClick={handleCardClick}>
-      <CaseImage 
-        src={cas.mainImage || (cas.folders && cas.folders[0] && cas.folderMainImages && cas.folderMainImages[cas.folders[0]]) || '/images/default.jpg'}
-        alt={cas.title || 'Image sans titre'} 
+    <UnifiedCaseCard to={`/radiology-viewer/${cas._id}`}>
+      <UnifiedCaseImage 
+        src={getImageSrc(cas)}
+        alt={cas.title || 'Cas médical'}
+        loading="lazy"
+        onError={(e) => {
+          e.target.src = '/images/default.jpg';
+        }}
       />
-      <CaseContent>
-        <CaseHeader>
-          <CaseTitle>
-            {showSpoilers ? (cas.title || 'Sans titre') : '?'}
-          </CaseTitle>
-          {isPopular(cas) && (
-            <PopularityBadge>
+      <UnifiedCaseContent>
+        <UnifiedCaseHeader>
+          <UnifiedCaseTitle>
+            {showSpoilers ? (cas.title || 'Cas sans titre') : '?'}
+          </UnifiedCaseTitle>
+          {isPopular && (
+            <UnifiedPopularityBadge>
               <TrendingUp size={12} />
               Populaire
-            </PopularityBadge>
+            </UnifiedPopularityBadge>
           )}
-        </CaseHeader>
-
-        <AuthorInfo>
-          <User size={16} />
-          Par <strong>{cas.user?.username || 'Utilisateur'}</strong>
-        </AuthorInfo>
-
-        <StarRating>
+        </UnifiedCaseHeader>
+        
+        <UnifiedStarRating>
           {[...Array(5)].map((_, index) => (
             <Star
               key={index}
@@ -520,10 +91,16 @@ function CaseCardComponent({ cas, showSpoilers, onCopyCase }) {
               }}
             />
           ))}
-        </StarRating>
+        </UnifiedStarRating>
 
-        {/* NOUVEAU : Section de notation optimisée */}
-        <RatingSection>
+        {cas.author && (
+          <UnifiedAuthorInfo>
+            <User size={14} />
+            Par {cas.author.name || cas.author.email || 'Auteur anonyme'}
+          </UnifiedAuthorInfo>
+        )}
+
+        <UnifiedRatingSection>
           <div onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -534,119 +111,167 @@ function CaseCardComponent({ cas, showSpoilers, onCopyCase }) {
               averageRating={caseRating.averageRating}
               ratingsCount={caseRating.ratingsCount}
               userRating={caseRating.userRating}
-              onRatingUpdate={(newRatingData) => handleRatingUpdate(cas._id, newRatingData)}
+              onRatingUpdate={(newRatingData) => onRatingUpdate(cas._id, newRatingData)}
               size={14}
               compact={true}
             />
           </div>
-        </RatingSection>
+        </UnifiedRatingSection>
 
-        <StatsContainer>
+        <UnifiedStatsContainer>
           <div style={{ display: 'flex', gap: '1rem' }}>
-            <StatItem>
+            <UnifiedStatItem>
               <Eye size={14} />
               {Number(cas.views) || 0} vues
-            </StatItem>
-            <StatItem>
+            </UnifiedStatItem>
+            <UnifiedStatItem>
               <Copy size={14} />
               {Number(cas.copies) || 0} copies
-            </StatItem>
+            </UnifiedStatItem>
           </div>
           
-          <ActionsContainer>
-            {/* CORRECTION : Remplacer le bouton texte par une icône avec tooltip */}
-            <ActionButton
+          <UnifiedActionsContainer>
+            <UnifiedActionButton
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 onCopyCase(cas._id);
               }}
+              title="Copier ce cas dans vos cas personnels"
             >
               <Plus size={16} />
-            </ActionButton>
-          </ActionsContainer>
-        </StatsContainer>
+            </UnifiedActionButton>
+          </UnifiedActionsContainer>
+        </UnifiedStatsContainer>
 
-        <TagsContainer>
-          {cas.tags && cas.tags.map(tag => (
-            <ModernTag key={tag}>{tag}</ModernTag>
-          ))}
-        </TagsContainer>
-      </CaseContent>
-    </ModernCaseCard>
+        {cas.tags && cas.tags.length > 0 && (
+          <UnifiedTagsContainer>
+            {cas.tags.map((tag, index) => (
+              <UnifiedTag key={index}>{tag}</UnifiedTag>
+            ))}
+          </UnifiedTagsContainer>
+        )}
+      </UnifiedCaseContent>
+    </UnifiedCaseCard>
   );
 }
 
 // ==================== COMPOSANT PRINCIPAL ====================
 
 function PublicCasesPage() {
+  // États
   const [cases, setCases] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [difficultyFilter, setDifficultyFilter] = useState([1,2,3,4,5]);
-  const [showSpoilers, setShowSpoilers] = useState(false);
-  const [showDifficultyDropdown, setShowDifficultyDropdown] = useState(false);
-  const [showTagDropdown, setShowTagDropdown] = useState(false);
-  const [tagFilter, setTagFilter] = useState([]);
-  const [allTags, setAllTags] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [filteredCases, setFilteredCases] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [difficultyFilter, setDifficultyFilter] = useState([1, 2, 3, 4, 5]);
+  const [tagFilter, setTagFilter] = useState([]);
+  const [allTags, setAllTags] = useState([]);
+  const [showSpoilers, setShowSpoilers] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [caseRatings, setCaseRatings] = useState({});
 
+  // États des dropdowns
+  const [showDifficultyDropdown, setShowDifficultyDropdown] = useState(false);
+  const [showTagDropdown, setShowTagDropdown] = useState(false);
+
+  // Récupération des cas publics
   const fetchCases = useCallback(async (page = 1) => {
     setIsLoading(true);
     setError(null);
     try {
       const response = await axios.get(`/cases/public?page=${page}&limit=12`);
-      if (response.data) {
-        // MODIFIÉ : Nettoyer les données pour inclure les informations de notation
+      
+      if (response.data && Array.isArray(response.data.cases)) {
         const cleanedCases = response.data.cases.map(cas => ({
           ...cas,
           averageRating: cas.averageRating ? Number(cas.averageRating) : 0,
           ratingsCount: cas.ratingsCount ? Number(cas.ratingsCount) : 0,
-          userRating: cas.userRating || null,
-          views: cas.views || cas.stats?.views || 0,
-          copies: cas.copies || cas.stats?.copies || 0,
+          views: Number(cas.views) || 0,
+          copies: Number(cas.copies) || 0
         }));
-        
+
         setCases(cleanedCases);
-        setCurrentPage(response.data.currentPage);
-        setTotalPages(response.data.totalPages);
-        const tags = new Set(response.data.cases.flatMap(cas => cas.tags || []));
-        setAllTags(Array.from(tags));
+        setCurrentPage(response.data.currentPage || page);
+        setTotalPages(response.data.totalPages || 1);
+        
+        // Initialisation des ratings
+        const ratings = {};
+        cleanedCases.forEach(cas => {
+          ratings[cas._id] = {
+            averageRating: cas.averageRating || 0,
+            ratingsCount: cas.ratingsCount || 0,
+            userRating: cas.userRating || 0
+          };
+        });
+        setCaseRatings(ratings);
+        
+        // Extraction des tags uniques
+        const uniqueTags = [...new Set(
+          cleanedCases
+            .filter(cas => cas.tags && Array.isArray(cas.tags))
+            .flatMap(cas => cas.tags)
+        )];
+        setAllTags(uniqueTags);
+      } else {
+        setCases([]);
+        setTotalPages(1);
+        setAllTags([]);
       }
     } catch (error) {
-      console.error('Erreur lors de la récupération des cas publics:', error);
-      setError("Impossible de charger les cas publics. Veuillez réessayer plus tard.");
+      console.error('Erreur lors du chargement des cas publics:', error);
+      setError('Erreur lors du chargement des cas publics. Veuillez réessayer.');
+      setCases([]);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
+  // Effet initial
   useEffect(() => {
-    fetchCases();
-  }, [fetchCases]);
+    fetchCases(currentPage);
+  }, [fetchCases, currentPage]);
 
-  // NOUVEAU : Fonction pour copier un cas
-  const handleCopyCase = async (caseId) => {
-    try {
-      await axios.post(`/cases/${caseId}/copy`);
-      alert('✅ Cas copié dans vos cas personnels !');
-    } catch (err) {
-      console.error('Erreur lors de la copie:', err);
-      alert('❌ Erreur lors de la copie du cas');
+  // Filtrage des cas
+  useEffect(() => {
+    let filtered = cases;
+
+    // Filtre par terme de recherche
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(cas => 
+        (cas.title && cas.title.toLowerCase().includes(term)) ||
+        (cas.tags && cas.tags.some(tag => tag.toLowerCase().includes(term))) ||
+        (cas.author && (
+          (cas.author.name && cas.author.name.toLowerCase().includes(term)) ||
+          (cas.author.email && cas.author.email.toLowerCase().includes(term))
+        ))
+      );
     }
-  };
 
-  const filteredCases = cases.filter(cas => 
-    cas.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    difficultyFilter.includes(cas.difficulty) &&
-    (tagFilter.length === 0 || tagFilter.some(tag => cas.tags && cas.tags.includes(tag)))
-  );
+    // Filtre par difficulté
+    if (difficultyFilter.length > 0) {
+      filtered = filtered.filter(cas => 
+        difficultyFilter.includes(cas.difficulty || 1)
+      );
+    }
 
+    // Filtre par tags
+    if (tagFilter.length > 0) {
+      filtered = filtered.filter(cas =>
+        cas.tags && cas.tags.some(tag => tagFilter.includes(tag))
+      );
+    }
+
+    setFilteredCases(filtered);
+  }, [cases, searchTerm, difficultyFilter, tagFilter]);
+
+  // Gestionnaires d'événements
   const handleDifficultyChange = (difficulty) => {
-    setDifficultyFilter(prev => 
-      prev.includes(difficulty) 
+    setDifficultyFilter(prev =>
+      prev.includes(difficulty)
         ? prev.filter(d => d !== difficulty)
         : [...prev, difficulty]
     );
@@ -660,122 +285,195 @@ function PublicCasesPage() {
     );
   };
 
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+      fetchCases(newPage);
+    }
+  };
+
+  const handleCopyCase = async (caseId) => {
+    try {
+      await axios.post(`/cases/${caseId}/copy`);
+      alert('Cas copié avec succès dans vos cas personnels !');
+      
+      // Mise à jour du compteur de copies
+      setCases(prevCases => 
+        prevCases.map(cas => 
+          cas._id === caseId 
+            ? { ...cas, copies: (Number(cas.copies) || 0) + 1 }
+            : cas
+        )
+      );
+    } catch (error) {
+      console.error('Erreur lors de la copie du cas:', error);
+      alert('Erreur lors de la copie du cas. Veuillez réessayer.');
+    }
+  };
+
+  const handleRatingUpdate = (caseId, newRatingData) => {
+    setCaseRatings(prev => ({
+      ...prev,
+      [caseId]: newRatingData
+    }));
+  };
+
+  // Fermeture des dropdowns au clic extérieur
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setShowDifficultyDropdown(false);
+      setShowTagDropdown(false);
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
+  // Rendu du composant
   return (
-    <ModernPageContainer>
-      <HeaderSection>
-        <MainTitle>📂 Cas Cliniques Publics</MainTitle>
-      </HeaderSection>
+    <UnifiedPageContainer>
+      <PageHeader>
+        <UnifiedPageTitle>Cas Cliniques Publics</UnifiedPageTitle>
+        <PageSubtitle>
+          Découvrez et copiez les cas partagés par la communauté
+        </PageSubtitle>
+      </PageHeader>
 
-      <SearchBar
-        type="text"
-        placeholder="🔍 Rechercher un cas clinique..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
+      <SearchAndFiltersSection>
+        <UnifiedSearchInput
+          type="text"
+          placeholder="Rechercher dans les cas publics (titre, tags, auteur...)"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
 
-      <FilterContainer>
-        <FilterGroup>
-          <FilterButton
-            active={difficultyFilter.length !== 5}
-            isOpen={showDifficultyDropdown}
-            onClick={() => setShowDifficultyDropdown(!showDifficultyDropdown)}
-          >
-            ⭐ Difficulté
-            <ChevronDown />
-          </FilterButton>
-          {showDifficultyDropdown && (
-            <DropdownContent>
-              {[1, 2, 3, 4, 5].map(difficulty => (
-                <DropdownItem key={difficulty}>
-                  <DropdownCheckbox
-                    type="checkbox"
-                    checked={difficultyFilter.includes(difficulty)}
-                    onChange={() => handleDifficultyChange(difficulty)}
-                  />
-                  {difficulty} étoile{difficulty > 1 ? 's' : ''}
-                </DropdownItem>
-              ))}
-            </DropdownContent>
+        <UnifiedFilterContainer>
+          {/* Filtre par difficulté */}
+          <UnifiedFilterSection>
+            <UnifiedFilterButton
+              active={difficultyFilter.length < 5}
+              isOpen={showDifficultyDropdown}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDifficultyDropdown(!showDifficultyDropdown);
+                setShowTagDropdown(false);
+              }}
+            >
+              ⭐ Difficulté
+              <ChevronDown />
+            </UnifiedFilterButton>
+            {showDifficultyDropdown && (
+              <UnifiedDropdownContent>
+                {[1, 2, 3, 4, 5].map(difficulty => (
+                  <UnifiedDropdownItem key={difficulty}>
+                    <UnifiedDropdownCheckbox
+                      type="checkbox"
+                      checked={difficultyFilter.includes(difficulty)}
+                      onChange={() => handleDifficultyChange(difficulty)}
+                    />
+                    {difficulty} étoile{difficulty > 1 ? 's' : ''}
+                  </UnifiedDropdownItem>
+                ))}
+              </UnifiedDropdownContent>
+            )}
+          </UnifiedFilterSection>
+
+          {/* Filtre par tags */}
+          {allTags.length > 0 && (
+            <UnifiedFilterSection>
+              <UnifiedFilterButton
+                active={tagFilter.length > 0}
+                isOpen={showTagDropdown}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowTagDropdown(!showTagDropdown);
+                  setShowDifficultyDropdown(false);
+                }}
+              >
+                🏷️ Tags
+                <ChevronDown />
+              </UnifiedFilterButton>
+              {showTagDropdown && (
+                <UnifiedDropdownContent>
+                  {allTags.map(tag => (
+                    <UnifiedDropdownItem key={tag}>
+                      <UnifiedDropdownCheckbox
+                        type="checkbox"
+                        checked={tagFilter.includes(tag)}
+                        onChange={() => handleTagChange(tag)}
+                      />
+                      {tag}
+                    </UnifiedDropdownItem>
+                  ))}
+                </UnifiedDropdownContent>
+              )}
+            </UnifiedFilterSection>
           )}
-        </FilterGroup>
 
-        <FilterGroup>
-          <FilterButton
-            active={tagFilter.length > 0}
-            isOpen={showTagDropdown}
-            onClick={() => setShowTagDropdown(!showTagDropdown)}
+          {/* Bouton spoiler */}
+          <UnifiedSpoilerButton 
+            onClick={() => setShowSpoilers(!showSpoilers)}
           >
-            🏷️ Tags
-            <ChevronDown />
-          </FilterButton>
-          {showTagDropdown && (
-            <DropdownContent>
-              {allTags.map(tag => (
-                <DropdownItem key={tag}>
-                  <DropdownCheckbox
-                    type="checkbox"
-                    checked={tagFilter.includes(tag)}
-                    onChange={() => handleTagChange(tag)}
-                  />
-                  {tag}
-                </DropdownItem>
-              ))}
-            </DropdownContent>
-          )}
-        </FilterGroup>
+            {showSpoilers ? <EyeOff size={16} /> : <Eye size={16} />}
+            {showSpoilers ? 'Masquer titres' : 'Voir titres'}
+          </UnifiedSpoilerButton>
+        </UnifiedFilterContainer>
+      </SearchAndFiltersSection>
 
-        <SpoilerButton onClick={() => setShowSpoilers(!showSpoilers)}>
-          {showSpoilers ? <EyeOff size={16} /> : <Eye size={16} />}
-          {showSpoilers ? 'Masquer titres' : 'Voir titres'}
-        </SpoilerButton>
-      </FilterContainer>
-
+      {/* Contenu principal */}
       {isLoading ? (
-        <LoadingMessage>
+        <UnifiedLoadingMessage>
           Chargement des cas publics...
-        </LoadingMessage>
+        </UnifiedLoadingMessage>
       ) : error ? (
-        <ErrorMessage>
+        <UnifiedErrorMessage>
           {error}
-        </ErrorMessage>
+        </UnifiedErrorMessage>
       ) : filteredCases.length === 0 ? (
-        <EmptyState>
+        <UnifiedEmptyState>
           <h3>Aucun cas public trouvé</h3>
           <p>Essayez de modifier vos critères de recherche ou de filtrage.</p>
-        </EmptyState>
+        </UnifiedEmptyState>
       ) : (
-        <CasesList>
-          {filteredCases.map((cas) => (
-            <CaseCardComponent 
-              key={cas._id} 
-              cas={cas} 
-              showSpoilers={showSpoilers} 
-              onCopyCase={handleCopyCase}
-            />
-          ))}
-        </CasesList>
-      )}
+        <>
+          <UnifiedCasesList>
+            {filteredCases.map((cas) => (
+              <PublicCaseCardComponent 
+                key={cas._id} 
+                cas={cas} 
+                showSpoilers={showSpoilers}
+                onCopyCase={handleCopyCase}
+                caseRating={caseRatings[cas._id] || { averageRating: 0, ratingsCount: 0, userRating: 0 }}
+                onRatingUpdate={handleRatingUpdate}
+              />
+            ))}
+          </UnifiedCasesList>
 
-      {totalPages > 1 && (
-        <PaginationContainer>
-          <PaginationButton 
-            onClick={() => fetchCases(currentPage - 1)} 
-            disabled={currentPage === 1}
-          >
-            ← Précédent
-          </PaginationButton>
-          <PaginationInfo>
-            Page {currentPage} sur {totalPages} • {filteredCases.length} cas
-          </PaginationInfo>
-          <PaginationButton 
-            onClick={() => fetchCases(currentPage + 1)} 
-            disabled={currentPage === totalPages}
-          >
-            Suivant →
-          </PaginationButton>
-        </PaginationContainer>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <UnifiedPaginationContainer>
+              <UnifiedPaginationButton 
+                onClick={() => handlePageChange(currentPage - 1)} 
+                disabled={currentPage === 1}
+              >
+                ← Précédent
+              </UnifiedPaginationButton>
+              
+              <UnifiedPaginationInfo>
+                Page {currentPage} sur {totalPages} • {filteredCases.length} cas
+              </UnifiedPaginationInfo>
+              
+              <UnifiedPaginationButton 
+                onClick={() => handlePageChange(currentPage + 1)} 
+                disabled={currentPage === totalPages}
+              >
+                Suivant →
+              </UnifiedPaginationButton>
+            </UnifiedPaginationContainer>
+          )}
+        </>
       )}
-    </ModernPageContainer>
+    </UnifiedPageContainer>
   );
 }
 

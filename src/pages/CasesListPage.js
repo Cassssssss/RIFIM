@@ -1,404 +1,183 @@
+// CasesListPage.js - VERSION AVEC SHARED COMPONENTS UNIFIÉS
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
 import { Star, ChevronDown, Eye, EyeOff } from 'lucide-react';
-import styled from 'styled-components';
-import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/CasesPage.styles';
 
-// ==================== STYLED COMPONENTS HARMONISÉS AVEC LE THÈME ====================
+// Import des composants partagés unifiés
+import {
+  UnifiedPageContainer,
+  PageHeader,
+  UnifiedPageTitle,
+  PageSubtitle,
+  SearchAndFiltersSection,
+  UnifiedSearchInput,
+  UnifiedFilterContainer,
+  UnifiedFilterSection,
+  UnifiedFilterButton,
+  UnifiedSpoilerButton,
+  UnifiedDropdownContent,
+  UnifiedDropdownItem,
+  UnifiedDropdownCheckbox,
+  UnifiedCasesList,
+  UnifiedCaseCard,
+  UnifiedCaseImage,
+  UnifiedCaseContent,
+  UnifiedCaseTitle,
+  UnifiedStarRating,
+  UnifiedTagsContainer,
+  UnifiedTag,
+  UnifiedPaginationContainer,
+  UnifiedPaginationButton,
+  UnifiedPaginationInfo,
+  UnifiedEmptyState,
+  UnifiedLoadingMessage,
+  UnifiedErrorMessage
+} from '../components/shared/SharedCasesComponents';
 
-const ModernPageContainer = styled.div`
-  padding: 2rem;
-  background: ${props => props.theme.background};
-  color: ${props => props.theme.text};
-  min-height: calc(100vh - 60px);
-
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
-`;
-
-const ModernTitle = styled.h1`
-  font-size: 2.5rem;
-  margin-bottom: 2rem;
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-align: center;
-  font-weight: 700;
-  text-shadow: 0 2px 4px ${props => props.theme.shadow};
-`;
-
-const ModernSearchInput = styled.input`
-  width: 100%;
-  padding: 1rem 1.5rem;
-  margin-bottom: 2rem;
-  border: 2px solid ${props => props.theme.border};
-  border-radius: 12px;
-  font-size: 1rem;
-  background-color: ${props => props.theme.card};
-  color: ${props => props.theme.text};
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px ${props => props.theme.shadow};
-
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.primary};
-    box-shadow: 0 0 0 3px ${props => props.theme.primary}20, 0 4px 12px ${props => props.theme.shadow};
-    transform: translateY(-1px);
-  }
-
-  &::placeholder {
-    color: ${props => props.theme.textSecondary || props.theme.textLight};
-  }
-`;
-
-const FilterContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 3rem;
-  flex-wrap: wrap;
-
-  @media (max-width: 768px) {
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-`;
-
-const FilterSection = styled.div`
-  position: relative;
-`;
-
-const FilterButton = styled.button`
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.primaryHover || props.theme.secondary});
-  color: ${props => props.theme.buttonText || 'white'};
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px ${props => props.theme.primary}30;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px ${props => props.theme.primary}40;
-  }
-
-  svg {
-    transition: transform 0.3s ease;
-  }
-
-  &[data-open="true"] svg {
-    transform: rotate(180deg);
-  }
-`;
-
-const SpoilerButton = styled.button`
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, ${props => props.theme.accent || '#f59e0b'}, #d97706);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px ${props => props.theme.accent || '#f59e0b'}30;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px ${props => props.theme.accent || '#f59e0b'}40;
-  }
-`;
-
-const Dropdown = styled.div`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  margin-top: 0.5rem;
-  background-color: ${props => props.theme.card};
-  border: 2px solid ${props => props.theme.border};
-  border-radius: 12px;
-  padding: 1rem;
-  z-index: 10;
-  box-shadow: 0 8px 25px ${props => props.theme.shadow};
-  min-width: 200px;
-  max-height: 250px;
-  overflow-y: auto;
-
-  /* Scrollbar styling */
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: ${props => props.theme.background};
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: ${props => props.theme.primary};
-    border-radius: 3px;
-  }
-`;
-
-const DropdownOption = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-  color: ${props => props.theme.text};
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  font-weight: 500;
-
-  &:hover {
-    background-color: ${props => props.theme.hover};
-    transform: translateX(2px);
-  }
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-
-  input {
-    width: 18px;
-    height: 18px;
-    accent-color: ${props => props.theme.primary};
-    cursor: pointer;
-  }
-`;
-
-const CasesList = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 2rem;
-  margin-bottom: 2rem;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-`;
-
-const ModernCaseCard = styled(Link)`
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 16px;
-  text-decoration: none;
-  color: ${props => props.theme.text};
-  background-color: ${props => props.theme.card};
-  transition: all 0.3s ease;
-  overflow: hidden;
-  position: relative;
-  box-shadow: 0 4px 15px ${props => props.theme.shadow};
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  }
-
-  &:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 12px 30px ${props => props.theme.shadow};
-    border-color: ${props => props.theme.primary}50;
-  }
-`;
-
-const CaseImage = styled.img`
-  width: 100%;
-  height: 220px;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-
-  ${ModernCaseCard}:hover & {
-    transform: scale(1.05);
-  }
-`;
-
-const CaseContent = styled.div`
-  padding: 1.5rem;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-`;
-
-const CaseTitle = styled.h2`
-  font-size: 1.3rem;
-  margin-bottom: 1rem;
-  text-align: center;
-  font-weight: 600;
-  color: ${props => props.theme.primary};
-  line-height: 1.3;
-`;
-
-const StarRating = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-bottom: 1rem;
-`;
-
-const TagsContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: auto;
-  justify-content: center;
-`;
-
-const ModernTag = styled.span`
-  background: linear-gradient(135deg, ${props => props.theme.tagBackground || props.theme.primary}, ${props => props.theme.primary});
-  color: ${props => props.theme.tagText || 'white'};
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  box-shadow: 0 1px 3px ${props => props.theme.shadow};
-`;
-
-const LoadingMessage = styled.div`
-  text-align: center;
-  padding: 3rem;
-  font-size: 1.2rem;
-  color: ${props => props.theme.textSecondary};
-  background-color: ${props => props.theme.card};
-  border-radius: 12px;
-  box-shadow: 0 4px 15px ${props => props.theme.shadow};
-`;
-
-const ErrorMessage = styled.div`
-  text-align: center;
-  padding: 2rem;
-  color: ${props => props.theme.error || '#ef4444'};
-  font-size: 1.1rem;
-  background-color: ${props => props.theme.errorLight || '#fef2f2'};
-  border: 2px solid ${props => props.theme.error || '#ef4444'}30;
-  border-radius: 12px;
-  margin: 2rem 0;
-  font-weight: 500;
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 4rem 2rem;
-  background-color: ${props => props.theme.card};
-  border-radius: 16px;
-  box-shadow: 0 4px 15px ${props => props.theme.shadow};
-  margin: 2rem 0;
-
-  h3 {
-    color: ${props => props.theme.primary};
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-  }
-
-  p {
-    color: ${props => props.theme.textSecondary};
-    font-size: 1.1rem;
-  }
-`;
-
-// ==================== COMPOSANT PRINCIPAL ====================
+// ==================== COMPOSANT CARTE CAS ====================
 
 function CaseCardComponent({ cas, showSpoilers }) {
+  const getImageSrc = (cas) => {
+    if (cas.mainImage) return cas.mainImage;
+    if (cas.folders && cas.folders[0] && cas.folderMainImages && cas.folderMainImages[cas.folders[0]]) {
+      return cas.folderMainImages[cas.folders[0]];
+    }
+    return '/images/default.jpg';
+  };
+
   return (
-    <ModernCaseCard to={`/radiology-viewer/${cas._id}`}>
-      <CaseImage 
-        src={cas.mainImage ? cas.mainImage : (cas.folders && cas.folders[0] && cas.folderMainImages && cas.folderMainImages[cas.folders[0]]) || '/images/default.jpg'}
-        alt={cas.title}
+    <UnifiedCaseCard to={`/radiology-viewer/${cas._id}`}>
+      <UnifiedCaseImage 
+        src={getImageSrc(cas)}
+        alt={cas.title || 'Cas médical'}
         loading="lazy"
+        onError={(e) => {
+          e.target.src = '/images/default.jpg';
+        }}
       />
-      <CaseContent>
-        <CaseTitle>{showSpoilers ? cas.title : '?'}</CaseTitle>
-        <StarRating>
+      <UnifiedCaseContent>
+        <UnifiedCaseTitle>
+          {showSpoilers ? (cas.title || 'Cas sans titre') : '?'}
+        </UnifiedCaseTitle>
+        
+        <UnifiedStarRating>
           {[...Array(5)].map((_, index) => (
             <Star
               key={index}
               size={22}
-              fill={index < cas.difficulty ? "gold" : "transparent"}
-              stroke={index < cas.difficulty ? "gold" : "#d1d5db"}
+              fill={index < (cas.difficulty || 0) ? "gold" : "transparent"}
+              stroke={index < (cas.difficulty || 0) ? "gold" : "#d1d5db"}
               style={{ 
-                filter: index < cas.difficulty ? 'drop-shadow(0 1px 2px rgba(255, 215, 0, 0.3))' : 'none'
+                filter: index < (cas.difficulty || 0) ? 'drop-shadow(0 1px 2px rgba(255, 215, 0, 0.3))' : 'none'
               }}
             />
           ))}
-        </StarRating>
-        <TagsContainer>
-          {cas.tags && cas.tags.map(tag => (
-            <ModernTag key={tag}>{tag}</ModernTag>
-          ))}
-        </TagsContainer>
-      </CaseContent>
-    </ModernCaseCard>
+        </UnifiedStarRating>
+        
+        {cas.tags && cas.tags.length > 0 && (
+          <UnifiedTagsContainer>
+            {cas.tags.map((tag, index) => (
+              <UnifiedTag key={index}>{tag}</UnifiedTag>
+            ))}
+          </UnifiedTagsContainer>
+        )}
+      </UnifiedCaseContent>
+    </UnifiedCaseCard>
   );
 }
 
+// ==================== COMPOSANT PRINCIPAL ====================
+
 function CasesListPage() {
+  // États
   const [cases, setCases] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [difficultyFilter, setDifficultyFilter] = useState([1,2,3,4,5]);
-  const [showSpoilers, setShowSpoilers] = useState(false);
-  const [showDifficultyDropdown, setShowDifficultyDropdown] = useState(false);
-  const [showTagDropdown, setShowTagDropdown] = useState(false);
-  const [tagFilter, setTagFilter] = useState([]);
-  const [allTags, setAllTags] = useState([]);
+  const [filteredCases, setFilteredCases] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [difficultyFilter, setDifficultyFilter] = useState([1, 2, 3, 4, 5]);
+  const [tagFilter, setTagFilter] = useState([]);
+  const [allTags, setAllTags] = useState([]);
+  const [showSpoilers, setShowSpoilers] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // États des dropdowns
+  const [showDifficultyDropdown, setShowDifficultyDropdown] = useState(false);
+  const [showTagDropdown, setShowTagDropdown] = useState(false);
+
+  // Récupération des cas
   const fetchCases = useCallback(async (page = 1) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`/cases?page=${page}&limit=12`);
-      setCases(response.data.cases);
-      setCurrentPage(response.data.currentPage);
-      setTotalPages(response.data.totalPages);
-      const tags = new Set(response.data.cases.flatMap(cas => cas.tags || []));
-      setAllTags(Array.from(tags));
+      const response = await axios.get(`/cases/my?page=${page}&limit=12`);
+      
+      if (response.data && Array.isArray(response.data.cases)) {
+        setCases(response.data.cases);
+        setCurrentPage(response.data.currentPage || page);
+        setTotalPages(response.data.totalPages || 1);
+        
+        // Extraction des tags uniques
+        const uniqueTags = [...new Set(
+          response.data.cases
+            .filter(cas => cas.tags && Array.isArray(cas.tags))
+            .flatMap(cas => cas.tags)
+        )];
+        setAllTags(uniqueTags);
+      } else {
+        setCases([]);
+        setTotalPages(1);
+        setAllTags([]);
+      }
     } catch (error) {
-      console.error('Erreur lors de la récupération des cas:', error);
-      setError('Impossible de charger les cas. Veuillez réessayer plus tard.');
+      console.error('Erreur lors du chargement des cas:', error);
+      setError('Erreur lors du chargement des cas. Veuillez réessayer.');
+      setCases([]);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
+  // Effet initial
   useEffect(() => {
-    fetchCases(1);
-  }, [fetchCases]);
+    fetchCases(currentPage);
+  }, [fetchCases, currentPage]);
 
-  const filteredCases = cases.filter(cas => 
-    cas.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    difficultyFilter.includes(cas.difficulty) &&
-    (tagFilter.length === 0 || tagFilter.some(tag => cas.tags && cas.tags.includes(tag)))
-  );
+  // Filtrage des cas
+  useEffect(() => {
+    let filtered = cases;
 
+    // Filtre par terme de recherche
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(cas => 
+        (cas.title && cas.title.toLowerCase().includes(term)) ||
+        (cas.tags && cas.tags.some(tag => tag.toLowerCase().includes(term)))
+      );
+    }
+
+    // Filtre par difficulté
+    if (difficultyFilter.length > 0) {
+      filtered = filtered.filter(cas => 
+        difficultyFilter.includes(cas.difficulty || 1)
+      );
+    }
+
+    // Filtre par tags
+    if (tagFilter.length > 0) {
+      filtered = filtered.filter(cas =>
+        cas.tags && cas.tags.some(tag => tagFilter.includes(tag))
+      );
+    }
+
+    setFilteredCases(filtered);
+  }, [cases, searchTerm, difficultyFilter, tagFilter]);
+
+  // Gestionnaires d'événements
   const handleDifficultyChange = (difficulty) => {
-    setDifficultyFilter(prev => 
-      prev.includes(difficulty) 
+    setDifficultyFilter(prev =>
+      prev.includes(difficulty)
         ? prev.filter(d => d !== difficulty)
         : [...prev, difficulty]
     );
@@ -412,7 +191,14 @@ function CasesListPage() {
     );
   };
 
-  // Fermer les dropdowns quand on clique ailleurs
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+      fetchCases(newPage);
+    }
+  };
+
+  // Fermeture des dropdowns au clic extérieur
   useEffect(() => {
     const handleClickOutside = () => {
       setShowDifficultyDropdown(false);
@@ -423,116 +209,153 @@ function CasesListPage() {
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
-  const handleFilterClick = (e, setter) => {
-    e.stopPropagation();
-    setter(prev => !prev);
-  };
-
+  // Rendu du composant
   return (
-    <ModernPageContainer>
-      <ModernTitle>🗂️ Liste des cas</ModernTitle>
-      
-      <ModernSearchInput
-        type="text"
-        placeholder="🔍 Rechercher un cas..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
+    <UnifiedPageContainer>
+      <PageHeader>
+        <UnifiedPageTitle>Mes Cas Cliniques</UnifiedPageTitle>
+        <PageSubtitle>
+          Gérez et consultez vos cas cliniques personnels
+        </PageSubtitle>
+      </PageHeader>
 
-      <FilterContainer>
-        <FilterSection>
-          <FilterButton 
-            onClick={(e) => handleFilterClick(e, setShowDifficultyDropdown)}
-            data-open={showDifficultyDropdown}
-          >
-            ⭐ Difficulté ({difficultyFilter.length}/5) <ChevronDown size={16} />
-          </FilterButton>
-          {showDifficultyDropdown && (
-            <Dropdown onClick={(e) => e.stopPropagation()}>
-              {[1,2,3,4,5].map(difficulty => (
-                <DropdownOption key={difficulty}>
-                  <input 
-                    type="checkbox"
-                    checked={difficultyFilter.includes(difficulty)}
-                    onChange={() => handleDifficultyChange(difficulty)}
-                  />
-                  <span>{difficulty} étoile{difficulty > 1 ? 's' : ''}</span>
-                </DropdownOption>
-              ))}
-            </Dropdown>
+      <SearchAndFiltersSection>
+        <UnifiedSearchInput
+          type="text"
+          placeholder="Rechercher dans vos cas (titre, tags...)"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+
+        <UnifiedFilterContainer>
+          {/* Filtre par difficulté */}
+          <UnifiedFilterSection>
+            <UnifiedFilterButton
+              active={difficultyFilter.length < 5}
+              isOpen={showDifficultyDropdown}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDifficultyDropdown(!showDifficultyDropdown);
+                setShowTagDropdown(false);
+              }}
+            >
+              ⭐ Difficulté
+              <ChevronDown />
+            </UnifiedFilterButton>
+            {showDifficultyDropdown && (
+              <UnifiedDropdownContent>
+                {[1, 2, 3, 4, 5].map(difficulty => (
+                  <UnifiedDropdownItem key={difficulty}>
+                    <UnifiedDropdownCheckbox
+                      type="checkbox"
+                      checked={difficultyFilter.includes(difficulty)}
+                      onChange={() => handleDifficultyChange(difficulty)}
+                    />
+                    {difficulty} étoile{difficulty > 1 ? 's' : ''}
+                  </UnifiedDropdownItem>
+                ))}
+              </UnifiedDropdownContent>
+            )}
+          </UnifiedFilterSection>
+
+          {/* Filtre par tags */}
+          {allTags.length > 0 && (
+            <UnifiedFilterSection>
+              <UnifiedFilterButton
+                active={tagFilter.length > 0}
+                isOpen={showTagDropdown}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowTagDropdown(!showTagDropdown);
+                  setShowDifficultyDropdown(false);
+                }}
+              >
+                🏷️ Tags
+                <ChevronDown />
+              </UnifiedFilterButton>
+              {showTagDropdown && (
+                <UnifiedDropdownContent>
+                  {allTags.map(tag => (
+                    <UnifiedDropdownItem key={tag}>
+                      <UnifiedDropdownCheckbox
+                        type="checkbox"
+                        checked={tagFilter.includes(tag)}
+                        onChange={() => handleTagChange(tag)}
+                      />
+                      {tag}
+                    </UnifiedDropdownItem>
+                  ))}
+                </UnifiedDropdownContent>
+              )}
+            </UnifiedFilterSection>
           )}
-        </FilterSection>
 
-        <FilterSection>
-          <FilterButton 
-            onClick={(e) => handleFilterClick(e, setShowTagDropdown)}
-            data-open={showTagDropdown}
+          {/* Bouton spoiler */}
+          <UnifiedSpoilerButton 
+            onClick={() => setShowSpoilers(!showSpoilers)}
           >
-            🏷️ Tags ({tagFilter.length}/{allTags.length}) <ChevronDown size={16} />
-          </FilterButton>
-          {showTagDropdown && (
-            <Dropdown onClick={(e) => e.stopPropagation()}>
-              {allTags.map(tag => (
-                <DropdownOption key={tag}>
-                  <input 
-                    type="checkbox"
-                    checked={tagFilter.includes(tag)}
-                    onChange={() => handleTagChange(tag)}
-                  />
-                  <span>{tag}</span>
-                </DropdownOption>
-              ))}
-            </Dropdown>
-          )}
-        </FilterSection>
+            {showSpoilers ? <EyeOff size={16} /> : <Eye size={16} />}
+            {showSpoilers ? 'Masquer titres' : 'Voir titres'}
+          </UnifiedSpoilerButton>
+        </UnifiedFilterContainer>
+      </SearchAndFiltersSection>
 
-        <SpoilerButton onClick={() => setShowSpoilers(!showSpoilers)}>
-          {showSpoilers ? <EyeOff size={16} /> : <Eye size={16} />}
-          {showSpoilers ? 'Masquer titres' : 'Voir titres'}
-        </SpoilerButton>
-      </FilterContainer>
-
+      {/* Contenu principal */}
       {isLoading ? (
-        <LoadingMessage>
-          🔄 Chargement des cas...
-        </LoadingMessage>
+        <UnifiedLoadingMessage>
+          Chargement de vos cas...
+        </UnifiedLoadingMessage>
       ) : error ? (
-        <ErrorMessage>
-          ⚠️ {error}
-        </ErrorMessage>
+        <UnifiedErrorMessage>
+          {error}
+        </UnifiedErrorMessage>
       ) : filteredCases.length === 0 ? (
-        <EmptyState>
+        <UnifiedEmptyState>
           <h3>Aucun cas trouvé</h3>
-          <p>Essayez de modifier vos critères de recherche ou de filtrage.</p>
-        </EmptyState>
+          <p>
+            {cases.length === 0 
+              ? "Vous n'avez pas encore créé de cas. Commencez par créer votre premier cas !" 
+              : "Aucun cas ne correspond à vos critères de recherche. Essayez de modifier vos filtres."
+            }
+          </p>
+        </UnifiedEmptyState>
       ) : (
-        <CasesList>
-          {filteredCases.map((cas) => (
-            <CaseCardComponent key={cas._id} cas={cas} showSpoilers={showSpoilers} />
-          ))}
-        </CasesList>
-      )}
+        <>
+          <UnifiedCasesList>
+            {filteredCases.map((cas) => (
+              <CaseCardComponent 
+                key={cas._id} 
+                cas={cas} 
+                showSpoilers={showSpoilers}
+              />
+            ))}
+          </UnifiedCasesList>
 
-      {totalPages > 1 && (
-        <PaginationContainer>
-          <PaginationButton 
-            onClick={() => fetchCases(currentPage - 1)} 
-            disabled={currentPage === 1}
-          >
-            ← Précédent
-          </PaginationButton>
-          <PaginationInfo>
-            Page {currentPage} sur {totalPages} • {filteredCases.length} cas
-          </PaginationInfo>
-          <PaginationButton 
-            onClick={() => fetchCases(currentPage + 1)} 
-            disabled={currentPage === totalPages}
-          >
-            Suivant →
-          </PaginationButton>
-        </PaginationContainer>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <UnifiedPaginationContainer>
+              <UnifiedPaginationButton 
+                onClick={() => handlePageChange(currentPage - 1)} 
+                disabled={currentPage === 1}
+              >
+                ← Précédent
+              </UnifiedPaginationButton>
+              
+              <UnifiedPaginationInfo>
+                Page {currentPage} sur {totalPages} • {filteredCases.length} cas
+              </UnifiedPaginationInfo>
+              
+              <UnifiedPaginationButton 
+                onClick={() => handlePageChange(currentPage + 1)} 
+                disabled={currentPage === totalPages}
+              >
+                Suivant →
+              </UnifiedPaginationButton>
+            </UnifiedPaginationContainer>
+          )}
+        </>
       )}
-    </ModernPageContainer>
+    </UnifiedPageContainer>
   );
 }
 
