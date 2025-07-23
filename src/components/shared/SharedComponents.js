@@ -551,3 +551,38 @@ export const ErrorMessage = styled.div`
   border-radius: 8px;
   margin: 1rem 0;
 `;
+
+// ==================== COMPOSANTS CARTE PARTAGÉS ====================
+
+export const CaseCard = styled(Link)`
+  display: block;
+  background-color: ${props => props.theme.surface || props.theme.card};
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  text-decoration: none;
+  color: inherit;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+`;
+
+export const CaseImage = styled.img`
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+`;
+
+export const CaseContent = styled.div`
+  padding: 1rem;
+`;
+
+export const CaseTitle = styled.h2`
+  color: ${props => props.theme.text};
+  text-align: center;
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+`;
