@@ -171,7 +171,8 @@ export const UnifiedDropdownContent = styled.div`
   box-shadow: 0 8px 25px ${props => props.theme.shadow};
 `;
 
-export const UnifiedDropdownItem = styled.label`
+// CORRECTION MAJEURE : UnifiedDropdownItem doit empêcher la propagation ET garder le menu ouvert
+export const UnifiedDropdownItem = styled.div`
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -179,6 +180,7 @@ export const UnifiedDropdownItem = styled.label`
   cursor: pointer;
   transition: background-color 0.2s ease;
   font-weight: 500;
+  user-select: none;
 
   &:hover {
     background-color: ${props => props.theme.hover};
@@ -189,10 +191,13 @@ export const UnifiedDropdownItem = styled.label`
   }
 `;
 
+// CORRECTION MAJEURE : UnifiedDropdownCheckbox avec gestion d'événements améliorée
 export const UnifiedDropdownCheckbox = styled.input`
   width: 16px;
   height: 16px;
   accent-color: ${props => props.theme.primary};
+  cursor: pointer;
+  flex-shrink: 0;
 `;
 
 // ==================== LISTE ET CARTES DES CAS ====================
@@ -215,24 +220,15 @@ export const UnifiedCaseCard = styled(Link)`
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 15px ${props => props.theme.shadow};
-  text-decoration: none;
   transition: all 0.3s ease;
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  }
+  text-decoration: none;
+  color: inherit;
+  display: block;
 
   &:hover {
-    transform: translateY(-4px);
+    transform: translateY(-5px);
     box-shadow: 0 8px 30px ${props => props.theme.shadow};
-    border-color: ${props => props.theme.primary};
+    border-color: ${props => props.theme.primary}50;
   }
 `;
 
@@ -240,7 +236,7 @@ export const UnifiedCaseImage = styled.img`
   width: 100%;
   height: 200px;
   object-fit: cover;
-  background-color: ${props => props.theme.backgroundSecondary};
+  border-bottom: 1px solid ${props => props.theme.border};
 `;
 
 export const UnifiedCaseContent = styled.div`
@@ -255,32 +251,31 @@ export const UnifiedCaseHeader = styled.div`
 `;
 
 export const UnifiedCaseTitle = styled.h3`
-  color: ${props => props.theme.text};
+  margin: 0 0 1rem 0;
   font-size: 1.2rem;
   font-weight: 600;
-  margin: 0 0 0.5rem 0;
+  color: ${props => props.theme.text};
   line-height: 1.4;
-  flex: 1;
-  text-align: center;
 `;
 
 export const UnifiedStarRating = styled.div`
   display: flex;
   gap: 2px;
   margin-bottom: 1rem;
+  align-items: center;
 `;
 
 export const UnifiedPopularityBadge = styled.div`
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
   color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
 `;
 
 export const UnifiedAuthorInfo = styled.div`
@@ -288,38 +283,25 @@ export const UnifiedAuthorInfo = styled.div`
   align-items: center;
   gap: 0.5rem;
   color: ${props => props.theme.textSecondary};
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   margin-bottom: 1rem;
-
-  svg {
-    color: ${props => props.theme.primary};
-  }
 `;
-
-// ==================== STATS ET ACTIONS ====================
 
 export const UnifiedStatsContainer = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 1rem 0;
-  padding: 1rem;
-  background-color: ${props => props.theme.backgroundSecondary};
-  border-radius: 12px;
-  border: 1px solid ${props => props.theme.border};
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid ${props => props.theme.border};
 `;
 
 export const UnifiedStatItem = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
+  font-size: 0.8rem;
   color: ${props => props.theme.textSecondary};
-  font-size: 0.85rem;
-  font-weight: 500;
-
-  svg {
-    color: ${props => props.theme.primary};
-  }
 `;
 
 export const UnifiedActionsContainer = styled.div`
@@ -328,7 +310,7 @@ export const UnifiedActionsContainer = styled.div`
 `;
 
 export const UnifiedActionButton = styled.button`
-  background-color: ${props => props.theme.primary};
+  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
   color: white;
   border: none;
   border-radius: 8px;
@@ -337,33 +319,18 @@ export const UnifiedActionButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-  width: 36px;
-  height: 36px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px ${props => props.theme.shadow};
 
   &:hover {
-    background-color: ${props => props.theme.secondary};
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px ${props => props.theme.shadow};
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px ${props => props.theme.shadow};
   }
 `;
-
-// ==================== RATING SECTION ====================
 
 export const UnifiedRatingSection = styled.div`
   margin: 1rem 0;
-  padding: 0.75rem;
-  background-color: ${props => props.theme.backgroundSecondary};
-  border-radius: 8px;
-  border: 1px solid ${props => props.theme.border};
 `;
-
-// ==================== TAGS ====================
 
 export const UnifiedTagsContainer = styled.div`
   display: flex;
@@ -373,16 +340,13 @@ export const UnifiedTagsContainer = styled.div`
 `;
 
 export const UnifiedTag = styled.span`
-  background-color: ${props => props.theme.primary};
-  color: white;
+  background: linear-gradient(135deg, ${props => props.theme.primary}20, ${props => props.theme.secondary}20);
+  color: ${props => props.theme.primary};
+  border: 1px solid ${props => props.theme.primary}30;
   padding: 0.25rem 0.75rem;
-  border-radius: 20px;
+  border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  opacity: 0.9;
 `;
 
 // ==================== PAGINATION ====================
@@ -391,199 +355,98 @@ export const UnifiedPaginationContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
   margin-top: 3rem;
-  padding: 2rem;
+  padding: 1.5rem;
+  background-color: ${props => props.theme.card};
+  border-radius: 16px;
+  box-shadow: 0 4px 15px ${props => props.theme.shadow};
+  border: 1px solid ${props => props.theme.border};
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+  }
 `;
 
 export const UnifiedPaginationButton = styled.button`
-  padding: 0.75rem 1.5rem;
-  background-color: ${props => props.theme.primary};
+  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
   color: white;
   border: none;
-  border-radius: 12px;
-  cursor: pointer;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
   font-weight: 500;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px ${props => props.theme.shadow};
 
   &:hover:not(:disabled) {
-    background-color: ${props => props.theme.secondary};
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px ${props => props.theme.shadow};
+    box-shadow: 0 4px 15px ${props => props.theme.shadow};
   }
 
   &:disabled {
-    background-color: ${props => props.theme.textSecondary};
+    opacity: 0.5;
     cursor: not-allowed;
-    opacity: 0.6;
     transform: none;
+    background: ${props => props.theme.disabled || '#9ca3af'};
+    box-shadow: none;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
   }
 `;
 
-export const UnifiedPaginationInfo = styled.span`
-  color: ${props => props.theme.textSecondary};
+export const UnifiedPaginationInfo = styled.div`
   font-weight: 500;
-  font-size: 0.95rem;
+  color: ${props => props.theme.text};
+  text-align: center;
 `;
 
-// ==================== ÉTATS VIDES ET MESSAGES ====================
+// ==================== ÉTATS SPÉCIAUX ====================
 
 export const UnifiedEmptyState = styled.div`
   text-align: center;
   padding: 4rem 2rem;
   background-color: ${props => props.theme.card};
   border-radius: 16px;
-  box-shadow: 0 4px 15px ${props => props.theme.shadow};
+  border: 2px dashed ${props => props.theme.border};
   margin: 2rem 0;
-  border: 1px solid ${props => props.theme.border};
 
   h3 {
-    color: ${props => props.theme.primary};
-    font-size: 1.5rem;
+    color: ${props => props.theme.text};
     margin-bottom: 1rem;
+    font-size: 1.3rem;
     font-weight: 600;
   }
 
   p {
     color: ${props => props.theme.textSecondary};
-    font-size: 1.1rem;
+    font-size: 1rem;
     line-height: 1.6;
+    margin: 0;
   }
 `;
 
 export const UnifiedLoadingMessage = styled.div`
   text-align: center;
   padding: 4rem 2rem;
-  color: ${props => props.theme.textSecondary};
   font-size: 1.1rem;
+  color: ${props => props.theme.textSecondary};
   background-color: ${props => props.theme.card};
   border-radius: 16px;
   box-shadow: 0 4px 15px ${props => props.theme.shadow};
   margin: 2rem 0;
-  border: 1px solid ${props => props.theme.border};
 `;
 
 export const UnifiedErrorMessage = styled.div`
   text-align: center;
   padding: 2rem;
-  color: #dc2626;
-  background-color: #fef2f2;
-  border-radius: 12px;
+  background-color: ${props => props.theme.error || '#fee2e2'};
+  color: ${props => props.theme.errorText || '#dc2626'};
+  border-radius: 16px;
+  border: 1px solid ${props => props.theme.errorBorder || '#fecaca'};
   margin: 2rem 0;
-  border: 1px solid #fecaca;
   font-weight: 500;
-`;
-
-// ==================== COMPOSANTS POUR LA GESTION PRIVÉE ====================
-
-export const UnifiedSectionContainer = styled.div`
-  position: relative;
-  overflow: hidden;
-  background-color: ${props => props.theme.card};
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 12px;
-  box-shadow: 0 4px 20px ${props => props.theme.shadow};
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  }
-`;
-
-export const UnifiedSectionTitle = styled.h2`
-  color: ${props => props.theme.text};
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-`;
-
-// ==================== BOUTONS D'ACTION SPÉCIALISÉS ====================
-
-export const UnifiedCreateButton = styled(Link)`
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  color: white;
-  padding: 1rem 2rem;
-  border-radius: 12px;
-  text-decoration: none;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 15px ${props => props.theme.shadow};
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px ${props => props.theme.shadow};
-    opacity: 0.95;
-  }
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-`;
-
-export const UnifiedEditButton = styled(Link)`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.2s ease;
-  font-size: 0.85rem;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px ${props => props.theme.shadow};
-    background-color: ${props => props.theme.secondary};
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-`;
-
-export const UnifiedDeleteButton = styled.button`
-  background-color: #dc2626;
-  color: white;
-  padding: 0.5rem;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  width: 36px;
-  height: 36px;
-
-  &:hover {
-    background-color: #b91c1c;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
 `;

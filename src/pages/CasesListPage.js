@@ -1,4 +1,4 @@
-// CasesListPage.js - VERSION AVEC SHARED COMPONENTS UNIFIÉS
+// CasesListPage.js - VERSION AVEC SHARED COMPONENTS UNIFIÉS ET CORRECTIONS
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from '../utils/axiosConfig';
 import { Star, ChevronDown, Eye, EyeOff } from 'lucide-react';
@@ -174,8 +174,11 @@ function CasesListPage() {
     setFilteredCases(filtered);
   }, [cases, searchTerm, difficultyFilter, tagFilter]);
 
-  // Gestionnaires d'événements
-  const handleDifficultyChange = (difficulty) => {
+  // CORRECTION MAJEURE : Gestionnaires d'événements améliorés
+  const handleDifficultyChange = (difficulty, event) => {
+    // Empêcher la propagation pour éviter la fermeture du dropdown
+    event.stopPropagation();
+    
     setDifficultyFilter(prev =>
       prev.includes(difficulty)
         ? prev.filter(d => d !== difficulty)
@@ -183,7 +186,10 @@ function CasesListPage() {
     );
   };
 
-  const handleTagChange = (tag) => {
+  const handleTagChange = (tag, event) => {
+    // Empêcher la propagation pour éviter la fermeture du dropdown
+    event.stopPropagation();
+    
     setTagFilter(prev =>
       prev.includes(tag)
         ? prev.filter(t => t !== tag)
@@ -198,11 +204,15 @@ function CasesListPage() {
     }
   };
 
-  // Fermeture des dropdowns au clic extérieur
+  // CORRECTION MAJEURE : Gestion améliorée des clics extérieurs
   useEffect(() => {
-    const handleClickOutside = () => {
-      setShowDifficultyDropdown(false);
-      setShowTagDropdown(false);
+    const handleClickOutside = (event) => {
+      // Vérifier si le clic est à l'extérieur des dropdowns
+      const isClickInsideDropdown = event.target.closest('[data-dropdown]');
+      if (!isClickInsideDropdown) {
+        setShowDifficultyDropdown(false);
+        setShowTagDropdown(false);
+      }
     };
 
     document.addEventListener('click', handleClickOutside);
@@ -214,6 +224,9 @@ function CasesListPage() {
     <UnifiedPageContainer>
       <PageHeader>
         <UnifiedPageTitle>Mes Cas Cliniques</UnifiedPageTitle>
+        <PageSubtitle>
+          Gérez et consultez vos cas cliniques personnels
+        </PageSubtitle>
       </PageHeader>
 
       <SearchAndFiltersSection>
@@ -226,7 +239,7 @@ function CasesListPage() {
 
         <UnifiedFilterContainer>
           {/* Filtre par difficulté */}
-          <UnifiedFilterSection>
+          <UnifiedFilterSection data-dropdown>
             <UnifiedFilterButton
               active={difficultyFilter.length < 5}
               isOpen={showDifficultyDropdown}
@@ -242,11 +255,15 @@ function CasesListPage() {
             {showDifficultyDropdown && (
               <UnifiedDropdownContent>
                 {[1, 2, 3, 4, 5].map(difficulty => (
-                  <UnifiedDropdownItem key={difficulty}>
+                  <UnifiedDropdownItem 
+                    key={difficulty}
+                    onClick={(e) => handleDifficultyChange(difficulty, e)}
+                  >
                     <UnifiedDropdownCheckbox
                       type="checkbox"
                       checked={difficultyFilter.includes(difficulty)}
-                      onChange={() => handleDifficultyChange(difficulty)}
+                      onChange={(e) => handleDifficultyChange(difficulty, e)}
+                      onClick={(e) => e.stopPropagation()}
                     />
                     {difficulty} étoile{difficulty > 1 ? 's' : ''}
                   </UnifiedDropdownItem>
@@ -257,7 +274,7 @@ function CasesListPage() {
 
           {/* Filtre par tags */}
           {allTags.length > 0 && (
-            <UnifiedFilterSection>
+            <UnifiedFilterSection data-dropdown>
               <UnifiedFilterButton
                 active={tagFilter.length > 0}
                 isOpen={showTagDropdown}
@@ -273,11 +290,15 @@ function CasesListPage() {
               {showTagDropdown && (
                 <UnifiedDropdownContent>
                   {allTags.map(tag => (
-                    <UnifiedDropdownItem key={tag}>
+                    <UnifiedDropdownItem 
+                      key={tag}
+                      onClick={(e) => handleTagChange(tag, e)}
+                    >
                       <UnifiedDropdownCheckbox
                         type="checkbox"
                         checked={tagFilter.includes(tag)}
-                        onChange={() => handleTagChange(tag)}
+                        onChange={(e) => handleTagChange(tag, e)}
+                        onClick={(e) => e.stopPropagation()}
                       />
                       {tag}
                     </UnifiedDropdownItem>
