@@ -1597,3 +1597,622 @@ export const ModalCloseButton = styled.button`
     }
   }
 `;
+
+// ==================== COMPOSANTS TAGS ET FILTRES ==================== 
+
+export const TagsContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    gap: 0.375rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+  }
+`;
+
+export const Tag = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  background-color: ${props => props.theme.primary}15;
+  color: ${props => props.theme.primary};
+  border: 1px solid ${props => props.theme.primary}30;
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    padding: 0.375rem 0.875rem;
+    font-size: 0.8rem;
+    min-height: 32px; /* Taille tactile pour les tags cliquables */
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    min-height: 28px;
+  }
+`;
+
+export const RemovableTag = styled(Tag)`
+  cursor: pointer;
+  padding-right: 0.5rem;
+  
+  &:hover {
+    background-color: ${props => props.theme.primary}25;
+    
+    /* MOBILE ADAPTATIONS - Pas d'effet hover */
+    @media (max-width: 768px) {
+      background-color: ${props => props.theme.primary}15;
+    }
+  }
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    /* Amélioration tactile */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    
+    &:active {
+      background-color: ${props => props.theme.primary}25;
+    }
+  }
+  
+  svg {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    
+    /* MOBILE ADAPTATIONS */
+    @media (max-width: 768px) {
+      width: 16px;
+      height: 16px;
+    }
+  }
+`;
+
+export const FilterContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: ${props => props.theme.card};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 12px;
+  box-shadow: 0 2px 8px ${props => props.theme.shadow};
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border-radius: 8px;
+  }
+  
+  @media (max-width: 480px) {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    border-radius: 6px;
+  }
+`;
+
+export const FilterGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 200px;
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    min-width: unset;
+    width: 100%;
+  }
+`;
+
+export const FilterLabel = styled.label`
+  font-weight: 600;
+  color: ${props => props.theme.text};
+  font-size: 0.875rem;
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
+  }
+`;
+
+// ==================== COMPOSANTS SEARCH ET SORT ==================== 
+
+export const SearchContainer = styled.div`
+  position: relative;
+  flex: 1;
+  min-width: 300px;
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    min-width: unset;
+    width: 100%;
+  }
+`;
+
+export const SearchInput = styled.input`
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 3rem;
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 8px;
+  background-color: ${props => props.theme.card};
+  color: ${props => props.theme.text};
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary};
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}33;
+  }
+  
+  &::placeholder {
+    color: ${props => props.theme.textLight};
+    opacity: 0.7;
+  }
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    padding: 1rem 1rem 1rem 3.5rem;
+    font-size: 1rem;
+    min-height: 48px;
+    border-radius: 6px;
+    font-size: 16px; /* Empêche le zoom sur iOS */
+    
+    &:focus {
+      box-shadow: 0 0 0 2px ${props => props.theme.primary}66;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.875rem 0.875rem 0.875rem 3rem;
+    min-height: 44px;
+  }
+`;
+
+export const SearchIcon = styled.div`
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: ${props => props.theme.textLight};
+  pointer-events: none;
+  
+  svg {
+    width: 18px;
+    height: 18px;
+    
+    /* MOBILE ADAPTATIONS */
+    @media (max-width: 768px) {
+      width: 20px;
+      height: 20px;
+    }
+  }
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    left: 1.25rem;
+  }
+  
+  @media (max-width: 480px) {
+    left: 1rem;
+  }
+`;
+
+export const SortContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 0.5rem;
+  }
+`;
+
+export const SortLabel = styled.label`
+  font-weight: 500;
+  color: ${props => props.theme.text};
+  font-size: 0.875rem;
+  white-space: nowrap;
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    text-align: center;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
+  }
+`;
+
+// ==================== COMPOSANTS STATISTIQUES ==================== 
+
+export const StatsContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+`;
+
+export const StatCard = styled.div`
+  background-color: ${props => props.theme.card};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 2px 8px ${props => props.theme.shadow};
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px ${props => props.theme.shadow};
+    
+    /* MOBILE ADAPTATIONS - Pas d'effet hover */
+    @media (max-width: 768px) {
+      transform: none;
+      box-shadow: 0 2px 8px ${props => props.theme.shadow};
+    }
+  }
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    padding: 1rem;
+    border-radius: 8px;
+    
+    &:active {
+      transform: scale(0.98);
+      box-shadow: 0 1px 4px ${props => props.theme.shadow};
+    }
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.75rem;
+    border-radius: 6px;
+  }
+`;
+
+export const StatNumber = styled.div`
+  font-size: 2rem;
+  font-weight: 700;
+  color: ${props => props.theme.primary};
+  margin-bottom: 0.5rem;
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    font-size: 1.75rem;
+    margin-bottom: 0.375rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+  }
+`;
+
+export const StatLabel = styled.div`
+  font-size: 0.875rem;
+  color: ${props => props.theme.textSecondary};
+  font-weight: 500;
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
+  }
+`;
+
+// ==================== COMPOSANTS TOOLBAR ET ACTIONS ==================== 
+
+export const Toolbar = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: ${props => props.theme.card};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 12px;
+  box-shadow: 0 1px 3px ${props => props.theme.shadow};
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+  }
+  
+  @media (max-width: 480px) {
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    border-radius: 6px;
+  }
+`;
+
+export const ToolbarLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 0.5rem;
+  }
+`;
+
+export const ToolbarRight = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 0.5rem;
+  }
+`;
+
+export const ViewModeContainer = styled.div`
+  display: flex;
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: ${props => props.theme.card};
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    border-radius: 6px;
+    width: 100%;
+  }
+`;
+
+export const ViewModeButton = styled.button`
+  padding: 0.5rem 1rem;
+  border: none;
+  background-color: ${props => props.active ? props.theme.primary : 'transparent'};
+  color: ${props => props.active ? 'white' : props.theme.text};
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-weight: 500;
+  
+  &:hover {
+    background-color: ${props => props.active ? props.theme.primaryHover : props.theme.backgroundSecondary};
+    
+    /* MOBILE ADAPTATIONS - Pas d'effet hover */
+    @media (max-width: 768px) {
+      background-color: ${props => props.active ? props.theme.primary : 'transparent'};
+    }
+  }
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    min-height: 44px;
+    flex: 1; /* Répartit équitablement l'espace */
+    
+    /* Amélioration tactile */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    
+    &:active {
+      background-color: ${props => props.active ? props.theme.primaryHover : props.theme.backgroundSecondary};
+    }
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.9rem;
+    min-height: 40px;
+  }
+  
+  svg {
+    width: 16px;
+    height: 16px;
+    
+    /* MOBILE ADAPTATIONS */
+    @media (max-width: 768px) {
+      width: 18px;
+      height: 18px;
+    }
+  }
+`;
+
+// ==================== COMPOSANTS D'ÉTAT ET FEEDBACK ==================== 
+
+export const LoadingState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: ${props => props.theme.textSecondary};
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    padding: 3rem 1rem;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 2rem 0.75rem;
+  }
+`;
+
+export const EmptyStateContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: ${props => props.theme.textSecondary};
+  
+  svg {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+    
+    /* MOBILE ADAPTATIONS */
+    @media (max-width: 768px) {
+      width: 56px;
+      height: 56px;
+      margin-bottom: 0.75rem;
+    }
+    
+    @media (max-width: 480px) {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 0.5rem;
+    }
+  }
+  
+  h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: ${props => props.theme.text};
+    
+    /* MOBILE ADAPTATIONS */
+    @media (max-width: 768px) {
+      font-size: 1.125rem;
+    }
+    
+    @media (max-width: 480px) {
+      font-size: 1rem;
+    }
+  }
+  
+  p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    max-width: 400px;
+    
+    /* MOBILE ADAPTATIONS */
+    @media (max-width: 768px) {
+      font-size: 1rem;
+      max-width: 300px;
+    }
+    
+    @media (max-width: 480px) {
+      font-size: 0.9rem;
+      max-width: 250px;
+    }
+  }
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    padding: 3rem 1rem;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 2rem 0.75rem;
+  }
+`;
+
+export const Toast = styled.div`
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  background-color: ${props => {
+    switch (props.type) {
+      case 'success': return '#10b981';
+      case 'error': return '#ef4444';
+      case 'warning': return '#f59e0b';
+      default: return props.theme.primary;
+    }
+  }};
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  animation: slideInRight 0.3s ease-out;
+  
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    top: 1rem;
+    right: 1rem;
+    left: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    
+    /* Safe area pour les appareils avec encoche */
+    top: calc(1rem + env(safe-area-inset-top, 0));
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+  }
+`;
