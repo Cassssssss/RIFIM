@@ -759,3 +759,5 @@ const GlobalStyle = createGlobalStyle`
     text-decoration: underline;
   }
 `;
+
+export default GlobalStyle;
