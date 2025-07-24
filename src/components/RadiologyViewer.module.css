@@ -1,111 +1,205 @@
-/* ==================== VERSION MOBILE SIMPLE ET FONCTIONNELLE ==================== */
+/* ==================== VARIABLES CSS POUR LE THÈME ==================== */
+/* Ces variables sont automatiquement définies par le thème dans theme.js */
 
-/* RESET ET BASE */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-/* ==================== CONTAINER PRINCIPAL ==================== */
+/* ==================== BASE CONTAINER - UNIVERSEL ==================== */
 .container {
-  /* MOBILE FIRST - Simple et efficace */
-  width: 100vw;
-  height: 100vh;
-  height: 100dvh; /* Dynamic viewport height pour mobile */
+  position: fixed;
+  width: 100%;
+  height: calc(100vh - 60px);
+  left: 0;
+  top: 70px;
   display: flex;
   flex-direction: column;
-  background-color: #1a1a1a;
-  color: white;
+  background: linear-gradient(135deg, rgb(var(--color-background)) 0%, rgb(var(--color-surface)) 100%);
   overflow: hidden;
-  position: fixed;
-  top: 0;
-  left: 0;
+  color: rgb(var(--color-text));
   z-index: 100;
+  
+  /* Mobile responsive - AVEC toutes les fonctionnalités */
+  @media (max-width: 768px) {
+    height: calc(100vh - 70px);
+    height: calc(100dvh - 70px); /* Support viewport dynamique */
+    top: 70px;
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+    
+    /* FIX CRITIQUE : Scroll autorisé mais contrôlé */
+    overflow: hidden; /* Garde le contrôle du container */
+    touch-action: manipulation; /* Optimise les interactions */
+  }
 }
 
-/* ==================== CONTENT ZONE ==================== */
+/* ==================== CONTENT ET LAYOUT - UNIVERSEL ==================== */
 .content {
   flex: 1;
   display: flex;
   flex-direction: column;
+  background-color: rgb(var(--color-background));
+  overflow: hidden;
+  margin: 0;
+  padding: 10px 0 70px 0;
   min-height: 0;
-  padding: 10px;
-  gap: 10px;
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    padding: 5px 0 60px 0;
+    overflow: hidden; /* Garde le contrôle */
+  }
 }
 
-/* ==================== LAYOUT PRINCIPAL ==================== */
 .layout {
   flex: 1;
   display: flex;
-  gap: 10px;
+  height: calc(100% - 10px);
+  background-color: rgb(var(--color-background));
+  margin: 0;
+  padding: 0;
   min-height: 0;
+  gap: 0.5rem;
   
-  /* MOBILE : Layout vertical simple */
+  /* Mobile responsive */
   @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 8px;
+    flex-direction: row; /* Garde le layout horizontal */
+    gap: 0.25rem;
+    height: calc(100% - 5px);
+    padding: 0 0.25rem;
+    overflow: hidden; /* Contrôle strict */
   }
 }
 
-/* ==================== DOSSIERS (SIDEBAR) ==================== */
+/* ==================== FOLDER GRID - RESPONSIVE INTELLIGENT ==================== */
 .folderGrid {
-  /* DESKTOP */
   width: 120px;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  background-color: #2a2a2a;
-  border-radius: 8px;
-  padding: 8px;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  margin: 0;
   overflow-y: auto;
+  background-color: rgb(var(--color-surface));
+  border: 1px solid rgb(var(--color-border));
+  border-radius: 12px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   
-  /* MOBILE : Horizontal scrollable */
-  @media (max-width: 768px) {
-    width: 100%;
-    height: 80px;
-    flex-direction: row;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding: 8px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+  /* Scrollbar personnalisée */
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--color-primary)) rgb(var(--color-surface));
+  
+  &::-webkit-scrollbar {
+    width: 6px;
   }
   
-  /* Cache les scrollbars */
-  &::-webkit-scrollbar {
-    display: none;
+  &::-webkit-scrollbar-track {
+    background: rgb(var(--color-surface));
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgb(var(--color-primary));
+    border-radius: 3px;
+  }
+  
+  /* Mobile responsive - GARDE les fonctionnalités */
+  @media (max-width: 768px) {
+    width: 80px; /* Plus étroit mais visible */
+    padding: 0.25rem;
+    gap: 0.25rem;
+    border-radius: 8px;
+    
+    /* FIX CRITIQUE : Scroll vertical fonctionnel */
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y; /* Autorise SEULEMENT scroll vertical */
+    
+    /* Scrollbar mobile fine mais visible */
+    scrollbar-width: thin;
+    &::-webkit-scrollbar {
+      width: 3px;
+      display: block;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: rgb(var(--color-primary));
+      border-radius: 2px;
+    }
+  }
+  
+  /* Très petits écrans */
+  @media (max-width: 480px) {
+    width: 70px;
+    padding: 0.2rem;
   }
 }
 
 .folderThumbnail {
-  /* DESKTOP */
   width: 100%;
-  height: 100px;
-  border-radius: 6px;
+  aspect-ratio: 1;
+  min-height: 90px;
+  max-height: 90px;
+  border-radius: 8px;
   overflow: hidden;
-  background-color: #3a3a3a;
-  border: 2px solid #4a4a4a;
-  cursor: pointer;
   position: relative;
+  margin-bottom: 0.25rem;
   flex-shrink: 0;
+  background-color: rgb(var(--color-background));
+  cursor: move;
+  transition: all 0.3s ease;
+  border: 2px solid rgb(var(--color-border));
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   
-  /* MOBILE : Carré compact */
-  @media (max-width: 768px) {
-    width: 70px;
-    height: 70px;
-    margin-right: 8px;
+  &:hover {
+    transform: scale(1.05);
+    border-color: rgb(var(--color-primary));
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
   
-  /* État actif */
-  &.active {
-    border-color: #4f9eff;
-    box-shadow: 0 0 0 2px rgba(79, 158, 255, 0.3);
-  }
-  
-  /* Touch feedback */
   &:active {
-    transform: scale(0.95);
+    transform: scale(0.98);
+  }
+  
+  &.active {
+    border-color: rgb(var(--color-accent));
+    background-color: rgba(var(--color-accent), 0.1);
+  }
+  
+  /* Mobile responsive - GARDE toutes les fonctionnalités */
+  @media (max-width: 768px) {
+    min-height: 65px;
+    max-height: 65px;
+    border-radius: 6px;
+    cursor: pointer;
+    
+    /* FIX CRITIQUE : Zone tactile optimisée mais fonctionnelle */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    
+    /* Garde les effets visuels mais optimisés */
+    &:hover {
+      transform: scale(1.02); /* Réduit mais présent */
+      border-color: rgb(var(--color-primary));
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+    
+    &.active {
+      border-color: rgb(var(--color-accent));
+      box-shadow: 0 0 0 2px rgb(var(--color-accent));
+    }
+    
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+  
+  /* Très petits écrans */
+  @media (max-width: 480px) {
+    min-height: 55px;
+    max-height: 55px;
+    border-radius: 4px;
   }
 }
 
@@ -113,6 +207,18 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: opacity 0.3s ease;
+  pointer-events: none; /* Évite les conflits */
+  
+  &:hover {
+    opacity: 0.9;
+  }
+  
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    pointer-events: none;
+    will-change: auto;
+  }
 }
 
 .folderThumbnailLabel {
@@ -120,188 +226,400 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
   color: white;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
-  padding: 4px;
+  padding: 6px 4px;
   text-align: center;
-  text-overflow: ellipsis;
-  overflow: hidden;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  pointer-events: none; /* Évite les conflits tactiles */
   
+  /* Mobile responsive */
   @media (max-width: 768px) {
     font-size: 9px;
-    padding: 2px;
+    padding: 3px 2px;
+  }
+  
+  /* Très petits écrans */
+  @media (max-width: 480px) {
+    font-size: 8px;
+    padding: 2px 1px;
   }
 }
 
-/* ==================== VIEWER PRINCIPAL ==================== */
+/* ==================== MAIN VIEWER - UNIVERSEL ==================== */
 .mainViewer {
   flex: 1;
   display: flex;
-  background-color: #000;
-  border-radius: 8px;
-  position: relative;
-  overflow: hidden;
-  min-height: 0;
-  
-  @media (max-width: 768px) {
-    /* MOBILE : Prend tout l'espace disponible */
-    min-height: 300px;
-    flex: 1;
-  }
-}
-
-/* ==================== VIEWERS ==================== */
-.singleViewer,
-.viewer,
-.viewerHalf,
-.viewerQuarter,
-.viewerThird {
-  width: 100%;
   height: 100%;
-  display: flex;
+  margin: 0;
+  padding: 0;
   justify-content: center;
   align-items: center;
-  background-color: #000;
-  position: relative;
+  background-color: rgb(var(--color-background));
   overflow: hidden;
-  border-radius: 6px;
+  border-radius: 12px;
   
   @media (max-width: 768px) {
-    /* MOBILE : Mode simple uniquement */
-    min-height: 250px;
+    border-radius: 8px;
+    
+    /* FIX CRITIQUE : Container d'images fonctionnel */
+    overflow: hidden; /* Contrôle strict du container */
   }
 }
 
+/* ==================== DUAL VIEWER - RESPONSIVE ==================== */
 .dualViewer {
   display: flex;
   width: 100%;
   height: 100%;
-  gap: 8px;
+  gap: 0.5rem;
+  padding: 0;
+  margin: 0;
   
   @media (max-width: 768px) {
-    /* MOBILE : Retour au mode simple */
-    display: none;
+    flex-direction: column; /* Vertical sur mobile */
+    gap: 0.25rem;
   }
 }
 
-.tripleViewer,
+/* ==================== TRIPLE VIEWER - RESPONSIVE ==================== */
+.tripleViewer {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+  gap: 0.5rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column; /* Vertical sur mobile */
+    gap: 0.25rem;
+  }
+}
+
+.tripleTop {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  gap: 0.5rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
+
+.tripleBottom {
+  width: 33.333%;
+  height: 100%;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 33.333%;
+  }
+}
+
+/* ==================== QUAD VIEWER - RESPONSIVE ==================== */
 .quadViewer {
-  @media (max-width: 768px) {
-    /* MOBILE : Modes complexes désactivés */
-    display: none;
-  }
-}
-
-/* ==================== IMAGE ==================== */
-.image {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  user-select: none;
-  touch-action: pan-x pan-y pinch-zoom;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  gap: 0.5rem;
   
   @media (max-width: 768px) {
-    /* MOBILE : Image responsive */
-    width: auto;
-    height: auto;
-    min-height: 200px;
+    gap: 0.25rem;
   }
 }
 
-/* ==================== LABEL DOSSIER ==================== */
+.quadTop, .quadBottom {
+  display: flex;
+  width: 100%;
+  height: 50%;
+  gap: 0.5rem;
+  
+  @media (max-width: 768px) {
+    gap: 0.25rem;
+  }
+}
+
+.viewerQuarter {
+  width: 50%;
+  height: 100%;
+  
+  @media (max-width: 768px) {
+    width: 50%; /* Garde la grille 2x2 sur mobile */
+  }
+}
+
+.viewerThird {
+  width: 33.333%;
+  height: 100%;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    height: 33.333%;
+  }
+}
+
+/* ==================== VIEWER TYPES - UNIVERSELS ==================== */
+.viewer, .viewerHalf, .singleViewer, .viewerQuarter, .viewerThird {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  border: 2px solid rgb(var(--color-border));
+  background-color: #000000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  height: 100%;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  will-change: scroll-position;
+  contain: layout style paint;
+  
+  &:hover {
+    border-color: rgb(var(--color-primary));
+  }
+  
+  /* Mobile responsive - GARDE toutes fonctionnalités */
+  @media (max-width: 768px) {
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    
+    /* FIX CRITIQUE : Interactions tactiles optimisées */
+    touch-action: pan-x pan-y pinch-zoom; /* Autorise pan et zoom */
+    -webkit-overflow-scrolling: touch;
+    
+    /* Garde hover mais optimisé */
+    &:hover {
+      border-color: rgb(var(--color-primary));
+    }
+  }
+}
+
+.viewerHalf {
+  flex: 1;
+  width: 50%;
+  max-width: 50%;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    max-width: 100%;
+    height: 50%; /* 50% de hauteur en mode colonne */
+  }
+}
+
+.singleViewer {
+  width: 95%;
+  height: 100%;
+  margin: 0 auto;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+
+/* ==================== IMAGES - UNIVERSELLES ==================== */
+.image {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  transform-origin: center;
+  user-select: none;
+  -webkit-user-select: none;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  
+  /* Mobile responsive - FONCTIONNEL */
+  @media (max-width: 768px) {
+    /* FIX CRITIQUE : Interactions d'images fonctionnelles */
+    pointer-events: auto; /* ACTIVE les interactions */
+    touch-action: pan-x pan-y pinch-zoom; /* Autorise tout */
+    user-select: none;
+    -webkit-user-select: none;
+    will-change: transform;
+  }
+}
+
 .folderLabel {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 6px 10px;
-  border-radius: 4px;
-  font-size: 12px;
+  top: 15px;
+  left: 15px;
+  background: rgba(0, 0, 0, 0.85);
+  color: rgba(255, 255, 255, 0.95);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
   font-weight: 600;
   z-index: 10;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  pointer-events: none; /* Évite les conflits */
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    transform: scale(1.02);
+  }
   
   @media (max-width: 768px) {
-    font-size: 11px;
-    padding: 4px 8px;
-    top: 8px;
-    left: 8px;
+    top: 10px;
+    left: 10px;
+    padding: 6px 8px;
+    font-size: 12px;
+    
+    /* Supprime hover sur mobile */
+    &:hover {
+      background: rgba(0, 0, 0, 0.85);
+      transform: none;
+    }
   }
 }
 
-/* ==================== BOTTOM BAR ==================== */
+/* ==================== BOTTOM BAR - UNIVERSEL ==================== */
 .bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
   height: 60px;
-  background-color: #2a2a2a;
+  width: 100%;
+  margin: 0;
+  padding: 0 24px;
+  background: var(--header-background, #4f5b93);
+  color: var(--header-text, #ffffff);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
-  border-top: 1px solid #4a4a4a;
-  flex-shrink: 0;
+  z-index: 1000;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  transition: background-color 0.3s ease, color 0.3s ease;
   
-  @media (max-width: 768px) {
-    height: 50px;
-    padding: 0 8px;
-    /* Support safe areas */
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  
-  /* Container boutons */
+  /* Conteneur pour les boutons */
   & > div:last-child {
     display: flex;
-    gap: 8px;
     align-items: center;
+    gap: 0;
+    height: 100%;
+  }
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    height: 50px;
+    padding: 0 12px;
+    /* Support safe areas */
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: calc(12px + env(safe-area-inset-left));
+    padding-right: calc(12px + env(safe-area-inset-right));
+    
+    /* Touch optimisé */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Très petits écrans */
+  @media (max-width: 480px) {
+    height: 45px;
+    padding: 0 8px;
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: calc(8px + env(safe-area-inset-left));
+    padding-right: calc(8px + env(safe-area-inset-right));
   }
 }
 
-/* ==================== BOUTONS ==================== */
-.responseButton,
-.sheetLink {
-  background-color: #4f9eff;
+/* ==================== BUTTONS - UNIVERSELS ==================== */
+.responseButton, .sheetLink {
+  background: rgba(255, 255, 255, 0.12);
   color: white;
-  border: none;
-  padding: 8px 16px;
+  padding: 10px 18px;
   border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  cursor: pointer;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+  margin-left: 8px;
+  vertical-align: middle;
+  line-height: 1;
+  height: 40px;
+  box-sizing: border-box;
   
   &:hover {
-    background-color: #3a85d9;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border-color: rgba(255, 255, 255, 0.25);
   }
   
   &:active {
-    background-color: #2975c7;
-    transform: scale(0.98);
+    transform: translateY(0);
+    background: rgba(255, 255, 255, 0.08);
   }
   
+  /* Mobile responsive */
   @media (max-width: 768px) {
-    padding: 6px 12px;
+    padding: 8px 12px;
     font-size: 12px;
-    min-height: 36px;
+    white-space: nowrap;
+    margin-left: 4px;
+    height: 36px;
+    min-width: 44px; /* Zone tactile minimum */
     
-    /* Zone tactile minimum */
-    min-width: 44px;
+    /* Touch optimisé */
     touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+    
+    /* Garde les effets mais optimisés */
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: none;
+      box-shadow: none;
+    }
+    
+    &:active {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(0.98);
+    }
+  }
+  
+  /* Très petits écrans */
+  @media (max-width: 480px) {
+    padding: 6px 10px;
+    font-size: 11px;
+    height: 32px;
+    margin-left: 2px;
   }
 }
 
-/* ==================== SHORTCUT GUIDE ==================== */
+/* ==================== SHORTCUT GUIDE - UNIVERSEL ==================== */
 .shortcutGuide {
   display: flex;
   align-items: center;
+  position: relative;
   
-  @media (max-width: 480px) {
-    /* Cache sur très petits écrans */
+  /* Cache seulement sur très petits écrans */
+  @media (max-width: 400px) {
     display: none;
   }
 }
@@ -309,41 +627,60 @@
 .shortcutIcon {
   width: 32px;
   height: 32px;
-  border: 1px solid #4a4a4a;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #3a3a3a;
-  color: white;
-  cursor: pointer;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
   
-  &:active {
-    background-color: #4a4a4a;
-    transform: scale(0.95);
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: scale(1.05);
+    color: white;
   }
   
+  /* Mobile responsive */
   @media (max-width: 768px) {
     width: 36px;
     height: 36px;
     font-size: 16px;
+    
     touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: none;
+    }
+    
+    &:active {
+      background: rgba(255, 255, 255, 0.15);
+      transform: scale(0.95);
+    }
   }
 }
 
 .shortcutPopup {
   position: absolute;
   bottom: 70px;
-  left: 0;
-  background-color: #2a2a2a;
-  border: 1px solid #4a4a4a;
-  border-radius: 8px;
-  padding: 16px;
-  width: 280px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  left: -10px;
+  background-color: rgb(var(--color-surface));
+  color: rgb(var(--color-text));
+  border: 2px solid rgb(var(--color-border));
+  border-radius: 12px;
+  padding: 20px;
+  width: 320px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   z-index: 1001;
+  backdrop-filter: blur(12px);
   opacity: 0;
   visibility: hidden;
   transform: translateY(10px);
@@ -355,268 +692,321 @@
     transform: translateY(0);
   }
   
+  /* Mobile responsive */
   @media (max-width: 768px) {
-    /* MOBILE : Modal plein écran */
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: calc(100vw - 32px);
+    width: calc(100vw - 2rem);
     max-width: 300px;
-    max-height: 70vh;
+    bottom: auto;
+    padding: 1rem;
+    border-radius: 16px;
+    max-height: 80vh;
     overflow-y: auto;
     
     &.visible {
       transform: translate(-50%, -50%);
     }
+    
+    /* Scroll tactile */
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  
+  /* Très petits écrans */
+  @media (max-width: 480px) {
+    width: calc(100vw - 1rem);
+    max-width: none;
+    margin: 0.5rem;
   }
 }
 
 .shortcutTitle {
   font-size: 16px;
   font-weight: 700;
-  margin-bottom: 12px;
-  color: #4f9eff;
+  margin-bottom: 16px;
+  color: rgb(var(--color-primary));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  &::before {
+    content: '⌨️';
+    font-size: 18px;
+  }
 }
 
 .shortcutList {
   list-style: none;
-  margin: 0;
   padding: 0;
+  margin: 0;
 }
 
 .shortcutList li {
-  margin-bottom: 8px;
-  font-size: 13px;
-  line-height: 1.4;
-  padding: 6px 8px;
-  background-color: #3a3a3a;
-  border-radius: 4px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 8px 12px;
+  background-color: rgb(var(--color-background));
+  border-radius: 6px;
+  border: 1px solid rgb(var(--color-border));
   
   &:last-child {
     margin-bottom: 0;
   }
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    padding: 10px;
+    font-size: 14px;
+  }
 }
 
 .shortcutList strong {
-  color: #4f9eff;
+  display: inline-block;
   margin-right: 8px;
+  color: rgb(var(--color-primary));
+  font-weight: 600;
 }
 
-/* ==================== RESPONSE BOX ==================== */
+/* ==================== RESPONSE BOX - UNIVERSEL ==================== */
 .responseBox {
   position: fixed;
   bottom: 80px;
-  right: 16px;
-  left: 16px;
-  background-color: #2a2a2a;
-  border: 1px solid #4a4a4a;
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  right: 24px;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  max-width: 350px;
   z-index: 1001;
-  animation: slideUp 0.3s ease;
-  max-height: 60vh;
-  overflow-y: auto;
+  background-color: rgb(var(--color-surface));
+  border: 2px solid rgb(var(--color-border));
+  backdrop-filter: blur(8px);
+  animation: slideInUp 0.3s ease-out;
+  
+  @keyframes slideInUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
   
   @media (max-width: 768px) {
     bottom: 60px;
-    max-height: 50vh;
+    right: 12px;
+    left: 12px;
+    max-width: none;
+    padding: 16px;
+    max-height: 60vh;
+    overflow-y: auto;
+    
+    /* Scroll tactile */
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
   }
 }
 
 .responseText {
-  color: white;
-  font-size: 14px;
+  color: rgb(var(--color-text));
+  font-weight: 600;
+  font-size: 16px;
   line-height: 1.5;
   margin: 0;
   
   &::before {
     content: '💡';
     margin-right: 8px;
+    font-size: 18px;
   }
 }
 
-/* ==================== ANIMATIONS ==================== */
-@keyframes slideUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-/* ==================== MOBILE TOUCH OPTIMIZATIONS ==================== */
-@media (max-width: 768px) {
-  /* Force le mode 1 viewer sur mobile */
-  .dualViewer,
-  .tripleViewer,
-  .quadViewer,
-  .viewerHalf,
-  .viewerQuarter,
-  .viewerThird {
-    display: none !important;
-  }
-  
-  /* Assure que le single viewer prend tout l'espace */
-  .singleViewer {
-    display: flex !important;
-    width: 100%;
-    height: 100%;
-  }
-  
-  /* Optimisations touch */
-  * {
-    -webkit-tap-highlight-color: transparent;
-  }
-  
-  /* Améliore le scroll */
-  .container,
-  .folderGrid,
-  .mainViewer {
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-  }
-  
-  /* Zone tactile minimum pour tous les éléments interactifs */
-  button,
-  .folderThumbnail,
-  .shortcutIcon {
-    min-height: 44px;
-    min-width: 44px;
-  }
-}
-
-/* ==================== LOADING STATE ==================== */
-.loading {
+/* ==================== LOADING ET STATES ==================== */
+.loading, .emptyState {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #8a8a8a;
+  color: rgb(var(--color-text));
+  opacity: 0.7;
   
   @media (max-width: 768px) {
-    min-height: 200px;
+    padding: 2rem 1rem;
+    font-size: 14px;
   }
 }
 
 .loadingSpinner {
   width: 32px;
   height: 32px;
-  border: 2px solid #4a4a4a;
-  border-top: 2px solid #4f9eff;
+  border: 3px solid rgb(var(--color-border));
+  border-top: 3px solid rgb(var(--color-primary));
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
+  
+  @media (max-width: 768px) {
+    width: 28px;
+    height: 28px;
+    border-width: 2px;
+  }
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-/* ==================== RESPONSIVE BREAKPOINTS ==================== */
-
-/* Petits smartphones */
-@media (max-width: 480px) {
-  .content {
-    padding: 8px;
-    gap: 8px;
+/* ==================== TOOLTIP ==================== */
+.tooltip {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1002;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  
+  &.visible {
+    opacity: 1;
   }
   
-  .folderGrid {
-    height: 70px;
-    padding: 6px;
+  @media (max-width: 768px) {
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 8px;
   }
+}
+
+/* ==================== DRAG & DROP ==================== */
+.folderThumbnail.dragging {
+  opacity: 0.5;
+  transform: scale(0.9);
   
-  .folderThumbnail {
-    width: 60px;
-    height: 60px;
+  @media (max-width: 768px) {
+    transform: none;
+    opacity: 0.7;
   }
+}
+
+.viewer.drag-over {
+  border-color: rgb(var(--color-accent)) !important;
+  background-color: rgba(var(--color-accent), 0.1);
   
-  .bottomBar {
-    height: 45px;
-    padding: 0 6px;
+  @media (max-width: 768px) {
+    border-width: 2px;
+    background-color: rgba(var(--color-accent), 0.15);
   }
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+.folderThumbnail:active {
+  animation: pulse 0.3s ease-in-out;
   
-  .responseButton,
-  .sheetLink {
-    padding: 4px 8px;
-    font-size: 11px;
-    min-height: 32px;
+  @media (max-width: 768px) {
+    animation: pulse 0.2s ease-in-out;
   }
 }
 
-/* Tablettes en portrait */
-@media (min-width: 769px) and (max-width: 1024px) {
-  .layout {
-    flex-direction: row;
-  }
+/* ==================== ACCESSIBILITÉ ==================== */
+.shortcutIcon:focus,
+.responseButton:focus,
+.sheetLink:focus,
+.folderThumbnail:focus {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 2px;
   
-  .folderGrid {
-    width: 100px;
-    flex-direction: column;
-    height: auto;
-    overflow-y: auto;
-    overflow-x: hidden;
+  @media (max-width: 768px) {
+    outline-width: 3px;
+    outline-offset: 3px;
   }
+}
+
+/* ==================== THÈME SOMBRE ==================== */
+:global(.dark) .container {
+  background: linear-gradient(135deg, rgb(var(--color-background)) 0%, rgb(var(--color-surface)) 100%);
+}
+
+:global(.dark) .folderThumbnailLabel {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+}
+
+:global(.dark) .shortcutPopup {
+  backdrop-filter: blur(12px);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ==================== TRANSITIONS ==================== */
+.tripleViewer, .quadViewer, .dualViewer {
+  animation: fadeIn 0.3s ease-out;
   
-  .folderThumbnail {
-    width: 100%;
-    height: 80px;
-    margin-right: 0;
-    margin-bottom: 6px;
+  @media (max-width: 768px) {
+    animation: fadeIn 0.2s ease-out;
   }
 }
 
-/* ==================== DARK THEME SUPPORT ==================== */
-[data-theme="light"] .container {
-  background-color: #f5f5f5;
-  color: #2a2a2a;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-[data-theme="light"] .folderGrid {
-  background-color: #ffffff;
-}
-
-[data-theme="light"] .folderThumbnail {
-  background-color: #e5e5e5;
-  border-color: #d0d0d0;
-}
-
-[data-theme="light"] .bottomBar {
-  background-color: #ffffff;
-  border-top-color: #d0d0d0;
-}
-
-[data-theme="light"] .responseBox,
-[data-theme="light"] .shortcutPopup {
-  background-color: #ffffff;
-  border-color: #d0d0d0;
-  color: #2a2a2a;
-}
-
-/* ==================== PERFORMANCE OPTIMIZATIONS ==================== */
+/* ==================== PERFORMANCES MOBILES ==================== */
 @media (max-width: 768px) {
-  /* Désactive les animations coûteuses sur mobile */
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.1s !important;
-    transition-duration: 0.1s !important;
+  /* Optimisations GPU */
+  .image {
+    will-change: transform;
+  }
+
+  .folderThumbnail {
+    will-change: auto;
+  }
+
+  .shortcutPopup {
+    will-change: opacity, visibility, transform;
+  }
+
+  .viewer {
+    will-change: auto;
   }
   
-  /* Force l'accélération GPU sur les éléments clés */
-  .image,
-  .folderThumbnail,
-  .container {
-    will-change: transform;
+  /* Animations optimisées */
+  * {
+    animation-duration: 0.2s !important;
+    transition-duration: 0.2s !important;
+  }
+  
+  /* Accélération matérielle */
+  .container,
+  .content,
+  .layout,
+  .folderGrid,
+  .mainViewer {
+    -webkit-transform: translateZ(0);
     transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
   }
 }
