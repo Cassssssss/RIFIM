@@ -48,28 +48,33 @@ body {
   /* ============ RESPONSIVE CARDS ============ */
   .card {
     @apply bg-surface rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg border border-blue-100 dark:border-gray-700;
-    
-    /* Mobile optimizations */
-    @media (max-width: 768px) {
+  }
+  
+  /* Mobile card optimizations */
+  @media (max-width: 768px) {
+    .card {
       @apply rounded-md shadow-sm;
       /* Réduit les ombres sur mobile pour améliorer les performances */
+      margin-bottom: 1rem;
     }
   }
 
   /* ============ RESPONSIVE BUTTONS ============ */
   .btn {
     @apply px-6 py-2 rounded-md font-medium text-white transition-all duration-300 transform hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background uppercase tracking-wider text-sm shadow-md;
-    
-    /* Mobile touch optimizations */
-    @media (max-width: 768px) {
+  }
+  
+  /* Mobile button optimizations */
+  @media (max-width: 768px) {
+    .btn {
       @apply px-4 py-3 text-base;
       /* Plus gros sur mobile pour une meilleure accessibilité tactile */
       min-height: 44px; /* Minimum Apple/Google recommandé pour le tactile */
-      
-      /* Supprime les effets de hover sur mobile qui peuvent poser problème */
-      &:hover {
-        transform: none;
-      }
+    }
+    
+    /* Supprime les effets de hover sur mobile qui peuvent poser problème */
+    .btn:hover {
+      transform: none;
     }
   }
 
@@ -84,9 +89,11 @@ body {
   /* ============ RESPONSIVE INPUTS ============ */
   .input {
     @apply w-full px-4 py-2 rounded-md border-2 border-blue-200 dark:border-gray-600 bg-surface text-text focus:border-blue-400 dark:focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-700 focus:ring-opacity-50 transition-all duration-300 placeholder-gray-400 dark:placeholder-gray-500;
-    
-    /* Mobile optimizations */
-    @media (max-width: 768px) {
+  }
+  
+  /* Mobile input optimizations */
+  @media (max-width: 768px) {
+    .input {
       @apply px-3 py-3 text-base;
       /* Empêche le zoom automatique sur iOS */
       font-size: 16px;
@@ -96,9 +103,11 @@ body {
 
   .select {
     @apply w-full px-4 py-2 rounded-md border-2 border-blue-200 dark:border-gray-600 bg-surface text-text focus:border-blue-400 dark:focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-700 focus:ring-opacity-50 transition-all duration-300 appearance-none;
-    
-    /* Mobile optimizations */
-    @media (max-width: 768px) {
+  }
+  
+  /* Mobile select optimizations */
+  @media (max-width: 768px) {
+    .select {
       @apply px-3 py-3 text-base;
       font-size: 16px;
       min-height: 44px;
@@ -111,9 +120,11 @@ body {
     width: 100%;
     min-width: 300px;
     overflow-x: auto;
-    
-    /* Mobile responsive */
-    @media (max-width: 768px) {
+  }
+  
+  /* Mobile question card optimizations */
+  @media (max-width: 768px) {
+    .question-card {
       @apply p-4 mb-4 rounded-md;
       min-width: 100%;
       /* Scroll horizontal amélioré */
@@ -123,9 +134,11 @@ body {
 
   .option-card {
     @apply bg-blue-50 dark:bg-gray-700 rounded-md p-4 mb-3 transition-all duration-300 hover:bg-blue-100 dark:hover:bg-gray-600 border border-blue-200 dark:border-gray-600;
-    
-    /* Mobile touch optimization */
-    @media (max-width: 768px) {
+  }
+  
+  /* Mobile option card optimizations */
+  @media (max-width: 768px) {
+    .option-card {
       @apply p-3 mb-2;
       min-height: 44px;
       display: flex;
@@ -135,9 +148,11 @@ body {
 
   .sub-question {
     @apply ml-6 mt-4 border-l-2 border-indigo-300 dark:border-indigo-600 pl-4;
-    
-    /* Mobile responsive */
-    @media (max-width: 768px) {
+  }
+  
+  /* Mobile sub-question optimizations */
+  @media (max-width: 768px) {
+    .sub-question {
       @apply ml-3 pl-3;
     }
   }
@@ -150,36 +165,44 @@ body {
 
   .header-content {
     @apply container mx-auto py-4 flex justify-between items-center;
-    
-    /* Mobile responsive */
-    @media (max-width: 768px) {
+  }
+  
+  /* Mobile header optimizations */
+  @media (max-width: 768px) {
+    .header-content {
       @apply py-3 px-4;
     }
   }
 
   .header-title {
     @apply text-3xl font-bold;
-    
-    /* Mobile responsive */
-    @media (max-width: 768px) {
+  }
+  
+  /* Mobile header title optimizations */
+  @media (max-width: 768px) {
+    .header-title {
       @apply text-2xl;
     }
   }
 
   .header-nav {
     @apply flex space-x-6;
-    
-    /* Mobile responsive */
-    @media (max-width: 768px) {
+  }
+  
+  /* Mobile header nav optimizations */
+  @media (max-width: 768px) {
+    .header-nav {
       @apply space-x-4;
     }
   }
 
   .header-link {
     @apply text-white hover:text-blue-200 dark:hover:text-blue-300 transition-colors duration-300 uppercase tracking-wider text-sm font-medium;
-    
-    /* Mobile touch optimization */
-    @media (max-width: 768px) {
+  }
+  
+  /* Mobile header link optimizations */
+  @media (max-width: 768px) {
+    .header-link {
       @apply text-xs py-2 px-1;
       min-height: 44px;
       display: flex;
@@ -190,9 +213,11 @@ body {
   /* ============ RESPONSIVE MAIN TITLE ============ */
   .main-title {
     @apply text-4xl font-bold text-center mb-12 text-gray-800 dark:text-gray-200;
-    
-    /* Mobile responsive */
-    @media (max-width: 768px) {
+  }
+  
+  /* Mobile main title optimizations */
+  @media (max-width: 768px) {
+    .main-title {
       @apply text-2xl mb-6;
     }
   }
@@ -200,27 +225,33 @@ body {
   /* ============ RESPONSIVE QUESTIONNAIRE LAYOUT ============ */
   .questionnaire-layout {
     @apply flex flex-wrap;
-    
-    /* Mobile: force la disposition en colonne */
-    @media (max-width: 1024px) {
+  }
+  
+  /* Mobile questionnaire layout - force la disposition en colonne */
+  @media (max-width: 1024px) {
+    .questionnaire-layout {
       @apply flex-col;
     }
   }
 
   .questionnaire-creator {
     @apply w-full lg:w-7/12 pr-0 lg:pr-4 mb-8 lg:mb-0;
-    
-    /* Mobile responsive */
-    @media (max-width: 1024px) {
+  }
+  
+  /* Mobile questionnaire creator optimizations */
+  @media (max-width: 1024px) {
+    .questionnaire-creator {
       @apply w-full pr-0 mb-6;
     }
   }
 
   .questionnaire-preview {
     @apply w-full lg:w-5/12 pl-0 lg:pl-4;
-    
-    /* Mobile responsive */
-    @media (max-width: 1024px) {
+  }
+  
+  /* Mobile questionnaire preview optimizations */
+  @media (max-width: 1024px) {
+    .questionnaire-preview {
       @apply w-full pl-0;
     }
   }
@@ -228,9 +259,11 @@ body {
   /* ============ OPTION TEXT MOBILE ============ */
   .questionnaire-option {
     @apply text-gray-700 dark:text-white;
-    
-    /* Mobile: taille de texte appropriée */
-    @media (max-width: 768px) {
+  }
+  
+  /* Mobile questionnaire option optimizations */
+  @media (max-width: 768px) {
+    .questionnaire-option {
       font-size: 16px; /* Évite le zoom sur iOS */
       line-height: 1.5;
     }
