@@ -91,6 +91,7 @@ const LoadingContainer = styled.div`
 function AppContent() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const theme = isDarkMode ? darkTheme : lightTheme;
 
   // Gestion du thème sombre avec persistance
@@ -121,7 +122,7 @@ function AppContent() {
     setIsDarkMode(!isDarkMode);
   };
 
-  // Gestion de l'utilisateur - VERSION CORRIGÉE
+  // Gestion de l'utilisateur - VERSION CORRIGÉE ET SIMPLIFIÉE
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
@@ -137,9 +138,10 @@ function AppContent() {
         setUser(null);
       }
     }
+    setLoading(false);
   }, []);
 
-  // Fonction de login simple
+  // Fonction de login - compatible avec votre système actuel
   const handleLogin = (userData, token) => {
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(userData));
@@ -188,6 +190,19 @@ function AppContent() {
       document.addEventListener('touchstart', {});
     }
   }, [isMobile]);
+
+  if (loading) {
+    return (
+      <ThemeProvider theme={theme}>
+        <GlobalStyle />
+        <AppContainer>
+          <LoadingContainer>
+            <LoadingSpinner />
+          </LoadingContainer>
+        </AppContainer>
+      </ThemeProvider>
+    );
+  }
 
   if (!user) {
     return (
