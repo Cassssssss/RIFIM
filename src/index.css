@@ -23,19 +23,100 @@
   --color-text: 243 244 246;
 }
 
-/* ============ BASE STYLES AVEC SUPPORT MOBILE ============ */
+/* ============ BASE STYLES AVEC SUPPORT MOBILE CORRIGÉ ============ */
+html {
+  scroll-behavior: smooth;
+  /* Fix pour les hauteurs sur mobile */
+  height: 100%;
+  
+  @media (max-width: 768px) {
+    /* Fix critique pour iOS */
+    height: -webkit-fill-available;
+    /* Empêche le zoom sur double tap */
+    touch-action: manipulation;
+  }
+}
+
 body {
   font-family: 'Poppins', sans-serif;
   @apply bg-background text-text;
-  /* Support pour l'overscroll sur mobile */
-  overscroll-behavior: none;
-  /* Améliore la performance sur mobile */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  
+  /* CORRECTIONS CRITIQUES POUR LE DÉFILEMENT MOBILE */
+  @media (max-width: 768px) {
+    /* Améliore le défilement tactile */
+    -webkit-overflow-scrolling: touch;
+    /* Empêche le rebond élastique */
+    overscroll-behavior: none;
+    /* Améliore la performance du rendu */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Ajustement automatique de la taille du texte */
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    /* Support pour les safe areas iPhone */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    /* Fix pour la hauteur sur iOS */
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    /* Empêche les problèmes de positionnement */
+    position: relative;
+  }
+  
+  /* Classe pour empêcher le scroll quand le menu mobile est ouvert */
+  &.menu-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    
+    @media (max-width: 768px) {
+      height: 100vh;
+      height: -webkit-fill-available;
+    }
+  }
+}
+
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  
+  @media (max-width: 768px) {
+    /* Assure une hauteur correcte sur mobile */
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    /* Permet le défilement naturel */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 .font-report {
   font-family: 'Lato', 'Calibri', 'Arial', sans-serif;
+}
+
+/* ============ CORRECTIONS SCROLLBAR MOBILE ============ */
+@media (max-width: 768px) {
+  /* Cache les scrollbars sur mobile mais garde la fonctionnalité */
+  ::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    background: transparent;
+  }
+  
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  *::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* ============ RESPONSIVE CONTAINER SYSTEM ============ */
@@ -43,38 +124,53 @@ body {
   .container {
     @apply w-full mx-auto px-4 sm:px-6 lg:px-8;
     max-width: 100%;
+    
+    @media (max-width: 768px) {
+      @apply px-3;
+      /* Améliore le défilement dans les conteneurs */
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
   }
 
   /* ============ RESPONSIVE CARDS ============ */
   .card {
     @apply bg-surface rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg border border-blue-100 dark:border-gray-700;
-  }
-  
-  /* Mobile card optimizations */
-  @media (max-width: 768px) {
-    .card {
+    
+    @media (max-width: 768px) {
       @apply rounded-md shadow-sm;
-      /* Réduit les ombres sur mobile pour améliorer les performances */
       margin-bottom: 1rem;
+      /* Optimise le défilement dans les cartes */
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      /* Empêche les problèmes de redimensionnement */
+      contain: layout;
     }
   }
 
-  /* ============ RESPONSIVE BUTTONS ============ */
+  /* ============ RESPONSIVE BUTTONS AVEC OPTIMISATIONS TACTILES ============ */
   .btn {
     @apply px-6 py-2 rounded-md font-medium text-white transition-all duration-300 transform hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background uppercase tracking-wider text-sm shadow-md;
-  }
-  
-  /* Mobile button optimizations */
-  @media (max-width: 768px) {
-    .btn {
-      @apply px-4 py-3 text-base;
-      /* Plus gros sur mobile pour une meilleure accessibilité tactile */
-      min-height: 44px; /* Minimum Apple/Google recommandé pour le tactile */
-    }
     
-    /* Supprime les effets de hover sur mobile qui peuvent poser problème */
-    .btn:hover {
-      transform: none;
+    @media (max-width: 768px) {
+      @apply px-4 py-3 text-base;
+      /* Taille tactile minimum recommandée */
+      min-height: 44px;
+      min-width: 44px;
+      /* Optimise les interactions tactiles */
+      touch-action: manipulation;
+      /* Supprime les effets de hover sur mobile */
+      transform: none !important;
+      
+      &:hover {
+        transform: none !important;
+      }
+      
+      &:active {
+        /* Feedback tactile léger */
+        transform: scale(0.98);
+      }
     }
   }
 
@@ -86,31 +182,28 @@ body {
     @apply bg-secondary hover:bg-indigo-600 focus:ring-secondary;
   }
 
-  /* ============ RESPONSIVE INPUTS ============ */
+  /* ============ RESPONSIVE INPUTS OPTIMISÉS ============ */
   .input {
     @apply w-full px-4 py-2 rounded-md border-2 border-blue-200 dark:border-gray-600 bg-surface text-text focus:border-blue-400 dark:focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-700 focus:ring-opacity-50 transition-all duration-300 placeholder-gray-400 dark:placeholder-gray-500;
-  }
-  
-  /* Mobile input optimizations */
-  @media (max-width: 768px) {
-    .input {
+    
+    @media (max-width: 768px) {
       @apply px-3 py-3 text-base;
       /* Empêche le zoom automatique sur iOS */
       font-size: 16px;
       min-height: 44px;
+      /* Optimise les interactions tactiles */
+      touch-action: manipulation;
     }
   }
 
   .select {
     @apply w-full px-4 py-2 rounded-md border-2 border-blue-200 dark:border-gray-600 bg-surface text-text focus:border-blue-400 dark:focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-700 focus:ring-opacity-50 transition-all duration-300 appearance-none;
-  }
-  
-  /* Mobile select optimizations */
-  @media (max-width: 768px) {
-    .select {
+    
+    @media (max-width: 768px) {
       @apply px-3 py-3 text-base;
       font-size: 16px;
       min-height: 44px;
+      touch-action: manipulation;
     }
   }
 
@@ -119,40 +212,40 @@ body {
     @apply bg-surface rounded-lg shadow-sm p-6 mb-6 transition-all duration-300 hover:shadow-md border-l-4 border-blue-400 dark:border-blue-600;
     width: 100%;
     min-width: 300px;
-    overflow-x: auto;
-  }
-  
-  /* Mobile question card optimizations */
-  @media (max-width: 768px) {
-    .question-card {
+    
+    @media (max-width: 768px) {
       @apply p-4 mb-4 rounded-md;
       min-width: 100%;
-      /* Scroll horizontal amélioré */
+      /* Améliore le défilement horizontal si nécessaire */
+      overflow-x: auto;
       -webkit-overflow-scrolling: touch;
+      /* Empêche les débordements verticaux indésirables */
+      overflow-y: visible;
     }
   }
 
   .option-card {
     @apply bg-blue-50 dark:bg-gray-700 rounded-md p-4 mb-3 transition-all duration-300 hover:bg-blue-100 dark:hover:bg-gray-600 border border-blue-200 dark:border-gray-600;
-  }
-  
-  /* Mobile option card optimizations */
-  @media (max-width: 768px) {
-    .option-card {
+    
+    @media (max-width: 768px) {
       @apply p-3 mb-2;
       min-height: 44px;
       display: flex;
       align-items: center;
+      /* Optimise les interactions tactiles */
+      touch-action: manipulation;
+      
+      &:hover {
+        /* Supprime les effets hover sur mobile */
+        @apply bg-blue-50 dark:bg-gray-700;
+      }
     }
   }
 
   .sub-question {
     @apply ml-6 mt-4 border-l-2 border-indigo-300 dark:border-indigo-600 pl-4;
-  }
-  
-  /* Mobile sub-question optimizations */
-  @media (max-width: 768px) {
-    .sub-question {
+    
+    @media (max-width: 768px) {
       @apply ml-3 pl-3;
     }
   }
@@ -160,116 +253,106 @@ body {
   /* ============ RESPONSIVE HEADER ============ */
   .header {
     @apply bg-blue-600 dark:bg-gray-800 text-white shadow-md sticky top-0 z-50;
-    /* Mobile: header fixe pour une meilleure navigation */
+    
+    @media (max-width: 768px) {
+      /* Assure que le header reste en haut */
+      position: sticky;
+      top: 0;
+      /* Support pour les safe areas */
+      padding-top: env(safe-area-inset-top);
+    }
   }
 
   .header-content {
     @apply container mx-auto py-4 flex justify-between items-center;
-  }
-  
-  /* Mobile header optimizations */
-  @media (max-width: 768px) {
-    .header-content {
+    
+    @media (max-width: 768px) {
       @apply py-3 px-4;
     }
   }
 
   .header-title {
     @apply text-3xl font-bold;
-  }
-  
-  /* Mobile header title optimizations */
-  @media (max-width: 768px) {
-    .header-title {
+    
+    @media (max-width: 768px) {
       @apply text-2xl;
     }
   }
 
   .header-nav {
     @apply flex space-x-6;
-  }
-  
-  /* Mobile header nav optimizations */
-  @media (max-width: 768px) {
-    .header-nav {
+    
+    @media (max-width: 768px) {
       @apply space-x-4;
     }
   }
 
   .header-link {
     @apply text-white hover:text-blue-200 dark:hover:text-blue-300 transition-colors duration-300 uppercase tracking-wider text-sm font-medium;
-  }
-  
-  /* Mobile header link optimizations */
-  @media (max-width: 768px) {
-    .header-link {
+    
+    @media (max-width: 768px) {
       @apply text-xs py-2 px-1;
       min-height: 44px;
       display: flex;
       align-items: center;
+      touch-action: manipulation;
     }
   }
 
   /* ============ RESPONSIVE MAIN TITLE ============ */
   .main-title {
     @apply text-4xl font-bold text-center mb-12 text-gray-800 dark:text-gray-200;
-  }
-  
-  /* Mobile main title optimizations */
-  @media (max-width: 768px) {
-    .main-title {
+    
+    @media (max-width: 768px) {
       @apply text-2xl mb-6;
     }
   }
 
-  /* ============ RESPONSIVE QUESTIONNAIRE LAYOUT ============ */
+  /* ============ RESPONSIVE QUESTIONNAIRE LAYOUT CORRIGÉ ============ */
   .questionnaire-layout {
     @apply flex flex-wrap;
-  }
-  
-  /* Mobile questionnaire layout - force la disposition en colonne */
-  @media (max-width: 1024px) {
-    .questionnaire-layout {
+    
+    @media (max-width: 1024px) {
       @apply flex-col;
+      /* Améliore le défilement sur mobile */
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
   }
 
   .questionnaire-creator {
     @apply w-full lg:w-7/12 pr-0 lg:pr-4 mb-8 lg:mb-0;
-  }
-  
-  /* Mobile questionnaire creator optimizations */
-  @media (max-width: 1024px) {
-    .questionnaire-creator {
+    
+    @media (max-width: 1024px) {
       @apply w-full pr-0 mb-6;
+      /* Optimise le défilement */
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
   }
 
   .questionnaire-preview {
     @apply w-full lg:w-5/12 pl-0 lg:pl-4;
-  }
-  
-  /* Mobile questionnaire preview optimizations */
-  @media (max-width: 1024px) {
-    .questionnaire-preview {
+    
+    @media (max-width: 1024px) {
       @apply w-full pl-0;
+      /* Optimise le défilement */
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
   }
 
   /* ============ OPTION TEXT MOBILE ============ */
   .questionnaire-option {
     @apply text-gray-700 dark:text-white;
-  }
-  
-  /* Mobile questionnaire option optimizations */
-  @media (max-width: 768px) {
-    .questionnaire-option {
+    
+    @media (max-width: 768px) {
       font-size: 16px; /* Évite le zoom sur iOS */
       line-height: 1.5;
     }
   }
 
-  /* ============ MOBILE MEDIA QUERIES GLOBALES ============ */
+  /* ============ MOBILE MEDIA QUERIES GLOBALES CORRIGÉES ============ */
   @media (max-width: 768px) {
     .questionnaire-layout {
       @apply flex-col;
@@ -278,6 +361,10 @@ body {
     .questionnaire-creator,
     .questionnaire-preview {
       @apply w-full;
+      /* CORRECTION CRITIQUE : Assure un défilement fluide */
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
     }
     
     /* Espacement mobile optimisé */
@@ -294,13 +381,18 @@ body {
     .table-responsive {
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
+      /* Empêche les problèmes de débordement vertical */
+      overflow-y: visible;
     }
     
-    /* Modals mobile */
+    /* Modals mobile avec défilement corrigé */
     .modal {
       @apply mx-2;
       max-height: 90vh;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      /* Support pour les safe areas */
+      margin-bottom: env(safe-area-inset-bottom);
     }
   }
   
@@ -316,62 +408,20 @@ body {
   }
 }
 
-/* ============ GLOBAL MOBILE OPTIMIZATIONS ============ */
+/* ============ GLOBAL MOBILE OPTIMIZATIONS CORRIGÉES ============ */
 u {
   text-decoration: underline;
 }
 
-html, body, #root {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  overflow-y: auto; /* Permet le défilement vertical */
-  
-  /* Mobile scroll optimizations */
-  @media (max-width: 768px) {
-    /* Améliore le scroll sur mobile */
-    -webkit-overflow-scrolling: touch;
-    /* Empêche le bounce sur iOS */
-    overscroll-behavior-y: none;
-  }
-}
-
-#root {
-  display: flex;
-  flex-direction: column;
-  
-  /* Mobile: assure une hauteur correcte */
-  @media (max-width: 768px) {
-    min-height: 100vh;
-    min-height: -webkit-fill-available; /* Fix pour iOS */
-  }
-}
-
-/* ============ MOBILE SCROLL IMPROVEMENTS ============ */
-/* Améliore les scrollbars sur mobile */
-@media (max-width: 768px) {
-  ::-webkit-scrollbar {
-    width: 0;
-    background: transparent;
-  }
-  
-  /* Cache les scrollbars sur mobile tout en gardant la fonctionnalité */
-  * {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-}
-
-/* ============ MOBILE TOUCH IMPROVEMENTS ============ */
+/* ============ MOBILE TOUCH IMPROVEMENTS CORRIGÉS ============ */
 @media (max-width: 768px) {
   /* Améliore les interactions tactiles */
   button, a, [role="button"] {
     min-height: 44px;
     min-width: 44px;
     touch-action: manipulation;
+    /* Empêche la surbrillance tactile */
+    -webkit-tap-highlight-color: transparent;
   }
   
   /* Empêche la sélection de texte accidentelle */
@@ -380,31 +430,47 @@ body {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    touch-action: manipulation;
   }
   
-  /* Améliore les performances d'animation sur mobile */
+  /* CORRECTION CRITIQUE : Améliore les performances d'animation */
   * {
-    -webkit-transform: translateZ(0);
+    /* Évite les transformations 3D non nécessaires */
     transform: translateZ(0);
+    /* Optimise le rendu */
+    will-change: auto;
+  }
+  
+  /* Optimise le défilement dans tous les conteneurs */
+  div, section, article, main {
+    /* Améliore le défilement tactile si le conteneur peut défiler */
+    &[style*="overflow"] {
+      -webkit-overflow-scrolling: touch;
+    }
   }
 }
 
-/* ============ MOBILE VIEWPORT FIXES ============ */
+/* ============ MOBILE VIEWPORT FIXES CORRIGÉS ============ */
 @media (max-width: 768px) {
   /* Fix pour les hauteurs sur mobile */
   .mobile-full-height {
     height: 100vh;
     height: -webkit-fill-available;
+    /* Assure le défilement si nécessaire */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   
   /* Fix pour le clavier virtuel sur mobile */
   .mobile-input-container {
     padding-bottom: env(keyboard-inset-height, 0);
+    /* Maintient la scrollabilité */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
 /* ============ RESPONSIVE UTILITIES ============ */
-/* Classes utilitaires pour mobile */
 .mobile-hidden {
   @media (max-width: 768px) {
     display: none !important;
@@ -435,6 +501,50 @@ body {
   
   .mobile-safe-area-top {
     padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* ============ CORRECTIONS SPÉCIFIQUES POUR LE DÉFILEMENT ============ */
+@media (max-width: 768px) {
+  /* Classe utilitaire pour forcer un bon défilement */
+  .mobile-scroll-fix {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+    /* Empêche les problèmes de positionnement */
+    position: relative !important;
+  }
+  
+  /* Fix pour les contenus qui débordent */
+  .mobile-content-fix {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+}
+
+/* ============ PERFORMANCE OPTIMIZATIONS MOBILE ============ */
+@media (max-width: 768px) {
+  /* Optimise le rendering sur mobile */
+  * {
+    /* Évite les reflows coûteux */
+    contain: layout style;
+  }
+  
+  /* Optimise les images sur mobile */
+  img {
+    /* Améliore le rendu des images */
+    image-rendering: optimizeQuality;
+    /* Évite les débordements */
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* Optimise les transitions sur mobile */
+  * {
+    transition-duration: 0.2s !important;
   }
 }
 
