@@ -1,98 +1,698 @@
 import styled from 'styled-components';
-import shouldForwardProp from '@styled-system/should-forward-prop';
 
+// ==================== LAYOUT PRINCIPAL RESPONSIVE ==================== 
 export const PageContainer = styled.div`
+  padding: 2rem;
   background-color: ${props => props.theme.background};
   min-height: calc(100vh - 60px);
-  padding: 2rem;
-
+  color: ${props => props.theme.text};
+  
+  /* MOBILE ADAPTATIONS */
   @media (max-width: 768px) {
     padding: 1rem;
+    min-height: calc(100vh - 70px); /* Ajustement pour header mobile */
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.75rem;
+    min-height: calc(100vh - 65px);
   }
 `;
 
-
 export const Title = styled.h1`
-  color: ${props => props.theme.text};
-  text-align: center;
-  font-size: 2rem;
+  font-size: 2.5rem;
+  font-weight: 700;
   margin-bottom: 2rem;
-`;
-
-export const SearchInput = styled.input`
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 20px;
-  border-radius: 5px;
-  border: 1px solid ${props => props.theme.border};
-  font-size: 1rem;
+  text-align: center;
+  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+  }
 `;
 
 export const SectionContainer = styled.div`
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  background-color: ${props => props.theme.surface};
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  background-color: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.border};
-`;
-
-export const InputGroup = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 1rem;
-  gap: 1rem;
-
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 20px ${props => props.theme.shadow};
+  position: relative;
+  overflow: hidden;
+  
+  /* MOBILE ADAPTATIONS */
   @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px ${props => props.theme.shadow};
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border-radius: 6px;
   }
 `;
 
-export const Input = styled.input`
-  flex: 1;
-  padding: 10px;
-  border-radius: 5px;
-  border: 1px solid ${props => props.theme.border};
-  font-size: 1rem;
+// ==================== GRILLES RESPONSIVE ==================== 
+export const CasesGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+  
+  @media (max-width: 580px) {
+    grid-template-columns: 1fr; /* Une seule colonne sur petits écrans */
+    gap: 0.75rem;
+  }
 `;
 
+export const FoldersSection = styled.div`
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid ${props => props.theme.border};
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+  }
+  
+  @media (max-width: 480px) {
+    margin-top: 1rem;
+    padding-top: 1rem;
+  }
+`;
+
+// ==================== CARDS RESPONSIVE ==================== 
+export const CaseCard = styled.div`
+  background-color: ${props => props.theme.surface};
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid ${props => props.theme.border};
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    
+    /* MOBILE ADAPTATIONS - Pas d'effet hover */
+    @media (max-width: 768px) {
+      transform: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+  }
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    border-radius: 8px;
+    transition: box-shadow 0.2s ease; /* Transition simplifiée */
+    
+    &:active {
+      transform: scale(0.98);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    }
+  }
+  
+  @media (max-width: 480px) {
+    border-radius: 6px;
+  }
+`;
+
+export const CaseImage = styled.img`
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  transition: opacity 0.3s ease;
+  
+  &:hover {
+    opacity: 0.9;
+    
+    /* MOBILE ADAPTATIONS - Pas d'effet hover */
+    @media (max-width: 768px) {
+      opacity: 1;
+    }
+  }
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    height: 180px; /* Légèrement plus petit sur mobile */
+  }
+  
+  @media (max-width: 480px) {
+    height: 160px;
+  }
+`;
+
+export const CaseTitle = styled.h2`
+  color: ${props => props.theme.text};
+  text-align: center;
+  padding: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.4;
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    font-size: 1.125rem;
+    padding: 0.75rem;
+    line-height: 1.3;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1rem;
+    padding: 0.5rem;
+  }
+`;
+
+export const CaseActions = styled.div`
+  display: flex;
+  justify-content: space-around;
+  padding: 0.75rem;
+  gap: 0.5rem;
+  border-top: 1px solid ${props => props.theme.border};
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    flex-direction: column; /* Passage en colonne sur mobile */
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.75rem;
+    gap: 0.375rem;
+  }
+`;
+
+// ==================== GALERIE D'IMAGES MOBILE ==================== 
+export const GalleryContainer = styled.div`
+  margin-bottom: 1.5rem;
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: ${props => props.theme.card};
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    margin-bottom: 1rem;
+    border-radius: 8px;
+  }
+  
+  @media (max-width: 480px) {
+    margin-bottom: 0.75rem;
+    border-radius: 6px;
+  }
+`;
+
+export const GalleryHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: ${props => props.theme.surface};
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border-bottom: 1px solid ${props => props.theme.border};
+  min-height: 60px; /* Hauteur minimum pour le touch */
+
+  &:hover {
+    background-color: ${props => props.theme.hover || props.theme.backgroundSecondary};
+    
+    /* MOBILE ADAPTATIONS - Pas d'effet hover */
+    @media (max-width: 768px) {
+      background-color: ${props => props.theme.surface};
+    }
+  }
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+    min-height: 56px; /* Taille tactile optimale */
+    
+    /* Amélioration tactile */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    
+    &:active {
+      background-color: ${props => props.theme.hover || props.theme.backgroundSecondary};
+    }
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.5rem;
+    min-height: 52px;
+  }
+  
+  h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: ${props => props.theme.text};
+    
+    /* MOBILE ADAPTATIONS */
+    @media (max-width: 768px) {
+      font-size: 1rem;
+    }
+    
+    @media (max-width: 480px) {
+      font-size: 0.9rem;
+    }
+  }
+  
+  svg {
+    width: 20px;
+    height: 20px;
+    color: ${props => props.theme.textSecondary};
+    transition: transform 0.2s ease;
+    
+    /* MOBILE ADAPTATIONS */
+    @media (max-width: 768px) {
+      width: 24px; /* Plus grand pour faciliter le touch */
+      height: 24px;
+    }
+  }
+`;
+
+export const ImagesGrid = styled.div`
+  display: flex;
+  gap: 10px;
+  padding: 1rem;
+  min-height: 120px;
+  background-color: ${props => props.theme.background};
+  user-select: none;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  
+  /* Scrollbar personnalisée */
+  scrollbar-width: thin;
+  scrollbar-color: ${props => props.theme.border} ${props => props.theme.background};
+  
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: ${props => props.theme.background};
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: ${props => props.theme.border};
+    border-radius: 4px;
+    
+    &:hover {
+      background: ${props => props.theme.textLight};
+    }
+  }
+
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+    gap: 8px;
+    min-height: 100px;
+    
+    /* Améliore le défilement tactile */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    
+    /* Scrollbar mobile plus fine */
+    &::-webkit-scrollbar {
+      height: 4px;
+    }
+    
+    scrollbar-width: none; /* Cache la scrollbar sur mobile Firefox */
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.5rem;
+    gap: 6px;
+    min-height: 80px;
+    
+    /* Cache complètement la scrollbar sur très petits écrans */
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+`;
+
+export const ImageWrapper = styled.div`
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  cursor: move;
+  flex: 0 0 auto;
+  width: 100px;
+  height: 100px;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: scale(1.05);
+    border-color: ${props => props.theme.primary};
+    
+    /* MOBILE ADAPTATIONS - Pas d'effet hover */
+    @media (max-width: 768px) {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transform: none;
+      border-color: transparent;
+    }
+  }
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    width: 90px; /* Légèrement plus petit sur mobile */
+    height: 90px;
+    border-radius: 6px;
+    cursor: default; /* Pas de curseur move sur mobile */
+    
+    /* Amélioration tactile */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: pan-x pan-y;
+    
+    &:active {
+      transform: scale(0.95);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+      border-color: ${props => props.theme.primary};
+    }
+  }
+  
+  @media (max-width: 480px) {
+    width: 80px;
+    height: 80px;
+    border-radius: 4px;
+  }
+  
+  @media (max-width: 380px) {
+    width: 70px;
+    height: 70px;
+  }
+`;
+
+export const ThumbnailImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.3s ease;
+  
+  &:hover {
+    opacity: 0.9;
+    
+    /* MOBILE ADAPTATIONS - Pas d'effet hover */
+    @media (max-width: 768px) {
+      opacity: 1;
+    }
+  }
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    transition: opacity 0.2s ease;
+  }
+`;
+
+// ==================== BOUTONS RESPONSIVE ==================== 
 export const Button = styled.button`
   background-color: ${props => props.theme.primary};
   color: white;
   border: none;
-  border-radius: 5px;
-  padding: 10px 20px;
-  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 40px;
+  
   &:hover {
-    background-color: ${props => props.theme.secondary};
+    background-color: ${props => props.theme.primaryHover};
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    
+    /* MOBILE ADAPTATIONS - Pas d'effet hover */
+    @media (max-width: 768px) {
+      background-color: ${props => props.theme.primary};
+      transform: none;
+      box-shadow: none;
+    }
   }
 
   &:disabled {
     background-color: ${props => props.theme.disabled};
     cursor: not-allowed;
+    opacity: 0.6;
+    
+    &:hover {
+      transform: none;
+      background-color: ${props => props.theme.disabled};
+    }
+  }
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    min-height: 48px; /* Taille tactile optimale */
+    border-radius: 6px;
+    width: 100%; /* Pleine largeur sur mobile */
+    
+    /* Amélioration tactile */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    
+    &:active {
+      background-color: ${props => props.theme.primaryHover};
+      transform: scale(0.98);
+    }
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.875rem 1.25rem;
+    font-size: 0.9rem;
+    min-height: 44px;
+  }
+  
+  svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    
+    /* MOBILE ADAPTATIONS */
+    @media (max-width: 768px) {
+      width: 18px;
+      height: 18px;
+    }
   }
 `;
 
-export const Select = styled.select`
-  width: 100%;
-  padding: 10px;
-  margin-top: 10px;
-  border-radius: 5px;
-  border: 1px solid ${props => props.theme.border};
-  font-size: 1rem;
+export const SecondaryButton = styled(Button)`
+  background-color: transparent;
+  color: ${props => props.theme.primary};
+  border: 1px solid ${props => props.theme.primary};
+  
+  &:hover {
+    background-color: ${props => props.theme.primary};
+    color: white;
+    
+    /* MOBILE ADAPTATIONS - Pas d'effet hover */
+    @media (max-width: 768px) {
+      background-color: transparent;
+      color: ${props => props.theme.primary};
+    }
+  }
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    &:active {
+      background-color: ${props => props.theme.primary};
+      color: white;
+    }
+  }
+`;
+
+export const DangerButton = styled(Button)`
+  background-color: #ef4444;
+  
+  &:hover {
+    background-color: #dc2626;
+    
+    /* MOBILE ADAPTATIONS - Pas d'effet hover */
+    @media (max-width: 768px) {
+      background-color: #ef4444;
+    }
+  }
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    &:active {
+      background-color: #dc2626;
+    }
+  }
+`;
+
+// ==================== PAGINATION RESPONSIVE ==================== 
+export const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1rem;
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    padding: 0.75rem;
+  }
+  
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding: 0.5rem;
+  }
+`;
+
+export const PaginationButton = styled.button`
+  background-color: ${props => props.theme.primary};
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  
+  &:hover {
+    background-color: ${props => props.theme.secondary};
+    
+    /* MOBILE ADAPTATIONS - Pas d'effet hover */
+    @media (max-width: 768px) {
+      background-color: ${props => props.theme.primary};
+    }
+  }
+
+  &:disabled {
+    background-color: ${props => props.theme.disabled};
+    cursor: not-allowed;
+    
+    &:hover {
+      background-color: ${props => props.theme.disabled};
+    }
+  }
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    min-height: 44px; /* Taille tactile optimale */
+    
+    /* Amélioration tactile */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    
+    &:active {
+      background-color: ${props => props.theme.secondary};
+      transform: scale(0.98);
+    }
+  }
+  
+  @media (max-width: 480px) {
+    width: 100%; /* Pleine largeur sur très petits écrans */
+    justify-content: center;
+  }
+`;
+
+export const PaginationInfo = styled.span`
+  margin: 0 1rem;
+  font-weight: 600;
+  color: ${props => props.theme.text};
+  font-size: 0.9rem;
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    margin: 0 0.5rem;
+    font-size: 1rem;
+    text-align: center;
+  }
+  
+  @media (max-width: 480px) {
+    margin: 0;
+    order: -1; /* Affiche l'info en premier sur mobile */
+  }
+`;
+
+// ==================== ACTIONS DE DOSSIER MOBILE ==================== 
+export const MainImageButton = styled(Button)`
+  background-color: ${props => props.theme.secondary};
+  
+  &:hover {
+    background-color: ${props => props.theme.secondaryHover};
+    
+    /* MOBILE ADAPTATIONS - Pas d'effet hover */
+    @media (max-width: 768px) {
+      background-color: ${props => props.theme.secondary};
+    }
+  }
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    &:active {
+      background-color: ${props => props.theme.secondaryHover};
+    }
+  }
 `;
 
 export const FolderContainer = styled.div`
   margin-bottom: 1.5rem;
   padding: 1rem;
   background-color: ${props => props.theme.background};
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   border: 1px solid ${props => props.theme.border};
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+  }
+  
+  @media (max-width: 480px) {
+    margin-bottom: 0.75rem;
+    padding: 0.5rem;
+    border-radius: 6px;
+  }
 `;
 
 export const FolderHeader = styled.div`
@@ -100,52 +700,120 @@ export const FolderHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
-`;
-
-export const MainImageButton = styled(Button)`
-  background-color: ${props => props.theme.secondary};
   
-  &:hover {
-    background-color: ${props => props.theme.secondaryHover};
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
   }
 `;
 
 export const FolderTitle = styled.h3`
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
+  font-weight: 600;
   color: ${props => props.theme.text};
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    font-size: 1.125rem;
+    text-align: center;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 1rem;
+  }
 `;
 
 export const FolderActions = styled.div`
   display: flex;
   gap: 0.5rem;
+  align-items: center;
 
+  /* MOBILE ADAPTATIONS */
   @media (max-width: 768px) {
     flex-direction: column;
     width: 100%;
+    gap: 0.75rem;
     
     button, label {
       width: 100%;
-      margin-bottom: 0.5rem;
+      justify-content: center;
     }
+  }
+  
+  @media (max-width: 480px) {
+    gap: 0.5rem;
   }
 `;
 
+// ==================== UPLOAD ET FICHIERS MOBILE ==================== 
 export const UploadButton = styled.label`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 15px;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
   background-color: ${props => props.theme.primary};
   color: white;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
-  margin-bottom: 10px;
   font-size: 0.9rem;
-  transition: background-color 0.3s ease;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  min-height: 40px;
 
   &:hover {
     background-color: ${props => props.theme.secondary};
+    transform: translateY(-1px);
+    
+    /* MOBILE ADAPTATIONS - Pas d'effet hover */
+    @media (max-width: 768px) {
+      background-color: ${props => props.theme.primary};
+      transform: none;
+    }
+  }
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    min-height: 48px;
+    width: 100%;
+    border-radius: 6px;
+    
+    /* Amélioration tactile */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    
+    &:active {
+      background-color: ${props => props.theme.secondary};
+      transform: scale(0.98);
+    }
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.875rem 1.25rem;
+    font-size: 0.9rem;
+    min-height: 44px;
+  }
+  
+  svg {
+    width: 16px;
+    height: 16px;
+    
+    /* MOBILE ADAPTATIONS */
+    @media (max-width: 768px) {
+      width: 18px;
+      height: 18px;
+    }
   }
 `;
 
@@ -159,8 +827,15 @@ export const ImagePreviewContainer = styled.div`
   gap: 10px;
   margin-top: 1rem;
 
+  /* MOBILE ADAPTATIONS */
   @media (max-width: 768px) {
-    gap: 5px;
+    gap: 8px;
+    margin-top: 0.75rem;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 6px;
+    margin-top: 0.5rem;
   }
 `;
 
@@ -168,9 +843,22 @@ export const ImagePreview = styled.div`
   position: relative;
   width: 100px;
   height: 100px;
-  border-radius: 4px;
+  border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    width: 90px;
+    height: 90px;
+    border-radius: 6px;
+  }
+  
+  @media (max-width: 480px) {
+    width: 80px;
+    height: 80px;
+    border-radius: 4px;
+  }
 `;
 
 export const PreviewImage = styled.img`
@@ -181,370 +869,221 @@ export const PreviewImage = styled.img`
 
 export const RemoveImageButton = styled.button`
   position: absolute;
-  top: 5px;
-  right: 5px;
-  background-color: rgba(255, 0, 0, 0.7);
+  top: 4px;
+  right: 4px;
+  background-color: rgba(255, 0, 0, 0.8);
   color: white;
   border: none;
   border-radius: 50%;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 12px;
-  transition: background-color 0.3s ease;
+  font-size: 14px;
+  transition: all 0.2s ease;
 
   &:hover {
     background-color: rgba(255, 0, 0, 1);
+    transform: scale(1.1);
+    
+    /* MOBILE ADAPTATIONS - Pas d'effet hover */
+    @media (max-width: 768px) {
+      background-color: rgba(255, 0, 0, 0.8);
+      transform: none;
+    }
   }
-`;
-
-export const CasesGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.5rem;
   
+  /* MOBILE ADAPTATIONS */
   @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1rem;
+    width: 28px; /* Plus grand pour faciliter le touch */
+    height: 28px;
+    font-size: 16px;
+    top: 2px;
+    right: 2px;
+    
+    /* Amélioration tactile */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    
+    &:active {
+      background-color: rgba(255, 0, 0, 1);
+      transform: scale(0.95);
+    }
+  }
+  
+  @media (max-width: 480px) {
+    width: 26px;
+    height: 26px;
+    font-size: 14px;
   }
 `;
 
-export const FoldersSection = styled.div`
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 1px solid ${props => props.theme.border};
-`;
-
-export const CaseCard = styled.div`
-  background-color: ${props => props.theme.surface};
-  border-radius: 8px;
-  overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-  }
-`;
-
-export const CaseImage = styled.img`
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-`;
-
-export const CaseTitle = styled.h2`
-  color: ${props => props.theme.text};
-  text-align: center;
-  padding: 1rem;
-  font-size: 1.1rem;
-`;
-
-export const CaseActions = styled.div`
-  display: flex;
-  justify-content: space-around;
-  padding: 0.5rem;
-`;
-
-export const GalleryContainer = styled.div`
-  margin-bottom: 1.5rem;
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 8px;
-  overflow: hidden;
-`;
-
-export const GalleryHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  background-color: ${props => props.theme.surface};
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: ${props => props.theme.hover};
-  }
-`;
-
-export const ThumbnailImage = styled.img`
-  width: 100%;
-  height: 100px;
-  object-fit: cover;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-
-  &:hover {
-    transform: scale(1.05);
-  }
-`;
-
-export const DeleteButton = styled.button`
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  background-color: rgba(255, 0, 0, 0.7);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 12px;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: rgba(255, 0, 0, 1);
-  }
-`;
-
+// ==================== LARGE IMAGE VIEWER MOBILE ==================== 
 export const LargeImageContainer = styled.div`
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 0.9);
   display: flex;
-  justify-content: center;
   align-items: center;
-  z-index: 9999;
-
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  
+  /* MOBILE ADAPTATIONS */
   @media (max-width: 768px) {
-    padding: 1rem;
+    background-color: rgba(0, 0, 0, 0.95); /* Plus opaque sur mobile */
+    
+    /* Safe area pour les appareils avec encoche */
+    padding-top: env(safe-area-inset-top, 0);
+    padding-left: env(safe-area-inset-left, 0);
+    padding-right: env(safe-area-inset-right, 0);
+    padding-bottom: env(safe-area-inset-bottom, 0);
   }
 `;
 
 export const LargeImage = styled.img`
-  width: 80vmin;
-  height: 80vmin;
+  max-width: 90%;
+  max-height: 90%;
   object-fit: contain;
-  background-color: black;
-
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  
+  /* MOBILE ADAPTATIONS */
   @media (max-width: 768px) {
-    width: 100%;
-    height: auto;
-    max-height: 80vh;
+    max-width: 95%;
+    max-height: 85%; /* Laisse plus d'espace pour les contrôles */
+    border-radius: 4px;
+    
+    /* Amélioration tactile */
+    touch-action: pan-x pan-y zoom-in;
   }
 `;
 
 export const CloseButton = styled.button`
   position: absolute;
-  top: 20px;
-  right: 20px;
-  background-color: transparent;
+  top: 2rem;
+  right: 2rem;
+  background-color: rgba(0, 0, 0, 0.7);
   color: white;
   border: none;
-  font-size: 24px;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  z-index: 10000;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.9);
+    transform: scale(1.1);
+    
+    /* MOBILE ADAPTATIONS - Pas d'effet hover */
+    @media (max-width: 768px) {
+      background-color: rgba(0, 0, 0, 0.7);
+      transform: none;
+    }
+  }
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    top: calc(1rem + env(safe-area-inset-top, 0));
+    right: calc(1rem + env(safe-area-inset-right, 0));
+    width: 52px; /* Plus grand pour faciliter le touch */
+    height: 52px;
+    
+    /* Amélioration tactile */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    
+    &:active {
+      background-color: rgba(0, 0, 0, 0.9);
+      transform: scale(0.95);
+    }
+  }
+  
+  @media (max-width: 480px) {
+    top: calc(0.75rem + env(safe-area-inset-top, 0));
+    right: calc(0.75rem + env(safe-area-inset-right, 0));
+    width: 48px;
+    height: 48px;
+  }
+  
+  svg {
+    width: 24px;
+    height: 24px;
+    
+    /* MOBILE ADAPTATIONS */
+    @media (max-width: 768px) {
+      width: 28px;
+      height: 28px;
+    }
+  }
 `;
 
 export const NavigationButton = styled.button`
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(0, 0, 0, 0.7);
   color: white;
   border: none;
-  cursor: pointer;
-  padding: 10px;
-  font-size: 24px;
-  z-index: 10000;
-`;
-
-export const DifficultySelect = styled.select`
-  width: 100%;
-  padding: 5px;
-  margin-top: 5px;
-  border-radius: 4px;
-  border: 1px solid ${props => props.theme.border};
-`;
-
-export const StarRatingContainer = styled.div`
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
   display: flex;
+  align-items: center;
   justify-content: center;
-  margin-top: 5px;
-`;
-
-export const Star = styled('span').withConfig({
-  shouldForwardProp: (prop) => !['filled'].includes(prop),
-})`
   cursor: pointer;
-  margin: 0 2px;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.9);
+    transform: translateY(-50%) scale(1.1);
+    
+    /* MOBILE ADAPTATIONS - Pas d'effet hover */
+    @media (max-width: 768px) {
+      background-color: rgba(0, 0, 0, 0.7);
+      transform: translateY(-50%);
+    }
+  }
+  
+  /* MOBILE ADAPTATIONS */
+  @media (max-width: 768px) {
+    width: 52px; /* Plus grand pour faciliter le touch */
+    height: 52px;
+    
+    /* Amélioration tactile */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    
+    &:active {
+      background-color: rgba(0, 0, 0, 0.9);
+      transform: translateY(-50%) scale(0.95);
+    }
+  }
+  
+  @media (max-width: 480px) {
+    width: 48px;
+    height: 48px;
+  }
+  
   svg {
     width: 24px;
     height: 24px;
-    transition: fill 0.2s ease;
-    fill: ${props => (props.filled ? 'gold' : 'gray')};
-  }
-`;
-
-export const AnswerSection = styled.div`
-  margin-top: 1rem;
-`;
-
-export const AnswerText = styled.p`
-  margin-bottom: 0.5rem;
-`;
-
-export const AnswerInput = styled.input`
-  width: 100%;
-  padding: 0.5rem;
-  margin-bottom: 0.5rem;
-`;
-
-export const TagsContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 1rem;
-`;
-
-export const Tag = styled.span`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  display: flex;
-  align-items: center;
-`;
-
-export const RemoveTagButton = styled.button`
-  background: none;
-  border: none;
-  color: white;
-  margin-left: 0.25rem;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-`;
-
-export const AddTagForm = styled.form`
-  display: flex;
-  align-items: center;
-`;
-
-export const TagInput = styled.input`
-  padding: 0.25rem;
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 4px;
-  font-size: 0.75rem;
-`;
-
-export const AddTagButton = styled.button`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0.25rem;
-  margin-left: 0.25rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-`;
-
-export const MainImageLabel = styled.div`
-  position: absolute;
-  top: 5px;
-  left: 5px;
-  background-color: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 2px 5px;
-  font-size: 10px;
-  border-radius: 3px;
-`;
-
-export const FolderMainImage = styled.img`
-  width: 30px;
-  height: 30px;
-  object-fit: cover;
-  border-radius: 4px;
-  margin-right: 10px;
-`;
-
-
-export const PaginationContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 2rem;
-  padding: 1rem;
-  background-color: ${props => props.theme.surface};
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-`;
-
-export const PaginationButton = styled.button`
-  background-color: ${props => props.theme.primary};
-  color: ${props => props.theme.buttonText};
-  border: none;
-  padding: 0.5rem 1rem;
-  margin: 0 0.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  
-  &:hover {
-    background-color: ${props => props.theme.secondary};
-  }
-
-  &:disabled {
-    background-color: ${props => props.theme.disabled};
-    cursor: not-allowed;
-  }
-`;
-
-export const PaginationInfo = styled.span`
-  margin: 0 1rem;
-  font-weight: bold;
-`;
-
-
-export const ImagesGrid = styled.div`
-  display: flex;
-  gap: 10px;
-  padding: 1rem;
-  min-height: 120px;
-  background-color: ${props => props.theme.background};
-  user-select: none;
-  overflow-x: auto;
-  flex-wrap: nowrap;
-  align-items: flex-start;
-
-  @media (max-width: 768px) {
-    padding: 0.5rem;
-    gap: 5px;
-    /* Améliore le défilement sur mobile */
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none; /* Pour Firefox */
-    &::-webkit-scrollbar {
-      display: none; /* Pour Chrome, Safari et Opera */
+    
+    /* MOBILE ADAPTATIONS */
+    @media (max-width: 768px) {
+      width: 28px;
+      height: 28px;
     }
   }
 `;
-
-export const ImageWrapper = styled.div`
-  position: relative;
-  border-radius: 4px;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-  cursor: move;
-  flex: 0 0 auto;
-  width: 100px;
-  height: 100px;
-  
-  &:hover {
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-  }
-`;
-
