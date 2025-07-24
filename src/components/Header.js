@@ -13,7 +13,7 @@ const HeaderWrapper = styled.header`
   top: 0;
   left: 0;
   right: 0;
-  z-index: 9998; /* Juste en dessous du menu */
+  z-index: 999998; /* Juste en dessous du menu */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(8px);
   
