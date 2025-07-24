@@ -13,7 +13,7 @@ const HeaderWrapper = styled.header`
   top: 0;
   left: 0;
   right: 0;
-  z-index: 1000;
+  z-index: 9998; /* Juste en dessous du menu */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(8px);
   
@@ -191,7 +191,7 @@ const DropdownMenu = styled.div`
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   padding: 0.75rem 0;
   display: ${props => props.isOpen ? 'block' : 'none'};
-  z-index: 1001;
+  z-index: 9999; /* Z-index très élevé */
   min-width: 280px;
   backdrop-filter: blur(8px);
   animation: ${props => props.isOpen ? 'dropdownSlideIn' : 'dropdownSlideOut'} 0.2s ease;
@@ -233,6 +233,7 @@ const DropdownMenu = styled.div`
     padding: 1rem;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    z-index: 99999; /* Z-index encore plus élevé sur mobile */
     
     /* Support pour les safe areas */
     padding-top: calc(1rem + env(safe-area-inset-top));
@@ -458,40 +459,43 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
     
     // Empêche le scroll du body quand le menu mobile est ouvert
     if (!showMenu) {
-      document.body.style.overflow = 'hidden';
+      document.body.classList.add('menu-open');
     } else {
-      document.body.style.overflow = '';
+      document.body.classList.remove('menu-open');
     }
   };
 
   const handleMenuItemClick = () => {
     setShowMenu(false);
     // Restaure le scroll du body
-    document.body.style.overflow = '';
+    document.body.classList.remove('menu-open');
   };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setShowMenu(false);
-        document.body.style.overflow = '';
+        document.body.classList.remove('menu-open');
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    // Seulement si le menu est ouvert
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
     
     // Cleanup au démontage du composant
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      document.body.style.overflow = '';
+      document.body.classList.remove('menu-open');
     };
-  }, []);
+  }, [showMenu]);
 
-  // Cleanup si le composant change de route
+  // Cleanup si le composant change de route - SANS affecter l'auth
   useEffect(() => {
     setShowMenu(false);
-    document.body.style.overflow = '';
-  }, [location]);
+    document.body.classList.remove('menu-open');
+  }, [location.pathname]); // Seulement le pathname, pas l'objet location complet
 
   return (
     <HeaderWrapper>

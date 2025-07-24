@@ -121,13 +121,22 @@ function AppContent() {
     setIsDarkMode(!isDarkMode);
   };
 
-  // Gestion de l'utilisateur
+  // Gestion de l'utilisateur avec vérification renforcée
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
+    
     if (token && userData) {
       try {
-        setUser(JSON.parse(userData));
+        const parsedUser = JSON.parse(userData);
+        // Vérification que l'utilisateur a les propriétés nécessaires
+        if (parsedUser && parsedUser.username) {
+          setUser(parsedUser);
+        } else {
+          console.warn('Données utilisateur invalides, nettoyage...');
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+        }
       } catch (error) {
         console.error('Erreur lors du parsing des données utilisateur:', error);
         localStorage.removeItem('token');
@@ -136,16 +145,31 @@ function AppContent() {
     }
   }, []);
 
+  // Fonction de login améliorée
   const handleLogin = (userData, token) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
+    try {
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde des données utilisateur:', error);
+    }
   };
 
+  // Fonction de logout sécurisée
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
+    try {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setUser(null);
+      
+      // Optionnel: redirection vers la page de connexion
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+      // Force le rechargement en cas d'erreur
+      window.location.reload();
+    }
   };
 
   // Gestion du drag and drop
