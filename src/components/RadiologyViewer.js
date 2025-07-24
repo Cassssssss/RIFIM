@@ -79,7 +79,6 @@ function RadiologyViewer() {
   const [isShortcutGuideVisible, setIsShortcutGuideVisible] = useState(false);
   const [folderThumbnails, setFolderThumbnails] = useState({});
   const isTouchDevice = 'ontouchstart' in window;
-  const [touchDistance, setTouchDistance] = useState(null);
   const [isMobile] = useState(window.innerWidth < 768);
 
   const leftViewerRef = useRef(null);
@@ -350,8 +349,11 @@ function RadiologyViewer() {
     });
   }, []);
 
+  // 🔧 FIX CRITIQUE : Touch handlers optimisés pour mobile
   const handleTouchStart = useCallback((e, side) => {
+    // FIX : Ne pas empêcher les événements par défaut de manière systématique
     if (e.touches.length === 2) {
+      // Zoom/pinch - on peut empêcher le défaut ici car c'est spécifique
       e.preventDefault();
       e.stopPropagation();
       const touch1 = e.touches[0];
@@ -366,7 +368,7 @@ function RadiologyViewer() {
       });
       setInitialScale(imageControls[side].scale);
     } else if (e.touches.length === 1) {
-      e.preventDefault();
+      // Navigation - ne pas empêcher le défaut pour permettre le scroll
       setLastTouch({
         x: e.touches[0].clientX,
         y: e.touches[0].clientY
@@ -375,8 +377,10 @@ function RadiologyViewer() {
   }, [imageControls]);
   
   const handleTouchMove = useCallback((e, side) => {
-    e.preventDefault();
+    // FIX : Gestion plus fine du preventDefault
     if (e.touches.length === 2 && touchStartPoints) {
+      // Zoom - empêcher le défaut
+      e.preventDefault();
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       const newDistance = Math.hypot(
@@ -396,10 +400,13 @@ function RadiologyViewer() {
       }));
       applyImageTransforms(side);
     } else if (e.touches.length === 1) {
+      // Navigation - permettre le scroll natif par défaut
       const touch = e.touches[0];
       const deltaY = touch.clientY - lastTouch.y;
       
-      if (Math.abs(deltaY) > 1) {
+      // Seulement empêcher le défaut si on est vraiment en train de naviguer dans les images
+      if (Math.abs(deltaY) > 5) {
+        // Seulement si on a une véritable intention de navigation
         handleScroll(deltaY * 4, false, side);
       }
       
@@ -532,8 +539,14 @@ function RadiologyViewer() {
   // ==================== GESTION DES ÉVÉNEMENTS WHEEL ÉTENDUE ==================== 
   
   const handleWheelEvent = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
+    // FIX CRITIQUE : Gestion plus fine du preventDefault
+    // Ne l'empêche que si on fait vraiment du zoom/navigation d'images
+    const isImageInteraction = e.ctrlKey || e.metaKey || e.target.closest(`.${styles.image}`);
+    
+    if (isImageInteraction) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     
     // 🔧 MODIFICATION : Identifier le viewer ciblé pour tous les modes
     let targetSide = 'single';
@@ -562,7 +575,7 @@ function RadiologyViewer() {
     
     if (e.ctrlKey || e.metaKey) {
       handleZoom(targetSide, -e.deltaY);
-    } else {
+    } else if (isImageInteraction) {
       handleScroll(e.deltaY, false, targetSide);
     }
   }, [viewMode, handleZoom, handleScroll]);
@@ -579,16 +592,20 @@ function RadiologyViewer() {
     }
   }, [isMobile, viewMode]);
 
-  // Effect pour gérer la molette
+  // Effect pour gérer la molette - FIX CRITIQUE
   useEffect(() => {
     const mainViewer = document.getElementById('main-viewer');
     if (mainViewer) {
-      mainViewer.addEventListener('wheel', handleWheelEvent, { passive: false });
+      // FIX : Utilisation passive: false seulement quand nécessaire
+      mainViewer.addEventListener('wheel', handleWheelEvent, { 
+        passive: false,
+        capture: true 
+      });
     }
 
     return () => {
       if (mainViewer) {
-        mainViewer.removeEventListener('wheel', handleWheelEvent);
+        mainViewer.removeEventListener('wheel', handleWheelEvent, { capture: true });
       }
     };
   }, [handleWheelEvent]);
@@ -645,7 +662,7 @@ function RadiologyViewer() {
     };
   }, [handleScroll, viewMode]);
 
-  // Effect pour les événements touch
+  // Effect pour les événements touch - FIX CRITIQUE
   useEffect(() => {
     if (isTouchDevice) {
       const viewer = document.querySelector(`.${styles.viewer}`);
@@ -653,18 +670,22 @@ function RadiologyViewer() {
       let lastScrollTime = 0;
       const scrollDelay = 50;
       
-      const handleTouchStart = (e) => {
+      const handleTouchStartGlobal = (e) => {
         touchStartY = e.touches[0].clientY;
       };
 
-      const handleTouchMove = (e) => {
-        e.preventDefault();
+      const handleTouchMoveGlobal = (e) => {
+        // FIX CRITIQUE : Ne pas empêcher par défaut de manière systématique
         const currentY = e.touches[0].clientY;
         const deltaY = touchStartY - currentY;
         const currentTime = Date.now();
         
-        if (currentTime - lastScrollTime > scrollDelay) {
-          if (Math.abs(deltaY) > 10) {
+        // Seulement pour la navigation d'images, pas pour le scroll général
+        const isImageContainer = e.target.closest(`.${styles.image}`) || e.target.closest(`.${styles.viewer}`);
+        
+        if (isImageContainer && currentTime - lastScrollTime > scrollDelay) {
+          if (Math.abs(deltaY) > 15) { // Seuil plus élevé
+            e.preventDefault(); // Seulement ici qu'on empêche le défaut
             const direction = deltaY > 0 ? 1 : -1;
             handleScroll(direction * 50, false, viewMode === 1 ? 'single' : 'left');
             lastScrollTime = currentTime;
@@ -674,20 +695,26 @@ function RadiologyViewer() {
         touchStartY = currentY;
       };
 
+      // FIX CRITIQUE : Gestion plus fine du preventDefault
       const preventRefresh = (e) => {
-        e.preventDefault();
+        // Seulement empêcher le refresh si on tire depuis le haut de la page
+        if (window.scrollY === 0 && e.touches[0].clientY > e.touches[0].clientY) {
+          e.preventDefault();
+        }
       };
 
-      document.body.style.overflow = 'hidden';
+      // FIX : Ne pas bloquer l'overflow du body
+      // document.body.style.overflow = 'hidden'; // SUPPRIMÉ
+      
       document.addEventListener('touchmove', preventRefresh, { passive: false });
-      viewer?.addEventListener('touchstart', handleTouchStart, { passive: true });
-      viewer?.addEventListener('touchmove', handleTouchMove, { passive: false });
+      viewer?.addEventListener('touchstart', handleTouchStartGlobal, { passive: true });
+      viewer?.addEventListener('touchmove', handleTouchMoveGlobal, { passive: false });
 
       return () => {
-        document.body.style.overflow = '';
+        // document.body.style.overflow = ''; // SUPPRIMÉ
         document.removeEventListener('touchmove', preventRefresh);
-        viewer?.removeEventListener('touchstart', handleTouchStart);
-        viewer?.removeEventListener('touchmove', handleTouchMove);
+        viewer?.removeEventListener('touchstart', handleTouchStartGlobal);
+        viewer?.removeEventListener('touchmove', handleTouchMoveGlobal);
       };
     }
   }, [isTouchDevice, handleScroll, viewMode]);
@@ -731,38 +758,38 @@ function RadiologyViewer() {
     if (currentCase && currentFolderLeft && leftViewerRef.current) {
       loadImage(currentFolderLeft, currentIndexLeft, viewMode === 1 ? 'single' : 'left');
     }
-  }, [currentCase, currentFolderLeft, currentIndexLeft, viewMode]);
+  }, [currentCase, currentFolderLeft, currentIndexLeft, viewMode, loadImage]);
   
   useEffect(() => {
     if (currentCase && currentFolderRight && rightViewerRef.current && viewMode >= 2) {
       loadImage(currentFolderRight, currentIndexRight, 'right');
     }
-  }, [currentCase, currentFolderRight, currentIndexRight, viewMode]);
+  }, [currentCase, currentFolderRight, currentIndexRight, viewMode, loadImage]);
 
   // 🔧 AJOUT : Effects pour les nouveaux viewers
   useEffect(() => {
     if (currentCase && currentFolderTopLeft && topLeftViewerRef.current && (viewMode === 3 || viewMode === 4)) {
       loadImage(currentFolderTopLeft, currentIndexTopLeft, 'topLeft');
     }
-  }, [currentCase, currentFolderTopLeft, currentIndexTopLeft, viewMode]);
+  }, [currentCase, currentFolderTopLeft, currentIndexTopLeft, viewMode, loadImage]);
 
   useEffect(() => {
     if (currentCase && currentFolderTopRight && topRightViewerRef.current && (viewMode === 3 || viewMode === 4)) {
       loadImage(currentFolderTopRight, currentIndexTopRight, 'topRight');
     }
-  }, [currentCase, currentFolderTopRight, currentIndexTopRight, viewMode]);
+  }, [currentCase, currentFolderTopRight, currentIndexTopRight, viewMode, loadImage]);
 
   useEffect(() => {
     if (currentCase && currentFolderBottomLeft && bottomLeftViewerRef.current && (viewMode === 3 || viewMode === 4)) {
       loadImage(currentFolderBottomLeft, currentIndexBottomLeft, 'bottomLeft');
     }
-  }, [currentCase, currentFolderBottomLeft, currentIndexBottomLeft, viewMode]);
+  }, [currentCase, currentFolderBottomLeft, currentIndexBottomLeft, viewMode, loadImage]);
 
   useEffect(() => {
     if (currentCase && currentFolderBottomRight && bottomRightViewerRef.current && viewMode === 4) {
       loadImage(currentFolderBottomRight, currentIndexBottomRight, 'bottomRight');
     }
-  }, [currentCase, currentFolderBottomRight, currentIndexBottomRight, viewMode]);
+  }, [currentCase, currentFolderBottomRight, currentIndexBottomRight, viewMode, loadImage]);
 
   // Effect pour les transformations d'images
   useEffect(() => {
