@@ -1,7 +1,7 @@
 /* ==================== VARIABLES CSS POUR LE THÈME ==================== */
 /* Ces variables sont automatiquement définies par le thème dans theme.js */
 
-/* ==================== BASE CONTAINER - CORRIGÉ POUR MOBILE ==================== */
+/* ==================== BASE CONTAINER - ORIGINAL RESTAURÉ ==================== */
 .container {
   position: fixed;
   width: 100%;
@@ -15,23 +15,20 @@
   color: rgb(var(--color-text));
   z-index: 100;
   
-  /* CORRECTIONS CRITIQUES POUR MOBILE */
+  /* Mobile responsive */
   @media (max-width: 768px) {
-    /* Assure une hauteur correcte sur mobile */
     height: calc(100vh - 70px);
-    height: calc(100dvh - 70px); /* Dynamic viewport height pour mobile */
     top: 70px;
-    /* Support pour les safe areas */
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
     padding-bottom: env(safe-area-inset-bottom);
-    /* Améliore l'affichage mobile */
-    overflow: hidden;
-    position: fixed;
+    /* FIX CRITIQUE : Permet le défilement tactile */
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
-/* ==================== CONTENT ET LAYOUT - CORRIGÉ POUR MOBILE ==================== */
+/* ==================== CONTENT ET LAYOUT - ORIGINAL RESTAURÉ ==================== */
 .content {
   flex: 1;
   display: flex;
@@ -42,12 +39,12 @@
   padding: 10px 0 70px 0;
   min-height: 0;
   
-  /* CORRECTIONS MOBILES */
+  /* Mobile responsive */
   @media (max-width: 768px) {
     padding: 5px 0 60px 0;
-    /* Assure que le contenu prend toute la hauteur disponible */
-    height: 100%;
-    min-height: 100%;
+    /* FIX CRITIQUE : Permet le défilement tactile */
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -61,20 +58,19 @@
   min-height: 0;
   gap: 0.5rem;
   
-  /* CORRECTIONS CRITIQUES POUR MOBILE */
+  /* Mobile responsive */
   @media (max-width: 768px) {
     flex-direction: row;
     gap: 0.25rem;
     height: calc(100% - 5px);
     padding: 0 0.25rem;
-    /* Assure que le layout prend toute la hauteur */
-    min-height: calc(100vh - 140px);
-    min-height: calc(100dvh - 140px);
-    overflow: hidden;
+    /* FIX CRITIQUE : Permet le défilement tactile */
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
-/* ==================== FOLDER GRID - OPTIMISÉ POUR MOBILE ==================== */
+/* ==================== FOLDER GRID - ORIGINAL RESTAURÉ ==================== */
 .folderGrid {
   width: 120px;
   height: 100%;
@@ -108,15 +104,12 @@
     border-radius: 3px;
   }
   
-  /* CORRECTIONS MOBILES */
+  /* Mobile responsive */
   @media (max-width: 768px) {
     width: 80px;
     padding: 0.25rem;
     gap: 0.25rem;
     border-radius: 8px;
-    /* Assure une hauteur correcte */
-    height: 100%;
-    min-height: 100%;
     
     /* Cache les scrollbars sur mobile */
     scrollbar-width: none;
@@ -125,9 +118,10 @@
       display: none;
     }
     
-    /* Améliore le scroll tactile */
+    /* FIX CRITIQUE : Améliore le scroll tactile */
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
+    touch-action: pan-y;
   }
   
   /* Très petits écrans */
@@ -237,18 +231,18 @@
   
   /* Mobile responsive */
   @media (max-width: 768px) {
-    font-size: 9px;
-    padding: 4px 2px;
+    font-size: 0.5rem;
+    padding: 0.125rem;
   }
   
   /* Très petits écrans */
   @media (max-width: 480px) {
-    font-size: 8px;
-    padding: 2px 1px;
+    font-size: 0.4rem;
+    padding: 0.1rem;
   }
 }
 
-/* ==================== MAIN VIEWER - CORRIGÉ POUR MOBILE ==================== */
+/* ==================== MAIN VIEWER - ORIGINAL RESTAURÉ ==================== */
 .mainViewer {
   flex: 1;
   display: flex;
@@ -261,18 +255,16 @@
   overflow: hidden;
   border-radius: 12px;
   
-  /* CORRECTIONS CRITIQUES POUR MOBILE */
   @media (max-width: 768px) {
     border-radius: 8px;
-    /* Assure que le viewer prend toute la hauteur disponible */
-    height: 100%;
-    min-height: 100%;
-    /* Améliore l'affichage des images */
-    background-color: #000000;
+    height: calc(100% - 40px);
+    /* FIX CRITIQUE : Permet le défilement tactile sur l'image */
+    touch-action: pan-x pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
-/* ==================== DUAL VIEWER - CORRIGÉ POUR MOBILE ==================== */
+/* ==================== DUAL VIEWER - ORIGINAL RESTAURÉ ==================== */
 .dualViewer {
   display: flex;
   width: 100%;
@@ -281,15 +273,16 @@
   padding: 0;
   margin: 0;
   
-  /* CORRECTIONS MOBILES - Layout empilé verticalement */
   @media (max-width: 768px) {
     flex-direction: column;
     gap: 0.25rem;
-    height: 100%;
+    /* FIX CRITIQUE : Permet le défilement tactile */
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
-/* ==================== TRIPLE VIEWER - CORRIGÉ POUR MOBILE ==================== */
+/* ==================== TRIPLE VIEWER - ORIGINAL RESTAURÉ ==================== */
 .tripleViewer {
   display: flex;
   flex-direction: row;
@@ -297,11 +290,12 @@
   height: 100%;
   gap: 0.5rem;
   
-  /* CORRECTIONS MOBILES */
   @media (max-width: 768px) {
     flex-direction: column;
     gap: 0.25rem;
-    height: 100%;
+    /* FIX CRITIQUE : Permet le défilement tactile */
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -314,7 +308,9 @@
   @media (max-width: 768px) {
     flex-direction: column;
     gap: 0.25rem;
-    height: 66.67%;
+    /* FIX CRITIQUE : Permet le défilement tactile */
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -324,11 +320,14 @@
   
   @media (max-width: 768px) {
     width: 100%;
-    height: 33.33%;
+    height: 33.333%;
+    /* FIX CRITIQUE : Permet le défilement tactile */
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
-/* ==================== QUAD VIEWER - CORRIGÉ POUR MOBILE ==================== */
+/* ==================== QUAD VIEWER - ORIGINAL RESTAURÉ ==================== */
 .quadViewer {
   display: flex;
   flex-direction: column;
@@ -338,7 +337,9 @@
   
   @media (max-width: 768px) {
     gap: 0.25rem;
-    height: 100%;
+    /* FIX CRITIQUE : Permet le défilement tactile */
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -350,7 +351,9 @@
   
   @media (max-width: 768px) {
     gap: 0.25rem;
-    height: 50%;
+    /* FIX CRITIQUE : Permet le défilement tactile */
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -360,7 +363,9 @@
   
   @media (max-width: 768px) {
     width: 50%;
-    height: 100%;
+    /* FIX CRITIQUE : Permet le défilement tactile */
+    touch-action: pan-x pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -371,10 +376,13 @@
   @media (max-width: 768px) {
     width: 100%;
     height: 33.333%;
+    /* FIX CRITIQUE : Permet le défilement tactile */
+    touch-action: pan-x pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
-/* ==================== VIEWER TYPES - CORRIGÉ POUR MOBILE ==================== */
+/* ==================== VIEWER TYPES - ORIGINAL RESTAURÉ ==================== */
 .viewer, .viewerHalf, .singleViewer, .viewerQuarter, .viewerThird {
   position: relative;
   margin: 0;
@@ -395,14 +403,15 @@
     border-color: rgb(var(--color-primary));
   }
   
-  /* CORRECTIONS CRITIQUES POUR MOBILE */
+  /* Mobile responsive */
   @media (max-width: 768px) {
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    /* Assure que chaque viewer a une hauteur minimale */
-    min-height: 200px;
-    /* Améliore l'affichage des images */
-    background-color: #000000;
+    /* FIX CRITIQUE : Permet le défilement tactile sur les images */
+    touch-action: pan-x pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
+    /* Empêche les problèmes de débordement */
+    overflow: auto;
   }
 }
 
@@ -415,7 +424,9 @@
     width: 100%;
     max-width: 100%;
     height: 50%;
-    min-height: 200px;
+    /* FIX CRITIQUE : Permet le défilement tactile */
+    touch-action: pan-x pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -426,12 +437,15 @@
   
   @media (max-width: 768px) {
     width: 100%;
-    height: 100%;
-    min-height: 300px;
+    /* FIX CRITIQUE : Permet le défilement tactile */
+    touch-action: pan-x pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
+    /* Assure que l'image peut être scrollée */
+    overflow: auto;
   }
 }
 
-/* ==================== IMAGES - CORRIGÉ POUR MOBILE ==================== */
+/* ==================== IMAGES - ORIGINAL RESTAURÉ ==================== */
 .image {
   width: 100%;
   height: 100%;
@@ -450,20 +464,16 @@
   transform: translateZ(0);
   backface-visibility: hidden;
   
-  /* CORRECTIONS CRITIQUES POUR MOBILE */
+  /* Mobile responsive */
   @media (max-width: 768px) {
-    /* Optimisations tactiles */
-    touch-action: pan-x pan-y;
+    /* FIX CRITIQUE : Optimisations tactiles pour les images */
+    touch-action: pan-x pan-y pinch-zoom;
     user-select: none;
     -webkit-user-select: none;
+    /* IMPORTANT : Réactive les événements pointer pour permettre le scroll */
+    pointer-events: auto;
     /* Améliore les performances */
     will-change: transform;
-    /* Assure que l'image est visible */
-    opacity: 1;
-    visibility: visible;
-    /* Force l'affichage même si les dimensions sont petites */
-    min-width: 100%;
-    min-height: 100%;
   }
 }
 
@@ -497,7 +507,7 @@
   }
 }
 
-/* ==================== BOTTOM BAR - CORRIGÉ POUR MOBILE ==================== */
+/* ==================== BOTTOM BAR - ORIGINAL RESTAURÉ ==================== */
 .bottomBar {
   position: fixed;
   bottom: 0;
@@ -525,7 +535,7 @@
     height: 100%;
   }
   
-  /* CORRECTIONS MOBILES */
+  /* Mobile responsive */
   @media (max-width: 768px) {
     height: 50px;
     padding: 0 12px;
@@ -533,6 +543,8 @@
     padding-bottom: env(safe-area-inset-bottom);
     padding-left: calc(12px + env(safe-area-inset-left));
     padding-right: calc(12px + env(safe-area-inset-right));
+    /* FIX CRITIQUE : Permet le défilement tactile */
+    touch-action: manipulation;
   }
   
   /* Très petits écrans */
@@ -545,7 +557,7 @@
   }
 }
 
-/* ==================== BUTTONS ET LINKS - OPTIMISÉ POUR MOBILE ==================== */
+/* ==================== BUTTONS ET LINKS - ORIGINAL RESTAURÉ ==================== */
 .responseButton, .sheetLink {
   background: rgba(255, 255, 255, 0.12);
   color: white;
@@ -609,7 +621,7 @@
   }
 }
 
-/* ==================== SHORTCUT GUIDE - OPTIMISÉ POUR MOBILE ==================== */
+/* ==================== SHORTCUT GUIDE - ORIGINAL RESTAURÉ ==================== */
 .shortcutGuide {
   display: flex;
   align-items: center;
@@ -705,6 +717,10 @@
     &.visible {
       transform: translate(-50%, -50%);
     }
+    
+    /* FIX CRITIQUE : Permet le défilement tactile dans le popup */
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
   }
   
   /* Très petits écrans */
@@ -751,12 +767,164 @@
   
   /* Mobile responsive */
   @media (max-width: 768px) {
-    padding: 6px 8px;
-    font-size: 12px;
+    padding: 12px;
+    font-size: 14px;
   }
 }
 
-/* ==================== ANIMATIONS AVEC CORRECTIONS MOBILES ==================== */
+.shortcutList strong {
+  display: inline-block;
+  margin-right: 8px;
+  color: rgb(var(--color-primary));
+  font-weight: 600;
+}
+
+/* ==================== RESPONSE BOX ==================== */
+.responseBox {
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  max-width: 350px;
+  z-index: 1001;
+  background-color: rgb(var(--color-surface));
+  border: 2px solid rgb(var(--color-border));
+  backdrop-filter: blur(8px);
+  animation: slideInUp 0.3s ease-out;
+  
+  @keyframes slideInUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    bottom: 60px;
+    right: 12px;
+    left: 12px;
+    max-width: none;
+    padding: 16px;
+    /* FIX CRITIQUE : Permet le défilement tactile */
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+.responseText {
+  color: rgb(var(--color-text));
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0;
+  
+  &::before {
+    content: '💡';
+    margin-right: 8px;
+    font-size: 18px;
+  }
+}
+
+/* ==================== LOADING ET EMPTY STATES ==================== */
+.loading, .emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: rgb(var(--color-text));
+  opacity: 0.7;
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    padding: 2rem 1rem;
+    font-size: 14px;
+    /* FIX CRITIQUE : Permet le défilement tactile */
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+.loadingSpinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgb(var(--color-border));
+  border-top: 3px solid rgb(var(--color-primary));
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    width: 28px;
+    height: 28px;
+    border-width: 2px;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ==================== TOOLTIP ==================== */
+.tooltip {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1002;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  
+  &.visible {
+    opacity: 1;
+  }
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 8px;
+  }
+}
+
+/* ==================== DRAG & DROP STATES ==================== */
+.folderThumbnail.dragging {
+  opacity: 0.5;
+  transform: scale(0.9);
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    /* Supprime l'effet de scale sur mobile */
+    transform: none;
+    opacity: 0.7;
+  }
+}
+
+.viewer.drag-over {
+  border-color: rgb(var(--color-accent)) !important;
+  background-color: rgba(var(--color-accent), 0.1);
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    /* Effet plus visible sur mobile */
+    border-width: 2px;
+    background-color: rgba(var(--color-accent), 0.15);
+  }
+}
+
+/* ==================== ANIMATIONS ==================== */
 @keyframes pulse {
   0% { opacity: 1; }
   50% { opacity: 0.7; }
@@ -770,52 +938,6 @@
   @media (max-width: 768px) {
     /* Animation plus courte sur mobile */
     animation: pulse 0.2s ease-in-out;
-  }
-}
-
-/* ==================== TRANSITIONS SPÉCIALES ==================== */
-.tripleViewer, .quadViewer, .dualViewer {
-  animation: fadeIn 0.3s ease-out;
-  
-  /* Mobile responsive */
-  @media (max-width: 768px) {
-    animation: fadeIn 0.2s ease-out;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* ==================== ÉTATS DE DRAG AND DROP ==================== */
-.viewer.drag-over {
-  border-color: rgb(var(--color-accent)) !important;
-  background-color: rgba(var(--color-accent), 0.1);
-  
-  /* Mobile responsive */
-  @media (max-width: 768px) {
-    /* Effet plus visible sur mobile */
-    border-width: 2px;
-    background-color: rgba(var(--color-accent), 0.15);
-  }
-}
-
-.viewer.dragging {
-  opacity: 0.9;
-  transform: scale(0.9);
-  
-  /* Mobile responsive */
-  @media (max-width: 768px) {
-    /* Supprime l'effet de scale sur mobile */
-    transform: none;
-    opacity: 0.7;
   }
 }
 
@@ -849,7 +971,28 @@
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-/* ==================== OPTIMISATIONS DE PERFORMANCE MOBILE ==================== */
+/* ==================== TRANSITIONS SPÉCIALES ==================== */
+.tripleViewer, .quadViewer, .dualViewer {
+  animation: fadeIn 0.3s ease-out;
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    animation: fadeIn 0.2s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ==================== OPTIMISATIONS DE PERFORMANCE ==================== */
 @media (max-width: 768px) {
   .image {
     will-change: transform;
@@ -871,43 +1014,5 @@
   * {
     animation-duration: 0.2s !important;
     transition-duration: 0.2s !important;
-  }
-  
-  /* Force l'accélération matérielle pour les éléments critiques */
-  .viewer, .mainViewer, .image {
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-  }
-}
-
-/* ==================== CORRECTIONS SPÉCIFIQUES POUR L'AFFICHAGE DES IMAGES ==================== */
-@media (max-width: 768px) {
-  /* Force l'affichage des images même sur petits écrans */
-  .viewer img, .mainViewer img, .singleViewer img {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: contain !important;
-  }
-  
-  /* Assure que les conteneurs d'images ont des dimensions minimales */
-  .viewer, .mainViewer, .singleViewer {
-    min-width: 200px !important;
-    min-height: 200px !important;
-  }
-  
-  /* Force l'affichage du layout principal */
-  .layout {
-    display: flex !important;
-    height: 100% !important;
-  }
-  
-  /* Assure que le mainViewer est visible */
-  .mainViewer {
-    flex: 1 !important;
-    background-color: #000000 !important;
-    position: relative !important;
   }
 }
