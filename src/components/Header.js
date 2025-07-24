@@ -9,13 +9,21 @@ const HeaderWrapper = styled.header`
   padding: 1rem 0;
   width: 100%;
   transition: background-color 0.3s ease, color 0.3s ease;
-  position: fixed; /* ← CHANGEMENT : fixed au lieu de relative */
-  top: 0; /* ← AJOUT : Collé en haut */
-  left: 0; /* ← AJOUT : Collé à gauche */
-  right: 0; /* ← AJOUT : Collé à droite */
-  z-index: 1000; /* ← AJOUT : Au-dessus de tout le contenu */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* ← AJOUT : Ombre pour le séparer du contenu */
-  backdrop-filter: blur(8px); /* ← AJOUT : Effet de flou d'arrière-plan moderne */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px);
+  
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    padding: 0.75rem 0;
+    /* Support pour les safe areas iPhone */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
 `;
 
 const HeaderContent = styled.div`
@@ -26,6 +34,13 @@ const HeaderContent = styled.div`
   width: 100%;
   margin: 0 auto;
   padding: 0 2rem;
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    padding: 0 1rem;
+    /* Ajuste l'espacement pour mobile */
+    gap: 0.5rem;
+  }
 `;
 
 const Logo = styled(Link)`
@@ -40,6 +55,19 @@ const Logo = styled(Link)`
   &:hover {
     opacity: 0.8;
   }
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+    gap: 0.25rem;
+    
+    /* Masque le texte sur très petits écrans, garde juste l'icône */
+    span {
+      @media (max-width: 480px) {
+        display: none;
+      }
+    }
+  }
 `;
 
 const CenterTitle = styled.h2`
@@ -50,6 +78,17 @@ const CenterTitle = styled.h2`
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    gap: 0.25rem;
+    
+    /* Cache le titre sur très petits écrans */
+    @media (max-width: 480px) {
+      display: none;
+    }
+  }
 `;
 
 const RightSection = styled.div`
@@ -57,9 +96,13 @@ const RightSection = styled.div`
   align-items: center;
   gap: 1rem;
   position: relative;
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    gap: 0.5rem;
+  }
 `;
 
-// NOUVEAU : Bouton toggle mode sombre dans le header
 const ThemeToggleButton = styled.button`
   background: none;
   border: none;
@@ -80,6 +123,18 @@ const ThemeToggleButton = styled.button`
 
   &:active {
     transform: translateY(0);
+  }
+  
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+    min-height: 44px;
+    min-width: 44px;
+    
+    /* Supprime l'effet hover sur mobile */
+    &:hover {
+      transform: none;
+    }
   }
 `;
 
@@ -105,6 +160,25 @@ const MenuButton = styled.button`
   &:active {
     transform: translateY(0);
   }
+  
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+    gap: 0.25rem;
+    min-height: 44px;
+    
+    /* Supprime l'effet hover sur mobile */
+    &:hover {
+      transform: none;
+    }
+    
+    /* Cache le nom d'utilisateur sur très petits écrans */
+    span {
+      @media (max-width: 480px) {
+        display: none;
+      }
+    }
+  }
 `;
 
 const DropdownMenu = styled.div`
@@ -117,7 +191,7 @@ const DropdownMenu = styled.div`
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   padding: 0.75rem 0;
   display: ${props => props.isOpen ? 'block' : 'none'};
-  z-index: 1001; /* ← AUGMENTÉ : Au-dessus du header */
+  z-index: 1001;
   min-width: 280px;
   backdrop-filter: blur(8px);
   animation: ${props => props.isOpen ? 'dropdownSlideIn' : 'dropdownSlideOut'} 0.2s ease;
@@ -143,6 +217,67 @@ const DropdownMenu = styled.div`
       transform: translateY(-10px);
     }
   }
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    /* Menu plein écran sur mobile */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    min-width: unset;
+    border-radius: 0;
+    padding: 1rem;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    
+    /* Support pour les safe areas */
+    padding-top: calc(1rem + env(safe-area-inset-top));
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+    padding-left: calc(1rem + env(safe-area-inset-left));
+    padding-right: calc(1rem + env(safe-area-inset-right));
+  }
+`;
+
+const MobileMenuHeader = styled.div`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid ${props => props.theme.border};
+  }
+`;
+
+const MobileMenuTitle = styled.h3`
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: ${props => props.theme.text};
+`;
+
+const MobileCloseButton = styled.button`
+  background: none;
+  border: none;
+  color: ${props => props.theme.text};
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  
+  &:hover {
+    background-color: ${props => props.theme.backgroundSecondary};
+  }
 `;
 
 const MenuSection = styled.div`
@@ -150,6 +285,11 @@ const MenuSection = styled.div`
   
   &:last-child {
     margin-bottom: 0;
+  }
+  
+  /* Mobile spacing */
+  @media (max-width: 768px) {
+    margin-bottom: 1rem;
   }
 `;
 
@@ -166,12 +306,25 @@ const SectionTitle = styled.div`
   border-radius: 8px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    padding: 1rem;
+    margin: 0;
+    font-size: 1rem;
+    border-radius: 12px;
+  }
 `;
 
 const MenuDivider = styled.div`
   height: 1px;
   background-color: ${props => props.theme.border || '#e0e6ed'};
   margin: 0.5rem 0;
+  
+  /* Mobile spacing */
+  @media (max-width: 768px) {
+    margin: 1rem 0;
+  }
 `;
 
 const MenuItem = styled(Link)`
@@ -196,6 +349,25 @@ const MenuItem = styled(Link)`
     width: 18px;
     height: 18px;
     opacity: 0.7;
+  }
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    padding: 1rem;
+    margin: 0 0 0.5rem 0;
+    border-radius: 12px;
+    font-size: 1rem;
+    min-height: 56px;
+    
+    /* Supprime l'effet de translation sur mobile */
+    &:hover {
+      transform: none;
+    }
+    
+    svg {
+      width: 24px;
+      height: 24px;
+    }
   }
 `;
 
@@ -224,6 +396,25 @@ const LogoutItem = styled.button`
     width: 18px;
     height: 18px;
   }
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    padding: 1rem;
+    margin: 0;
+    border-radius: 12px;
+    font-size: 1rem;
+    min-height: 56px;
+    
+    /* Supprime l'effet de translation sur mobile */
+    &:hover {
+      transform: none;
+    }
+    
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
 `;
 
 const UserInfo = styled.div`
@@ -242,6 +433,19 @@ const UserInfo = styled.div`
     height: 18px;
     opacity: 0.7;
   }
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    padding: 1rem;
+    margin: 0 0 1rem 0;
+    border-radius: 12px;
+    font-size: 1rem;
+    
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
 `;
 
 function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = null }) {
@@ -251,31 +455,50 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
 
   const handleMenuToggle = () => {
     setShowMenu(!showMenu);
+    
+    // Empêche le scroll du body quand le menu mobile est ouvert
+    if (!showMenu) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
   };
 
   const handleMenuItemClick = () => {
     setShowMenu(false);
+    // Restaure le scroll du body
+    document.body.style.overflow = '';
   };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setShowMenu(false);
+        document.body.style.overflow = '';
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
+    
+    // Cleanup au démontage du composant
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.body.style.overflow = '';
     };
   }, []);
+
+  // Cleanup si le composant change de route
+  useEffect(() => {
+    setShowMenu(false);
+    document.body.style.overflow = '';
+  }, [location]);
 
   return (
     <HeaderWrapper>
       <HeaderContent>
         <Logo to="/">
           <Stethoscope size={24} />
-          RIFIM
+          <span>RIFIM</span>
         </Logo>
         
         {pageTitle && (
@@ -283,13 +506,12 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
         )}
         
         <RightSection ref={menuRef}>
-          {/* NOUVEAU : Bouton toggle mode sombre directement dans le header */}
           <ThemeToggleButton onClick={toggleDarkMode} title={isDarkMode ? 'Passer en mode clair' : 'Passer en mode sombre'}>
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </ThemeToggleButton>
 
           <MenuButton onClick={handleMenuToggle}>
-            {userName && <span>{userName}</span>}
+            <span>{userName}</span>
             <ChevronDown 
               size={16} 
               style={{ 
@@ -300,6 +522,14 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
           </MenuButton>
 
           <DropdownMenu isOpen={showMenu}>
+            {/* Header mobile uniquement */}
+            <MobileMenuHeader>
+              <MobileMenuTitle>Menu</MobileMenuTitle>
+              <MobileCloseButton onClick={handleMenuItemClick}>
+                <X size={24} />
+              </MobileCloseButton>
+            </MobileMenuHeader>
+
             {/* Informations utilisateur */}
             {userName && (
               <>
@@ -369,7 +599,10 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
             <MenuDivider />
 
             {/* Déconnexion */}
-            <LogoutItem onClick={onLogout}>
+            <LogoutItem onClick={() => {
+              onLogout();
+              handleMenuItemClick();
+            }}>
               <LogOut size={18} />
               Déconnexion
             </LogoutItem>

@@ -1,15 +1,209 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CreationQ</title>
+  <meta charset="utf-8" />
+  <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+  
+  <!-- VIEWPORT OPTIMISÉ POUR MOBILE -->
+  <meta 
+    name="viewport" 
+    content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover"
+  />
+  
+  <!-- META TAGS POUR PWA -->
+  <meta name="theme-color" content="#3B82F6" />
+  <meta name="description" content="RIFIM - Application médicale pour questionnaires et cas cliniques" />
+  
+  <!-- APPLE TOUCH ICON -->
+  <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+  
+  <!-- PWA MANIFEST -->
+  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+  
+  <!-- PRECONNECT POUR LES PERFORMANCES -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <!-- OPTIMISATIONS MOBILE -->
+  <meta name="format-detection" content="telephone=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="RIFIM">
+  
+  <!-- PRÉVENTION DU ZOOM SUR LES INPUTS IOS -->
+  <style>
+    /* Prévient le zoom automatique sur les inputs sur iOS */
+    @media screen and (max-width: 767px) {
+      input[type="text"],
+      input[type="email"],
+      input[type="password"],
+      input[type="number"],
+      input[type="tel"],
+      input[type="url"],
+      input[type="search"],
+      textarea,
+      select {
+        font-size: 16px !important;
+      }
+    }
+    
+    /* Loading spinner pendant le chargement initial */
+    #initial-loader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
+    #initial-loader.dark {
+      background-color: #111827;
+      color: #f3f4f6;
+    }
+    
+    .loader-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #e5e7eb;
+      border-top: 3px solid #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .loader-text {
+      margin-left: 1rem;
+      font-size: 14px;
+      color: #6b7280;
+    }
+    
+    /* Cache le loader une fois l'app chargée */
+    .app-loaded #initial-loader {
+      display: none;
+    }
+    
+    /* Support pour les safe areas sur iPhone */
+    body {
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    
+    /* Évite le défilement élastique sur iOS */
+    body {
+      overscroll-behavior: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Améliore les performances de rendu sur mobile */
+    * {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  </style>
+  
+  <title>RIFIM - Application Médicale</title>
 </head>
 <body>
-    <div id="root"></div>
+  <!-- MESSAGE POUR NAVIGATEURS NON-SUPPORTÉS -->
+  <noscript>
+    <div style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2rem;
+      box-sizing: border-box;
+    ">
+      <div>
+        <h1 style="color: #1f2937; margin-bottom: 1rem;">JavaScript requis</h1>
+        <p style="color: #6b7280; max-width: 400px;">
+          Cette application nécessite JavaScript pour fonctionner. 
+          Veuillez activer JavaScript dans votre navigateur et recharger la page.
+        </p>
+      </div>
+    </div>
+  </noscript>
+  
+  <!-- LOADER INITIAL -->
+  <div id="initial-loader">
+    <div class="loader-spinner"></div>
+    <div class="loader-text">Chargement de RIFIM...</div>
+  </div>
+  
+  <!-- CONTAINER PRINCIPAL DE L'APPLICATION -->
+  <div id="root"></div>
+  
+  <!-- SCRIPT POUR GÉRER LE THÈME SOMBRE -->
+  <script>
+    // Détecte le thème système et applique immédiatement la classe
+    (function() {
+      const savedTheme = localStorage.getItem('isDarkMode');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isDark = savedTheme ? JSON.parse(savedTheme) : prefersDark;
+      
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+        document.getElementById('initial-loader').classList.add('dark');
+      }
+    })();
+    
+    // Cache le loader une fois l'app React montée
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        document.body.classList.add('app-loaded');
+      }, 100);
+    });
+    
+    // Gestion des erreurs JavaScript
+    window.addEventListener('error', function(e) {
+      console.error('Erreur JavaScript:', e.error);
+      // Optionnel : envoyer l'erreur à un service de monitoring
+    });
+    
+    // Améliore les performances sur mobile
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('%PUBLIC_URL%/sw.js')
+          .then(function(registration) {
+            console.log('SW registered: ', registration);
+          })
+          .catch(function(registrationError) {
+            console.log('SW registration failed: ', registrationError);
+          });
+      });
+    }
+    
+    // Optimisations pour les appareils tactiles
+    if ('ontouchstart' in window) {
+      document.documentElement.classList.add('touch-device');
+    }
+    
+    // Détection de l'orientation
+    function handleOrientationChange() {
+      document.documentElement.classList.toggle('landscape', window.innerHeight < window.innerWidth);
+      document.documentElement.classList.toggle('portrait', window.innerHeight >= window.innerWidth);
+    }
+    
+    window.addEventListener('orientationchange', handleOrientationChange);
+    window.addEventListener('resize', handleOrientationChange);
+    handleOrientationChange(); // Initial call
+  </script>
 </body>
 </html>
-   
