@@ -491,11 +491,11 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
     };
   }, [showMenu]);
 
-  // Cleanup si le composant change de route - SANS affecter l'auth
+  // Cleanup si le composant change de route - VERSION SIMPLIFIÉE
   useEffect(() => {
     setShowMenu(false);
     document.body.classList.remove('menu-open');
-  }, [location.pathname]); // Seulement le pathname, pas l'objet location complet
+  }, [location.pathname]);
 
   return (
     <HeaderWrapper>

@@ -121,7 +121,7 @@ function AppContent() {
     setIsDarkMode(!isDarkMode);
   };
 
-  // Gestion de l'utilisateur avec vérification renforcée
+  // Gestion de l'utilisateur - VERSION CORRIGÉE
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
@@ -129,47 +129,28 @@ function AppContent() {
     if (token && userData) {
       try {
         const parsedUser = JSON.parse(userData);
-        // Vérification que l'utilisateur a les propriétés nécessaires
-        if (parsedUser && parsedUser.username) {
-          setUser(parsedUser);
-        } else {
-          console.warn('Données utilisateur invalides, nettoyage...');
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-        }
+        setUser(parsedUser);
       } catch (error) {
         console.error('Erreur lors du parsing des données utilisateur:', error);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        setUser(null);
       }
     }
   }, []);
 
-  // Fonction de login améliorée
+  // Fonction de login simple
   const handleLogin = (userData, token) => {
-    try {
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
-    } catch (error) {
-      console.error('Erreur lors de la sauvegarde des données utilisateur:', error);
-    }
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
   };
 
-  // Fonction de logout sécurisée
+  // Fonction de logout simple
   const handleLogout = () => {
-    try {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      setUser(null);
-      
-      // Optionnel: redirection vers la page de connexion
-      window.location.href = '/';
-    } catch (error) {
-      console.error('Erreur lors de la déconnexion:', error);
-      // Force le rechargement en cas d'erreur
-      window.location.reload();
-    }
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
   };
 
   // Gestion du drag and drop
