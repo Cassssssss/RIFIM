@@ -26,10 +26,11 @@
 /* ============ BASE STYLES AVEC SUPPORT MOBILE CORRIGÉ ============ */
 html {
   scroll-behavior: smooth;
-  /* Fix pour les hauteurs sur mobile */
   height: 100%;
-  
-  @media (max-width: 768px) {
+}
+
+@media (max-width: 768px) {
+  html {
     /* Fix critique pour iOS */
     height: -webkit-fill-available;
     /* Empêche le zoom sur double tap */
@@ -39,13 +40,16 @@ html {
 
 body {
   font-family: 'Poppins', sans-serif;
-  @apply bg-background text-text;
+  background-color: rgb(var(--color-background));
+  color: rgb(var(--color-text));
   margin: 0;
   padding: 0;
   height: 100%;
-  
-  /* CORRECTIONS CRITIQUES POUR LE DÉFILEMENT MOBILE */
-  @media (max-width: 768px) {
+}
+
+/* CORRECTIONS CRITIQUES POUR LE DÉFILEMENT MOBILE */
+@media (max-width: 768px) {
+  body {
     /* Améliore le défilement tactile */
     -webkit-overflow-scrolling: touch;
     /* Empêche le rebond élastique */
@@ -65,17 +69,19 @@ body {
     /* Empêche les problèmes de positionnement */
     position: relative;
   }
-  
-  /* Classe pour empêcher le scroll quand le menu mobile est ouvert */
-  &.menu-open {
-    overflow: hidden;
-    position: fixed;
-    width: 100%;
-    
-    @media (max-width: 768px) {
-      height: 100vh;
-      height: -webkit-fill-available;
-    }
+}
+
+/* Classe pour empêcher le scroll quand le menu mobile est ouvert */
+body.menu-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  body.menu-open {
+    height: 100vh;
+    height: -webkit-fill-available;
   }
 }
 
@@ -85,8 +91,10 @@ body {
   padding: 0;
   display: flex;
   flex-direction: column;
-  
-  @media (max-width: 768px) {
+}
+
+@media (max-width: 768px) {
+  #root {
     /* Assure une hauteur correcte sur mobile */
     min-height: 100vh;
     min-height: -webkit-fill-available;
@@ -122,289 +130,592 @@ body {
 /* ============ RESPONSIVE CONTAINER SYSTEM ============ */
 @layer components {
   .container {
-    @apply w-full mx-auto px-4 sm:px-6 lg:px-8;
-    max-width: 100%;
-    
-    @media (max-width: 768px) {
-      @apply px-3;
-      /* Améliore le défilement dans les conteneurs */
-      overflow-x: hidden;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-  }
-
-  /* ============ RESPONSIVE CARDS ============ */
-  .card {
-    @apply bg-surface rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg border border-blue-100 dark:border-gray-700;
-    
-    @media (max-width: 768px) {
-      @apply rounded-md shadow-sm;
-      margin-bottom: 1rem;
-      /* Optimise le défilement dans les cartes */
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      /* Empêche les problèmes de redimensionnement */
-      contain: layout;
-    }
-  }
-
-  /* ============ RESPONSIVE BUTTONS AVEC OPTIMISATIONS TACTILES ============ */
-  .btn {
-    @apply px-6 py-2 rounded-md font-medium text-white transition-all duration-300 transform hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background uppercase tracking-wider text-sm shadow-md;
-    
-    @media (max-width: 768px) {
-      @apply px-4 py-3 text-base;
-      /* Taille tactile minimum recommandée */
-      min-height: 44px;
-      min-width: 44px;
-      /* Optimise les interactions tactiles */
-      touch-action: manipulation;
-      /* Supprime les effets de hover sur mobile */
-      transform: none !important;
-      
-      &:hover {
-        transform: none !important;
-      }
-      
-      &:active {
-        /* Feedback tactile léger */
-        transform: scale(0.98);
-      }
-    }
-  }
-
-  .btn-primary {
-    @apply bg-primary hover:bg-blue-600 focus:ring-primary;
-  }
-
-  .btn-secondary {
-    @apply bg-secondary hover:bg-indigo-600 focus:ring-secondary;
-  }
-
-  /* ============ RESPONSIVE INPUTS OPTIMISÉS ============ */
-  .input {
-    @apply w-full px-4 py-2 rounded-md border-2 border-blue-200 dark:border-gray-600 bg-surface text-text focus:border-blue-400 dark:focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-700 focus:ring-opacity-50 transition-all duration-300 placeholder-gray-400 dark:placeholder-gray-500;
-    
-    @media (max-width: 768px) {
-      @apply px-3 py-3 text-base;
-      /* Empêche le zoom automatique sur iOS */
-      font-size: 16px;
-      min-height: 44px;
-      /* Optimise les interactions tactiles */
-      touch-action: manipulation;
-    }
-  }
-
-  .select {
-    @apply w-full px-4 py-2 rounded-md border-2 border-blue-200 dark:border-gray-600 bg-surface text-text focus:border-blue-400 dark:focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-700 focus:ring-opacity-50 transition-all duration-300 appearance-none;
-    
-    @media (max-width: 768px) {
-      @apply px-3 py-3 text-base;
-      font-size: 16px;
-      min-height: 44px;
-      touch-action: manipulation;
-    }
-  }
-
-  /* ============ RESPONSIVE QUESTION CARDS ============ */
-  .question-card {
-    @apply bg-surface rounded-lg shadow-sm p-6 mb-6 transition-all duration-300 hover:shadow-md border-l-4 border-blue-400 dark:border-blue-600;
     width: 100%;
-    min-width: 300px;
-    
-    @media (max-width: 768px) {
-      @apply p-4 mb-4 rounded-md;
-      min-width: 100%;
-      /* Améliore le défilement horizontal si nécessaire */
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      /* Empêche les débordements verticaux indésirables */
-      overflow-y: visible;
-    }
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    max-width: 100%;
   }
-
-  .option-card {
-    @apply bg-blue-50 dark:bg-gray-700 rounded-md p-4 mb-3 transition-all duration-300 hover:bg-blue-100 dark:hover:bg-gray-600 border border-blue-200 dark:border-gray-600;
-    
-    @media (max-width: 768px) {
-      @apply p-3 mb-2;
-      min-height: 44px;
-      display: flex;
-      align-items: center;
-      /* Optimise les interactions tactiles */
-      touch-action: manipulation;
-      
-      &:hover {
-        /* Supprime les effets hover sur mobile */
-        @apply bg-blue-50 dark:bg-gray-700;
-      }
-    }
-  }
-
-  .sub-question {
-    @apply ml-6 mt-4 border-l-2 border-indigo-300 dark:border-indigo-600 pl-4;
-    
-    @media (max-width: 768px) {
-      @apply ml-3 pl-3;
-    }
-  }
-
-  /* ============ RESPONSIVE HEADER ============ */
-  .header {
-    @apply bg-blue-600 dark:bg-gray-800 text-white shadow-md sticky top-0 z-50;
-    
-    @media (max-width: 768px) {
-      /* Assure que le header reste en haut */
-      position: sticky;
-      top: 0;
-      /* Support pour les safe areas */
-      padding-top: env(safe-area-inset-top);
-    }
-  }
-
-  .header-content {
-    @apply container mx-auto py-4 flex justify-between items-center;
-    
-    @media (max-width: 768px) {
-      @apply py-3 px-4;
-    }
-  }
-
-  .header-title {
-    @apply text-3xl font-bold;
-    
-    @media (max-width: 768px) {
-      @apply text-2xl;
-    }
-  }
-
-  .header-nav {
-    @apply flex space-x-6;
-    
-    @media (max-width: 768px) {
-      @apply space-x-4;
-    }
-  }
-
-  .header-link {
-    @apply text-white hover:text-blue-200 dark:hover:text-blue-300 transition-colors duration-300 uppercase tracking-wider text-sm font-medium;
-    
-    @media (max-width: 768px) {
-      @apply text-xs py-2 px-1;
-      min-height: 44px;
-      display: flex;
-      align-items: center;
-      touch-action: manipulation;
-    }
-  }
-
-  /* ============ RESPONSIVE MAIN TITLE ============ */
-  .main-title {
-    @apply text-4xl font-bold text-center mb-12 text-gray-800 dark:text-gray-200;
-    
-    @media (max-width: 768px) {
-      @apply text-2xl mb-6;
-    }
-  }
-
-  /* ============ RESPONSIVE QUESTIONNAIRE LAYOUT CORRIGÉ ============ */
-  .questionnaire-layout {
-    @apply flex flex-wrap;
-    
-    @media (max-width: 1024px) {
-      @apply flex-col;
-      /* Améliore le défilement sur mobile */
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-  }
-
-  .questionnaire-creator {
-    @apply w-full lg:w-7/12 pr-0 lg:pr-4 mb-8 lg:mb-0;
-    
-    @media (max-width: 1024px) {
-      @apply w-full pr-0 mb-6;
-      /* Optimise le défilement */
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-  }
-
-  .questionnaire-preview {
-    @apply w-full lg:w-5/12 pl-0 lg:pl-4;
-    
-    @media (max-width: 1024px) {
-      @apply w-full pl-0;
-      /* Optimise le défilement */
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-  }
-
-  /* ============ OPTION TEXT MOBILE ============ */
-  .questionnaire-option {
-    @apply text-gray-700 dark:text-white;
-    
-    @media (max-width: 768px) {
-      font-size: 16px; /* Évite le zoom sur iOS */
-      line-height: 1.5;
-    }
-  }
-
-  /* ============ MOBILE MEDIA QUERIES GLOBALES CORRIGÉES ============ */
-  @media (max-width: 768px) {
-    .questionnaire-layout {
-      @apply flex-col;
-    }
-    
-    .questionnaire-creator,
-    .questionnaire-preview {
-      @apply w-full;
-      /* CORRECTION CRITIQUE : Assure un défilement fluide */
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-    }
-    
-    /* Espacement mobile optimisé */
+  
+  @media (min-width: 640px) {
     .container {
-      @apply px-3;
-    }
-    
-    /* Grilles responsive */
-    .grid {
-      @apply grid-cols-1;
-    }
-    
-    /* Tables responsive */
-    .table-responsive {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      /* Empêche les problèmes de débordement vertical */
-      overflow-y: visible;
-    }
-    
-    /* Modals mobile avec défilement corrigé */
-    .modal {
-      @apply mx-2;
-      max-height: 90vh;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      /* Support pour les safe areas */
-      margin-bottom: env(safe-area-inset-bottom);
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
     }
   }
   
-  /* ============ TABLET BREAKPOINT ============ */
-  @media (min-width: 769px) and (max-width: 1024px) {
-    .grid-tablet-2 {
-      @apply grid-cols-2;
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 2rem;
+      padding-right: 2rem;
     }
-    
-    .questionnaire-layout {
-      @apply flex-col;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    /* Améliore le défilement dans les conteneurs */
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ============ RESPONSIVE CARDS ============ */
+@layer components {
+  .card {
+    background-color: rgb(var(--color-surface));
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid #dbeafe;
+  }
+  
+  .card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .dark .card {
+    border-color: #374151;
+  }
+}
+
+@media (max-width: 768px) {
+  .card {
+    border-radius: 0.375rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    margin-bottom: 1rem;
+    /* Optimise le défilement dans les cartes */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Empêche les problèmes de redimensionnement */
+    contain: layout;
+  }
+}
+
+/* ============ RESPONSIVE BUTTONS AVEC OPTIMISATIONS TACTILES ============ */
+@layer components {
+  .btn {
+    padding: 0.5rem 1.5rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    color: white;
+    transition: all 0.3s ease;
+    transform: translateY(0);
+    outline: none;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.875rem;
+  }
+  
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+  
+  .btn:focus {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgb(var(--color-background)), 0 0 0 4px rgb(var(--color-primary));
+  }
+}
+
+@media (max-width: 768px) {
+  .btn {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    /* Taille tactile minimum recommandée */
+    min-height: 44px;
+    min-width: 44px;
+    /* Optimise les interactions tactiles */
+    touch-action: manipulation;
+    /* Supprime les effets de hover sur mobile */
+    transform: none !important;
+  }
+  
+  .btn:hover {
+    transform: none !important;
+  }
+  
+  .btn:active {
+    /* Feedback tactile léger */
+    transform: scale(0.98);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    background-color: rgb(var(--color-primary));
+  }
+  
+  .btn-primary:hover {
+    background-color: rgb(37 99 235);
+  }
+  
+  .btn-primary:focus {
+    box-shadow: 0 0 0 2px rgb(var(--color-background)), 0 0 0 4px rgb(var(--color-primary));
+  }
+
+  .btn-secondary {
+    background-color: rgb(var(--color-secondary));
+  }
+  
+  .btn-secondary:hover {
+    background-color: rgb(79 70 229);
+  }
+  
+  .btn-secondary:focus {
+    box-shadow: 0 0 0 2px rgb(var(--color-background)), 0 0 0 4px rgb(var(--color-secondary));
+  }
+}
+
+/* ============ RESPONSIVE INPUTS OPTIMISÉS ============ */
+@layer components {
+  .input {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    border: 2px solid #bfdbfe;
+    background-color: rgb(var(--color-surface));
+    color: rgb(var(--color-text));
+    transition: all 0.3s ease;
+  }
+  
+  .input:focus {
+    border-color: #60a5fa;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  .input::placeholder {
+    color: #9ca3af;
+  }
+  
+  .dark .input {
+    border-color: #4b5563;
+  }
+  
+  .dark .input:focus {
+    border-color: #93c5fd;
+    box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.1);
+  }
+  
+  .dark .input::placeholder {
+    color: #6b7280;
+  }
+}
+
+@media (max-width: 768px) {
+  .input {
+    padding: 0.75rem;
+    font-size: 1rem;
+    /* Empêche le zoom automatique sur iOS */
+    font-size: 16px;
+    min-height: 44px;
+    /* Optimise les interactions tactiles */
+    touch-action: manipulation;
+  }
+}
+
+@layer components {
+  .select {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    border: 2px solid #bfdbfe;
+    background-color: rgb(var(--color-surface));
+    color: rgb(var(--color-text));
+    transition: all 0.3s ease;
+    appearance: none;
+  }
+  
+  .select:focus {
+    border-color: #60a5fa;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  .dark .select {
+    border-color: #4b5563;
+  }
+  
+  .dark .select:focus {
+    border-color: #93c5fd;
+    box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.1);
+  }
+}
+
+@media (max-width: 768px) {
+  .select {
+    padding: 0.75rem;
+    font-size: 1rem;
+    font-size: 16px;
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+}
+
+/* ============ RESPONSIVE QUESTION CARDS ============ */
+@layer components {
+  .question-card {
+    background-color: rgb(var(--color-surface));
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+    border-left: 4px solid #60a5fa;
+    width: 100%;
+    min-width: 300px;
+  }
+  
+  .question-card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .dark .question-card {
+    border-left-color: #2563eb;
+  }
+}
+
+@media (max-width: 768px) {
+  .question-card {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0.375rem;
+    min-width: 100%;
+    /* Améliore le défilement horizontal si nécessaire */
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Empêche les débordements verticaux indésirables */
+    overflow-y: visible;
+  }
+}
+
+@layer components {
+  .option-card {
+    background-color: #eff6ff;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    transition: all 0.3s ease;
+    border: 1px solid #bfdbfe;
+  }
+  
+  .option-card:hover {
+    background-color: #dbeafe;
+  }
+  
+  .dark .option-card {
+    background-color: #374151;
+    border-color: #4b5563;
+  }
+  
+  .dark .option-card:hover {
+    background-color: #4b5563;
+  }
+}
+
+@media (max-width: 768px) {
+  .option-card {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    /* Optimise les interactions tactiles */
+    touch-action: manipulation;
+  }
+  
+  .option-card:hover {
+    /* Supprime les effets hover sur mobile */
+    background-color: #eff6ff;
+  }
+  
+  .dark .option-card:hover {
+    background-color: #374151;
+  }
+}
+
+@layer components {
+  .sub-question {
+    margin-left: 1.5rem;
+    margin-top: 1rem;
+    border-left: 2px solid #a5b4fc;
+    padding-left: 1rem;
+  }
+  
+  .dark .sub-question {
+    border-left-color: #4f46e5;
+  }
+}
+
+@media (max-width: 768px) {
+  .sub-question {
+    margin-left: 0.75rem;
+    padding-left: 0.75rem;
+  }
+}
+
+/* ============ RESPONSIVE HEADER ============ */
+@layer components {
+  .header {
+    background-color: #2563eb;
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  
+  .dark .header {
+    background-color: #1f2937;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    /* Assure que le header reste en haut */
+    position: sticky;
+    top: 0;
+    /* Support pour les safe areas */
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+@layer components {
+  .header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    padding: 0.75rem 1rem;
+  }
+}
+
+@layer components {
+  .header-title {
+    font-size: 1.875rem;
+    font-weight: 700;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-title {
+    font-size: 1.5rem;
+  }
+}
+
+@layer components {
+  .header-nav {
+    display: flex;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-nav {
+    gap: 1rem;
+  }
+}
+
+@layer components {
+  .header-link {
+    color: white;
+    transition: color 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  .header-link:hover {
+    color: #bfdbfe;
+  }
+  
+  .dark .header-link:hover {
+    color: #93c5fd;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-link {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.25rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    touch-action: manipulation;
+  }
+}
+
+/* ============ RESPONSIVE MAIN TITLE ============ */
+@layer components {
+  .main-title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 3rem;
+    color: #1f2937;
+  }
+  
+  .dark .main-title {
+    color: #e5e7eb;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-title {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* ============ RESPONSIVE QUESTIONNAIRE LAYOUT CORRIGÉ ============ */
+@layer components {
+  .questionnaire-layout {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 1024px) {
+  .questionnaire-layout {
+    flex-direction: column;
+    /* Améliore le défilement sur mobile */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@layer components {
+  .questionnaire-creator {
+    width: 100%;
+    padding-right: 0;
+    margin-bottom: 2rem;
+  }
+  
+  @media (min-width: 1024px) {
+    .questionnaire-creator {
+      width: 58.333333%;
+      padding-right: 1rem;
+      margin-bottom: 0;
     }
+  }
+}
+
+@media (max-width: 1024px) {
+  .questionnaire-creator {
+    width: 100%;
+    padding-right: 0;
+    margin-bottom: 1.5rem;
+    /* Optimise le défilement */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@layer components {
+  .questionnaire-preview {
+    width: 100%;
+    padding-left: 0;
+  }
+  
+  @media (min-width: 1024px) {
+    .questionnaire-preview {
+      width: 41.666667%;
+      padding-left: 1rem;
+    }
+  }
+}
+
+@media (max-width: 1024px) {
+  .questionnaire-preview {
+    width: 100%;
+    padding-left: 0;
+    /* Optimise le défilement */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ============ OPTION TEXT MOBILE ============ */
+@layer components {
+  .questionnaire-option {
+    color: #374151;
+  }
+  
+  .dark .questionnaire-option {
+    color: white;
+  }
+}
+
+@media (max-width: 768px) {
+  .questionnaire-option {
+    font-size: 16px; /* Évite le zoom sur iOS */
+    line-height: 1.5;
+  }
+}
+
+/* ============ MOBILE MEDIA QUERIES GLOBALES CORRIGÉES ============ */
+@media (max-width: 768px) {
+  .questionnaire-layout {
+    flex-direction: column;
+  }
+  
+  .questionnaire-creator,
+  .questionnaire-preview {
+    width: 100%;
+    /* CORRECTION CRITIQUE : Assure un défilement fluide */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  
+  /* Grilles responsive */
+  .grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  
+  /* Tables responsive */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Empêche les problèmes de débordement vertical */
+    overflow-y: visible;
+  }
+  
+  /* Modals mobile avec défilement corrigé */
+  .modal {
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+    max-height: 90vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Support pour les safe areas */
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* ============ TABLET BREAKPOINT ============ */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .grid-tablet-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  
+  .questionnaire-layout {
+    flex-direction: column;
   }
 }
 
@@ -442,11 +753,8 @@ u {
   }
   
   /* Optimise le défilement dans tous les conteneurs */
-  div, section, article, main {
-    /* Améliore le défilement tactile si le conteneur peut défiler */
-    &[style*="overflow"] {
-      -webkit-overflow-scrolling: touch;
-    }
+  div[style*="overflow"], section[style*="overflow"], article[style*="overflow"], main[style*="overflow"] {
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -471,22 +779,24 @@ u {
 }
 
 /* ============ RESPONSIVE UTILITIES ============ */
-.mobile-hidden {
-  @media (max-width: 768px) {
+@media (max-width: 768px) {
+  .mobile-hidden {
     display: none !important;
   }
 }
 
 .mobile-only {
   display: none;
-  
-  @media (max-width: 768px) {
+}
+
+@media (max-width: 768px) {
+  .mobile-only {
     display: block;
   }
 }
 
-.desktop-only {
-  @media (max-width: 768px) {
+@media (max-width: 768px) {
+  .desktop-only {
     display: none !important;
   }
 }
@@ -547,7 +857,3 @@ u {
     transition-duration: 0.2s !important;
   }
 }
-
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
