@@ -93,6 +93,11 @@ function RadiologyViewer() {
   const [touchStartPoints, setTouchStartPoints] = useState(null);
   const [initialScale, setInitialScale] = useState(1);
   const [lastTouch, setLastTouch] = useState({ x: 0, y: 0 });
+  
+  // États pour la navigation tactile améliorée
+  const [isScrolling, setIsScrolling] = useState(false);
+  const [scrollAccumulator, setScrollAccumulator] = useState(0);
+  const [activeViewer, setActiveViewer] = useState('single');
 
   const [theme] = useState(document.documentElement.getAttribute('data-theme') || 'light');
 
@@ -161,7 +166,7 @@ function RadiologyViewer() {
     }
   }, [currentCase]);
 
-  // ==================== FONCTION handleScroll COMPLÈTE ==================== 
+  // ==================== FONCTION handleScroll OPTIMISÉE ==================== 
   
   const handleScroll = useCallback((deltaY, slowMode = false, side) => {
     const threshold = slowMode ? 10 : 50;
@@ -352,11 +357,10 @@ function RadiologyViewer() {
   // ==================== TOUCH HANDLERS OPTIMISÉS ==================== 
   
   const handleTouchStart = useCallback((e, side) => {
-    // FIX CRITIQUE : Gestion intelligente des événements
+    e.preventDefault();
+    
     if (e.touches.length === 2) {
-      // Zoom/pinch - empêcher seulement ici
-      e.preventDefault();
-      e.stopPropagation();
+      // Zoom/pinch
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       const distance = Math.hypot(
@@ -368,29 +372,35 @@ function RadiologyViewer() {
         scale: imageControls[side].scale
       });
       setInitialScale(imageControls[side].scale);
+      setIsScrolling(false);
     } else if (e.touches.length === 1) {
-      // Navigation - autoriser le comportement par défaut
+      // Navigation tactile - initialiser
+      const touch = e.touches[0];
       setLastTouch({
-        x: e.touches[0].clientX,
-        y: e.touches[0].clientY
+        x: touch.clientX,
+        y: touch.clientY
       });
+      setActiveViewer(side);
+      setIsScrolling(true);
+      setScrollAccumulator(0);
     }
   }, [imageControls]);
   
   const handleTouchMove = useCallback((e, side) => {
+    e.preventDefault();
+    
     if (e.touches.length === 2 && touchStartPoints) {
-      // Zoom - empêcher le défaut
-      e.preventDefault();
+      // Zoom à deux doigts
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       const newDistance = Math.hypot(
         touch2.clientX - touch1.clientX,
         touch2.clientY - touch1.clientY
       );
-  
+
       const scaleFactor = newDistance / touchStartPoints.distance;
       const newScale = Math.max(0.1, Math.min(5, initialScale * scaleFactor));
-  
+
       setImageControls(prev => ({
         ...prev,
         [side]: {
@@ -399,31 +409,36 @@ function RadiologyViewer() {
         }
       }));
       applyImageTransforms(side);
-    } else if (e.touches.length === 1) {
-      // Navigation - comportement contrôlé
+    } else if (e.touches.length === 1 && isScrolling) {
+      // Navigation tactile avec un doigt
       const touch = e.touches[0];
-      const deltaY = touch.clientY - lastTouch.y;
+      const deltaY = lastTouch.y - touch.clientY; // Inversé pour défilement naturel
       
-      // Seuil plus élevé pour éviter les déclenchements accidentels
-      if (Math.abs(deltaY) > 10) {
-        // FIX : Empêcher seulement si c'est vraiment une navigation d'image
-        const isInImageViewer = e.target.closest(`.${styles.image}`) || 
-                               e.target.closest(`.${styles.viewer}`);
+      // Accumulation pour défilement fluide
+      setScrollAccumulator(prev => {
+        const newAccumulator = prev + deltaY;
         
-        if (isInImageViewer) {
-          handleScroll(deltaY * 3, false, side);
+        // Défilement quand on accumule assez de mouvement
+        if (Math.abs(newAccumulator) > 30) {
+          const direction = newAccumulator > 0 ? 1 : -1;
+          handleScroll(direction * 100, false, side);
+          return 0; // Reset accumulator
         }
-      }
+        
+        return newAccumulator;
+      });
       
       setLastTouch({
         x: touch.clientX,
         y: touch.clientY
       });
     }
-  }, [touchStartPoints, initialScale, applyImageTransforms, handleScroll, lastTouch]);
+  }, [touchStartPoints, initialScale, isScrolling, lastTouch, applyImageTransforms, handleScroll]);
   
-  const handleTouchEnd = useCallback(() => {
+  const handleTouchEnd = useCallback((e) => {
     setTouchStartPoints(null);
+    setIsScrolling(false);
+    setScrollAccumulator(0);
   }, []);
 
   // Fonction de changement de mode CONSERVÉE
@@ -544,12 +559,10 @@ function RadiologyViewer() {
   // ==================== GESTION WHEEL OPTIMISÉE ==================== 
   
   const handleWheelEvent = useCallback((e) => {
-    // FIX CRITIQUE : Gestion intelligente du wheel
     const isImageInteraction = e.target.closest(`.${styles.image}`) || 
                               e.target.closest(`.${styles.viewer}`) ||
                               e.ctrlKey || e.metaKey;
     
-    // Empêcher seulement si c'est vraiment une interaction d'image
     if (isImageInteraction) {
       e.preventDefault();
       e.stopPropagation();
@@ -569,7 +582,6 @@ function RadiologyViewer() {
         targetSide = 'left';
       }
     } else if (viewMode === 3 || viewMode === 4) {
-      // Détecter quel viewer est ciblé en mode 3 ou 4
       const viewerElement = e.target.closest(`.${styles.viewer}`);
       if (viewerElement) {
         const viewerClass = viewerElement.className;
@@ -593,11 +605,10 @@ function RadiologyViewer() {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // Effect pour gérer la molette - OPTIMISÉ
+  // Effect pour gérer la molette
   useEffect(() => {
     const mainViewer = document.getElementById('main-viewer');
     if (mainViewer) {
-      // FIX : Listener plus intelligent
       mainViewer.addEventListener('wheel', handleWheelEvent, { 
         passive: false,
         capture: false 
@@ -662,63 +673,6 @@ function RadiologyViewer() {
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [handleScroll, viewMode]);
-
-  // Effect pour les événements touch - OPTIMISÉ
-  useEffect(() => {
-    if (isTouchDevice) {
-      const viewer = document.querySelector(`.${styles.viewer}`);
-      let touchStartY = 0;
-      let lastScrollTime = 0;
-      const scrollDelay = 50;
-      
-      const handleTouchStartGlobal = (e) => {
-        touchStartY = e.touches[0].clientY;
-      };
-
-      const handleTouchMoveGlobal = (e) => {
-        // FIX CRITIQUE : Gestion plus fine
-        const currentY = e.touches[0].clientY;
-        const deltaY = touchStartY - currentY;
-        const currentTime = Date.now();
-        
-        // Détecter si on est dans une zone d'image
-        const isImageContainer = e.target.closest(`.${styles.image}`) || 
-                                e.target.closest(`.${styles.viewer}`);
-        
-        // Navigation d'images - empêcher seulement si vraiment nécessaire
-        if (isImageContainer && currentTime - lastScrollTime > scrollDelay) {
-          if (Math.abs(deltaY) > 20) { // Seuil plus élevé
-            // FIX : Empêcher seulement pour la navigation d'images
-            e.preventDefault();
-            const direction = deltaY > 0 ? 1 : -1;
-            handleScroll(direction * 50, false, viewMode === 1 ? 'single' : 'left');
-            lastScrollTime = currentTime;
-          }
-        }
-        
-        touchStartY = currentY;
-      };
-
-      // FIX CRITIQUE : Gestion plus fine du refresh
-      const preventRefresh = (e) => {
-        // Empêcher le refresh seulement si on tire depuis le très haut
-        if (window.scrollY === 0 && e.touches[0].clientY > 100) {
-          e.preventDefault();
-        }
-      };
-
-      // FIX : Ne pas bloquer l'overflow global
-      document.addEventListener('touchmove', preventRefresh, { passive: false });
-      viewer?.addEventListener('touchstart', handleTouchStartGlobal, { passive: true });
-      viewer?.addEventListener('touchmove', handleTouchMoveGlobal, { passive: false });
-
-      return () => {
-        document.removeEventListener('touchmove', preventRefresh);
-        viewer?.removeEventListener('touchstart', handleTouchStartGlobal);
-        viewer?.removeEventListener('touchmove', handleTouchMoveGlobal);
-      };
-    }
-  }, [isTouchDevice, handleScroll, viewMode]);
 
   // Effect pour charger le cas
   useEffect(() => {
@@ -1030,7 +984,7 @@ function RadiologyViewer() {
                 <li><strong>Shift + clic droit</strong> Contraste</li>
                 {isMobile && (
                   <>
-                    <li><strong>Glisser</strong> Navigation tactile</li>
+                    <li><strong>Glisser verticalement</strong> Navigation tactile</li>
                     <li><strong>Pincer</strong> Zoom sur images</li>
                   </>
                 )}
