@@ -357,10 +357,12 @@ function RadiologyViewer() {
   // ==================== TOUCH HANDLERS OPTIMISÉS ==================== 
   
   const handleTouchStart = useCallback((e, side) => {
-    e.preventDefault();
+    // Ne pas empêcher le comportement par défaut sauf pour les interactions spécifiques
+    const isImageInteraction = e.target.closest(`.${styles.image}`);
     
     if (e.touches.length === 2) {
-      // Zoom/pinch
+      // Zoom/pinch - empêcher seulement ici
+      e.preventDefault();
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       const distance = Math.hypot(
@@ -373,8 +375,8 @@ function RadiologyViewer() {
       });
       setInitialScale(imageControls[side].scale);
       setIsScrolling(false);
-    } else if (e.touches.length === 1) {
-      // Navigation tactile - initialiser
+    } else if (e.touches.length === 1 && isImageInteraction) {
+      // Navigation tactile - seulement sur les images
       const touch = e.touches[0];
       setLastTouch({
         x: touch.clientX,
@@ -387,10 +389,11 @@ function RadiologyViewer() {
   }, [imageControls]);
   
   const handleTouchMove = useCallback((e, side) => {
-    e.preventDefault();
+    const isImageInteraction = e.target.closest(`.${styles.image}`);
     
     if (e.touches.length === 2 && touchStartPoints) {
-      // Zoom à deux doigts
+      // Zoom à deux doigts - empêcher le défaut
+      e.preventDefault();
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       const newDistance = Math.hypot(
@@ -409,8 +412,9 @@ function RadiologyViewer() {
         }
       }));
       applyImageTransforms(side);
-    } else if (e.touches.length === 1 && isScrolling) {
-      // Navigation tactile avec un doigt
+    } else if (e.touches.length === 1 && isScrolling && isImageInteraction) {
+      // Navigation tactile avec un doigt - seulement sur les images
+      e.preventDefault();
       const touch = e.touches[0];
       const deltaY = lastTouch.y - touch.clientY; // Inversé pour défilement naturel
       
@@ -863,20 +867,40 @@ function RadiologyViewer() {
   const renderFolderThumbnails = useCallback(() => {
     if (!currentCase || !currentCase.folders) return null;
 
+    const handleFolderClick = (folder) => {
+      // Charger le dossier dans le viewer actuel selon le mode
+      if (viewMode === 1 || isMobile) {
+        loadImage(folder, 0, 'single');
+        setCurrentFolderLeft(folder);
+        setCurrentIndexLeft(0);
+      } else if (viewMode === 2) {
+        // En mode 2 viewers, charger dans le viewer de gauche
+        loadImage(folder, 0, 'left');
+        setCurrentFolderLeft(folder);
+        setCurrentIndexLeft(0);
+      } else if (viewMode >= 3) {
+        // En mode 3+ viewers, charger dans le premier viewer
+        loadImage(folder, 0, 'topLeft');
+        setCurrentFolderTopLeft(folder);
+        setCurrentIndexTopLeft(0);
+      }
+    };
+
     return (
       <div id="folder-thumbnails" className={styles.folderGrid}>
         {currentCase.folders.map(folder => (
           <div 
             key={folder} 
-            className={styles.folderThumbnail}
+            className={`${styles.folderThumbnail} ${
+              (viewMode === 1 && currentFolderLeft === folder) ||
+              (viewMode === 2 && currentFolderLeft === folder) ||
+              (viewMode >= 3 && currentFolderTopLeft === folder) 
+                ? styles.active 
+                : ''
+            }`}
             draggable={!isMobile}
             onDragStart={(e) => !isMobile && handleDragStart(e, folder)}
-            onClick={() => {
-              if (isMobile) {
-                loadImage(folder, 0, 'single');
-                setCurrentFolderLeft(folder);
-              }
-            }}
+            onClick={() => handleFolderClick(folder)}
           >
             <img 
               src={currentCase.folderMainImages?.[folder] || `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`}
@@ -893,7 +917,7 @@ function RadiologyViewer() {
         ))}
       </div>
     );
-  }, [currentCase, isMobile, handleDragStart, loadImage]);
+  }, [currentCase, isMobile, handleDragStart, loadImage, viewMode, currentFolderLeft, currentFolderTopLeft]);
 
   // Fonction pour rendre le viewer selon le mode COMPLÈTE
   const renderMainViewer = useCallback(() => {

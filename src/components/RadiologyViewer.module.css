@@ -25,10 +25,10 @@
     padding-right: env(safe-area-inset-right);
     padding-bottom: calc(60px + env(safe-area-inset-bottom)); /* Bottom bar + safe area */
     
-    /* Optimisations tactiles */
-    touch-action: manipulation;
+    /* Optimisations tactiles - PERMET LE SCROLL GLOBAL */
+    touch-action: pan-y; /* Permet le scroll vertical global */
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior: none;
+    overscroll-behavior: auto; /* Permet le refresh pull-to-refresh */
   }
   
   /* Mode paysage mobile */
@@ -188,6 +188,7 @@
   &.active {
     border-color: rgb(var(--color-accent));
     background-color: rgba(var(--color-accent), 0.1);
+    box-shadow: 0 0 0 2px rgb(var(--color-accent));
   }
   
   /* Mobile responsive - TACTILE OPTIMISÉ */
@@ -209,7 +210,9 @@
     
     &.active {
       border-color: rgb(var(--color-accent));
-      box-shadow: 0 0 0 2px rgb(var(--color-accent));
+      background-color: rgba(var(--color-accent), 0.15);
+      box-shadow: 0 0 0 3px rgb(var(--color-accent));
+      transform: scale(1.05);
     }
     
     &:active {
@@ -414,13 +417,13 @@
     border-color: rgb(var(--color-primary));
   }
   
-  /* Mobile responsive - TACTILE PARFAITEMENT FONCTIONNEL */
+  /* Mobile responsive - TACTILE SPÉCIFIQUE AUX IMAGES */
   @media (max-width: 768px) {
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     
-    /* CRITIAL : Interactions tactiles complètement fonctionnelles */
-    touch-action: none; /* Empêche le scroll natif pour contrôler */
+    /* Touch-action SEULEMENT pour les interactions d'images */
+    touch-action: manipulation; /* Permet les gestes de base */
     -webkit-overflow-scrolling: touch;
     user-select: none;
     -webkit-user-select: none;
@@ -480,11 +483,11 @@
   transform: translateZ(0);
   backface-visibility: hidden;
   
-  /* Mobile responsive - INTERACTIONS TACTILES COMPLÈTES */
+  /* Mobile responsive - INTERACTIONS TACTILES SPÉCIFIQUES */
   @media (max-width: 768px) {
-    /* CRITIQUE : Toutes les interactions tactiles fonctionnelles */
-    pointer-events: auto; /* ACTIVE toutes les interactions */
-    touch-action: none; /* Contrôle complet des gestes */
+    /* CRITIQUE : Interactions tactiles SEULEMENT sur les images */
+    pointer-events: auto;
+    touch-action: none; /* Contrôle complet SEULEMENT sur les images */
     user-select: none;
     -webkit-user-select: none;
     will-change: transform;
