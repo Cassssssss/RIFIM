@@ -1,179 +1,181 @@
 /* ==================== VARIABLES CSS POUR LE THÈME ==================== */
 /* Ces variables sont automatiquement définies par le thème dans theme.js */
 
-/* ==================== BASE CONTAINER - MOBILE FIRST ==================== */
+/* ==================== BASE CONTAINER - MOBILE FIRST COMPLET ==================== */
 .container {
-  position: fixed;
   width: 100%;
-  height: calc(100vh - 60px);
-  left: 0;
-  top: 70px;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   background: linear-gradient(135deg, rgb(var(--color-background)) 0%, rgb(var(--color-surface)) 100%);
-  overflow: hidden;
   color: rgb(var(--color-text));
-  z-index: 100;
   
-  /* Mobile responsive - OPTIMISÉ POUR PORTRAIT */
-  @media (max-width: 768px) {
-    height: 100vh;
-    height: 100dvh; /* Support viewport dynamique pour mobile */
-    top: 0;
-    padding-top: 60px; /* Compense la navbar */
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-    padding-bottom: calc(60px + env(safe-area-inset-bottom)); /* Bottom bar + safe area */
-    
-    /* Optimisations tactiles - PERMET LE SCROLL GLOBAL */
-    touch-action: pan-y; /* Permet le scroll vertical global */
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: auto; /* Permet le refresh pull-to-refresh */
+  /* Desktop */
+  @media (min-width: 769px) {
+    position: fixed;
+    height: calc(100vh - 60px);
+    left: 0;
+    top: 70px;
+    overflow: hidden;
+    z-index: 100;
   }
   
-  /* Mode paysage mobile */
-  @media (max-width: 768px) and (orientation: landscape) {
-    height: 100vh;
-    padding-top: 50px;
-    padding-bottom: calc(50px + env(safe-area-inset-bottom));
+  /* Mobile - LAYOUT NATUREL */
+  @media (max-width: 768px) {
+    position: relative;
+    top: 0;
+    left: 0;
+    padding-top: 70px; /* Compense la navbar fixe */
+    padding-bottom: 80px; /* Compense la bottom bar */
+    min-height: 100vh;
+    overflow: visible;
+    
+    /* Safe areas */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 }
 
-/* ==================== CONTENT ET LAYOUT - MOBILE OPTIMISÉ ==================== */
+/* ==================== CONTENT - MOBILE NATUREL ==================== */
 .content {
   flex: 1;
   display: flex;
   flex-direction: column;
   background-color: rgb(var(--color-background));
-  overflow: hidden;
-  margin: 0;
-  padding: 10px 0 70px 0;
-  min-height: 0;
   
-  /* Mobile responsive */
-  @media (max-width: 768px) {
-    padding: 5px 0 10px 0; /* Réduit le padding bottom */
-    flex: 1;
+  /* Desktop */
+  @media (min-width: 769px) {
+    overflow: hidden;
+    margin: 0;
+    padding: 10px 0 70px 0;
     min-height: 0;
+  }
+  
+  /* Mobile - NATUREL */
+  @media (max-width: 768px) {
+    padding: 20px 0;
+    overflow: visible;
+    min-height: calc(100vh - 150px);
   }
 }
 
 .layout {
   flex: 1;
   display: flex;
-  height: calc(100% - 10px);
   background-color: rgb(var(--color-background));
-  margin: 0;
-  padding: 0;
-  min-height: 0;
   gap: 0.5rem;
   
-  /* Mobile responsive - PORTRAIT OPTIMISÉ */
-  @media (max-width: 768px) {
-    flex-direction: row; /* Garde le layout horizontal même en portrait */
-    gap: 0.25rem;
-    height: 100%;
-    padding: 0 0.25rem;
-    overflow: hidden;
+  /* Desktop */
+  @media (min-width: 769px) {
+    height: calc(100% - 10px);
+    margin: 0;
+    padding: 0;
+    min-height: 0;
   }
   
-  /* Mode paysage mobile */
+  /* Mobile - LAYOUT VERTICAL ADAPTATIF */
+  @media (max-width: 768px) {
+    flex-direction: column;
+    padding: 0 15px;
+    gap: 1rem;
+    min-height: 70vh;
+  }
+  
+  /* Mobile paysage - LAYOUT HORIZONTAL */
   @media (max-width: 768px) and (orientation: landscape) {
+    flex-direction: row;
+    padding: 0 10px;
     gap: 0.5rem;
-    padding: 0 0.5rem;
   }
 }
 
-/* ==================== FOLDER GRID - MOBILE OPTIMISÉ ==================== */
+/* ==================== FOLDER GRID - MOBILE HORIZONTAL ==================== */
 .folderGrid {
-  width: 120px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  margin: 0;
-  overflow-y: auto;
   background-color: rgb(var(--color-surface));
   border: 1px solid rgb(var(--color-border));
   border-radius: 12px;
-  flex-shrink: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem;
   
-  /* Scrollbar personnalisée */
-  scrollbar-width: thin;
-  scrollbar-color: rgb(var(--color-primary)) rgb(var(--color-surface));
-  
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: rgb(var(--color-surface));
-    border-radius: 3px;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: rgb(var(--color-primary));
-    border-radius: 3px;
-  }
-  
-  /* Mobile responsive - PORTRAIT OPTIMISÉ */
-  @media (max-width: 768px) {
-    width: 90px; /* Largeur optimisée pour portrait */
-    padding: 0.3rem;
-    gap: 0.3rem;
-    border-radius: 8px;
-    
-    /* Scroll vertical parfaitement fonctionnel */
+  /* Desktop */
+  @media (min-width: 769px) {
+    width: 120px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
     overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-    touch-action: pan-y; /* SEULEMENT scroll vertical */
+    flex-shrink: 0;
     
-    /* Scrollbar mobile visible */
+    /* Scrollbar personnalisée */
     scrollbar-width: thin;
+    scrollbar-color: rgb(var(--color-primary)) rgb(var(--color-surface));
+    
     &::-webkit-scrollbar {
-      width: 4px;
-      display: block;
+      width: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: rgb(var(--color-surface));
+      border-radius: 3px;
     }
     
     &::-webkit-scrollbar-thumb {
       background: rgb(var(--color-primary));
-      border-radius: 2px;
+      border-radius: 3px;
     }
   }
   
-  /* Mode paysage mobile */
-  @media (max-width: 768px) and (orientation: landscape) {
-    width: 80px;
-    padding: 0.25rem;
-    gap: 0.25rem;
+  /* Mobile portrait - SCROLL HORIZONTAL */
+  @media (max-width: 768px) and (orientation: portrait) {
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: row;
+    gap: 0.75rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-shrink: 0;
+    padding: 0.75rem;
+    
+    /* Scroll horizontal tactile */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
   
-  /* Très petits écrans */
-  @media (max-width: 480px) {
-    width: 80px;
-    padding: 0.25rem;
+  /* Mobile paysage - VERTICAL COMPACT */
+  @media (max-width: 768px) and (orientation: landscape) {
+    width: 100px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex-shrink: 0;
+    padding: 0.5rem;
+    
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    &::-webkit-scrollbar {
+      width: 3px;
+    }
   }
 }
 
 .folderThumbnail {
-  width: 100%;
-  aspect-ratio: 1;
-  min-height: 90px;
-  max-height: 90px;
-  border-radius: 8px;
-  overflow: hidden;
-  position: relative;
-  margin-bottom: 0.25rem;
-  flex-shrink: 0;
   background-color: rgb(var(--color-background));
-  cursor: move;
+  cursor: pointer;
   transition: all 0.3s ease;
   border: 2px solid rgb(var(--color-border));
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
   
   &:hover {
     transform: scale(1.05);
@@ -188,49 +190,45 @@
   &.active {
     border-color: rgb(var(--color-accent));
     background-color: rgba(var(--color-accent), 0.1);
-    box-shadow: 0 0 0 2px rgb(var(--color-accent));
+    box-shadow: 0 0 0 3px rgb(var(--color-accent));
   }
   
-  /* Mobile responsive - TACTILE OPTIMISÉ */
-  @media (max-width: 768px) {
-    min-height: 70px;
-    max-height: 70px;
-    border-radius: 6px;
-    cursor: pointer;
+  /* Desktop */
+  @media (min-width: 769px) {
+    width: 100%;
+    aspect-ratio: 1;
+    min-height: 90px;
+    max-height: 90px;
+    margin-bottom: 0.25rem;
+  }
+  
+  /* Mobile portrait - HORIZONTAL SCROLL */
+  @media (max-width: 768px) and (orientation: portrait) {
+    width: 80px;
+    height: 80px;
+    border-radius: 12px;
     
     /* Zone tactile optimisée */
     touch-action: manipulation;
-    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
     
-    /* Interactions tactiles améliorées */
     &:hover {
       transform: scale(1.02);
-      border-color: rgb(var(--color-primary));
     }
     
     &.active {
+      transform: scale(1.05);
       border-color: rgb(var(--color-accent));
       background-color: rgba(var(--color-accent), 0.15);
       box-shadow: 0 0 0 3px rgb(var(--color-accent));
-      transform: scale(1.05);
-    }
-    
-    &:active {
-      transform: scale(0.95);
     }
   }
   
-  /* Mode paysage mobile */
+  /* Mobile paysage */
   @media (max-width: 768px) and (orientation: landscape) {
-    min-height: 60px;
-    max-height: 60px;
-  }
-  
-  /* Très petits écrans */
-  @media (max-width: 480px) {
-    min-height: 65px;
-    max-height: 65px;
-    border-radius: 4px;
+    width: 100%;
+    height: 70px;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
   }
 }
 
@@ -243,12 +241,6 @@
   
   &:hover {
     opacity: 0.9;
-  }
-  
-  /* Mobile optimizations */
-  @media (max-width: 768px) {
-    pointer-events: none;
-    will-change: auto;
   }
 }
 
@@ -269,101 +261,87 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
   pointer-events: none;
   
-  /* Mobile responsive */
+  /* Mobile */
   @media (max-width: 768px) {
-    font-size: 9px;
+    font-size: 10px;
     padding: 4px 2px;
-  }
-  
-  /* Très petits écrans */
-  @media (max-width: 480px) {
-    font-size: 8px;
-    padding: 3px 2px;
   }
 }
 
-/* ==================== MAIN VIEWER - MOBILE OPTIMISÉ ==================== */
+/* ==================== MAIN VIEWER - MOBILE ADAPTATIF ==================== */
 .mainViewer {
   flex: 1;
   display: flex;
-  height: 100%;
-  margin: 0;
-  padding: 0;
   justify-content: center;
   align-items: center;
   background-color: rgb(var(--color-background));
-  overflow: hidden;
   border-radius: 12px;
   
-  @media (max-width: 768px) {
-    border-radius: 8px;
+  /* Desktop */
+  @media (min-width: 769px) {
+    height: 100%;
+    margin: 0;
+    padding: 0;
     overflow: hidden;
-    flex: 1;
-    min-width: 0; /* Permet la compression */
+  }
+  
+  /* Mobile portrait - HAUTEUR ADAPTATIVE */
+  @media (max-width: 768px) and (orientation: portrait) {
+    width: 100%;
+    min-height: 60vh;
+    max-height: 70vh;
+    overflow: hidden;
+    border-radius: 16px;
+  }
+  
+  /* Mobile paysage */
+  @media (max-width: 768px) and (orientation: landscape) {
+    height: 100%;
+    min-height: 50vh;
+    overflow: hidden;
+    border-radius: 12px;
   }
 }
 
-/* ==================== DUAL VIEWER - MOBILE PORTRAIT OPTIMISÉ ==================== */
+/* ==================== VIEWERS - MOBILE ADAPTATIFS ==================== */
 .dualViewer {
   display: flex;
   width: 100%;
   height: 100%;
   gap: 0.5rem;
-  padding: 0;
-  margin: 0;
   
-  @media (max-width: 768px) {
-    /* En portrait mobile : layout vertical pour 2 viewers */
+  /* Mobile portrait - STACK VERTICAL */
+  @media (max-width: 768px) and (orientation: portrait) {
     flex-direction: column;
-    gap: 0.25rem;
-    height: 100%;
+    gap: 0.5rem;
   }
   
-  /* Mode paysage mobile : garde horizontal */
+  /* Mobile paysage - HORIZONTAL */
   @media (max-width: 768px) and (orientation: landscape) {
     flex-direction: row;
-    gap: 0.5rem;
+    gap: 0.25rem;
   }
 }
 
-/* ==================== TRIPLE VIEWER - MOBILE OPTIMISÉ ==================== */
 .tripleViewer {
   display: flex;
-  flex-direction: row;
   width: 100%;
   height: 100%;
   gap: 0.5rem;
   
-  @media (max-width: 768px) {
-    /* En portrait mobile : layout vertical pour 3 viewers */
+  /* Mobile portrait - STACK VERTICAL */
+  @media (max-width: 768px) and (orientation: portrait) {
     flex-direction: column;
     gap: 0.25rem;
   }
   
-  /* Mode paysage mobile : garde layout original mais réduit */
+  /* Mobile paysage - HORIZONTAL COMPACT */
   @media (max-width: 768px) and (orientation: landscape) {
     flex-direction: row;
-    gap: 0.3rem;
+    gap: 0.2rem;
   }
 }
 
-.viewerThird {
-  width: 33.333%;
-  height: 100%;
-  
-  @media (max-width: 768px) {
-    width: 100%;
-    height: 33.333%;
-  }
-  
-  /* Mode paysage mobile */
-  @media (max-width: 768px) and (orientation: landscape) {
-    width: 33.333%;
-    height: 100%;
-  }
-}
-
-/* ==================== QUAD VIEWER - MOBILE OPTIMISÉ ==================== */
 .quadViewer {
   display: flex;
   flex-direction: column;
@@ -371,6 +349,7 @@
   height: 100%;
   gap: 0.5rem;
   
+  /* Mobile */
   @media (max-width: 768px) {
     gap: 0.25rem;
   }
@@ -382,6 +361,7 @@
   height: 50%;
   gap: 0.5rem;
   
+  /* Mobile */
   @media (max-width: 768px) {
     gap: 0.25rem;
   }
@@ -390,13 +370,61 @@
 .viewerQuarter {
   width: 50%;
   height: 100%;
+}
+
+.viewerThird {
+  /* Desktop */
+  @media (min-width: 769px) {
+    width: 33.333%;
+    height: 100%;
+  }
   
-  @media (max-width: 768px) {
-    width: 50%; /* Garde la grille 2x2 même sur mobile */
+  /* Mobile portrait */
+  @media (max-width: 768px) and (orientation: portrait) {
+    width: 100%;
+    height: 33.333%;
+  }
+  
+  /* Mobile paysage */
+  @media (max-width: 768px) and (orientation: landscape) {
+    width: 33.333%;
+    height: 100%;
   }
 }
 
-/* ==================== VIEWER TYPES - MOBILE TACTILE OPTIMISÉ ==================== */
+.viewerHalf {
+  /* Desktop */
+  @media (min-width: 769px) {
+    flex: 1;
+    width: 50%;
+    height: 100%;
+  }
+  
+  /* Mobile portrait */
+  @media (max-width: 768px) and (orientation: portrait) {
+    width: 100%;
+    height: 50%;
+  }
+  
+  /* Mobile paysage */
+  @media (max-width: 768px) and (orientation: landscape) {
+    width: 50%;
+    height: 100%;
+  }
+}
+
+.singleViewer {
+  width: 100%;
+  height: 100%;
+  
+  /* Desktop */
+  @media (min-width: 769px) {
+    width: 95%;
+    margin: 0 auto;
+  }
+}
+
+/* ==================== VIEWER CONTAINERS ==================== */
 .viewer, .viewerHalf, .singleViewer, .viewerQuarter, .viewerThird {
   position: relative;
   margin: 0;
@@ -407,70 +435,30 @@
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  height: 100%;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  will-change: scroll-position;
-  contain: layout style paint;
   
   &:hover {
     border-color: rgb(var(--color-primary));
   }
   
-  /* Mobile responsive - TACTILE SPÉCIFIQUE AUX IMAGES */
+  /* Mobile */
   @media (max-width: 768px) {
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     
-    /* Touch-action SEULEMENT pour les interactions d'images */
-    touch-action: manipulation; /* Permet les gestes de base */
+    /* Touch actions spécifiques */
+    touch-action: manipulation;
     -webkit-overflow-scrolling: touch;
     user-select: none;
     -webkit-user-select: none;
-    
-    /* Garde hover mais optimisé */
-    &:hover {
-      border-color: rgb(var(--color-primary));
-    }
   }
 }
 
-.viewerHalf {
-  flex: 1;
-  width: 50%;
-  max-width: 50%;
-  
-  @media (max-width: 768px) {
-    width: 100%;
-    max-width: 100%;
-    height: 50%; /* 50% de hauteur en mode colonne portrait */
-  }
-  
-  /* Mode paysage mobile */
-  @media (max-width: 768px) and (orientation: landscape) {
-    width: 50%;
-    max-width: 50%;
-    height: 100%;
-  }
-}
-
-.singleViewer {
-  width: 95%;
-  height: 100%;
-  margin: 0 auto;
-  
-  @media (max-width: 768px) {
-    width: 100%;
-    margin: 0;
-  }
-}
-
-/* ==================== IMAGES - TACTILE OPTIMISÉ ==================== */
+/* ==================== IMAGES - TACTILE FONCTIONNEL ==================== */
 .image {
   width: 100%;
   height: 100%;
-  margin: 0;
-  padding: 0;
   object-fit: contain;
   object-position: center;
   display: block;
@@ -478,23 +466,15 @@
   user-select: none;
   -webkit-user-select: none;
   image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
   will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
   
-  /* Mobile responsive - INTERACTIONS TACTILES SPÉCIFIQUES */
+  /* Mobile - INTERACTIONS TACTILES COMPLÈTES */
   @media (max-width: 768px) {
-    /* CRITIQUE : Interactions tactiles SEULEMENT sur les images */
     pointer-events: auto;
-    touch-action: none; /* Contrôle complet SEULEMENT sur les images */
-    user-select: none;
-    -webkit-user-select: none;
-    will-change: transform;
-    
-    /* Optimisations performance */
+    touch-action: none; /* Contrôle complet sur les images */
     -webkit-transform: translateZ(0);
-    transform: translateZ(0);
   }
 }
 
@@ -521,13 +501,14 @@
     transform: scale(1.02);
   }
   
+  /* Mobile */
   @media (max-width: 768px) {
     top: 10px;
     left: 10px;
-    padding: 6px 8px;
+    padding: 6px 10px;
     font-size: 12px;
+    border-radius: 6px;
     
-    /* Supprime hover sur mobile */
     &:hover {
       background: rgba(0, 0, 0, 0.85);
       transform: none;
@@ -535,15 +516,8 @@
   }
 }
 
-/* ==================== BOTTOM BAR - MOBILE SAFE AREA ==================== */
+/* ==================== BOTTOM BAR - MOBILE ADAPTATIF ==================== */
 .bottomBar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  height: 60px;
-  width: 100%;
-  margin: 0;
-  padding: 0 24px;
   background: var(--header-background, #4f5b93);
   color: var(--header-text, #ffffff);
   display: flex;
@@ -553,56 +527,49 @@
   box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  
+  /* Desktop */
+  @media (min-width: 769px) {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    height: 60px;
+    width: 100%;
+    padding: 0 24px;
+  }
+  
+  /* Mobile - BOTTOM FIXE MAIS ADAPTATIF */
+  @media (max-width: 768px) {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    padding: 0 15px;
+    
+    /* Safe areas */
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: calc(15px + env(safe-area-inset-left));
+    padding-right: calc(15px + env(safe-area-inset-right));
+    
+    /* Touch optimisé */
+    touch-action: manipulation;
+  }
   
   /* Conteneur pour les boutons */
   & > div:last-child {
     display: flex;
     align-items: center;
-    gap: 0;
+    gap: 8px;
     height: 100%;
-  }
-  
-  /* Mobile responsive - SAFE AREA SUPPORT */
-  @media (max-width: 768px) {
-    height: 50px;
-    padding: 0 12px;
-    /* Support safe areas complet */
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-left: calc(12px + env(safe-area-inset-left));
-    padding-right: calc(12px + env(safe-area-inset-right));
-    
-    /* Touch optimisé */
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-  }
-  
-  /* Mode paysage mobile */
-  @media (max-width: 768px) and (orientation: landscape) {
-    height: 45px;
-    padding: 0 8px;
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-left: calc(8px + env(safe-area-inset-left));
-    padding-right: calc(8px + env(safe-area-inset-right));
-  }
-  
-  /* Très petits écrans */
-  @media (max-width: 480px) {
-    height: 45px;
-    padding: 0 8px;
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-left: calc(8px + env(safe-area-inset-left));
-    padding-right: calc(8px + env(safe-area-inset-right));
   }
 }
 
-/* ==================== BUTTONS - MOBILE TACTILE OPTIMISÉ ==================== */
+/* ==================== BUTTONS - MOBILE OPTIMISÉS ==================== */
 .responseButton, .sheetLink {
   background: rgba(255, 255, 255, 0.12);
   color: white;
-  padding: 10px 18px;
   border-radius: 6px;
-  font-size: 14px;
   font-weight: 500;
   border: 1px solid rgba(255, 255, 255, 0.15);
   cursor: pointer;
@@ -612,10 +579,8 @@
   gap: 6px;
   transition: all 0.2s ease;
   backdrop-filter: blur(4px);
-  margin-left: 8px;
   vertical-align: middle;
   line-height: 1;
-  height: 40px;
   box-sizing: border-box;
   
   &:hover {
@@ -630,20 +595,26 @@
     background: rgba(255, 255, 255, 0.08);
   }
   
-  /* Mobile responsive - ZONE TACTILE OPTIMISÉE */
+  /* Desktop */
+  @media (min-width: 769px) {
+    padding: 10px 18px;
+    font-size: 14px;
+    height: 40px;
+    margin-left: 8px;
+  }
+  
+  /* Mobile - ZONE TACTILE OPTIMISÉE */
   @media (max-width: 768px) {
-    padding: 8px 12px;
+    padding: 10px 12px;
     font-size: 12px;
+    height: 44px; /* Zone tactile Apple/Google */
+    min-width: 44px;
     white-space: nowrap;
-    margin-left: 4px;
-    height: 36px;
-    min-width: 44px; /* Zone tactile minimum Apple/Google */
     
     /* Touch optimisé */
     touch-action: manipulation;
     -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
     
-    /* Interactions tactiles améliorées */
     &:hover {
       background: rgba(255, 255, 255, 0.15);
       transform: none;
@@ -655,21 +626,6 @@
       transform: scale(0.98);
     }
   }
-  
-  /* Mode paysage mobile */
-  @media (max-width: 768px) and (orientation: landscape) {
-    padding: 6px 10px;
-    font-size: 11px;
-    height: 32px;
-  }
-  
-  /* Très petits écrans */
-  @media (max-width: 480px) {
-    padding: 6px 10px;
-    font-size: 11px;
-    height: 32px;
-    margin-left: 2px;
-  }
 }
 
 /* ==================== SHORTCUT GUIDE - MOBILE MODAL ==================== */
@@ -678,8 +634,8 @@
   align-items: center;
   position: relative;
   
-  /* Cache sur très petits écrans seulement */
-  @media (max-width: 400px) {
+  /* Cache sur très petits écrans */
+  @media (max-width: 480px) {
     display: none;
   }
 }
@@ -707,64 +663,67 @@
     color: white;
   }
   
-  /* Mobile responsive */
+  /* Mobile */
   @media (max-width: 768px) {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     font-size: 16px;
     
     touch-action: manipulation;
-    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
     
     &:hover {
-      background: rgba(255, 255, 255, 0.1);
       transform: none;
     }
     
     &:active {
-      background: rgba(255, 255, 255, 0.15);
       transform: scale(0.95);
     }
   }
 }
 
 .shortcutPopup {
-  position: absolute;
-  bottom: 70px;
-  left: -10px;
   background-color: rgb(var(--color-surface));
   color: rgb(var(--color-text));
   border: 2px solid rgb(var(--color-border));
   border-radius: 12px;
   padding: 20px;
-  width: 320px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   z-index: 1001;
   backdrop-filter: blur(12px);
   opacity: 0;
   visibility: hidden;
-  transform: translateY(10px);
   transition: all 0.3s ease;
   
   &.visible {
     opacity: 1;
     visibility: visible;
-    transform: translateY(0);
   }
   
-  /* Mobile responsive - MODAL PLEIN ÉCRAN */
+  /* Desktop */
+  @media (min-width: 769px) {
+    position: absolute;
+    bottom: 70px;
+    left: -10px;
+    width: 320px;
+    transform: translateY(10px);
+    
+    &.visible {
+      transform: translateY(0);
+    }
+  }
+  
+  /* Mobile - MODAL CENTRÉ */
   @media (max-width: 768px) {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: calc(100vw - 2rem);
-    max-width: 300px;
-    bottom: auto;
-    padding: 1rem;
-    border-radius: 16px;
+    max-width: 350px;
     max-height: 80vh;
     overflow-y: auto;
+    border-radius: 16px;
+    padding: 1.5rem;
     
     &.visible {
       transform: translate(-50%, -50%);
@@ -773,14 +732,6 @@
     /* Scroll tactile */
     touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-  }
-  
-  /* Très petits écrans */
-  @media (max-width: 480px) {
-    width: calc(100vw - 1rem);
-    max-width: none;
-    margin: 0.5rem;
   }
 }
 
@@ -809,19 +760,13 @@
   margin-bottom: 12px;
   font-size: 14px;
   line-height: 1.5;
-  padding: 8px 12px;
+  padding: 12px;
   background-color: rgb(var(--color-background));
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid rgb(var(--color-border));
   
   &:last-child {
     margin-bottom: 0;
-  }
-  
-  /* Mobile responsive */
-  @media (max-width: 768px) {
-    padding: 10px;
-    font-size: 14px;
   }
 }
 
@@ -832,18 +777,14 @@
   font-weight: 600;
 }
 
-/* ==================== RESPONSE BOX - MOBILE OPTIMISÉ ==================== */
+/* ==================== RESPONSE BOX - MOBILE ADAPTATIF ==================== */
 .responseBox {
-  position: fixed;
-  bottom: 80px;
-  right: 24px;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  max-width: 350px;
-  z-index: 1001;
   background-color: rgb(var(--color-surface));
   border: 2px solid rgb(var(--color-border));
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
   backdrop-filter: blur(8px);
   animation: slideInUp 0.3s ease-out;
   
@@ -858,19 +799,28 @@
     }
   }
   
+  /* Desktop */
+  @media (min-width: 769px) {
+    position: fixed;
+    bottom: 80px;
+    right: 24px;
+    max-width: 350px;
+  }
+  
+  /* Mobile - ADAPTATIF */
   @media (max-width: 768px) {
-    bottom: 60px;
-    right: 12px;
-    left: 12px;
-    max-width: none;
-    padding: 16px;
-    max-height: 60vh;
+    position: fixed;
+    bottom: 80px;
+    left: 15px;
+    right: 15px;
+    max-height: 50vh;
     overflow-y: auto;
+    padding: 16px;
     
-    /* Support safe area */
-    bottom: calc(60px + env(safe-area-inset-bottom));
-    right: calc(12px + env(safe-area-inset-right));
-    left: calc(12px + env(safe-area-inset-left));
+    /* Safe areas */
+    bottom: calc(80px + env(safe-area-inset-bottom));
+    left: calc(15px + env(safe-area-inset-left));
+    right: calc(15px + env(safe-area-inset-right));
     
     /* Scroll tactile */
     touch-action: pan-y;
@@ -892,7 +842,7 @@
   }
 }
 
-/* ==================== LOADING ET STATES ==================== */
+/* ==================== STATES ET LOADING ==================== */
 .loading, .emptyState {
   display: flex;
   flex-direction: column;
@@ -901,11 +851,8 @@
   height: 100%;
   color: rgb(var(--color-text));
   opacity: 0.7;
-  
-  @media (max-width: 768px) {
-    padding: 2rem 1rem;
-    font-size: 14px;
-  }
+  padding: 2rem 1rem;
+  text-align: center;
 }
 
 .loadingSpinner {
@@ -916,12 +863,6 @@
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
-  
-  @media (max-width: 768px) {
-    width: 28px;
-    height: 28px;
-    border-width: 2px;
-  }
 }
 
 @keyframes spin {
@@ -929,102 +870,9 @@
   100% { transform: rotate(360deg); }
 }
 
-/* ==================== TOOLTIP ==================== */
-.tooltip {
-  position: absolute;
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  white-space: nowrap;
-  z-index: 1002;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  
-  &.visible {
-    opacity: 1;
-  }
-  
-  @media (max-width: 768px) {
-    font-size: 14px;
-    padding: 8px 12px;
-    border-radius: 8px;
-  }
-}
-
-/* ==================== DRAG & DROP ==================== */
-.folderThumbnail.dragging {
-  opacity: 0.5;
-  transform: scale(0.9);
-  
-  @media (max-width: 768px) {
-    transform: none;
-    opacity: 0.7;
-  }
-}
-
-.viewer.drag-over {
-  border-color: rgb(var(--color-accent)) !important;
-  background-color: rgba(var(--color-accent), 0.1);
-  
-  @media (max-width: 768px) {
-    border-width: 2px;
-    background-color: rgba(var(--color-accent), 0.15);
-  }
-}
-
-/* ==================== ANIMATIONS ==================== */
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.7; }
-  100% { opacity: 1; }
-}
-
-.folderThumbnail:active {
-  animation: pulse 0.3s ease-in-out;
-  
-  @media (max-width: 768px) {
-    animation: pulse 0.2s ease-in-out;
-  }
-}
-
-/* ==================== ACCESSIBILITÉ ==================== */
-.shortcutIcon:focus,
-.responseButton:focus,
-.sheetLink:focus,
-.folderThumbnail:focus {
-  outline: 2px solid rgb(var(--color-accent));
-  outline-offset: 2px;
-  
-  @media (max-width: 768px) {
-    outline-width: 3px;
-    outline-offset: 3px;
-  }
-}
-
-/* ==================== THÈME SOMBRE ==================== */
-:global(.dark) .container {
-  background: linear-gradient(135deg, rgb(var(--color-background)) 0%, rgb(var(--color-surface)) 100%);
-}
-
-:global(.dark) .folderThumbnailLabel {
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
-}
-
-:global(.dark) .shortcutPopup {
-  backdrop-filter: blur(12px);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-/* ==================== TRANSITIONS ==================== */
+/* ==================== ANIMATIONS ET TRANSITIONS ==================== */
 .tripleViewer, .quadViewer, .dualViewer {
   animation: fadeIn 0.3s ease-out;
-  
-  @media (max-width: 768px) {
-    animation: fadeIn 0.2s ease-out;
-  }
 }
 
 @keyframes fadeIn {
@@ -1038,37 +886,42 @@
   }
 }
 
-/* ==================== PERFORMANCES MOBILES OPTIMISÉES ==================== */
+/* ==================== DRAG & DROP ==================== */
+.folderThumbnail.dragging {
+  opacity: 0.5;
+  transform: scale(0.9);
+}
+
+.viewer.drag-over {
+  border-color: rgb(var(--color-accent)) !important;
+  background-color: rgba(var(--color-accent), 0.1);
+}
+
+/* ==================== ACCESSIBILITÉ ==================== */
+.shortcutIcon:focus,
+.responseButton:focus,
+.sheetLink:focus,
+.folderThumbnail:focus {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 2px;
+}
+
+/* ==================== THÈME SOMBRE ==================== */
+:global(.dark) .container {
+  background: linear-gradient(135deg, rgb(var(--color-background)) 0%, rgb(var(--color-surface)) 100%);
+}
+
+:global(.dark) .folderThumbnailLabel {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+}
+
+/* ==================== OPTIMISATIONS PERFORMANCES MOBILE ==================== */
 @media (max-width: 768px) {
-  /* Optimisations GPU critiques */
   .image {
     will-change: transform;
     -webkit-transform: translateZ(0);
-    transform: translateZ(0);
   }
 
-  .folderThumbnail {
-    will-change: auto;
-  }
-
-  .shortcutPopup {
-    will-change: opacity, visibility, transform;
-  }
-
-  .viewer {
-    will-change: auto;
-    /* Améliore les performances tactiles */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-  }
-  
-  /* Animations optimisées pour mobile */
-  * {
-    animation-duration: 0.2s !important;
-    transition-duration: 0.2s !important;
-  }
-  
-  /* Accélération matérielle pour les conteneurs principaux */
   .container,
   .content,
   .layout,
@@ -1079,61 +932,10 @@
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
   }
-}
-
-/* ==================== SUPPORT TRÈS HAUTE RÉSOLUTION ==================== */
-@media (min-width: 1200px) {
-  .container {
-    height: calc(100vh - 70px);
-  }
   
-  .folderGrid {
-    width: 140px;
-  }
-  
-  .folderThumbnail {
-    min-height: 100px;
-    max-height: 100px;
-  }
-}
-
-/* ==================== SUPPORT ÉCRANS ULTRAWIDE ==================== */
-@media (min-aspect-ratio: 2/1) {
-  .layout {
-    max-width: 1800px;
-    margin: 0 auto;
-  }
-}
-
-/* ==================== FIX POUR NOTCH iPhone ==================== */
-@media (max-width: 768px) {
-  @supports (padding: max(0px)) {
-    .container {
-      padding-left: max(env(safe-area-inset-left), 0px);
-      padding-right: max(env(safe-area-inset-right), 0px);
-    }
-    
-    .bottomBar {
-      padding-left: max(calc(12px + env(safe-area-inset-left)), 12px);
-      padding-right: max(calc(12px + env(safe-area-inset-right)), 12px);
-      padding-bottom: max(env(safe-area-inset-bottom), 0px);
-    }
-  }
-}
-
-/* ==================== ORIENTATION CHANGE TRANSITION ==================== */
-@media (max-width: 768px) {
-  .container, .layout, .folderGrid, .mainViewer {
-    transition: all 0.3s ease;
-  }
-  
-  /* Empêche les transitions pendant le changement d'orientation */
-  @media (orientation: landscape) {
-    .container.orientation-changing,
-    .layout.orientation-changing,
-    .folderGrid.orientation-changing,
-    .mainViewer.orientation-changing {
-      transition: none;
-    }
+  /* Animations optimisées */
+  * {
+    animation-duration: 0.2s !important;
+    transition-duration: 0.2s !important;
   }
 }

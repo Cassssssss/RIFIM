@@ -101,6 +101,12 @@ function RadiologyViewer() {
 
   const [theme] = useState(document.documentElement.getAttribute('data-theme') || 'light');
 
+  // Détection mobile améliorée
+  const [isMobileDevice] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  });
+
   // ==================== FONCTION loadImage COMPLÈTE ==================== 
   
   const loadImage = useCallback((folder, index, side) => {
@@ -862,29 +868,29 @@ function RadiologyViewer() {
       </div>
     );
   }, [handleMouseDown, handleMouseMove, handleMouseUp, handleDrop, 
-      handleTouchStart, handleTouchMove, handleTouchEnd, getFolderName, getCurrentIndex, currentCase]);
+      handleTouchStart, handleTouchMove, handleTouchEnd, getFolderName, getCurrentIndex, currentCase, isMobileDevice]);
 
   const renderFolderThumbnails = useCallback(() => {
     if (!currentCase || !currentCase.folders) return null;
 
-    const handleFolderClick = (folder) => {
-      // Charger le dossier dans le viewer actuel selon le mode
-      if (viewMode === 1 || isMobile) {
-        loadImage(folder, 0, 'single');
-        setCurrentFolderLeft(folder);
-        setCurrentIndexLeft(0);
-      } else if (viewMode === 2) {
-        // En mode 2 viewers, charger dans le viewer de gauche
-        loadImage(folder, 0, 'left');
-        setCurrentFolderLeft(folder);
-        setCurrentIndexLeft(0);
-      } else if (viewMode >= 3) {
-        // En mode 3+ viewers, charger dans le premier viewer
-        loadImage(folder, 0, 'topLeft');
-        setCurrentFolderTopLeft(folder);
-        setCurrentIndexTopLeft(0);
-      }
-    };
+  const handleFolderClick = (folder) => {
+    // Charger le dossier dans le viewer actuel selon le mode
+    if (viewMode === 1 || isMobileDevice) {
+      loadImage(folder, 0, 'single');
+      setCurrentFolderLeft(folder);
+      setCurrentIndexLeft(0);
+    } else if (viewMode === 2) {
+      // En mode 2 viewers, charger dans le viewer de gauche
+      loadImage(folder, 0, 'left');
+      setCurrentFolderLeft(folder);
+      setCurrentIndexLeft(0);
+    } else if (viewMode >= 3) {
+      // En mode 3+ viewers, charger dans le premier viewer
+      loadImage(folder, 0, 'topLeft');
+      setCurrentFolderTopLeft(folder);
+      setCurrentIndexTopLeft(0);
+    }
+  };
 
     return (
       <div id="folder-thumbnails" className={styles.folderGrid}>
@@ -898,8 +904,8 @@ function RadiologyViewer() {
                 ? styles.active 
                 : ''
             }`}
-            draggable={!isMobile}
-            onDragStart={(e) => !isMobile && handleDragStart(e, folder)}
+            draggable={!isMobileDevice}
+            onDragStart={(e) => !isMobileDevice && handleDragStart(e, folder)}
             onClick={() => handleFolderClick(folder)}
           >
             <img 
@@ -917,7 +923,7 @@ function RadiologyViewer() {
         ))}
       </div>
     );
-  }, [currentCase, isMobile, handleDragStart, loadImage, viewMode, currentFolderLeft, currentFolderTopLeft]);
+  }, [currentCase, isMobileDevice, handleDragStart, loadImage, viewMode, currentFolderLeft, currentFolderTopLeft, handleFolderClick]);
 
   // Fonction pour rendre le viewer selon le mode COMPLÈTE
   const renderMainViewer = useCallback(() => {
@@ -1006,7 +1012,7 @@ function RadiologyViewer() {
                 <li><strong>Shift + clic gauche</strong> Déplacer</li>
                 <li><strong>Clic droit</strong> Zoom</li>
                 <li><strong>Shift + clic droit</strong> Contraste</li>
-                {isMobile && (
+                {isMobileDevice && (
                   <>
                     <li><strong>Glisser verticalement</strong> Navigation tactile</li>
                     <li><strong>Pincer</strong> Zoom sur images</li>
