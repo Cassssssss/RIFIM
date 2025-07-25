@@ -1,305 +1,214 @@
-/* ==================== DESIGN MOBILE FIRST MODERNE ==================== */
+/* ==================== VARIABLES CSS POUR LE THÈME ==================== */
+/* Ces variables sont automatiquement définies par le thème dans theme.js */
 
-/* ==================== BASE CONTAINER - SCROLL NATUREL ==================== */
+/* ==================== BASE CONTAINER - MOBILE OPTIMISÉ ==================== */
 .container {
+  position: fixed;
   width: 100%;
+  height: calc(100vh - 60px);
+  left: 0;
+  top: 70px;
+  display: flex;
+  flex-direction: column;
   background: linear-gradient(135deg, rgb(var(--color-background)) 0%, rgb(var(--color-surface)) 100%);
+  overflow: hidden;
   color: rgb(var(--color-text));
-  min-height: 100vh;
+  z-index: 100;
   
-  /* Desktop - Layout fixe classique */
-  @media (min-width: 1024px) {
-    position: fixed;
-    height: calc(100vh - 60px);
+  /* Mobile responsive - CRITIQUES POUR LE SCROLL */
+  @media (max-width: 768px) {
+    height: calc(100vh - 70px);
+    height: calc(100dvh - 70px); /* Support pour dynamic viewport */
     top: 70px;
-    left: 0;
-    overflow: hidden;
-    z-index: 100;
-  }
-  
-  /* Tablet et Mobile - Layout naturel avec scroll */
-  @media (max-width: 1023px) {
-    position: relative;
-    min-height: 100vh;
-    padding-top: 80px; /* Header space */
-    padding-bottom: 100px; /* Bottom bar space */
-    
-    /* Safe areas pour mobile */
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+    
+    /* FIX CRITIQUE : Autorise tous les types de touch */
+    touch-action: auto;
+    -webkit-overflow-scrolling: touch;
+    overflow: auto; /* Permet le scroll de base */
   }
 }
 
-/* ==================== CONTENT - RESPONSIVE NATUREL ==================== */
+/* ==================== CONTENT ET LAYOUT - MOBILE OPTIMISÉ ==================== */
 .content {
-  width: 100%;
-  height: 100%;
+  flex: 1;
   display: flex;
   flex-direction: column;
+  background-color: rgb(var(--color-background));
+  overflow: hidden;
+  margin: 0;
+  padding: 10px 0 70px 0;
+  min-height: 0;
   
-  /* Desktop */
-  @media (min-width: 1024px) {
-    overflow: hidden;
-    padding: 20px 0 80px 0;
-    height: calc(100vh - 150px);
-  }
-  
-  /* Mobile et Tablet */
-  @media (max-width: 1023px) {
-    padding: 20px 16px;
-    min-height: calc(100vh - 180px);
-    overflow: visible;
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    padding: 5px 0 60px 0;
+    
+    /* FIX CRITIQUE : Autorise le scroll complet */
+    overflow: auto;
+    touch-action: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: auto; /* Permet le bounce naturel */
   }
 }
 
 .layout {
   flex: 1;
   display: flex;
-  gap: 20px;
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
+  height: calc(100% - 10px);
+  background-color: rgb(var(--color-background));
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+  gap: 0.5rem;
   
-  /* Desktop */
-  @media (min-width: 1024px) {
-    height: 100%;
-    overflow: hidden;
-  }
-  
-  /* Tablet Portrait */
-  @media (max-width: 1023px) and (min-width: 769px) {
-    flex-direction: column;
-    gap: 24px;
-    min-height: 80vh;
-  }
-  
-  /* Mobile Portrait */
-  @media (max-width: 768px) and (orientation: portrait) {
-    flex-direction: column;
-    gap: 20px;
-    min-height: 85vh;
-  }
-  
-  /* Mobile Landscape */
-  @media (max-width: 768px) and (orientation: landscape) {
+  /* Mobile responsive */
+  @media (max-width: 768px) {
     flex-direction: row;
-    gap: 16px;
-    min-height: 70vh;
+    gap: 0.25rem;
+    height: auto; /* FIX : Hauteur automatique */
+    min-height: calc(100vh - 140px); /* Hauteur minimale */
+    padding: 0 0.25rem;
+    
+    /* FIX CRITIQUE : Autorise le scroll naturel */
+    overflow: auto;
+    touch-action: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
-/* ==================== FOLDER NAVIGATION - DESIGN MODERNE ==================== */
+/* ==================== FOLDER GRID - MOBILE OPTIMISÉ ==================== */
 .folderGrid {
-  background: rgba(var(--color-surface), 0.95);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(var(--color-border), 0.3);
-  border-radius: 20px;
-  padding: 16px;
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
+  width: 120px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  margin: 0;
+  overflow-y: auto;
+  background-color: rgb(var(--color-surface));
+  border: 1px solid rgb(var(--color-border));
+  border-radius: 12px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   
-  /* Desktop - Sidebar vertical */
-  @media (min-width: 1024px) {
-    width: 140px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    overflow-y: auto;
-    flex-shrink: 0;
+  /* Scrollbar personnalisée */
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--color-primary)) rgb(var(--color-surface));
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgb(var(--color-surface));
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgb(var(--color-primary));
+    border-radius: 3px;
+  }
+  
+  /* Mobile responsive - FIX CRITIQUES */
+  @media (max-width: 768px) {
+    width: 80px;
+    padding: 0.25rem;
+    gap: 0.25rem;
+    border-radius: 8px;
+    height: auto; /* FIX : Hauteur automatique */
+    min-height: 400px; /* Hauteur minimale visible */
+    max-height: calc(100vh - 200px); /* Limite la hauteur */
     
-    /* Scrollbar moderne */
+    /* FIX CRITIQUE : Scroll tactile optimisé */
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y; /* Autorise le scroll vertical uniquement */
+    
+    /* Scrollbars visibles mais fines sur mobile */
     scrollbar-width: thin;
-    scrollbar-color: rgba(var(--color-primary), 0.5) transparent;
-    
     &::-webkit-scrollbar {
-      width: 6px;
-    }
-    
-    &::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    
-    &::-webkit-scrollbar-thumb {
-      background: rgba(var(--color-primary), 0.3);
-      border-radius: 10px;
-      
-      &:hover {
-        background: rgba(var(--color-primary), 0.5);
-      }
+      width: 3px;
+      display: block;
     }
   }
   
-  /* Tablet - Grid horizontal */
-  @media (max-width: 1023px) and (min-width: 769px) {
-    width: 100%;
-    height: auto;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 16px;
-    max-height: 200px;
-    overflow-y: auto;
-  }
-  
-  /* Mobile Portrait - Scroll horizontal fluide */
-  @media (max-width: 768px) and (orientation: portrait) {
-    width: 100%;
-    height: auto;
-    display: flex;
-    flex-direction: row;
-    gap: 16px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding: 20px;
-    
-    /* Scroll horizontal moderne */
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
-    scroll-snap-type: x mandatory;
-    
-    /* Cache scrollbar mais garde fonctionnalité */
-    scrollbar-width: none;
-    &::-webkit-scrollbar {
-      display: none;
-    }
-    
-    /* Indicateur de scroll subtil */
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: 8px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 40px;
-      height: 3px;
-      background: rgba(var(--color-primary), 0.3);
-      border-radius: 2px;
-    }
-  }
-  
-  /* Mobile Landscape - Sidebar compact */
-  @media (max-width: 768px) and (orientation: landscape) {
-    width: 120px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    overflow-y: auto;
-    flex-shrink: 0;
-    padding: 16px 12px;
-    
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    &::-webkit-scrollbar {
-      display: none;
-    }
+  /* Très petits écrans */
+  @media (max-width: 480px) {
+    width: 60px;
+    padding: 0.125rem;
+    min-height: 300px;
   }
 }
 
 .folderThumbnail {
-  position: relative;
-  background: rgba(var(--color-background), 0.8);
-  border: 2px solid rgba(var(--color-border), 0.2);
-  border-radius: 16px;
+  width: 100%;
+  aspect-ratio: 1;
+  min-height: 90px;
+  max-height: 90px;
+  border-radius: 8px;
   overflow: hidden;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  margin-bottom: 0.25rem;
   flex-shrink: 0;
-  backdrop-filter: blur(10px);
-  
-  /* Effet de profondeur moderne */
-  box-shadow: 
-    0 4px 20px rgba(0, 0, 0, 0.08),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, 
-      rgba(var(--color-primary), 0.1) 0%,
-      transparent 50%,
-      rgba(var(--color-accent), 0.05) 100%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: 1;
-    pointer-events: none;
-  }
+  background-color: rgb(var(--color-background));
+  cursor: move;
+  transition: all 0.3s ease;
+  border: 2px solid rgb(var(--color-border));
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   
   &:hover {
-    transform: translateY(-4px) scale(1.02);
-    border-color: rgba(var(--color-primary), 0.4);
-    box-shadow: 
-      0 12px 40px rgba(0, 0, 0, 0.15),
-      0 0 0 1px rgba(var(--color-primary), 0.2);
-    
-    &::before {
-      opacity: 1;
-    }
+    transform: scale(1.05);
+    border-color: rgb(var(--color-primary));
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
   
   &:active {
-    transform: translateY(-2px) scale(0.98);
+    transform: scale(0.98);
   }
   
   &.active {
     border-color: rgb(var(--color-accent));
-    background: rgba(var(--color-accent), 0.1);
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 
-      0 8px 32px rgba(var(--color-accent), 0.3),
-      0 0 0 2px rgb(var(--color-accent)),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    
-    &::before {
-      opacity: 1;
-      background: linear-gradient(135deg, 
-        rgba(var(--color-accent), 0.2) 0%,
-        transparent 50%,
-        rgba(var(--color-accent), 0.1) 100%);
-    }
+    background-color: rgba(var(--color-accent), 0.1);
   }
   
-  /* Desktop */
-  @media (min-width: 1024px) {
-    width: 100%;
-    aspect-ratio: 1;
-    min-height: 100px;
-  }
-  
-  /* Tablet */
-  @media (max-width: 1023px) and (min-width: 769px) {
-    aspect-ratio: 1;
-    min-height: 120px;
-  }
-  
-  /* Mobile Portrait */
-  @media (max-width: 768px) and (orientation: portrait) {
-    width: 100px;
-    height: 100px;
-    scroll-snap-align: center;
+  /* Mobile responsive - FIX TACTILES */
+  @media (max-width: 768px) {
+    min-height: 60px;
+    max-height: 60px;
+    border-radius: 6px;
+    cursor: pointer; /* Cursor mobile */
     
-    /* Touch feedback amélioré */
-    -webkit-tap-highlight-color: rgba(var(--color-accent), 0.2);
+    /* FIX CRITIQUE : Zone tactile optimisée */
+    min-height: 44px; /* Zone tactile minimum */
+    touch-action: manipulation; /* Optimise les interactions */
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
     
+    /* Supprime les effets hover sur mobile */
     &:hover {
-      transform: scale(1.05);
+      transform: none;
+      border-color: rgb(var(--color-border));
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
     
+    /* Active state plus visible sur mobile */
     &.active {
-      transform: scale(1.1);
+      border-color: rgb(var(--color-accent));
+      transform: none;
+      box-shadow: 0 0 0 2px rgb(var(--color-accent));
     }
   }
   
-  /* Mobile Landscape */
-  @media (max-width: 768px) and (orientation: landscape) {
-    width: 100%;
-    height: 80px;
-    margin-bottom: 8px;
+  /* Très petits écrans */
+  @media (max-width: 480px) {
+    min-height: 40px;
+    max-height: 40px;
+    border-radius: 4px;
   }
 }
 
@@ -307,16 +216,18 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: all 0.3s ease;
-  filter: grayscale(0.1) contrast(1.1);
+  transition: opacity 0.3s ease;
   
-  .folderThumbnail:hover & {
-    filter: grayscale(0) contrast(1.2) brightness(1.1);
-    transform: scale(1.05);
+  &:hover {
+    opacity: 0.9;
   }
   
-  .folderThumbnail.active & {
-    filter: grayscale(0) contrast(1.3) brightness(1.2);
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    /* FIX : Désactive pointer-events pour éviter conflicts */
+    pointer-events: none;
+    will-change: auto;
+    transform: none;
   }
 }
 
@@ -325,117 +236,146 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(to top, 
-    rgba(0, 0, 0, 0.8) 0%,
-    rgba(0, 0, 0, 0.4) 50%,
-    transparent 100%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
   color: white;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  padding: 12px 8px 8px;
+  padding: 6px 4px;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
-  z-index: 2;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
   
-  /* Mobile */
+  /* Mobile responsive */
   @media (max-width: 768px) {
-    font-size: 11px;
-    padding: 8px 6px 6px;
+    font-size: 0.5rem;
+    padding: 0.125rem;
+    pointer-events: none; /* FIX : Évite les conflicts tactiles */
+  }
+  
+  /* Très petits écrans */
+  @media (max-width: 480px) {
+    font-size: 0.4rem;
+    padding: 0.1rem;
   }
 }
 
-/* ==================== MAIN VIEWER - DESIGN MODERNE ==================== */
+/* ==================== MAIN VIEWER - MOBILE OPTIMISÉ ==================== */
 .mainViewer {
   flex: 1;
   display: flex;
+  height: 100%;
+  margin: 0;
+  padding: 0;
   justify-content: center;
   align-items: center;
-  background: rgba(var(--color-background), 0.5);
-  backdrop-filter: blur(20px);
-  border-radius: 24px;
-  border: 1px solid rgba(var(--color-border), 0.2);
+  background-color: rgb(var(--color-background));
   overflow: hidden;
-  position: relative;
+  border-radius: 12px;
   
-  /* Effet de profondeur moderne */
-  box-shadow: 
-    0 8px 40px rgba(0, 0, 0, 0.12),
-    0 0 0 1px rgba(255, 255, 255, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  
-  /* Desktop */
-  @media (min-width: 1024px) {
-    height: 100%;
-  }
-  
-  /* Tablet */
-  @media (max-width: 1023px) and (min-width: 769px) {
-    min-height: 60vh;
-    max-height: 70vh;
-  }
-  
-  /* Mobile Portrait */
-  @media (max-width: 768px) and (orientation: portrait) {
-    min-height: 65vh;
-    max-height: 70vh;
-    border-radius: 20px;
-    margin: 0 -4px; /* Utilise plus d'espace */
-  }
-  
-  /* Mobile Landscape */
-  @media (max-width: 768px) and (orientation: landscape) {
-    height: 100%;
-    min-height: 60vh;
-    border-radius: 16px;
+  @media (max-width: 768px) {
+    border-radius: 8px;
+    height: auto; /* FIX : Hauteur automatique */
+    min-height: 400px; /* Hauteur minimale */
+    max-height: calc(100vh - 200px); /* Limite la hauteur */
+    
+    /* FIX CRITIQUE : Touch optimisé pour les images */
+    touch-action: pan-x pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
+    overflow: auto;
   }
 }
 
-/* ==================== VIEWERS - LAYOUTS ADAPTATIFS ==================== */
+/* ==================== DUAL VIEWER - MOBILE OPTIMISÉ ==================== */
 .dualViewer {
   display: flex;
   width: 100%;
   height: 100%;
-  gap: 12px;
+  gap: 0.5rem;
+  padding: 0;
+  margin: 0;
   
-  @media (max-width: 768px) and (orientation: portrait) {
+  @media (max-width: 768px) {
     flex-direction: column;
-    gap: 8px;
-  }
-  
-  @media (max-width: 768px) and (orientation: landscape) {
-    gap: 8px;
+    gap: 0.25rem;
+    height: auto; /* FIX : Hauteur automatique */
+    
+    /* FIX CRITIQUE : Autorise le scroll */
+    touch-action: auto;
+    -webkit-overflow-scrolling: touch;
+    overflow: auto;
   }
 }
 
+/* ==================== TRIPLE VIEWER - MOBILE OPTIMISÉ ==================== */
 .tripleViewer {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+  gap: 0.5rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.25rem;
+    height: auto; /* FIX : Hauteur automatique */
+    
+    /* FIX CRITIQUE : Autorise le scroll */
+    touch-action: auto;
+    -webkit-overflow-scrolling: touch;
+    overflow: auto;
+  }
+}
+
+.tripleTop {
   display: flex;
   width: 100%;
   height: 100%;
-  gap: 12px;
+  gap: 0.5rem;
   
-  @media (max-width: 768px) and (orientation: portrait) {
+  @media (max-width: 768px) {
     flex-direction: column;
-    gap: 6px;
-  }
-  
-  @media (max-width: 768px) and (orientation: landscape) {
-    gap: 6px;
+    gap: 0.25rem;
+    height: auto; /* FIX : Hauteur automatique */
+    
+    /* FIX CRITIQUE : Autorise le scroll */
+    touch-action: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
+.tripleBottom {
+  width: 33.333%;
+  height: 100%;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    height: auto; /* FIX : Hauteur automatique */
+    min-height: 200px; /* Hauteur minimale */
+    
+    /* FIX CRITIQUE : Autorise le scroll */
+    touch-action: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ==================== QUAD VIEWER - MOBILE OPTIMISÉ ==================== */
 .quadViewer {
   display: flex;
   flex-direction: column;
   width: 100%;
   height: 100%;
-  gap: 12px;
+  gap: 0.5rem;
   
   @media (max-width: 768px) {
-    gap: 8px;
+    gap: 0.25rem;
+    height: auto; /* FIX : Hauteur automatique */
+    
+    /* FIX CRITIQUE : Autorise le scroll */
+    touch-action: auto;
+    -webkit-overflow-scrolling: touch;
+    overflow: auto;
   }
 }
 
@@ -443,354 +383,449 @@
   display: flex;
   width: 100%;
   height: 50%;
-  gap: 12px;
+  gap: 0.5rem;
   
   @media (max-width: 768px) {
-    gap: 8px;
+    gap: 0.25rem;
+    height: auto; /* FIX : Hauteur automatique */
+    min-height: 200px; /* Hauteur minimale */
+    
+    /* FIX CRITIQUE : Autorise le scroll */
+    touch-action: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
 .viewerQuarter {
   width: 50%;
   height: 100%;
+  
+  @media (max-width: 768px) {
+    width: 50%;
+    height: auto; /* FIX : Hauteur automatique */
+    min-height: 150px; /* Hauteur minimale */
+    
+    /* FIX CRITIQUE : Touch optimisé pour images */
+    touch-action: pan-x pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 .viewerThird {
-  @media (min-width: 769px) {
-    width: 33.333%;
-    height: 100%;
-  }
-  
-  @media (max-width: 768px) and (orientation: portrait) {
-    width: 100%;
-    height: 33.333%;
-  }
-  
-  @media (max-width: 768px) and (orientation: landscape) {
-    width: 33.333%;
-    height: 100%;
-  }
-}
-
-.viewerHalf {
-  @media (min-width: 769px) {
-    flex: 1;
-    width: 50%;
-    height: 100%;
-  }
-  
-  @media (max-width: 768px) and (orientation: portrait) {
-    width: 100%;
-    height: 50%;
-  }
-  
-  @media (max-width: 768px) and (orientation: landscape) {
-    width: 50%;
-    height: 100%;
-  }
-}
-
-.singleViewer {
-  width: 100%;
+  width: 33.333%;
   height: 100%;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    height: auto; /* FIX : Hauteur automatique */
+    min-height: 150px; /* Hauteur minimale */
+    
+    /* FIX CRITIQUE : Touch optimisé pour images */
+    touch-action: pan-x pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
-/* ==================== VIEWER CONTAINERS - DESIGN MODERNE ==================== */
+/* ==================== VIEWER TYPES - MOBILE OPTIMISÉ ==================== */
 .viewer, .viewerHalf, .singleViewer, .viewerQuarter, .viewerThird {
   position: relative;
-  background: #000000;
-  border: 2px solid rgba(var(--color-border), 0.3);
-  border-radius: 16px;
+  margin: 0;
+  padding: 0;
+  border: 2px solid rgb(var(--color-border));
+  background-color: #000000;
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  
-  /* Effet moderne */
-  box-shadow: 
-    0 4px 20px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  height: 100%;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  will-change: scroll-position;
+  contain: layout style paint;
   
   &:hover {
-    border-color: rgba(var(--color-primary), 0.6);
-    transform: scale(1.02);
-    box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.2),
-      0 0 0 1px rgba(var(--color-primary), 0.3);
+    border-color: rgb(var(--color-primary));
   }
   
+  /* Mobile responsive - FIX CRITIQUES */
   @media (max-width: 768px) {
-    border-radius: 12px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    height: auto; /* FIX : Hauteur automatique */
+    min-height: 200px; /* Hauteur minimale */
     
-    /* Touch optimisé */
-    touch-action: manipulation;
+    /* FIX CRITIQUE : Touch optimisé pour images */
+    touch-action: pan-x pan-y pinch-zoom;
     -webkit-overflow-scrolling: touch;
-    user-select: none;
+    overflow: auto;
     
+    /* Supprime hover sur mobile */
     &:hover {
-      transform: none; /* Évite les effets indésirables sur mobile */
+      border-color: rgb(var(--color-border));
     }
   }
 }
 
-/* ==================== IMAGES - INTERACTIONS MODERNES ==================== */
+.viewerHalf {
+  flex: 1;
+  width: 50%;
+  max-width: 50%;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    max-width: 100%;
+    height: auto; /* FIX : Hauteur automatique */
+    min-height: 200px; /* Hauteur minimale */
+    
+    /* FIX CRITIQUE : Touch optimisé pour images */
+    touch-action: pan-x pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+.singleViewer {
+  width: 95%;
+  height: 100%;
+  margin: 0 auto;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    height: auto; /* FIX : Hauteur automatique */
+    min-height: 300px; /* Hauteur minimale */
+    
+    /* FIX CRITIQUE : Touch optimisé pour images */
+    touch-action: pan-x pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
+    overflow: auto;
+  }
+}
+
+/* ==================== IMAGES - MOBILE OPTIMISÉ ==================== */
 .image {
   width: 100%;
   height: 100%;
+  margin: 0;
+  padding: 0;
   object-fit: contain;
   object-position: center;
   display: block;
   transform-origin: center;
   user-select: none;
+  -webkit-user-select: none;
   image-rendering: -webkit-optimize-contrast;
-  transition: all 0.3s ease;
+  image-rendering: crisp-edges;
   will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
   
+  /* Mobile responsive - FIX CRITIQUES */
   @media (max-width: 768px) {
+    /* FIX CRITIQUE : Réactive les événements pointer avec touch optimisé */
     pointer-events: auto;
-    touch-action: none; /* Contrôle tactile complet */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
+    touch-action: pan-x pan-y pinch-zoom;
+    user-select: none;
+    -webkit-user-select: none;
+    will-change: transform;
+    
+    /* FIX : Hauteur adaptative */
+    height: auto;
+    min-height: 150px;
+    max-height: 80vh;
   }
 }
 
 .folderLabel {
   position: absolute;
-  top: 16px;
-  left: 16px;
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 8px 16px;
-  border-radius: 20px;
+  top: 15px;
+  left: 15px;
+  background: rgba(0, 0, 0, 0.85);
+  color: rgba(255, 255, 255, 0.95);
+  padding: 8px 12px;
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
   z-index: 10;
-  backdrop-filter: blur(12px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    transform: scale(1.02);
+  }
   
   @media (max-width: 768px) {
     top: 12px;
     left: 12px;
-    padding: 6px 12px;
+    padding: 6px 10px;
     font-size: 12px;
-    border-radius: 16px;
+    pointer-events: none; /* FIX : Évite les conflicts tactiles */
+    
+    /* Supprime hover sur mobile */
+    &:hover {
+      background: rgba(0, 0, 0, 0.85);
+      transform: none;
+    }
   }
 }
 
-/* ==================== BOTTOM BAR - DESIGN MODERNE ==================== */
+/* ==================== BOTTOM BAR - MOBILE OPTIMISÉ ==================== */
 .bottomBar {
-  background: rgba(var(--header-background, #4f5b93), 0.95);
-  backdrop-filter: blur(20px);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  height: 60px;
+  width: 100%;
+  margin: 0;
+  padding: 0 24px;
+  background: var(--header-background, #4f5b93);
   color: var(--header-text, #ffffff);
   display: flex;
   align-items: center;
   justify-content: space-between;
   z-index: 1000;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 
-    0 -8px 32px rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  transition: background-color 0.3s ease, color 0.3s ease;
   
-  /* Desktop */
-  @media (min-width: 1024px) {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 70px;
-    padding: 0 32px;
-  }
-  
-  /* Mobile et Tablet */
-  @media (max-width: 1023px) {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 80px;
-    padding: 0 20px;
-    
-    /* Safe areas */
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-left: calc(20px + env(safe-area-inset-left));
-    padding-right: calc(20px + env(safe-area-inset-right));
-  }
-  
-  /* Container pour boutons */
+  /* Conteneur pour les boutons avec alignement parfait */
   & > div:last-child {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 0;
     height: 100%;
+  }
+  
+  /* Mobile responsive - FIX CRITIQUES */
+  @media (max-width: 768px) {
+    height: 50px;
+    padding: 0 12px;
+    /* Support pour les safe areas */
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: calc(12px + env(safe-area-inset-left));
+    padding-right: calc(12px + env(safe-area-inset-right));
+    
+    /* FIX CRITIQUE : Touch optimisé */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Très petits écrans */
+  @media (max-width: 480px) {
+    height: 45px;
+    padding: 0 8px;
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: calc(8px + env(safe-area-inset-left));
+    padding-right: calc(8px + env(safe-area-inset-right));
   }
 }
 
-/* ==================== BUTTONS - DESIGN MODERNE ==================== */
+/* ==================== BUTTONS ET LINKS - MOBILE OPTIMISÉ ==================== */
 .responseButton, .sheetLink {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.12);
   color: white;
-  border-radius: 12px;
-  font-weight: 600;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   cursor: pointer;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  white-space: nowrap;
-  
-  /* Effet glassmorphism */
-  box-shadow: 
-    0 4px 20px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  gap: 6px;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+  margin-left: 8px;
+  vertical-align: middle;
+  line-height: 1;
+  height: 40px;
+  box-sizing: border-box;
   
   &:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.4);
-    box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border-color: rgba(255, 255, 255, 0.25);
   }
   
   &:active {
     transform: translateY(0);
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
   }
   
-  /* Desktop */
-  @media (min-width: 1024px) {
-    padding: 12px 20px;
-    font-size: 14px;
-    height: 48px;
-  }
-  
-  /* Mobile et Tablet */
-  @media (max-width: 1023px) {
-    padding: 12px 16px;
-    font-size: 13px;
-    height: 48px;
-    min-width: 48px;
+  /* Mobile responsive - FIX CRITIQUES */
+  @media (max-width: 768px) {
+    padding: 8px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+    margin-left: 4px;
+    height: 36px;
+    min-width: 44px; /* Zone tactile minimum */
     
+    /* FIX CRITIQUE : Touch optimisé */
     touch-action: manipulation;
     -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
     
+    /* Supprime les effets hover sur mobile */
     &:hover {
+      background: rgba(255, 255, 255, 0.12);
       transform: none;
+      box-shadow: none;
+      border-color: rgba(255, 255, 255, 0.15);
     }
     
+    /* Active state visible sur mobile */
     &:active {
-      transform: scale(0.95);
       background: rgba(255, 255, 255, 0.2);
+      transform: scale(0.98);
     }
+  }
+  
+  /* Très petits écrans */
+  @media (max-width: 480px) {
+    padding: 6px 10px;
+    font-size: 11px;
+    height: 32px;
+    margin-left: 2px;
   }
 }
 
-/* ==================== SHORTCUT GUIDE - MODERNE ==================== */
+/* ==================== SHORTCUT GUIDE - MOBILE OPTIMISÉ ==================== */
 .shortcutGuide {
   display: flex;
   align-items: center;
   position: relative;
   
-  @media (max-width: 600px) {
-    display: none;
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    /* Cache sur très petits écrans */
+    @media (max-width: 480px) {
+      display: none;
+    }
   }
 }
 
 .shortcutIcon {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 20px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(8px);
-  color: white;
-  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
   
   &:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.15);
     border-color: rgba(255, 255, 255, 0.5);
     transform: scale(1.05);
+    color: white;
   }
   
-  &:active {
-    transform: scale(0.95);
+  /* Mobile responsive - FIX CRITIQUES */
+  @media (max-width: 768px) {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+    
+    /* FIX CRITIQUE : Touch optimisé */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+    
+    /* Supprime l'effet hover sur mobile */
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: none;
+    }
+    
+    /* Active state visible */
+    &:active {
+      background: rgba(255, 255, 255, 0.15);
+      transform: scale(0.95);
+    }
   }
 }
 
 .shortcutPopup {
-  background: rgba(var(--color-surface), 0.95);
-  backdrop-filter: blur(20px);
+  position: absolute;
+  bottom: 70px;
+  left: -10px;
+  background-color: rgb(var(--color-surface));
   color: rgb(var(--color-text));
-  border: 1px solid rgba(var(--color-border), 0.3);
-  border-radius: 20px;
-  padding: 24px;
-  box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
+  border: 2px solid rgb(var(--color-border));
+  border-radius: 12px;
+  padding: 20px;
+  width: 320px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   z-index: 1001;
+  backdrop-filter: blur(12px);
   opacity: 0;
   visibility: hidden;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(10px);
+  transition: all 0.3s ease;
   
   &.visible {
     opacity: 1;
     visibility: visible;
+    transform: translateY(0);
   }
   
-  /* Desktop */
-  @media (min-width: 1024px) {
-    position: absolute;
-    bottom: 60px;
-    left: -10px;
-    width: 350px;
-    transform: translateY(10px);
-    
-    &.visible {
-      transform: translateY(0);
-    }
-  }
-  
-  /* Mobile */
-  @media (max-width: 1023px) {
+  /* Mobile responsive - FIX CRITIQUES */
+  @media (max-width: 768px) {
+    /* Popup adapté mobile */
     position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) scale(0.9);
-    width: calc(100vw - 40px);
-    max-width: 400px;
-    max-height: 80vh;
-    overflow-y: auto;
+    transform: translate(-50%, -50%);
+    width: calc(100vw - 2rem);
+    max-width: 300px;
+    bottom: auto;
+    padding: 1rem;
+    border-radius: 16px;
+    max-height: 80vh; /* FIX : Limite la hauteur */
+    overflow-y: auto; /* FIX : Scroll si nécessaire */
     
     &.visible {
-      transform: translate(-50%, -50%) scale(1);
+      transform: translate(-50%, -50%);
     }
+    
+    /* FIX CRITIQUE : Scroll tactile dans le popup */
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  
+  /* Très petits écrans */
+  @media (max-width: 480px) {
+    width: calc(100vw - 1rem);
+    max-width: none;
+    margin: 0.5rem;
   }
 }
 
 .shortcutTitle {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   color: rgb(var(--color-primary));
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   
   &::before {
     content: '⌨️';
-    font-size: 20px;
+    font-size: 18px;
   }
 }
 
@@ -801,47 +836,50 @@
 }
 
 .shortcutList li {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   font-size: 14px;
-  line-height: 1.6;
-  padding: 16px;
-  background: rgba(var(--color-background), 0.5);
-  border-radius: 12px;
-  border: 1px solid rgba(var(--color-border), 0.2);
-  backdrop-filter: blur(8px);
+  line-height: 1.5;
+  padding: 8px 12px;
+  background-color: rgb(var(--color-background));
+  border-radius: 6px;
+  border: 1px solid rgb(var(--color-border));
   
   &:last-child {
     margin-bottom: 0;
+  }
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    padding: 12px;
+    font-size: 14px;
   }
 }
 
 .shortcutList strong {
   display: inline-block;
-  margin-right: 12px;
+  margin-right: 8px;
   color: rgb(var(--color-primary));
-  font-weight: 700;
-  padding: 4px 8px;
-  background: rgba(var(--color-primary), 0.1);
-  border-radius: 6px;
-  font-size: 12px;
+  font-weight: 600;
 }
 
-/* ==================== RESPONSE BOX - MODERNE ==================== */
+/* ==================== RESPONSE BOX - MOBILE OPTIMISÉ ==================== */
 .responseBox {
-  background: rgba(var(--color-surface), 0.95);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(var(--color-border), 0.3);
-  border-radius: 20px;
-  padding: 24px;
-  box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(255, 255, 255, 0.05);
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  max-width: 350px;
   z-index: 1001;
-  animation: slideInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: rgb(var(--color-surface));
+  border: 2px solid rgb(var(--color-border));
+  backdrop-filter: blur(8px);
+  animation: slideInUp 0.3s ease-out;
   
   @keyframes slideInUp {
     from {
-      transform: translateY(30px);
+      transform: translateY(20px);
       opacity: 0;
     }
     to {
@@ -850,27 +888,18 @@
     }
   }
   
-  /* Desktop */
-  @media (min-width: 1024px) {
-    position: fixed;
-    bottom: 100px;
-    right: 32px;
-    max-width: 400px;
-  }
-  
-  /* Mobile */
-  @media (max-width: 1023px) {
-    position: fixed;
-    bottom: 100px;
-    left: 20px;
-    right: 20px;
-    max-height: 50vh;
-    overflow-y: auto;
+  @media (max-width: 768px) {
+    bottom: 60px;
+    right: 12px;
+    left: 12px;
+    max-width: none;
+    padding: 16px;
+    max-height: 60vh; /* FIX : Limite la hauteur */
+    overflow-y: auto; /* FIX : Scroll si nécessaire */
     
-    /* Safe areas */
-    bottom: calc(100px + env(safe-area-inset-bottom));
-    left: calc(20px + env(safe-area-inset-left));
-    right: calc(20px + env(safe-area-inset-right));
+    /* FIX CRITIQUE : Scroll tactile */
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -878,17 +907,17 @@
   color: rgb(var(--color-text));
   font-weight: 600;
   font-size: 16px;
-  line-height: 1.6;
+  line-height: 1.5;
   margin: 0;
   
   &::before {
     content: '💡';
-    margin-right: 12px;
-    font-size: 20px;
+    margin-right: 8px;
+    font-size: 18px;
   }
 }
 
-/* ==================== ANIMATIONS ET ÉTATS ==================== */
+/* ==================== LOADING ET EMPTY STATES ==================== */
 .loading, .emptyState {
   display: flex;
   flex-direction: column;
@@ -897,18 +926,34 @@
   height: 100%;
   color: rgb(var(--color-text));
   opacity: 0.7;
-  padding: 40px 20px;
-  text-align: center;
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    padding: 2rem 1rem;
+    font-size: 14px;
+    min-height: 200px; /* FIX : Hauteur minimale */
+    
+    /* FIX CRITIQUE : Scroll tactile */
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 .loadingSpinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(var(--color-border), 0.3);
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgb(var(--color-border));
   border-top: 3px solid rgb(var(--color-primary));
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-bottom: 20px;
+  margin-bottom: 1rem;
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    width: 28px;
+    height: 28px;
+    border-width: 2px;
+  }
 }
 
 @keyframes spin {
@@ -916,15 +961,118 @@
   100% { transform: rotate(360deg); }
 }
 
-/* ==================== TRANSITIONS FLUIDES ==================== */
+/* ==================== TOOLTIP ==================== */
+.tooltip {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1002;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  
+  &.visible {
+    opacity: 1;
+  }
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 8px;
+  }
+}
+
+/* ==================== DRAG & DROP STATES ==================== */
+.folderThumbnail.dragging {
+  opacity: 0.5;
+  transform: scale(0.9);
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    /* Supprime l'effet de scale sur mobile */
+    transform: none;
+    opacity: 0.7;
+  }
+}
+
+.viewer.drag-over {
+  border-color: rgb(var(--color-accent)) !important;
+  background-color: rgba(var(--color-accent), 0.1);
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    /* Effet plus visible sur mobile */
+    border-width: 2px;
+    background-color: rgba(var(--color-accent), 0.15);
+  }
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+.folderThumbnail:active {
+  animation: pulse 0.3s ease-in-out;
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    /* Animation plus courte sur mobile */
+    animation: pulse 0.2s ease-in-out;
+  }
+}
+
+/* ==================== ACCESSIBILITÉ ==================== */
+.shortcutIcon:focus,
+.responseButton:focus,
+.sheetLink:focus,
+.folderThumbnail:focus {
+  outline: 2px solid rgb(var(--color-accent));
+  outline-offset: 2px;
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    /* Outline plus visible sur mobile */
+    outline-width: 3px;
+    outline-offset: 3px;
+  }
+}
+
+/* ==================== MODE SOMBRE SPÉCIFIQUE ==================== */
+:global(.dark) .container {
+  background: linear-gradient(135deg, rgb(var(--color-background)) 0%, rgb(var(--color-surface)) 100%);
+}
+
+:global(.dark) .folderThumbnailLabel {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+}
+
+:global(.dark) .shortcutPopup {
+  backdrop-filter: blur(12px);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ==================== TRANSITIONS SPÉCIALES ==================== */
 .tripleViewer, .quadViewer, .dualViewer {
-  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeIn 0.3s ease-out;
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    animation: fadeIn 0.2s ease-out;
+  }
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.98);
   }
   to {
     opacity: 1;
@@ -932,66 +1080,80 @@
   }
 }
 
-/* ==================== THÈME SOMBRE ==================== */
-:global(.dark) .container {
-  background: linear-gradient(135deg, 
-    rgb(var(--color-background)) 0%, 
-    rgb(var(--color-surface)) 100%);
-}
-
-:global(.dark) .folderThumbnailLabel {
-  background: linear-gradient(to top, 
-    rgba(0, 0, 0, 0.9) 0%,
-    rgba(0, 0, 0, 0.5) 50%,
-    transparent 100%);
-}
-
-/* ==================== OPTIMISATIONS PERFORMANCES ==================== */
+/* ==================== OPTIMISATIONS DE PERFORMANCE MOBILE ==================== */
 @media (max-width: 768px) {
-  /* GPU acceleration critique */
-  .image,
-  .folderThumbnail,
-  .viewer,
+  /* FIX CRITIQUE : Optimisations de performance mobile */
+  .image {
+    will-change: transform;
+  }
+
+  .folderThumbnail {
+    will-change: auto;
+  }
+
+  .shortcutPopup {
+    will-change: opacity, visibility, transform;
+  }
+
+  .viewer {
+    will-change: auto;
+  }
+  
+  /* Réduit les animations sur mobile pour de meilleures performances */
+  * {
+    animation-duration: 0.2s !important;
+    transition-duration: 0.2s !important;
+  }
+  
+  /* FIX CRITIQUE : Force le scroll hardware accelerated */
   .container,
+  .content,
+  .layout,
+  .folderGrid,
   .mainViewer {
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
   }
-  
-  /* Animations optimisées */
-  * {
-    animation-duration: 0.3s !important;
-    transition-duration: 0.3s !important;
-  }
 }
 
-/* ==================== ACCESSIBILITÉ ==================== */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* ==================== FIXES POUR DÉBORDEMENTS ==================== */
-html, body {
-  overflow-x: hidden;
-  scroll-behavior: smooth;
-}
-
-/* Fix pour les menus déroulants sur mobile */
+/* ==================== FIX SPÉCIFIQUES POUR LES ERREURS PREVENTDEFAULT ==================== */
 @media (max-width: 768px) {
-  /* S'assure que les dropdowns ne sont pas coupés */
-  .dropdown,
-  [role="menu"],
-  [role="listbox"] {
-    position: fixed !important;
-    z-index: 9999 !important;
-    max-height: 50vh !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
+  /* FIX CRITIQUE : Gestion des events tactiles */
+  .mainViewer,
+  .viewer,
+  .image {
+    /* Autorise tous les gestes tactiles */
+    touch-action: auto;
+    /* Évite les conflits avec preventDefault */
+    pointer-events: auto;
+  }
+  
+  /* FIX : Zones spécifiques pour le scroll */
+  .folderGrid {
+    /* Scroll vertical uniquement pour la liste des dossiers */
+    touch-action: pan-y;
+  }
+  
+  /* FIX : Zones spécifiques pour le zoom/pan des images */
+  .image {
+    /* Tous les gestes pour les images */
+    touch-action: auto;
+  }
+}
+
+/* ==================== FIX POUR LE VIEWPORT MOBILE ==================== */
+@media (max-width: 768px) {
+  /* Support des nouveaux units viewport */
+  .container {
+    height: calc(100vh - 70px);
+    height: calc(100svh - 70px); /* small viewport height */
+    min-height: calc(100dvh - 70px); /* dynamic viewport height */
+  }
+  
+  /* FIX pour le clavier virtuel */
+  .container.keyboard-open {
+    height: calc(100svh - 70px);
   }
 }
