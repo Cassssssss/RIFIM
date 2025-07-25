@@ -101,11 +101,33 @@ function RadiologyViewer() {
 
   const [theme] = useState(document.documentElement.getAttribute('data-theme') || 'light');
 
-  // Détection mobile améliorée
+  // Détection mobile et orientation améliorée
   const [isMobileDevice] = useState(() => {
     if (typeof window === 'undefined') return false;
-    return window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    return window.innerWidth <= 1023 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   });
+  
+  const [isPortrait, setIsPortrait] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return window.innerHeight > window.innerWidth;
+  });
+
+  // Gestion changement d'orientation
+  useEffect(() => {
+    const handleOrientationChange = () => {
+      setTimeout(() => {
+        setIsPortrait(window.innerHeight > window.innerWidth);
+      }, 100);
+    };
+
+    window.addEventListener('orientationchange', handleOrientationChange);
+    window.addEventListener('resize', handleOrientationChange);
+
+    return () => {
+      window.removeEventListener('orientationchange', handleOrientationChange);
+      window.removeEventListener('resize', handleOrientationChange);
+    };
+  }, []);
 
   // ==================== FONCTION loadImage COMPLÈTE ==================== 
   
