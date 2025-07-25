@@ -870,10 +870,8 @@ function RadiologyViewer() {
   }, [handleMouseDown, handleMouseMove, handleMouseUp, handleDrop, 
       handleTouchStart, handleTouchMove, handleTouchEnd, getFolderName, getCurrentIndex, currentCase, isMobileDevice]);
 
-  const renderFolderThumbnails = useCallback(() => {
-    if (!currentCase || !currentCase.folders) return null;
-
-  const handleFolderClick = (folder) => {
+  // Fonction pour changer de dossier - DÉFINIE GLOBALEMENT
+  const handleFolderClick = useCallback((folder) => {
     // Charger le dossier dans le viewer actuel selon le mode
     if (viewMode === 1 || isMobileDevice) {
       loadImage(folder, 0, 'single');
@@ -890,7 +888,10 @@ function RadiologyViewer() {
       setCurrentFolderTopLeft(folder);
       setCurrentIndexTopLeft(0);
     }
-  };
+  }, [viewMode, isMobileDevice, loadImage]);
+
+  const renderFolderThumbnails = useCallback(() => {
+    if (!currentCase || !currentCase.folders) return null;
 
     return (
       <div id="folder-thumbnails" className={styles.folderGrid}>
@@ -923,7 +924,7 @@ function RadiologyViewer() {
         ))}
       </div>
     );
-  }, [currentCase, isMobileDevice, handleDragStart, loadImage, viewMode, currentFolderLeft, currentFolderTopLeft, handleFolderClick]);
+  }, [currentCase, isMobileDevice, handleDragStart, viewMode, currentFolderLeft, currentFolderTopLeft, handleFolderClick]);
 
   // Fonction pour rendre le viewer selon le mode COMPLÈTE
   const renderMainViewer = useCallback(() => {
