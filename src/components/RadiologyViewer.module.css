@@ -1,29 +1,21 @@
-/* ==================== VARIABLES CSS DYNAMIQUES ==================== */
-:root {
-  --header-height: 80px;
-  --bottom-bar-height: 50px;
-  --safe-area-top: 0px;
-  --safe-area-bottom: 0px;
-}
+/* ==================== SOLUTION SIMPLE ET DIRECTE ==================== */
 
-/* ==================== BASE CONTAINER FLEXIBLE ==================== */
+/* Container qui prend EXACTEMENT l'espace disponible */
 .container {
-  position: fixed;          
-  width: 100%;
-  /* Calcul automatique basé sur les vraies dimensions */
-  height: calc(100vh - var(--header-height) - var(--bottom-bar-height) - var(--safe-area-top) - var(--safe-area-bottom));
-  height: calc(100dvh - var(--header-height) - var(--bottom-bar-height) - var(--safe-area-top) - var(--safe-area-bottom));
+  position: fixed;
+  top: 0;
   left: 0;
-  top: calc(var(--header-height) + var(--safe-area-top));
+  width: 100vw;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   background: linear-gradient(135deg, rgb(var(--color-background)) 0%, rgb(var(--color-surface)) 100%);
-  overflow: hidden;         
+  overflow: hidden;
   color: rgb(var(--color-text));
-  z-index: 100;            
+  z-index: 100;
 }
 
-/* ==================== CONTENT FLEXIBLE ==================== */
+/* Content qui s'adapte automatiquement */
 .content {
   flex: 1;
   display: flex;
@@ -33,13 +25,12 @@
   margin: 0;
   padding: 0;
   min-height: 0;
-  height: 100%;
 }
 
+/* Layout qui remplit parfaitement le content */
 .layout {
   flex: 1;
   display: flex;
-  height: 100%;
   background-color: rgb(var(--color-background));
   margin: 0;
   padding: 5px;
@@ -53,7 +44,7 @@
   }
 }
 
-/* ==================== FOLDER GRID MODERNISÉ ==================== */
+/* ==================== FOLDER GRID ==================== */
 .folderGrid {
   width: 120px; 
   height: 100%;
@@ -173,7 +164,7 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
 }
 
-/* ==================== MAIN VIEWER MODERNISÉ ==================== */
+/* ==================== MAIN VIEWER ==================== */
 .mainViewer {
   flex: 1;
   display: flex;
@@ -262,7 +253,7 @@
   }
 }
 
-/* ==================== VIEWER TYPES MODERNISÉS + OPTIMISATIONS ==================== */
+/* ==================== VIEWER TYPES ==================== */
 .viewer, .viewerHalf, .singleViewer, .viewerQuarter, .viewerThird {
   position: relative;
   margin: 0;
@@ -276,7 +267,6 @@
   height: 100%;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  /* OPTIMISATIONS DE PERFORMANCE */
   will-change: scroll-position;
   contain: layout style paint;
   
@@ -313,52 +303,26 @@
   }
 }
 
-/* ==================== CLASSES SPÉCIFIQUES POUR IDENTIFICATION DES VIEWERS ==================== */
-.topLeft {
-  /* Classe pour identifier le viewer top-left en mode 3 et 4 */
+/* ==================== CLASSES D'IDENTIFICATION ==================== */
+.topLeft, .topRight, .bottomLeft, .bottomRight, .left, .right, .single {
+  /* Classes pour identifier les viewers */
 }
 
-.topRight {
-  /* Classe pour identifier le viewer top-right en mode 3 et 4 */
-}
-
-.bottomLeft {
-  /* Classe pour identifier le viewer bottom-left en mode 3 et 4 */
-}
-
-.bottomRight {
-  /* Classe pour identifier le viewer bottom-right en mode 4 */
-}
-
-.left {
-  /* Classe pour identifier le viewer gauche en mode 2 */
-}
-
-.right {
-  /* Classe pour identifier le viewer droit en mode 2 */
-}
-
-.single {
-  /* Classe pour identifier le viewer unique en mode 1 */
-}
-
-/* ==================== IMAGES - PRÉSERVATION DES DONNÉES + OPTIMISATIONS PERFORMANCE ==================== */
+/* ==================== IMAGES ==================== */
 .image {
   width: 100%;              
   height: 100%;             
   margin: 0;
   padding: 0;
-  object-fit: contain;      /* Préserve TOUTES les données */
+  object-fit: contain;
   object-position: center;  
   display: block;
   transform-origin: center;
   user-select: none;
   -webkit-user-select: none;
   pointer-events: none;
-  /* Optimisation pour un affichage plus net des images médicales */
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
-  /* OPTIMISATIONS DE PERFORMANCE CRITIQUES */
   will-change: transform;
   transform: translateZ(0); 
   backface-visibility: hidden; 
@@ -400,12 +364,10 @@
   }
 }
 
-/* ==================== BOTTOM BAR FLEXIBLE ==================== */
+/* ==================== BOTTOM BAR - SIMPLE ET EFFICACE ==================== */
 .bottomBar {
-  position: fixed;          
-  bottom: var(--safe-area-bottom);
-  left: 0;                  
-  height: var(--bottom-bar-height);
+  /* Bottom bar qui se place automatiquement en bas */
+  height: 60px;
   width: 100%;
   margin: 0;
   padding: 0 24px;
@@ -419,6 +381,7 @@
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   transition: background-color 0.3s ease, color 0.3s ease;
+  flex-shrink: 0; /* Ne se rétrécit jamais */
   
   & > div:last-child {
     display: flex;
@@ -428,11 +391,12 @@
   }
   
   @media (max-width: 768px) {
+    height: 50px;
     padding: 0 12px;
   }
 }
 
-/* ==================== BUTTONS ET LINKS MODERNISÉS ==================== */
+/* ==================== BUTTONS ET LINKS ==================== */
 .responseButton, .sheetLink {
   background: rgba(255, 255, 255, 0.12);
   color: white;
@@ -487,7 +451,7 @@
   }
 }
 
-/* ==================== SHORTCUT GUIDE MODERNISÉ ==================== */
+/* ==================== SHORTCUT GUIDE ==================== */
 .shortcutGuide {
   display: flex;
   align-items: center;
@@ -534,7 +498,7 @@
 
 .shortcutPopup {
   position: absolute;
-  bottom: calc(var(--bottom-bar-height) + 10px);
+  bottom: 70px;
   left: -10px;
   background-color: rgb(var(--color-surface));
   color: rgb(var(--color-text));
@@ -559,6 +523,7 @@
   @media (max-width: 768px) {
     width: 280px;
     left: -240px;
+    bottom: 60px;
     padding: 16px;
   }
 }
@@ -605,10 +570,10 @@
   font-weight: 600;
 }
 
-/* ==================== RESPONSE BOX MODERNISÉE ==================== */
+/* ==================== RESPONSE BOX ==================== */
 .responseBox {
   position: fixed;
-  bottom: calc(var(--bottom-bar-height) + 20px);
+  bottom: 80px;
   right: 24px;
   padding: 20px;
   border-radius: 12px;
@@ -619,7 +584,6 @@
   border: 2px solid rgb(var(--color-border));
   backdrop-filter: blur(8px);
   
-  /* Animation d'apparition */
   animation: slideInUp 0.3s ease-out;
   
   @keyframes slideInUp {
@@ -634,6 +598,7 @@
   }
   
   @media (max-width: 768px) {
+    bottom: 60px;
     right: 12px;
     left: 12px;
     max-width: none;
@@ -661,7 +626,6 @@
   transition: transform 0.1s ease-out;
 }
 
-/* Indicateurs visuels pour les interactions tactiles */
 @media (max-width: 768px) {
   .viewer::after {
     content: '👆';
@@ -689,7 +653,7 @@
   background-color: rgba(var(--color-accent), 0.1);
 }
 
-/* ==================== ANIMATIONS SUPPLÉMENTAIRES ==================== */
+/* ==================== ANIMATIONS ==================== */
 @keyframes pulse {
   0% { opacity: 1; }
   50% { opacity: 0.7; }
@@ -714,13 +678,12 @@
     border-radius: 8px;
   }
   
-  /* Ajustements pour les modes 3 et 4 sur mobile */
   .tripleViewer, .quadViewer {
     gap: 0.25rem;
   }
   
   .viewerThird {
-    min-height: 120px; /* Taille minimum sur mobile */
+    min-height: 120px;
   }
 }
 
@@ -732,7 +695,7 @@
   outline-offset: 2px;
 }
 
-/* ==================== MODE SOMBRE SPÉCIFIQUE ==================== */
+/* ==================== MODE SOMBRE ==================== */
 :global(.dark) .container {
   background: linear-gradient(135deg, rgb(var(--color-background)) 0%, rgb(var(--color-surface)) 100%);
 }
@@ -746,7 +709,7 @@
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-/* ==================== OPTIMISATIONS DE PERFORMANCE ==================== */
+/* ==================== OPTIMISATIONS ==================== */
 .image {
   will-change: transform;
 }
@@ -763,7 +726,7 @@
   will-change: scroll-position;
 }
 
-/* ==================== TRANSITIONS SPÉCIALES POUR LES CHANGEMENTS DE MODE ==================== */
+/* ==================== TRANSITIONS ==================== */
 .tripleViewer, .quadViewer, .dualViewer {
   animation: fadeIn 0.3s ease-out;
 }
