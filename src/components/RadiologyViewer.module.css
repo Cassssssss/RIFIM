@@ -1,14 +1,14 @@
 /* ==================== VARIABLES CSS POUR LE THÈME ==================== */
 /* Ces variables sont automatiquement définies par le thème dans theme.js */
 
-/* ==================== BASE CONTAINER - CORRECTION SIMPLE DES HAUTEURS ==================== */
+/* ==================== BASE CONTAINER - CORRECTION OPTIMALE DES HAUTEURS ==================== */
 .container {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
-  /* 🔧 CORRECTION : Hauteur qui exclut header ET bottom bar */
-  height: calc(100vh - 130px); /* 70px header + 60px bottom bar */
+  /* 🔧 CORRECTION : Juste exclure le header, la bottom bar est en overlay */
+  height: calc(100vh - 70px); /* Seulement le header */
   display: flex;
   flex-direction: column;
   background: linear-gradient(135deg, rgb(var(--color-background)) 0%, rgb(var(--color-surface)) 100%);
@@ -21,10 +21,10 @@
 /* 🔧 MOBILE : Hauteurs ajustées */
 @media (max-width: 768px) {
   .container {
-    /* 60px header mobile + 50px bottom bar mobile */
-    height: calc(100vh - 110px) !important;
+    /* Seulement le header mobile */
+    height: calc(100vh - 60px) !important;
     /* Support dvh pour les navigateurs récents */
-    height: calc(100dvh - 110px) !important;
+    height: calc(100dvh - 60px) !important;
     /* Support pour les safe areas iPhone */
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
@@ -45,7 +45,7 @@
   }
 }
 
-/* ==================== CONTENT - UTILISE L'ESPACE DISPONIBLE ==================== */
+/* ==================== CONTENT - LAISSE PLACE POUR LA BOTTOM BAR ==================== */
 .content {
   flex: 1;
   display: flex;
@@ -53,13 +53,13 @@
   background-color: rgb(var(--color-background));
   overflow: hidden;
   margin: 0;
-  padding: 8px 0 0 0;
+  padding: 8px 0 70px 0; /* 🔧 CORRECTION : Padding-bottom pour la bottom bar */
   min-height: 0; /* Important pour flex */
 }
 
 @media (max-width: 768px) {
   .content {
-    padding: 4px 0 0 0;
+    padding: 4px 0 60px 0; /* 🔧 CORRECTION : Padding-bottom pour bottom bar mobile */
   }
 }
 
