@@ -40,7 +40,6 @@ function RadiologyViewer() {
   const [currentCase, setCurrentCase] = useState(null);
   const [currentIndexLeft, setCurrentIndexLeft] = useState(0);
   const [currentIndexRight, setCurrentIndexRight] = useState(0);
-  // 🔧 AJOUT : Nouveaux états pour les viewers 3 et 4
   const [currentIndexTopLeft, setCurrentIndexTopLeft] = useState(0);
   const [currentIndexTopRight, setCurrentIndexTopRight] = useState(0);
   const [currentIndexBottomLeft, setCurrentIndexBottomLeft] = useState(0);
@@ -48,17 +47,21 @@ function RadiologyViewer() {
   
   const [currentFolderLeft, setCurrentFolderLeft] = useState('');
   const [currentFolderRight, setCurrentFolderRight] = useState('');
-  // 🔧 AJOUT : Nouveaux dossiers pour les viewers 3 et 4
   const [currentFolderTopLeft, setCurrentFolderTopLeft] = useState('');
   const [currentFolderTopRight, setCurrentFolderTopRight] = useState('');
   const [currentFolderBottomLeft, setCurrentFolderBottomLeft] = useState('');
   const [currentFolderBottomRight, setCurrentFolderBottomRight] = useState('');
   
-  // 🔧 MODIFICATION : Mode viewer étendu (1, 2, 3 ou 4)
-  const [viewMode, setViewMode] = useState(1); // 1=single, 2=dual, 3=triple, 4=quad
+  // 🔧 CORRECTION : Détection mobile plus fiable
+  const [isMobile] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < 768 || 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  });
+  
+  // 🔧 CORRECTION : Force le mode 1 sur mobile par défaut
+  const [viewMode, setViewMode] = useState(() => isMobile ? 1 : 1);
   const [isResponseVisible, setIsResponseVisible] = useState(false);
   
-  // 🔧 AJOUT : Contrôles d'image pour tous les viewers
   const [imageControls, setImageControls] = useState({
     left: { scale: 1, contrast: 100, brightness: 100, translateX: 0, translateY: 0 },
     right: { scale: 1, contrast: 100, brightness: 100, translateX: 0, translateY: 0 },
@@ -79,13 +82,10 @@ function RadiologyViewer() {
   const [isShortcutGuideVisible, setIsShortcutGuideVisible] = useState(false);
   const [folderThumbnails, setFolderThumbnails] = useState({});
   const isTouchDevice = 'ontouchstart' in window;
-  const [touchDistance, setTouchDistance] = useState(null);
-  const [isMobile] = useState(window.innerWidth < 768);
 
   const leftViewerRef = useRef(null);
   const rightViewerRef = useRef(null);
   const singleViewerRef = useRef(null);
-  // 🔧 AJOUT : Nouvelles références pour les viewers 3 et 4
   const topLeftViewerRef = useRef(null);
   const topRightViewerRef = useRef(null);
   const bottomLeftViewerRef = useRef(null);
@@ -105,7 +105,6 @@ function RadiologyViewer() {
       if (imagePath) {
         const imageUrl = imagePath.startsWith('http') ? imagePath : `${process.env.REACT_APP_SPACES_URL}/${imagePath}`;
         
-        // 🔧 AJOUT : Support pour tous les viewers
         let imageElement;
         switch(side) {
           case 'left':
@@ -135,7 +134,6 @@ function RadiologyViewer() {
         
         if (imageElement) {
           imageElement.src = imageUrl;
-          // 🔧 AJOUT : Mise à jour des index pour tous les viewers
           switch(side) {
             case 'left':
             case 'single':
@@ -172,7 +170,6 @@ function RadiologyViewer() {
       if (Math.abs(newDelta) >= threshold) {
         const direction = newDelta > 0 ? 1 : -1;
         
-        // 🔧 AJOUT : Support pour tous les viewers
         let currentFolder, currentIndex;
         switch(side) {
           case 'left':
@@ -210,14 +207,12 @@ function RadiologyViewer() {
         if (images && images.length > 0) {
           let newIndex = currentIndex + direction;
           
-          // Empêcher de dépasser les limites
           if (newIndex < 0) {
             newIndex = 0;
           } else if (newIndex >= images.length) {
             newIndex = images.length - 1;
           }
           
-          // Charger la nouvelle image
           if (newIndex !== currentIndex) {
             loadImage(currentFolder, newIndex, side);
           }
@@ -235,7 +230,6 @@ function RadiologyViewer() {
   const applyImageTransforms = useCallback((side) => {
     const controls = imageControls[side];
     
-    // 🔧 AJOUT : Support pour tous les viewers
     let imageElement;
     switch(side) {
       case 'left':
@@ -286,7 +280,6 @@ function RadiologyViewer() {
     });
   }, []);
 
-  // 🔧 MODIFICATION : handlePan étendu pour tous les viewers
   const handlePan = useCallback((side, deltaX, deltaY) => {
     setImageControls(prevControls => {
       const newControls = {
@@ -298,7 +291,6 @@ function RadiologyViewer() {
         }
       };
       
-      // Application immédiate pour un suivi parfait de la souris
       let imageElement;
       switch(side) {
         case 'left':
@@ -414,12 +406,17 @@ function RadiologyViewer() {
     setTouchStartPoints(null);
   }, []);
 
-  // 🔧 MODIFICATION : Fonction de changement de mode étendue
+  // 🔧 CORRECTION : Fonction de changement de mode avec restriction mobile
   const cycleViewMode = useCallback(() => {
     setViewMode(prev => {
+      // 🔧 CORRECTION : Sur mobile, limite aux modes 1 et 2 maximum
+      if (isMobile) {
+        return prev === 1 ? 2 : 1;
+      }
+      
+      // Sur desktop, tous les modes sont disponibles
       const nextMode = prev >= 4 ? 1 : prev + 1;
       
-      // Copier l'image actuelle vers le mode suivant
       if (nextMode === 1 && singleViewerRef.current && leftViewerRef.current) {
         singleViewerRef.current.src = leftViewerRef.current.src;
         setImageControls(prevControls => ({
@@ -438,22 +435,32 @@ function RadiologyViewer() {
       
       return nextMode;
     });
-  }, []);
+  }, [isMobile]);
 
   const handleDragStart = useCallback((event, folder) => {
+    // 🔧 CORRECTION : Pas de drag&drop sur mobile
+    if (isMobile) {
+      event.preventDefault();
+      return;
+    }
+    
     event.dataTransfer.setData('text/plain', folder);
     event.target.classList.add('dragging');
-  }, []);
+  }, [isMobile]);
 
-  // 🔧 MODIFICATION : handleDrop étendu pour tous les viewers
   const handleDrop = useCallback((event, side) => {
+    // 🔧 CORRECTION : Pas de drag&drop sur mobile
+    if (isMobile) {
+      event.preventDefault();
+      return;
+    }
+    
     event.preventDefault();
     const folder = event.dataTransfer.getData('text');
     
     if (currentCase && currentCase.images && currentCase.images[folder]) {
       loadImage(folder, 0, side);
       
-      // 🔧 AJOUT : Mise à jour du dossier pour tous les viewers
       switch(side) {
         case 'left':
         case 'single':
@@ -465,247 +472,6 @@ function RadiologyViewer() {
           setCurrentIndexRight(0);
           break;
         case 'topLeft':
-          setCurrentFolderTopLeft(folder);
-          setCurrentIndexTopLeft(0);
-          break;
-        case 'topRight':
-          setCurrentFolderTopRight(folder);
-          setCurrentIndexTopRight(0);
-          break;
-        case 'bottomLeft':
-          setCurrentFolderBottomLeft(folder);
-          setCurrentIndexBottomLeft(0);
-          break;
-        case 'bottomRight':
-          setCurrentFolderBottomRight(folder);
-          setCurrentIndexBottomRight(0);
-          break;
-      }
-    } else {
-      console.error('Invalid folder or no images in folder:', folder);
-    }
-    
-    event.target.classList.remove('drag-over');
-    document.querySelectorAll('.folder-thumbnail').forEach(el => el.classList.remove('dragging'));
-  }, [currentCase, loadImage]);
-
-  const handleMouseDown = useCallback((e, side) => {
-    if (e.button === 0 && e.shiftKey) {
-      setIsPanning(true);
-    } else if (e.button === 2 && e.shiftKey) {
-      setIsAdjustingContrast(true);
-    } else if (e.button === 2) {
-      setIsZooming(true);
-    } else if (e.button === 0) {
-      setIsDragging(true);
-    }
-    setStartX(e.clientX);
-    setStartY(e.clientY);
-    e.preventDefault();
-  }, []);
-
-  const handleMouseMove = useCallback((e, side) => {
-    const deltaX = e.clientX - startX;
-    const deltaY = e.clientY - startY;
-
-    if (isPanning) {
-      handlePan(side, deltaX, deltaY);
-    } else if (isZooming) {
-      handleZoom(side, -deltaY);
-    } else if (isAdjustingContrast) {
-      handleContrast(side, deltaX);
-    } else if (isDragging) {
-      handleScroll(deltaY, true, side);
-    }
-
-    setStartX(e.clientX);
-    setStartY(e.clientY);
-  }, [isPanning, isZooming, isAdjustingContrast, isDragging, startX, startY, handlePan, handleZoom, handleContrast, handleScroll]);
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-    setIsPanning(false);
-    setIsZooming(false);
-    setIsAdjustingContrast(false);
-  }, []);
-
-  // ==================== GESTION DES ÉVÉNEMENTS WHEEL ÉTENDUE ==================== 
-  
-  const handleWheelEvent = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    // 🔧 MODIFICATION : Identifier le viewer ciblé pour tous les modes
-    let targetSide = 'single';
-    
-    if (viewMode === 2) {
-      const viewers = document.querySelectorAll(`.${styles.viewerHalf}`);
-      const leftViewer = viewers[0];
-      const rightViewer = viewers[1];
-      
-      if (e.target.closest(`.${styles.viewer}`) === rightViewer) {
-        targetSide = 'right';
-      } else {
-        targetSide = 'left';
-      }
-    } else if (viewMode === 3 || viewMode === 4) {
-      // Détecter quel viewer est ciblé en mode 3 ou 4
-      const viewerElement = e.target.closest(`.${styles.viewer}`);
-      if (viewerElement) {
-        const viewerClass = viewerElement.className;
-        if (viewerClass.includes('topLeft')) targetSide = 'topLeft';
-        else if (viewerClass.includes('topRight')) targetSide = 'topRight';
-        else if (viewerClass.includes('bottomLeft')) targetSide = 'bottomLeft';
-        else if (viewerClass.includes('bottomRight')) targetSide = 'bottomRight';
-      }
-    }
-    
-    if (e.ctrlKey || e.metaKey) {
-      handleZoom(targetSide, -e.deltaY);
-    } else {
-      handleScroll(e.deltaY, false, targetSide);
-    }
-  }, [viewMode, handleZoom, handleScroll]);
-
-  // ==================== EFFECTS ==================== 
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
-
-  useEffect(() => {
-    if (isMobile && viewMode !== 1) {
-      setViewMode(1);
-    }
-  }, [isMobile, viewMode]);
-
-  // Effect pour gérer la molette
-  useEffect(() => {
-    const mainViewer = document.getElementById('main-viewer');
-    if (mainViewer) {
-      mainViewer.addEventListener('wheel', handleWheelEvent, { passive: false });
-    }
-
-    return () => {
-      if (mainViewer) {
-        mainViewer.removeEventListener('wheel', handleWheelEvent);
-      }
-    };
-  }, [handleWheelEvent]);
-
-  // 🔧 MODIFICATION : Touches clavier étendues pour tous les modes
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.key === "&" || event.key === "1") {
-        setViewMode(1);
-      } else if (event.key === "é" || event.key === "2") {
-        setViewMode(2);
-      } else if (event.key === "\"" || event.key === "3") {
-        setViewMode(3);
-      } else if (event.key === "'" || event.key === "4") {
-        setViewMode(4);
-      } else if (event.key === "ArrowDown") {
-        if (viewMode === 1) {
-          handleScroll(100, false, 'single');
-        } else if (viewMode === 2) {
-          handleScroll(100, false, 'left');
-          handleScroll(100, false, 'right');
-        } else if (viewMode === 3) {
-          handleScroll(100, false, 'topLeft');
-          handleScroll(100, false, 'topRight');
-          handleScroll(100, false, 'bottomLeft');
-        } else if (viewMode === 4) {
-          handleScroll(100, false, 'topLeft');
-          handleScroll(100, false, 'topRight');
-          handleScroll(100, false, 'bottomLeft');
-          handleScroll(100, false, 'bottomRight');
-        }
-      } else if (event.key === "ArrowUp") {
-        if (viewMode === 1) {
-          handleScroll(-100, false, 'single');
-        } else if (viewMode === 2) {
-          handleScroll(-100, false, 'left');
-          handleScroll(-100, false, 'right');
-        } else if (viewMode === 3) {
-          handleScroll(-100, false, 'topLeft');
-          handleScroll(-100, false, 'topRight');
-          handleScroll(-100, false, 'bottomLeft');
-        } else if (viewMode === 4) {
-          handleScroll(-100, false, 'topLeft');
-          handleScroll(-100, false, 'topRight');
-          handleScroll(-100, false, 'bottomLeft');
-          handleScroll(-100, false, 'bottomRight');
-        }
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [handleScroll, viewMode]);
-
-  // Effect pour les événements touch
-  useEffect(() => {
-    if (isTouchDevice) {
-      const viewer = document.querySelector(`.${styles.viewer}`);
-      let touchStartY = 0;
-      let lastScrollTime = 0;
-      const scrollDelay = 50;
-      
-      const handleTouchStart = (e) => {
-        touchStartY = e.touches[0].clientY;
-      };
-
-      const handleTouchMove = (e) => {
-        e.preventDefault();
-        const currentY = e.touches[0].clientY;
-        const deltaY = touchStartY - currentY;
-        const currentTime = Date.now();
-        
-        if (currentTime - lastScrollTime > scrollDelay) {
-          if (Math.abs(deltaY) > 10) {
-            const direction = deltaY > 0 ? 1 : -1;
-            handleScroll(direction * 50, false, viewMode === 1 ? 'single' : 'left');
-            lastScrollTime = currentTime;
-          }
-        }
-        
-        touchStartY = currentY;
-      };
-
-      const preventRefresh = (e) => {
-        e.preventDefault();
-      };
-
-      document.body.style.overflow = 'hidden';
-      document.addEventListener('touchmove', preventRefresh, { passive: false });
-      viewer?.addEventListener('touchstart', handleTouchStart, { passive: true });
-      viewer?.addEventListener('touchmove', handleTouchMove, { passive: false });
-
-      return () => {
-        document.body.style.overflow = '';
-        document.removeEventListener('touchmove', preventRefresh);
-        viewer?.removeEventListener('touchstart', handleTouchStart);
-        viewer?.removeEventListener('touchmove', handleTouchMove);
-      };
-    }
-  }, [isTouchDevice, handleScroll, viewMode]);
-
-  // Effect pour charger le cas
-  useEffect(() => {
-    const fetchCase = async () => {
-      try {
-        const response = await axios.get(`/cases/${caseId}`);
-        const caseData = response.data;
-        setCurrentCase(caseData);
-        
-        // 🔧 AJOUT : Initialiser tous les dossiers
-        if (caseData.folders && caseData.folders.length > 0) {
-          const folders = caseData.folders;
-          setCurrentFolderLeft(folders[0] || '');
-          setCurrentFolderRight(folders[1] || folders[0] || '');
-          setCurrentFolderTopLeft(folders[0] || '');
           setCurrentFolderTopRight(folders[1] || folders[0] || '');
           setCurrentFolderBottomLeft(folders[2] || folders[0] || '');
           setCurrentFolderBottomRight(folders[3] || folders[1] || folders[0] || '');
@@ -739,7 +505,6 @@ function RadiologyViewer() {
     }
   }, [currentCase, currentFolderRight, currentIndexRight, viewMode]);
 
-  // 🔧 AJOUT : Effects pour les nouveaux viewers
   useEffect(() => {
     if (currentCase && currentFolderTopLeft && topLeftViewerRef.current && (viewMode === 3 || viewMode === 4)) {
       loadImage(currentFolderTopLeft, currentIndexTopLeft, 'topLeft');
@@ -775,7 +540,6 @@ function RadiologyViewer() {
     applyImageTransforms('bottomRight');
   }, [imageControls, applyImageTransforms]);
 
-  // 🔧 AJOUT : Fonction pour obtenir le nom du dossier selon le côté
   const getFolderName = useCallback((side) => {
     switch(side) {
       case 'left':
@@ -797,7 +561,6 @@ function RadiologyViewer() {
   }, [currentFolderLeft, currentFolderRight, currentFolderTopLeft, currentFolderTopRight, 
       currentFolderBottomLeft, currentFolderBottomRight]);
 
-  // 🔧 AJOUT : Fonction pour obtenir l'index selon le côté
   const getCurrentIndex = useCallback((side) => {
     switch(side) {
       case 'left':
@@ -819,7 +582,6 @@ function RadiologyViewer() {
   }, [currentIndexLeft, currentIndexRight, currentIndexTopLeft, currentIndexTopRight, 
       currentIndexBottomLeft, currentIndexBottomRight]);
 
-  // 🔧 MODIFICATION : Fonction renderViewer étendue
   const renderViewer = useCallback((side, className = '') => {
     const folderName = getFolderName(side);
     const currentIndex = getCurrentIndex(side);
@@ -891,8 +653,10 @@ function RadiologyViewer() {
             onDragStart={(e) => !isMobile && handleDragStart(e, folder)}
             onClick={() => {
               if (isMobile) {
-                loadImage(folder, 0, 'single');
+                // 🔧 CORRECTION : Sur mobile, charge toujours dans le viewer principal
+                loadImage(folder, 0, viewMode === 1 ? 'single' : 'left');
                 setCurrentFolderLeft(folder);
+                setCurrentIndexLeft(0);
               }
             }}
           >
@@ -911,9 +675,8 @@ function RadiologyViewer() {
         ))}
       </div>
     );
-  }, [currentCase, isMobile, handleDragStart, loadImage]);
+  }, [currentCase, isMobile, handleDragStart, loadImage, viewMode]);
 
-  // 🔧 AJOUT : Fonction pour rendre le viewer selon le mode
   const renderMainViewer = useCallback(() => {
     switch(viewMode) {
       case 1:
@@ -928,6 +691,8 @@ function RadiologyViewer() {
         );
       
       case 3:
+        // 🔧 CORRECTION : Mode 3 uniquement sur desktop
+        if (isMobile) return renderViewer('single', styles.singleViewer);
         return (
           <div className={styles.tripleViewer}>
             {renderViewer('topLeft', styles.viewerThird)}
@@ -937,6 +702,8 @@ function RadiologyViewer() {
         );
       
       case 4:
+        // 🔧 CORRECTION : Mode 4 uniquement sur desktop
+        if (isMobile) return renderViewer('single', styles.singleViewer);
         return (
           <div className={styles.quadViewer}>
             <div className={styles.quadTop}>
@@ -953,18 +720,26 @@ function RadiologyViewer() {
       default:
         return renderViewer('single', styles.singleViewer);
     }
-  }, [viewMode, renderViewer]);
+  }, [viewMode, renderViewer, isMobile]);
       
   if (!currentCase) return <div>Chargement...</div>;
 
-  // 🔧 MODIFICATION : Texte du bouton selon le mode
+  // 🔧 CORRECTION : Texte du bouton selon le mode et la plateforme
   const getViewModeText = () => {
-    switch(viewMode) {
-      case 1: return 'Mode 1 viewer';
-      case 2: return 'Mode 2 viewers';
-      case 3: return 'Mode 3 viewers';
-      case 4: return 'Mode 4 viewers';
-      default: return 'Mode 1 viewer';
+    if (isMobile) {
+      switch(viewMode) {
+        case 1: return 'Mode 1 viewer';
+        case 2: return 'Mode 2 viewers';
+        default: return 'Mode 1 viewer';
+      }
+    } else {
+      switch(viewMode) {
+        case 1: return 'Mode 1 viewer';
+        case 2: return 'Mode 2 viewers';
+        case 3: return 'Mode 3 viewers';
+        case 4: return 'Mode 4 viewers';
+        default: return 'Mode 1 viewer';
+      }
     }
   };
       
@@ -990,16 +765,29 @@ function RadiologyViewer() {
           </div>
           {isShortcutGuideVisible && (
             <div className={`${styles.shortcutPopup} ${styles.visible}`}>
-              <div className={styles.shortcutTitle}>Raccourcis clavier</div>
+              <div className={styles.shortcutTitle}>
+                {isMobile ? 'Contrôles tactiles' : 'Raccourcis clavier'}
+              </div>
               <ul className={styles.shortcutList}>
-                <li><strong>1 (&)</strong> Mode 1 viewer</li>
-                <li><strong>2 (é)</strong> Mode 2 viewers</li>
-                <li><strong>3 (")</strong> Mode 3 viewers</li>
-                <li><strong>4 (')</strong> Mode 4 viewers</li>
-                <li><strong>↑ ↓</strong> Navigation synchronisée</li>
-                <li><strong>Shift + clic gauche</strong> Déplacer</li>
-                <li><strong>Clic droit</strong> Zoom</li>
-                <li><strong>Shift + clic droit</strong> Contraste</li>
+                {isMobile ? (
+                  <>
+                    <li><strong>Tap</strong> Sélectionner séquence</li>
+                    <li><strong>Glisser ↕</strong> Navigation images</li>
+                    <li><strong>Pincer</strong> Zoom</li>
+                    <li><strong>Bouton</strong> Changer mode</li>
+                  </>
+                ) : (
+                  <>
+                    <li><strong>1 (&)</strong> Mode 1 viewer</li>
+                    <li><strong>2 (é)</strong> Mode 2 viewers</li>
+                    <li><strong>3 (")</strong> Mode 3 viewers</li>
+                    <li><strong>4 (')</strong> Mode 4 viewers</li>
+                    <li><strong>↑ ↓</strong> Navigation synchronisée</li>
+                    <li><strong>Shift + clic gauche</strong> Déplacer</li>
+                    <li><strong>Clic droit</strong> Zoom</li>
+                    <li><strong>Shift + clic droit</strong> Contraste</li>
+                  </>
+                )}
               </ul>
             </div>
           )}
@@ -1042,4 +830,269 @@ function RadiologyViewer() {
   );
 }
 
-export default memo(RadiologyViewer);
+export default memo(RadiologyViewer);Left(folder);
+          setCurrentIndexTopLeft(0);
+          break;
+        case 'topRight':
+          setCurrentFolderTopRight(folder);
+          setCurrentIndexTopRight(0);
+          break;
+        case 'bottomLeft':
+          setCurrentFolderBottomLeft(folder);
+          setCurrentIndexBottomLeft(0);
+          break;
+        case 'bottomRight':
+          setCurrentFolderBottomRight(folder);
+          setCurrentIndexBottomRight(0);
+          break;
+      }
+    } else {
+      console.error('Invalid folder or no images in folder:', folder);
+    }
+    
+    event.target.classList.remove('drag-over');
+    document.querySelectorAll('.folder-thumbnail').forEach(el => el.classList.remove('dragging'));
+  }, [currentCase, loadImage, isMobile]);
+
+  const handleMouseDown = useCallback((e, side) => {
+    // 🔧 CORRECTION : Pas d'interactions souris complexes sur mobile
+    if (isMobile) return;
+    
+    if (e.button === 0 && e.shiftKey) {
+      setIsPanning(true);
+    } else if (e.button === 2 && e.shiftKey) {
+      setIsAdjustingContrast(true);
+    } else if (e.button === 2) {
+      setIsZooming(true);
+    } else if (e.button === 0) {
+      setIsDragging(true);
+    }
+    setStartX(e.clientX);
+    setStartY(e.clientY);
+    e.preventDefault();
+  }, [isMobile]);
+
+  const handleMouseMove = useCallback((e, side) => {
+    // 🔧 CORRECTION : Pas d'interactions souris complexes sur mobile
+    if (isMobile) return;
+    
+    const deltaX = e.clientX - startX;
+    const deltaY = e.clientY - startY;
+
+    if (isPanning) {
+      handlePan(side, deltaX, deltaY);
+    } else if (isZooming) {
+      handleZoom(side, -deltaY);
+    } else if (isAdjustingContrast) {
+      handleContrast(side, deltaX);
+    } else if (isDragging) {
+      handleScroll(deltaY, true, side);
+    }
+
+    setStartX(e.clientX);
+    setStartY(e.clientY);
+  }, [isPanning, isZooming, isAdjustingContrast, isDragging, startX, startY, handlePan, handleZoom, handleContrast, handleScroll, isMobile]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+    setIsPanning(false);
+    setIsZooming(false);
+    setIsAdjustingContrast(false);
+  }, []);
+
+  // ==================== GESTION DES ÉVÉNEMENTS WHEEL ÉTENDUE ==================== 
+  
+  const handleWheelEvent = useCallback((e) => {
+    // 🔧 CORRECTION : Pas de wheel sur mobile
+    if (isMobile) return;
+    
+    e.preventDefault();
+    e.stopPropagation();
+    
+    let targetSide = 'single';
+    
+    if (viewMode === 2) {
+      const viewers = document.querySelectorAll(`.${styles.viewerHalf}`);
+      const leftViewer = viewers[0];
+      const rightViewer = viewers[1];
+      
+      if (e.target.closest(`.${styles.viewer}`) === rightViewer) {
+        targetSide = 'right';
+      } else {
+        targetSide = 'left';
+      }
+    } else if (viewMode === 3 || viewMode === 4) {
+      const viewerElement = e.target.closest(`.${styles.viewer}`);
+      if (viewerElement) {
+        const viewerClass = viewerElement.className;
+        if (viewerClass.includes('topLeft')) targetSide = 'topLeft';
+        else if (viewerClass.includes('topRight')) targetSide = 'topRight';
+        else if (viewerClass.includes('bottomLeft')) targetSide = 'bottomLeft';
+        else if (viewerClass.includes('bottomRight')) targetSide = 'bottomRight';
+      }
+    }
+    
+    if (e.ctrlKey || e.metaKey) {
+      handleZoom(targetSide, -e.deltaY);
+    } else {
+      handleScroll(e.deltaY, false, targetSide);
+    }
+  }, [viewMode, handleZoom, handleScroll, isMobile]);
+
+  // ==================== EFFECTS ==================== 
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
+  // 🔧 CORRECTION : Force le mode 1 sur mobile et limite les modes
+  useEffect(() => {
+    if (isMobile) {
+      // Sur mobile, limite aux modes 1 et 2 seulement
+      if (viewMode > 2) {
+        setViewMode(1);
+      }
+    }
+  }, [isMobile, viewMode]);
+
+  // Effect pour gérer la molette (desktop uniquement)
+  useEffect(() => {
+    if (isMobile) return; // Pas de wheel sur mobile
+    
+    const mainViewer = document.getElementById('main-viewer');
+    if (mainViewer) {
+      mainViewer.addEventListener('wheel', handleWheelEvent, { passive: false });
+    }
+
+    return () => {
+      if (mainViewer) {
+        mainViewer.removeEventListener('wheel', handleWheelEvent);
+      }
+    };
+  }, [handleWheelEvent, isMobile]);
+
+  // 🔧 CORRECTION : Touches clavier étendues (desktop uniquement)
+  useEffect(() => {
+    if (isMobile) return; // Pas de clavier sur mobile
+    
+    const handleKeyDown = (event) => {
+      if (event.key === "&" || event.key === "1") {
+        setViewMode(1);
+      } else if (event.key === "é" || event.key === "2") {
+        setViewMode(2);
+      } else if (event.key === "\"" || event.key === "3") {
+        if (!isMobile) setViewMode(3); // Mode 3 uniquement sur desktop
+      } else if (event.key === "'" || event.key === "4") {
+        if (!isMobile) setViewMode(4); // Mode 4 uniquement sur desktop
+      } else if (event.key === "ArrowDown") {
+        if (viewMode === 1) {
+          handleScroll(100, false, 'single');
+        } else if (viewMode === 2) {
+          handleScroll(100, false, 'left');
+          handleScroll(100, false, 'right');
+        } else if (viewMode === 3) {
+          handleScroll(100, false, 'topLeft');
+          handleScroll(100, false, 'topRight');
+          handleScroll(100, false, 'bottomLeft');
+        } else if (viewMode === 4) {
+          handleScroll(100, false, 'topLeft');
+          handleScroll(100, false, 'topRight');
+          handleScroll(100, false, 'bottomLeft');
+          handleScroll(100, false, 'bottomRight');
+        }
+      } else if (event.key === "ArrowUp") {
+        if (viewMode === 1) {
+          handleScroll(-100, false, 'single');
+        } else if (viewMode === 2) {
+          handleScroll(-100, false, 'left');
+          handleScroll(-100, false, 'right');
+        } else if (viewMode === 3) {
+          handleScroll(-100, false, 'topLeft');
+          handleScroll(-100, false, 'topRight');
+          handleScroll(-100, false, 'bottomLeft');
+        } else if (viewMode === 4) {
+          handleScroll(-100, false, 'topLeft');
+          handleScroll(-100, false, 'topRight');
+          handleScroll(-100, false, 'bottomLeft');
+          handleScroll(-100, false, 'bottomRight');
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleScroll, viewMode, isMobile]);
+
+  // Effect pour les événements touch (mobile uniquement)
+  useEffect(() => {
+    if (!isTouchDevice || !isMobile) return;
+    
+    const viewer = document.querySelector(`.${styles.viewer}`);
+    let touchStartY = 0;
+    let lastScrollTime = 0;
+    const scrollDelay = 50;
+    
+    const handleTouchStart = (e) => {
+      touchStartY = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e) => {
+      e.preventDefault();
+      const currentY = e.touches[0].clientY;
+      const deltaY = touchStartY - currentY;
+      const currentTime = Date.now();
+      
+      if (currentTime - lastScrollTime > scrollDelay) {
+        if (Math.abs(deltaY) > 10) {
+          const direction = deltaY > 0 ? 1 : -1;
+          handleScroll(direction * 50, false, viewMode === 1 ? 'single' : 'left');
+          lastScrollTime = currentTime;
+        }
+      }
+      
+      touchStartY = currentY;
+    };
+
+    const preventRefresh = (e) => {
+      e.preventDefault();
+    };
+
+    // 🔧 CORRECTION : Empêche le scroll du body sur mobile
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+    document.body.style.height = '100%';
+    
+    document.addEventListener('touchmove', preventRefresh, { passive: false });
+    viewer?.addEventListener('touchstart', handleTouchStart, { passive: true });
+    viewer?.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+    return () => {
+      // 🔧 CORRECTION : Restore body scroll
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
+      
+      document.removeEventListener('touchmove', preventRefresh);
+      viewer?.removeEventListener('touchstart', handleTouchStart);
+      viewer?.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, [isTouchDevice, handleScroll, viewMode, isMobile]);
+
+  // Effect pour charger le cas
+  useEffect(() => {
+    const fetchCase = async () => {
+      try {
+        const response = await axios.get(`/cases/${caseId}`);
+        const caseData = response.data;
+        setCurrentCase(caseData);
+        
+        if (caseData.folders && caseData.folders.length > 0) {
+          const folders = caseData.folders;
+          setCurrentFolderLeft(folders[0] || '');
+          setCurrentFolderRight(folders[1] || folders[0] || '');
+          setCurrentFolderTopLeft(folders[0] || '');
+          setCurrentFolderTop
