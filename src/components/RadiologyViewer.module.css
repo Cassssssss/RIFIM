@@ -1,31 +1,29 @@
-/* ==================== VARIABLES CSS POUR LE THÈME ==================== */
-/* Ces variables sont automatiquement définies par le thème dans theme.js */
+/* ==================== VARIABLES CSS DYNAMIQUES ==================== */
+:root {
+  --header-height: 60px;
+  --bottom-bar-height: 50px;
+  --safe-area-top: 0px;
+  --safe-area-bottom: 0px;
+}
 
-/* ==================== BASE CONTAINER - DESKTOP INTACT + MOBILE CORRIGÉ ==================== */
+/* ==================== BASE CONTAINER FLEXIBLE ==================== */
 .container {
   position: fixed;          
   width: 100%;
-  /* 🔧 DESKTOP : Garde les valeurs originales qui fonctionnaient */
-  height: calc(100vh - 60px);
+  /* Calcul automatique basé sur les vraies dimensions */
+  height: calc(100vh - var(--header-height) - var(--bottom-bar-height) - var(--safe-area-top) - var(--safe-area-bottom));
+  height: calc(100dvh - var(--header-height) - var(--bottom-bar-height) - var(--safe-area-top) - var(--safe-area-bottom));
   left: 0;
-  top: 70px; /* Desktop header + margin */
+  top: calc(var(--header-height) + var(--safe-area-top));
   display: flex;
   flex-direction: column;
   background: linear-gradient(135deg, rgb(var(--color-background)) 0%, rgb(var(--color-surface)) 100%);
   overflow: hidden;         
   color: rgb(var(--color-text));
   z-index: 100;            
-  
-  @media (max-width: 768px) {
-    /* 🔧 MOBILE : Calculs précis basés sur tes captures */
-    /* Header mobile = ~60px, Bottom bar = ~50px, Menu déroulant = besoin d'espace */
-    height: calc(100vh - 50px); /* Seulement la bottom bar, pas le header */
-    height: calc(100dvh - 50px);
-    top: 0; /* Pas de top sur mobile, le header fait partie du flow */
-  }
 }
 
-/* ==================== CONTENT ET LAYOUT - RESTORATION DESKTOP + MOBILE AJUSTÉ ==================== */
+/* ==================== CONTENT FLEXIBLE ==================== */
 .content {
   flex: 1;
   display: flex;
@@ -33,36 +31,29 @@
   background-color: rgb(var(--color-background));
   overflow: hidden;
   margin: 0;
-  /* 🔧 DESKTOP : Restore les valeurs originales */
-  padding: 10px 0 70px 0; /* Desktop original qui fonctionnait */
+  padding: 0;
   min-height: 0;
-  
-  @media (max-width: 768px) {
-    /* 🔧 MOBILE : Ajustement fin pour la bottom bar */
-    padding: 10px 0 55px 0; /* 55px pour laisser 5px de marge avec la bottom bar */
-  }
+  height: 100%;
 }
 
 .layout {
   flex: 1;
   display: flex;
-  /* 🔧 DESKTOP : Valeurs originales */
-  height: calc(100% - 10px);
+  height: 100%;
   background-color: rgb(var(--color-background));
   margin: 0;
-  padding: 0;
+  padding: 5px;
   min-height: 0;
   gap: 0.5rem;
   
   @media (max-width: 768px) {
     flex-direction: row;
     gap: 0.25rem;
-    /* 🔧 MOBILE : Hauteur ajustée pour éviter le rognage */
-    height: calc(100% - 10px);
+    padding: 3px;
   }
 }
 
-/* ==================== FOLDER GRID - INCHANGÉ (FONCTIONNAIT) ==================== */
+/* ==================== FOLDER GRID MODERNISÉ ==================== */
 .folderGrid {
   width: 120px; 
   height: 100%;
@@ -135,14 +126,12 @@
   }
   
   @media (max-width: 768px) {
-    /* Pas d'hover sur mobile */
     &:hover {
       transform: none;
       border-color: rgb(var(--color-border));
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
     
-    /* Touch feedback sur mobile */
     &:active {
       transform: scale(0.95);
       opacity: 0.8;
@@ -184,7 +173,7 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
 }
 
-/* ==================== MAIN VIEWER - INCHANGÉ ==================== */
+/* ==================== MAIN VIEWER MODERNISÉ ==================== */
 .mainViewer {
   flex: 1;
   display: flex;
@@ -196,10 +185,6 @@
   background-color: rgb(var(--color-background));
   overflow: hidden;
   border-radius: 12px;
-  
-  @media (max-width: 768px) {
-    height: 100%;
-  }
 }
 
 /* ==================== DUAL VIEWER ==================== */
@@ -273,11 +258,11 @@
   @media (max-width: 768px) {
     width: 100%;
     height: 33.333%;
-    min-height: 120px; /* Taille minimum sur mobile */
+    min-height: 120px;
   }
 }
 
-/* ==================== VIEWER TYPES - DESKTOP INCHANGÉ + MOBILE OPTIMISÉ ==================== */
+/* ==================== VIEWER TYPES MODERNISÉS + OPTIMISATIONS ==================== */
 .viewer, .viewerHalf, .singleViewer, .viewerQuarter, .viewerThird {
   position: relative;
   margin: 0;
@@ -300,7 +285,6 @@
   }
   
   @media (max-width: 768px) {
-    /* Pas d'hover sur mobile */
     &:hover {
       border-color: rgb(var(--color-border));
     }
@@ -320,7 +304,6 @@
 }
 
 .singleViewer {
-  /* 🔧 DESKTOP : Restore la valeur originale */
   width: 95%;               
   height: 100%;
   margin: 0 auto;
@@ -331,11 +314,35 @@
 }
 
 /* ==================== CLASSES SPÉCIFIQUES POUR IDENTIFICATION DES VIEWERS ==================== */
-.topLeft, .topRight, .bottomLeft, .bottomRight, .left, .right, .single {
-  /* Classes pour identifier les viewers */
+.topLeft {
+  /* Classe pour identifier le viewer top-left en mode 3 et 4 */
 }
 
-/* ==================== IMAGES - PRÉSERVATION DES DONNÉES ==================== */
+.topRight {
+  /* Classe pour identifier le viewer top-right en mode 3 et 4 */
+}
+
+.bottomLeft {
+  /* Classe pour identifier le viewer bottom-left en mode 3 et 4 */
+}
+
+.bottomRight {
+  /* Classe pour identifier le viewer bottom-right en mode 4 */
+}
+
+.left {
+  /* Classe pour identifier le viewer gauche en mode 2 */
+}
+
+.right {
+  /* Classe pour identifier le viewer droit en mode 2 */
+}
+
+.single {
+  /* Classe pour identifier le viewer unique en mode 1 */
+}
+
+/* ==================== IMAGES - PRÉSERVATION DES DONNÉES + OPTIMISATIONS PERFORMANCE ==================== */
 .image {
   width: 100%;              
   height: 100%;             
@@ -393,13 +400,12 @@
   }
 }
 
-/* ==================== BOTTOM BAR - DESKTOP INCHANGÉ + MOBILE CORRIGÉ ==================== */
+/* ==================== BOTTOM BAR FLEXIBLE ==================== */
 .bottomBar {
   position: fixed;          
-  bottom: 0;                
+  bottom: var(--safe-area-bottom);
   left: 0;                  
-  /* 🔧 DESKTOP : Restore la hauteur originale */
-  height: 60px;
+  height: var(--bottom-bar-height);
   width: 100%;
   margin: 0;
   padding: 0 24px;
@@ -422,13 +428,11 @@
   }
   
   @media (max-width: 768px) {
-    /* 🔧 MOBILE : Hauteur exacte observée */
-    height: 50px;
     padding: 0 12px;
   }
 }
 
-/* ==================== BUTTONS ET LINKS - DESKTOP INCHANGÉ ==================== */
+/* ==================== BUTTONS ET LINKS MODERNISÉS ==================== */
 .responseButton, .sheetLink {
   background: rgba(255, 255, 255, 0.12);
   color: white;
@@ -469,7 +473,6 @@
     margin-left: 4px;
     height: 36px; 
     
-    /* Pas d'hover sur mobile */
     &:hover {
       background: rgba(255, 255, 255, 0.12);
       transform: none;
@@ -477,7 +480,6 @@
       border-color: rgba(255, 255, 255, 0.15);
     }
     
-    /* Touch feedback */
     &:active {
       background: rgba(255, 255, 255, 0.2);
       transform: scale(0.98);
@@ -485,7 +487,7 @@
   }
 }
 
-/* ==================== SHORTCUT GUIDE - DESKTOP INCHANGÉ ==================== */
+/* ==================== SHORTCUT GUIDE MODERNISÉ ==================== */
 .shortcutGuide {
   display: flex;
   align-items: center;
@@ -516,7 +518,6 @@
   }
   
   @media (max-width: 768px) {
-    /* Pas d'hover sur mobile */
     &:hover {
       background: rgba(255, 255, 255, 0.08);
       border-color: rgba(255, 255, 255, 0.3);
@@ -524,7 +525,6 @@
       color: rgba(255, 255, 255, 0.9);
     }
     
-    /* Touch feedback */
     &:active {
       background: rgba(255, 255, 255, 0.2);
       transform: scale(0.95);
@@ -534,7 +534,7 @@
 
 .shortcutPopup {
   position: absolute;
-  bottom: 70px;
+  bottom: calc(var(--bottom-bar-height) + 10px);
   left: -10px;
   background-color: rgb(var(--color-surface));
   color: rgb(var(--color-text));
@@ -559,7 +559,6 @@
   @media (max-width: 768px) {
     width: 280px;
     left: -240px;
-    bottom: 60px;
     padding: 16px;
   }
 }
@@ -606,10 +605,10 @@
   font-weight: 600;
 }
 
-/* ==================== RESPONSE BOX - DESKTOP INCHANGÉ ==================== */
+/* ==================== RESPONSE BOX MODERNISÉE ==================== */
 .responseBox {
   position: fixed;
-  bottom: 80px;
+  bottom: calc(var(--bottom-bar-height) + 20px);
   right: 24px;
   padding: 20px;
   border-radius: 12px;
@@ -635,7 +634,6 @@
   }
   
   @media (max-width: 768px) {
-    bottom: 60px;
     right: 12px;
     left: 12px;
     max-width: none;
