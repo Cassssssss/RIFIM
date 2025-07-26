@@ -428,34 +428,37 @@
   /* Classe pour identifier le viewer unique en mode 1 */
 }
 
-/* ==================== IMAGES - FIX AFFICHAGE À 100% ==================== */
+/* ==================== IMAGES - AFFICHAGE 100% RÉEL SANS CONTRAINTES ==================== */
 .image {
-  /* 🔧 CORRECTION MAJEURE : Affichage à 100% sans zoom automatique */
-  width: auto;              /* Auto au lieu de 100% */
-  height: auto;             /* Auto au lieu de 100% */
-  max-width: 100%;          /* Limite à la largeur du conteneur */
-  max-height: 100%;         /* Limite à la hauteur du conteneur */
+  /* 🔧 CORRECTION MAJEURE : Affichage à 100% RÉEL des images médicales */
+  width: 100% !important;        /* Force 100% de largeur */
+  height: 100% !important;       /* Force 100% de hauteur */
+  max-width: none !important;    /* Supprime les limites */
+  max-height: none !important;   /* Supprime les limites */
   margin: 0;
   padding: 0;
-  object-fit: contain;      /* Préserve TOUTES les données */
-  object-position: center;  /* Centre l'image */
+  object-fit: fill;              /* Remplit tout l'espace */
+  object-position: center;
   display: block;
   transform-origin: center;
   user-select: none;
   -webkit-user-select: none;
   pointer-events: none;
+  
   /* Optimisation pour un affichage plus net des images médicales */
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
+  
   /* OPTIMISATIONS DE PERFORMANCE CRITIQUES */
   will-change: transform;
-  transform: translateZ(0); /* Force l'accélération matérielle */
-  backface-visibility: hidden; /* Optimise les animations */
-  /* 🔧 CORRECTION : Évite la sélection sur mobile */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  
+  /* Évite la sélection sur mobile */
   -webkit-touch-callout: none;
   -webkit-user-drag: none;
   
-  /* 🔧 FIX : Réinitialisation par défaut */
+  /* Transformations par défaut */
   transform: scale(1) translate(0px, 0px) !important;
   filter: contrast(100%) brightness(100%) !important;
 }
@@ -500,37 +503,6 @@
   .folderLabel:hover {
     transform: none; /* Pas d'effet hover sur mobile */
     background: rgba(0, 0, 0, 0.85);
-  }
-}
-
-/* 🔧 NOUVEAU : Indicateur tactile pour mobile */
-.touchIndicator {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  background: rgba(0, 0, 0, 0.7);
-  color: rgba(255, 255, 255, 0.9);
-  padding: 6px 10px;
-  border-radius: 15px;
-  font-size: 11px;
-  font-weight: 500;
-  z-index: 15;
-  backdrop-filter: blur(6px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  animation: fadeInOut 4s ease-in-out infinite;
-  pointer-events: none;
-  user-select: none;
-}
-
-/* Animation pour attirer l'attention */
-@keyframes fadeInOut {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
-}
-
-@media (min-width: 769px) {
-  .touchIndicator {
-    display: none; /* Masque sur desktop */
   }
 }
 
@@ -1030,12 +1002,6 @@
 :global(.dark) .shortcutPopup {
   backdrop-filter: blur(12px);
   border-color: rgba(255, 255, 255, 0.1);
-}
-
-:global(.dark) .touchIndicator {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.9);
-  border-color: rgba(255, 255, 255, 0.2);
 }
 
 /* ==================== OPTIMISATIONS DE PERFORMANCE ==================== */
