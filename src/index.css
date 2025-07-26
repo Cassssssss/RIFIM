@@ -12,7 +12,6 @@
   --color-background: 249 250 251;
   --color-surface: 255 255 255;
   --color-text: 31 41 55;
-  --color-border: 229 231 235;
 }
 
 .dark {
@@ -22,332 +21,115 @@
   --color-background: 17 24 39;
   --color-surface: 31 41 55;
   --color-text: 243 244 246;
-  --color-border: 75 85 99;
 }
 
-/* ==================== BASE OPTIMISÉE POUR MOBILE ==================== */
 body {
   font-family: 'Poppins', sans-serif;
   @apply bg-background text-text;
-  
-  /* 🔧 MOBILE : Optimisations pour viewport mobile */
-  @media (max-width: 768px) {
-    /* Empêche le zoom automatique sur les inputs */
-    -webkit-text-size-adjust: 100%;
-    -ms-text-size-adjust: 100%;
-    
-    /* Améliore le rendu des polices sur mobile */
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    
-    /* Support pour les safe areas */
-    padding-left: env(safe-area-inset-left, 0px);
-    padding-right: env(safe-area-inset-right, 0px);
-  }
 }
 
 .font-report {
   font-family: 'Lato', 'Calibri', 'Arial', sans-serif;
 }
 
-/* ==================== VARIABLES CSS POUR COMPATIBILITÉ MOBILE ==================== */
-:root {
-  /* Variables existantes... */
-  
-  /* 🔧 AJOUT : Variables pour mobile */
-  --mobile-header-height: 60px;
-  --desktop-header-height: 70px;
-  --mobile-padding: 0.5rem;
-  --desktop-padding: 1rem;
-  --touch-target-size: 44px;
-  
-  /* Variables pour les hauteurs dynamiques */
-  --real-vh: 1vh;
-  --container-height: calc(100vh - var(--desktop-header-height));
-}
-
-@media (max-width: 768px) {
-  :root {
-    --container-height: calc(100vh - var(--mobile-header-height));
-    /* Support pour dvh si disponible */
-    --container-height: calc(100dvh - var(--mobile-header-height));
-  }
-}
-
 @layer components {
-  /* ==================== CONTAINER GLOBAL OPTIMISÉ ==================== */
   .container {
     @apply w-full mx-auto px-4 sm:px-6 lg:px-8;
     max-width: 100%;
-    
-    /* 🔧 MOBILE : Padding réduit */
-    @media (max-width: 768px) {
-      padding-left: 0.5rem;
-      padding-right: 0.5rem;
-    }
   }
 
-  /* ==================== CARDS RESPONSIVES ==================== */
   .card {
     @apply bg-surface rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg border border-blue-100 dark:border-gray-700;
-    
-    /* 🔧 MOBILE : Adaptation pour mobile */
-    @media (max-width: 768px) {
-      border-radius: 0.75rem;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-      border-width: 1px;
-      
-      /* Supprime l'effet hover sur mobile */
-      &:hover {
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-      }
-    }
   }
 
-  /* ==================== BUTTONS OPTIMISÉS POUR MOBILE ==================== */
   .btn {
     @apply px-6 py-2 rounded-md font-medium text-white transition-all duration-300 transform hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background uppercase tracking-wider text-sm shadow-md;
-    
-    /* 🔧 MOBILE : Taille tactile optimale */
-    @media (max-width: 768px) {
-      padding: 0.75rem 1rem;
-      font-size: 1rem;
-      line-height: 1.5rem;
-      border-radius: 0.5rem;
-      min-height: var(--touch-target-size);
-      min-width: var(--touch-target-size);
-      
-      /* Supprime les transformations sur mobile */
-      &:hover {
-        transform: none;
-      }
-      
-      /* Améliore l'accessibilité tactile */
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
-    }
   }
 
   .btn-primary {
     @apply bg-primary hover:bg-blue-600 focus:ring-primary;
-    
-    @media (max-width: 768px) {
-      &:hover {
-        background-color: rgb(var(--color-primary));
-      }
-    }
   }
 
   .btn-secondary {
     @apply bg-secondary hover:bg-indigo-600 focus:ring-secondary;
-    
-    @media (max-width: 768px) {
-      &:hover {
-        background-color: rgb(var(--color-secondary));
-      }
-    }
   }
 
-  /* ==================== INPUTS OPTIMISÉS POUR MOBILE ==================== */
   .input {
     @apply w-full px-4 py-2 rounded-md border-2 border-blue-200 dark:border-gray-600 bg-surface text-text focus:border-blue-400 dark:focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-700 focus:ring-opacity-50 transition-all duration-300 placeholder-gray-400 dark:placeholder-gray-500;
-    
-    /* 🔧 MOBILE : Optimisations pour mobile */
-    @media (max-width: 768px) {
-      padding: 0.75rem;
-      font-size: 1rem;
-      line-height: 1.5rem;
-      border-radius: 0.5rem;
-      min-height: var(--touch-target-size);
-      
-      /* Évite le zoom automatique sur iOS */
-      font-size: 16px;
-      
-      /* Améliore l'apparence sur mobile */
-      -webkit-appearance: none;
-      appearance: none;
-    }
   }
 
   .select {
     @apply w-full px-4 py-2 rounded-md border-2 border-blue-200 dark:border-gray-600 bg-surface text-text focus:border-blue-400 dark:focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-700 focus:ring-opacity-50 transition-all duration-300 appearance-none;
-    
-    /* 🔧 MOBILE : Optimisations pour mobile */
-    @media (max-width: 768px) {
-      padding: 0.75rem;
-      font-size: 1rem;
-      line-height: 1.5rem;
-      border-radius: 0.5rem;
-      min-height: var(--touch-target-size);
-      font-size: 16px;
-    }
   }
 
-  /* ==================== QUESTION CARDS RESPONSIVES ==================== */
   .question-card {
     @apply bg-surface rounded-lg shadow-sm p-6 mb-6 transition-all duration-300 hover:shadow-md border-l-4 border-blue-400 dark:border-blue-600;
     width: 100%;
     min-width: 300px;
     overflow-x: auto;
-    
-    /* 🔧 MOBILE : Adaptation pour mobile */
-    @media (max-width: 768px) {
-      padding: 1rem;
-      margin-bottom: 1rem;
-      border-radius: 0.75rem;
-      box-shadow: none;
-      border-left-width: 2px;
-      min-width: 0;
-      
-      &:hover {
-        box-shadow: none;
-      }
-    }
   }
 
   .option-card {
     @apply bg-blue-50 dark:bg-gray-700 rounded-md p-4 mb-3 transition-all duration-300 hover:bg-blue-100 dark:hover:bg-gray-600 border border-blue-200 dark:border-gray-600;
-    
-    /* 🔧 MOBILE : Adaptation pour mobile */
-    @media (max-width: 768px) {
-      padding: 0.75rem;
-      margin-bottom: 0.5rem;
-      border-radius: 0.5rem;
-      min-height: var(--touch-target-size);
-      
-      &:hover {
-        background-color: rgb(239 246 255); /* bg-blue-50 */
-      }
-    }
-    
-    .dark & {
-      @media (max-width: 768px) {
-        &:hover {
-          background-color: rgb(55 65 81); /* bg-gray-700 */
-        }
-      }
-    }
   }
 
   .sub-question {
     @apply ml-6 mt-4 border-l-2 border-indigo-300 dark:border-indigo-600 pl-4;
-    
-    /* 🔧 MOBILE : Réduction des marges */
-    @media (max-width: 768px) {
-      margin-left: 0.75rem;
-      margin-top: 0.75rem;
-      padding-left: 0.75rem;
-    }
   }
 
-  /* ==================== HEADER RESPONSIVE ==================== */
   .header {
     @apply bg-blue-600 dark:bg-gray-800 text-white shadow-md sticky top-0 z-50;
-    height: var(--desktop-header-height);
-    
-    /* 🔧 MOBILE : Hauteur ajustée */
-    @media (max-width: 768px) {
-      height: var(--mobile-header-height);
-    }
   }
 
   .header-content {
     @apply container mx-auto py-4 flex justify-between items-center;
-    
-    /* 🔧 MOBILE : Padding réduit */
-    @media (max-width: 768px) {
-      padding: 0.75rem 1rem;
-    }
   }
 
   .header-title {
     @apply text-3xl font-bold;
-    
-    /* 🔧 MOBILE : Taille réduite */
-    @media (max-width: 768px) {
-      font-size: 1.25rem;
-      line-height: 1.75rem;
-    }
   }
 
   .header-nav {
     @apply flex space-x-6;
-    
-    /* 🔧 MOBILE : Espacement réduit */
-    @media (max-width: 768px) {
-      gap: 0.75rem;
-    }
   }
 
   .header-link {
     @apply text-white hover:text-blue-200 dark:hover:text-blue-300 transition-colors duration-300 uppercase tracking-wider text-sm font-medium;
-    min-height: var(--touch-target-size);
-    
-    /* 🔧 MOBILE : Optimisations tactiles */
-    @media (max-width: 768px) {
-      font-size: 0.75rem;
-      line-height: 1rem;
-      display: flex;
-      align-items: center;
-      padding: 0.5rem;
-      touch-action: manipulation;
-      
-      &:hover {
-        color: white;
-      }
-    }
   }
 
-  /* ==================== MAIN TITLE RESPONSIVE ==================== */
   .main-title {
     @apply text-4xl font-bold text-center mb-12 text-gray-800 dark:text-gray-200;
-    
-    /* 🔧 MOBILE : Taille et marges ajustées */
-    @media (max-width: 768px) {
-      font-size: 1.5rem;
-      line-height: 2rem;
-      margin-bottom: 1.5rem;
-    }
   }
 
-  /* ==================== QUESTIONNAIRE LAYOUT RESPONSIVE ==================== */
   .questionnaire-layout {
     @apply flex flex-wrap;
-    
-    /* 🔧 MOBILE : Force la colonne */
-    @media (max-width: 768px) {
-      flex-direction: column;
-    }
   }
 
   .questionnaire-creator {
     @apply w-full lg:w-7/12 pr-0 lg:pr-4 mb-8 lg:mb-0;
-    
-    /* 🔧 MOBILE : Largeur complète */
-    @media (max-width: 768px) {
-      width: 100%;
-      padding-right: 0;
-      margin-bottom: 1rem;
-    }
   }
 
   .questionnaire-preview {
     @apply w-full lg:w-5/12 pl-0 lg:pl-4;
-    
-    /* 🔧 MOBILE : Largeur complète */
-    @media (max-width: 768px) {
-      width: 100%;
-      padding-left: 0;
-    }
   }
 
-  /* Classes pour le texte des options en mode sombre */
+  /* Nouvelle classe pour le texte des options en mode sombre */
   .questionnaire-option {
     @apply text-gray-700 dark:text-white;
   }
+
+  @media (max-width: 768px) {
+    .questionnaire-layout {
+      @apply flex-col;
+    }
+    
+    .questionnaire-creator,
+    .questionnaire-preview {
+      @apply w-full;
+    }
+  }
 }
 
-/* ==================== GLOBAL STYLES POUR MOBILE ==================== */
 u {
   text-decoration: underline;
 }
@@ -356,167 +138,19 @@ html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
-  
-  /* 🔧 MOBILE : Support pour les hauteurs dynamiques */
-  @media (max-width: 768px) {
-    /* Fix pour iOS qui change la hauteur avec la barre d'URL */
-    height: 100vh;
-    height: -webkit-fill-available;
-    
-    /* Améliore la performance sur mobile */
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: none;
-  }
 }
 
 body {
   overflow-y: auto; /* Permet le défilement vertical */
-  
-  /* 🔧 MOBILE : Gestion du scroll optimisée */
-  @media (max-width: 768px) {
-    /* Empêche le bounce sur iOS quand le menu est ouvert */
-    &.menu-open {
-      overflow: hidden;
-      position: fixed;
-      width: 100%;
-    }
-  }
 }
 
 #root {
   display: flex;
   flex-direction: column;
-  
-  /* 🔧 MOBILE : Assure que l'app remplit l'écran */
-  @media (max-width: 768px) {
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
-  }
 }
 
-/* ==================== CLASSES UTILITAIRES MOBILE ==================== */
-@media (max-width: 768px) {
-  /* Cache sur mobile */
-  .mobile-hidden {
-    display: none !important;
-  }
-  
-  /* Affiche seulement sur mobile */
-  .mobile-only {
-    display: block;
-  }
-  
-  /* Largeur complète sur mobile */
-  .mobile-full-width {
-    width: 100% !important;
-  }
-  
-  /* Stack vertical sur mobile */
-  .mobile-stack {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: var(--mobile-padding) !important;
-  }
-  
-  /* Padding mobile */
-  .mobile-padding {
-    padding: var(--mobile-padding) !important;
-  }
-  
-  /* Hauteur complète mobile */
-  .mobile-full-height {
-    height: 100vh !important;
-    height: 100dvh !important;
-  }
-}
 
-/* Cache par défaut les éléments mobile-only */
-@media (min-width: 769px) {
-  .mobile-only {
-    display: none;
-  }
-  
-  /* Cache sur desktop */
-  .desktop-hidden {
-    display: none !important;
-  }
-}
 
-/* ==================== AMÉLIORATION DES PERFORMANCES MOBILE ==================== */
-@media (max-width: 768px) {
-  /* Améliore les performances des animations */
-  * {
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-  }
-  
-  /* Optimise les images */
-  img {
-    image-rendering: auto;
-    image-rendering: -webkit-optimize-contrast;
-  }
-  
-  /* Améliore le rendu des éléments interactifs */
-  button, a, [role="button"], .clickable {
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-  }
-  
-  /* Optimise les zones de scroll */
-  .scroll-container {
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
-  }
-}
-
-/* ==================== SUPPORT POUR LES SAFE AREAS (iPhone X+) ==================== */
-@media (max-width: 768px) {
-  .safe-area-padding {
-    padding-left: env(safe-area-inset-left, 0px);
-    padding-right: env(safe-area-inset-right, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
-  
-  .safe-area-top {
-    padding-top: env(safe-area-inset-top, 0px);
-  }
-}
-
-/* ==================== ACCESSIBILITY AMÉLIORÉE POUR MOBILE ==================== */
-@media (max-width: 768px) {
-  /* Améliore la visibilité du focus */
-  :focus-visible {
-    outline: 3px solid rgb(var(--color-accent));
-    outline-offset: 3px;
-  }
-  
-  /* Assure une taille tactile minimale */
-  button, a, input, select, textarea {
-    min-height: var(--touch-target-size);
-    min-width: var(--touch-target-size);
-  }
-}
-
-/* ==================== ORIENTATION LANDSCAPE MOBILE ==================== */
-@media (max-width: 768px) and (orientation: landscape) {
-  :root {
-    --mobile-header-height: 50px;
-    --container-height: calc(100vh - 50px);
-    --container-height: calc(100dvh - 50px);
-  }
-  
-  /* Réduit les espaces en paysage */
-  .mobile-padding {
-    padding: 0.25rem !important;
-  }
-  
-  /* Ajuste les textes en paysage */
-  .main-title {
-    font-size: 1.25rem !important;
-    line-height: 1.75rem !important;
-    margin-bottom: 1rem !important;
-  }
-}
 
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
