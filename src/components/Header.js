@@ -115,6 +115,7 @@ const ThemeToggleButton = styled.button`
   border-radius: 8px;
   transition: all 0.2s ease;
   font-weight: 500;
+  touch-action: manipulation;
   
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
@@ -151,6 +152,7 @@ const MenuButton = styled.button`
   transition: all 0.2s ease;
   font-weight: 500;
   gap: 0.5rem;
+  touch-action: manipulation;
   
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
@@ -181,6 +183,7 @@ const MenuButton = styled.button`
   }
 `;
 
+/* 🔧 CORRECTION MAJEURE : Menu dropdown adaptatif */
 const DropdownMenu = styled.div`
   position: absolute;
   top: calc(100% + 0.5rem);
@@ -191,10 +194,12 @@ const DropdownMenu = styled.div`
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   padding: 0.75rem 0;
   display: ${props => props.isOpen ? 'block' : 'none'};
-  z-index: 9999; /* Z-index très élevé */
+  z-index: 99999; /* Z-index très élevé */
   min-width: 280px;
   backdrop-filter: blur(8px);
   animation: ${props => props.isOpen ? 'dropdownSlideIn' : 'dropdownSlideOut'} 0.2s ease;
+  max-height: 80vh;
+  overflow-y: auto;
 
   @keyframes dropdownSlideIn {
     from {
@@ -218,7 +223,7 @@ const DropdownMenu = styled.div`
     }
   }
   
-  /* Mobile responsive */
+  /* 🔧 CORRECTION : Menu plein écran sur mobile */
   @media (max-width: 768px) {
     /* Menu plein écran sur mobile */
     position: fixed;
@@ -233,16 +238,44 @@ const DropdownMenu = styled.div`
     padding: 1rem;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    z-index: 99999; /* Z-index encore plus élevé sur mobile */
+    z-index: 999999; /* Z-index encore plus élevé sur mobile */
+    max-height: none;
+    border: none;
     
     /* Support pour les safe areas */
     padding-top: calc(1rem + env(safe-area-inset-top));
     padding-bottom: calc(1rem + env(safe-area-inset-bottom));
     padding-left: calc(1rem + env(safe-area-inset-left));
     padding-right: calc(1rem + env(safe-area-inset-right));
+    
+    /* Animation différente sur mobile */
+    animation: ${props => props.isOpen ? 'mobileSlideIn' : 'mobileSlideOut'} 0.3s ease;
+  }
+  
+  @keyframes mobileSlideIn {
+    from {
+      opacity: 0;
+      transform: translateX(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes mobileSlideOut {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(100%);
+    }
   }
 `;
 
+/* 🔧 NOUVEAU : Header mobile avec bouton fermer */
 const MobileMenuHeader = styled.div`
   display: none;
   
@@ -275,6 +308,7 @@ const MobileCloseButton = styled.button`
   justify-content: center;
   min-height: 44px;
   min-width: 44px;
+  touch-action: manipulation;
   
   &:hover {
     background-color: ${props => props.theme.backgroundSecondary};
@@ -339,6 +373,7 @@ const MenuItem = styled(Link)`
   font-weight: 500;
   margin: 0 0.5rem;
   border-radius: 8px;
+  touch-action: manipulation;
   
   &:hover {
     background-color: ${props => props.theme.backgroundSecondary || '#f1f5f9'};
@@ -387,6 +422,7 @@ const LogoutItem = styled.button`
   text-align: left;
   margin: 0 0.5rem;
   border-radius: 8px;
+  touch-action: manipulation;
   
   &:hover {
     background-color: #fef2f2;
@@ -457,7 +493,7 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
   const handleMenuToggle = () => {
     setShowMenu(!showMenu);
     
-    // Empêche le scroll du body quand le menu mobile est ouvert
+    // 🔧 CORRECTION : Empêche le scroll du body quand le menu mobile est ouvert
     if (!showMenu) {
       document.body.classList.add('menu-open');
     } else {
@@ -491,7 +527,7 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
     };
   }, [showMenu]);
 
-  // Cleanup si le composant change de route - VERSION SIMPLIFIÉE
+  // Cleanup si le composant change de route
   useEffect(() => {
     setShowMenu(false);
     document.body.classList.remove('menu-open');
@@ -526,7 +562,7 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
           </MenuButton>
 
           <DropdownMenu isOpen={showMenu}>
-            {/* Header mobile uniquement */}
+            {/* 🔧 NOUVEAU : Header mobile uniquement */}
             <MobileMenuHeader>
               <MobileMenuTitle>Menu</MobileMenuTitle>
               <MobileCloseButton onClick={handleMenuItemClick}>
@@ -583,33 +619,13 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
 
             <MenuDivider />
 
-            {/* Section Protocoles */}
+            {/* Section Déconnexion */}
             <MenuSection>
-              <SectionTitle>
-                <Stethoscope size={18} />
-                Protocoles
-              </SectionTitle>
-              <MenuItem to="/protocols/create" onClick={handleMenuItemClick}>
-                <span>➕</span> Créer un Protocole
-              </MenuItem>
-              <MenuItem to="/protocols/personal" onClick={handleMenuItemClick}>
-                <span>🔒</span> Mes Protocoles
-              </MenuItem>
-              <MenuItem to="/protocols/public" onClick={handleMenuItemClick}>
-                <span>🌍</span> Protocoles Publics
-              </MenuItem>
+              <LogoutItem onClick={() => { handleMenuItemClick(); onLogout(); }}>
+                <LogOut size={18} />
+                Se déconnecter
+              </LogoutItem>
             </MenuSection>
-
-            <MenuDivider />
-
-            {/* Déconnexion */}
-            <LogoutItem onClick={() => {
-              onLogout();
-              handleMenuItemClick();
-            }}>
-              <LogOut size={18} />
-              Déconnexion
-            </LogoutItem>
           </DropdownMenu>
         </RightSection>
       </HeaderContent>
