@@ -1128,17 +1128,17 @@ function RadiologyViewer() {
             {isResponseVisible ? (
               <>
                 <EyeOff size={16} />
-                Cacher la réponse
+                Cacher
               </>
             ) : (
               <>
                 <Eye size={16} />
-                Voir la réponse
+                Réponse
               </>
             )}
           </button>
           <Link to={`/sheet/${caseId}`} className={styles.sheetLink}>
-            📋 Fiche récapitulative
+            📋 Fiche
           </Link>
         </div>
       </div>
