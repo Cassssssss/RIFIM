@@ -335,25 +335,24 @@
   }
 }
 
-/* ==================== VIEWER TYPES MODERNISÉS + OPTIMISATIONS ==================== */
+/* ==================== VIEWER TYPES - CORRECTION POUR REMPLISSAGE COMPLET ==================== */
 .viewer, .viewerHalf, .singleViewer, .viewerQuarter, .viewerThird {
   position: relative;
   margin: 0;
   padding: 0;
   border: 2px solid rgb(var(--color-border));
   background-color: #000000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: block;                    /* ← CHANGÉ de flex à block */
+  width: 100%;                      /* ← AJOUTÉ largeur explicite */
+  height: 100%;                     /* ← AJOUTÉ hauteur explicite */
   overflow: hidden;
-  height: 100%;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   /* OPTIMISATIONS DE PERFORMANCE */
   will-change: scroll-position;
-  contain: layout style paint; /* Améliore les performances de rendu */
+  contain: layout style paint;
   /* 🔧 CORRECTION : Gestion tactile améliorée */
-  touch-action: pan-y; /* Permet le scroll vertical uniquement */
+  touch-action: pan-y;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -428,17 +427,18 @@
   /* Classe pour identifier le viewer unique en mode 1 */
 }
 
-/* ==================== IMAGES - AFFICHAGE OPTIMAL ADAPTÉ AU VIEWER ==================== */
+/* ==================== IMAGES - AFFICHAGE PLEINE TAILLE SANS FLEX ==================== */
 .image {
-  /* 🔧 SOLUTION : Affichage adapté au conteneur */
-  width: 100%;                   /* Largeur du conteneur */
-  height: 100%;                  /* Hauteur du conteneur */
-  max-width: 100%;              /* Limite à la largeur du conteneur */
-  max-height: 100%;             /* Limite à la hauteur du conteneur */
+  /* 🔧 SOLUTION RADICALE : Affichage pleine taille */
+  position: absolute;               /* ← POSITION ABSOLUE pour remplir */
+  top: 0;                          /* ← Colle en haut */
+  left: 0;                         /* ← Colle à gauche */
+  width: 100%;                     /* ← Largeur complète */
+  height: 100%;                    /* ← Hauteur complète */
   margin: 0;
   padding: 0;
-  object-fit: contain;          /* PRESERVE les proportions + s'adapte au conteneur */
-  object-position: center;      /* Centre l'image */
+  object-fit: cover;               /* ← COVER pour remplir complètement */
+  object-position: center;
   display: block;
   transform-origin: center;
   user-select: none;
