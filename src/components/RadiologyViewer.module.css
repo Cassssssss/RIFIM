@@ -1,6 +1,6 @@
 /* ==================== VARIABLES CSS DYNAMIQUES ==================== */
 :root {
-  --header-height: 50px;
+  --header-height: 80px;
   --bottom-bar-height: 50px;
   --safe-area-top: 0px;
   --safe-area-bottom: 0px;
