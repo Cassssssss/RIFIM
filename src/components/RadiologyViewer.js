@@ -75,7 +75,12 @@ function RadiologyViewer() {
   const [isShortcutGuideVisible, setIsShortcutGuideVisible] = useState(false);
   const [folderThumbnails, setFolderThumbnails] = useState({});
   const isTouchDevice = 'ontouchstart' in window;
-  const [isMobile] = useState(window.innerWidth < 768);
+  
+  // 🔧 CORRECTION : Détection mobile plus précise
+  const [isMobile] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth <= 768 || isTouchDevice;
+  });
 
   const leftViewerRef = useRef(null);
   const rightViewerRef = useRef(null);
@@ -94,36 +99,43 @@ function RadiologyViewer() {
   const [initialScale, setInitialScale] = useState(1);
   const [theme] = useState(document.documentElement.getAttribute('data-theme') || 'light');
 
-  // 🎯 SOLUTION UNIVERSELLE VIEWPORT - Effect pour calculer la vraie hauteur
+  // 🎯 MOBILE : Effect pour gérer le viewport mobile de façon optimale
   useEffect(() => {
-    const setRealViewportHeight = () => {
-      // Calcule la vraie hauteur du viewport
+    if (!isMobile) return;
+
+    const setMobileViewport = () => {
+      // 🔧 CORRECTION : Calcul précis de la hauteur réelle du viewport mobile
       const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty('--real-vh', `${vh}px`);
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
       
-      // Force le recalcul des hauteurs CSS
+      // Force la hauteur du container à être exacte
       const container = document.querySelector(`.${styles.container}`);
       if (container) {
-        container.style.height = `${window.innerHeight}px`;
+        const headerHeight = 60; // Header mobile
+        const exactHeight = window.innerHeight - headerHeight;
+        container.style.height = `${exactHeight}px`;
+        container.style.maxHeight = `${exactHeight}px`;
       }
     };
 
     // Calcul initial
-    setRealViewportHeight();
+    setMobileViewport();
     
-    // Recalcul lors des changements
-    window.addEventListener('resize', setRealViewportHeight);
-    window.addEventListener('orientationchange', () => {
+    // Recalcul lors des changements d'orientation et de resize
+    const handleViewportChange = () => {
       // Délai pour laisser le temps au navigateur de s'ajuster
-      setTimeout(setRealViewportHeight, 100);
-    });
+      setTimeout(setMobileViewport, 100);
+    };
     
-    // Recalcul lors du scroll (pour les navigateurs qui modifient la hauteur)
+    window.addEventListener('resize', handleViewportChange);
+    window.addEventListener('orientationchange', handleViewportChange);
+    
+    // Recalcul périodique pour les navigateurs qui changent la barre d'URL
     let ticking = false;
     const handleScroll = () => {
       if (!ticking) {
         requestAnimationFrame(() => {
-          setRealViewportHeight();
+          setMobileViewport();
           ticking = false;
         });
         ticking = true;
@@ -133,13 +145,13 @@ function RadiologyViewer() {
     window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => {
-      window.removeEventListener('resize', setRealViewportHeight);
-      window.removeEventListener('orientationchange', setRealViewportHeight);
+      window.removeEventListener('resize', handleViewportChange);
+      window.removeEventListener('orientationchange', handleViewportChange);
       window.removeEventListener('scroll', handleScroll);
     };
-  }, []);
+  }, [isMobile]);
 
-  // 🔧 MOBILE: Effect pour empêcher le scroll du body
+  // 🔧 MOBILE : Effect pour empêcher le scroll du body et optimiser les performances
   useEffect(() => {
     if (isMobile) {
       // Sauvegarde les styles originaux
@@ -147,7 +159,8 @@ function RadiologyViewer() {
         overflow: document.body.style.overflow,
         height: document.body.style.height,
         position: document.body.style.position,
-        touchAction: document.body.style.touchAction
+        touchAction: document.body.style.touchAction,
+        userSelect: document.body.style.userSelect
       };
       
       const originalHtmlStyle = {
@@ -156,12 +169,13 @@ function RadiologyViewer() {
         touchAction: document.documentElement.style.touchAction
       };
       
-      // Applique les styles pour mobile
+      // 🎯 SOLUTION : Styles optimaux pour mobile
       document.body.style.overflow = 'hidden';
       document.body.style.height = '100vh';
-      document.body.style.height = '100dvh';
+      document.body.style.height = '100dvh'; // Support navigateurs modernes
       document.body.style.position = 'fixed';
       document.body.style.touchAction = 'none';
+      document.body.style.userSelect = 'none';
       document.body.style.width = '100%';
       
       document.documentElement.style.overflow = 'hidden';
@@ -176,23 +190,6 @@ function RadiologyViewer() {
       };
     }
   }, [isMobile]);
-
-  // 🎯 DESKTOP: Effect pour que les images remplissent l'espace
-  useEffect(() => {
-    if (!isMobile) {
-      // Ajoute la classe fill-space aux images sur desktop
-      const images = document.querySelectorAll(`.${styles.image}`);
-      images.forEach(img => {
-        img.classList.add('fill-space');
-      });
-      
-      return () => {
-        images.forEach(img => {
-          img.classList.remove('fill-space');
-        });
-      };
-    }
-  }, [isMobile, currentCase]);
 
   const loadImage = useCallback((folder, index, side) => {
     if (currentCase && currentCase.images && currentCase.images[folder]) {
@@ -230,11 +227,6 @@ function RadiologyViewer() {
         if (imageElement) {
           imageElement.src = imageUrl;
           
-          // 🎯 DESKTOP: Ajoute la classe pour remplir l'espace
-          if (!isMobile) {
-            imageElement.classList.add('fill-space');
-          }
-          
           switch(side) {
             case 'left':
             case 'single':
@@ -259,7 +251,7 @@ function RadiologyViewer() {
         }
       }
     }
-  }, [currentCase, isMobile]);
+  }, [currentCase]);
 
   const handleScroll = useCallback((deltaY, slowMode = false, side) => {
     const threshold = slowMode ? 10 : 50;
@@ -439,9 +431,9 @@ function RadiologyViewer() {
     });
   }, []);
 
-  // 🔧 MOBILE: Gestion tactile optimisée avec prévention des comportements par défaut
+  // 🔧 MOBILE : Gestion tactile optimisée avec prévention des comportements par défaut
   const handleTouchStart = useCallback((e, side) => {
-    // Empêche tous les comportements par défaut sur mobile
+    // 🎯 SOLUTION : Empêche tous les comportements par défaut sur mobile
     e.preventDefault();
     e.stopPropagation();
     
@@ -452,6 +444,7 @@ function RadiologyViewer() {
       setTouchMoved(false);
       
     } else if (e.touches.length === 2) {
+      // Gestion du pinch-to-zoom avec deux doigts
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       const distance = Math.hypot(
@@ -479,8 +472,9 @@ function RadiologyViewer() {
       
       setTouchMoved(true);
       
-      if (currentTime - lastScrollTime > 100) { // Throttle réduit pour plus de réactivité
-        if (Math.abs(deltaY) > 30) { // Seuil réduit pour plus de sensibilité
+      // 🔧 CORRECTION : Gestion plus réactive du scroll tactile
+      if (currentTime - lastScrollTime > 80) { // Throttle réduit pour plus de réactivité
+        if (Math.abs(deltaY) > 25) { // Seuil réduit pour plus de sensibilité
           const direction = deltaY > 0 ? 1 : -1;
           const targetSide = viewMode === 1 ? 'single' : side;
           handleScroll(direction * 120, false, targetSide);
@@ -490,6 +484,7 @@ function RadiologyViewer() {
       }
       
     } else if (e.touches.length === 2 && touchStartPoints) {
+      // Gestion du pinch-to-zoom
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       const newDistance = Math.hypot(
@@ -525,9 +520,6 @@ function RadiologyViewer() {
       
       if (nextMode === 1 && singleViewerRef.current && leftViewerRef.current) {
         singleViewerRef.current.src = leftViewerRef.current.src;
-        if (!isMobile) {
-          singleViewerRef.current.classList.add('fill-space');
-        }
         setImageControls(prevControls => ({
           ...prevControls,
           single: { scale: 1, contrast: 100, brightness: 100, translateX: 0, translateY: 0 }
@@ -536,12 +528,6 @@ function RadiologyViewer() {
         leftViewerRef.current.src = singleViewerRef.current.src;
         if (rightViewerRef.current) {
           rightViewerRef.current.src = singleViewerRef.current.src;
-        }
-        if (!isMobile) {
-          leftViewerRef.current.classList.add('fill-space');
-          if (rightViewerRef.current) {
-            rightViewerRef.current.classList.add('fill-space');
-          }
         }
         setImageControls(prevControls => ({
           ...prevControls,
@@ -552,7 +538,7 @@ function RadiologyViewer() {
       
       return nextMode;
     });
-  }, [isMobile]);
+  }, []);
 
   const handleDragStart = useCallback((event, folder) => {
     event.dataTransfer.setData('text/plain', folder);
@@ -681,6 +667,7 @@ function RadiologyViewer() {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
+  // 🔧 MOBILE : Force le mode 1 viewer sur mobile
   useEffect(() => {
     if (isMobile && viewMode !== 1) {
       setViewMode(1);
@@ -704,6 +691,9 @@ function RadiologyViewer() {
   // Touches clavier
   useEffect(() => {
     const handleKeyDown = (event) => {
+      // 🔧 MOBILE : Désactive les raccourcis clavier sur mobile
+      if (isMobile) return;
+      
       if (event.key === "&" || event.key === "1") {
         setViewMode(1);
       } else if (event.key === "é" || event.key === "2") {
@@ -751,11 +741,12 @@ function RadiologyViewer() {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [handleScroll, viewMode]);
+  }, [handleScroll, viewMode, isMobile]);
 
-  // Effect tactile
+  // Effect tactile optimisé
   useEffect(() => {
     if (isTouchDevice && isMobile) {
+      // 🎯 SOLUTION : Empêche le comportement de scroll par défaut
       document.body.style.overscrollBehavior = 'none';
       document.documentElement.style.overscrollBehavior = 'none';
       
@@ -766,6 +757,8 @@ function RadiologyViewer() {
       const images = document.querySelectorAll(`.${styles.image}`);
       images.forEach(img => {
         img.addEventListener('touchstart', preventDoubleTapZoom, { passive: false });
+        img.addEventListener('touchmove', preventDoubleTapZoom, { passive: false });
+        img.addEventListener('touchend', preventDoubleTapZoom, { passive: false });
       });
 
       return () => {
@@ -773,6 +766,8 @@ function RadiologyViewer() {
         document.documentElement.style.overscrollBehavior = '';
         images.forEach(img => {
           img.removeEventListener('touchstart', preventDoubleTapZoom);
+          img.removeEventListener('touchmove', preventDoubleTapZoom);
+          img.removeEventListener('touchend', preventDoubleTapZoom);
         });
       };
     }
@@ -955,7 +950,7 @@ function RadiologyViewer() {
         </div>
         <img 
           ref={viewerRef}
-          className={`${styles.image} ${!isMobile ? 'fill-space' : ''}`}
+          className={styles.image}
           alt={`Image médicale ${side}`}
           draggable={false}
           style={{
@@ -983,6 +978,7 @@ function RadiologyViewer() {
             onDragStart={(e) => !isMobile && handleDragStart(e, folder)}
             onClick={() => {
               if (isMobile) {
+                // 🔧 MOBILE : Click direct sur mobile pour charger l'image
                 loadImage(folder, 0, 'single');
                 setCurrentFolderLeft(folder);
               }
@@ -1009,6 +1005,11 @@ function RadiologyViewer() {
   }, [currentCase, isMobile, handleDragStart, loadImage]);
 
   const renderMainViewer = useCallback(() => {
+    // 🔧 MOBILE : Force le mode single sur mobile
+    if (isMobile) {
+      return renderViewer('single', styles.singleViewer);
+    }
+    
     switch(viewMode) {
       case 1:
         return renderViewer('single', styles.singleViewer);
@@ -1047,7 +1048,7 @@ function RadiologyViewer() {
       default:
         return renderViewer('single', styles.singleViewer);
     }
-  }, [viewMode, renderViewer]);
+  }, [viewMode, renderViewer, isMobile]);
       
   if (!currentCase) return <div>Chargement...</div>;
 
@@ -1091,29 +1092,32 @@ function RadiologyViewer() {
           </div>
           {isShortcutGuideVisible && (
             <div className={`${styles.shortcutPopup} ${styles.visible}`}>
-              <div className={styles.shortcutTitle}>Raccourcis clavier</div>
+              <div className={styles.shortcutTitle}>Raccourcis {isMobile ? 'tactiles' : 'clavier'}</div>
               <ul className={styles.shortcutList}>
-                <li><strong>1 (&)</strong> Mode 1 viewer</li>
-                <li><strong>2 (é)</strong> Mode 2 viewers</li>
-                <li><strong>3 (")</strong> Mode 3 viewers</li>
-                <li><strong>4 (')</strong> Mode 4 viewers</li>
-                <li><strong>↑ ↓</strong> Navigation synchronisée</li>
-                {!isMobile && (
+                {!isMobile ? (
                   <>
+                    <li><strong>1 (&)</strong> Mode 1 viewer</li>
+                    <li><strong>2 (é)</strong> Mode 2 viewers</li>
+                    <li><strong>3 (")</strong> Mode 3 viewers</li>
+                    <li><strong>4 (')</strong> Mode 4 viewers</li>
+                    <li><strong>↑ ↓</strong> Navigation synchronisée</li>
                     <li><strong>Shift + clic gauche</strong> Déplacer</li>
                     <li><strong>Clic droit</strong> Zoom</li>
                     <li><strong>Shift + clic droit</strong> Contraste</li>
                   </>
-                )}
-                {isMobile && (
-                  <li><strong>Glissement vertical</strong> Navigation tactile</li>
+                ) : (
+                  <>
+                    <li><strong>Glissement vertical</strong> Navigation tactile</li>
+                    <li><strong>Pincement</strong> Zoom à deux doigts</li>
+                    <li><strong>Clic sur dossier</strong> Charger les images</li>
+                  </>
                 )}
               </ul>
             </div>
           )}
         </div>
         <div>
-          {/* 🔧 CORRECTION : Conditionnel seulement pour le bouton mode, PAS pour le bouton réponse */}
+          {/* 🔧 CORRECTION : Bouton mode seulement sur desktop */}
           {!isMobile && (
             <button 
               className={styles.responseButton}

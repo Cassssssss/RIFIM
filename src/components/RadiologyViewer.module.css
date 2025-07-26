@@ -7,8 +7,8 @@
   top: 0;
   left: 0;
   width: 100vw;
-  /* 🔧 CORRECTION : Juste exclure le header, la bottom bar est en overlay */
-  height: calc(100vh - 70px); /* Seulement le header */
+  /* 🔧 CORRECTION CLÉS : Hauteur exacte sans bottom bar (elle est en overlay) */
+  height: calc(100vh - 70px); /* Seulement le header sur desktop */
   display: flex;
   flex-direction: column;
   background: linear-gradient(135deg, rgb(var(--color-background)) 0%, rgb(var(--color-surface)) 100%);
@@ -18,20 +18,22 @@
   overscroll-behavior: none;
 }
 
-/* 🔧 MOBILE : Hauteurs ajustées */
+/* 🔧 MOBILE : Hauteurs fixes et précises */
 @media (max-width: 768px) {
   .container {
-    /* Seulement le header mobile */
-    height: calc(100vh - 60px) !important;
-    /* Support dvh pour les navigateurs récents */
-    height: calc(100dvh - 60px) !important;
+    /* 🎯 SOLUTION CLÉS : Hauteur exacte pour mobile */
+    height: calc(100vh - 60px) !important; /* Header mobile plus petit */
+    height: calc(100dvh - 60px) !important; /* Support dvh moderne */
     /* Support pour les safe areas iPhone */
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+    /* Empêche tout débordement */
+    max-height: calc(100vh - 60px);
+    max-height: calc(100dvh - 60px);
   }
 }
 
-/* ==================== HEADER SPACER - AJUSTÉ POUR TOUS LES CAS ==================== */
+/* ==================== HEADER SPACER - HAUTEURS PRÉCISES ==================== */
 .headerSpacer {
   height: 70px;
   flex-shrink: 0;
@@ -45,29 +47,36 @@
   }
 }
 
-/* ==================== CONTENT - PADDING MINIMAL POUR MOBILE ==================== */
+/* ==================== CONTENT - REMPLIT EXACTEMENT L'ESPACE RESTANT ==================== */
 .content {
+  /* 🔧 CORRECTION : flex: 1 pour remplir l'espace restant exactement */
   flex: 1;
   display: flex;
   flex-direction: column;
   background-color: rgb(var(--color-background));
   overflow: hidden;
   margin: 0;
-  padding: 8px 0 8px 0; /* 🔧 CORRECTION : Padding minimal */
+  padding: 4px; /* 🔧 CORRECTION : Padding minimal uniforme */
   min-height: 0; /* Important pour flex */
+  /* 🎯 SOLUTION : Hauteur maximale pour éviter tout débordement */
+  max-height: calc(100vh - 70px - 4px); /* Viewport - header - padding */
 }
 
 @media (max-width: 768px) {
   .content {
-    padding: 4px 0 4px 0; /* 🔧 CORRECTION : Padding très réduit sur mobile */
+    padding: 2px; /* 🔧 CORRECTION : Padding très réduit sur mobile */
+    max-height: calc(100vh - 60px - 2px); /* Viewport mobile - header mobile - padding */
+    max-height: calc(100dvh - 60px - 2px);
   }
 }
 
 /* ==================== LAYOUT - UTILISATION OPTIMALE DE L'ESPACE ==================== */
 .layout {
+  /* 🔧 CORRECTION : flex: 1 et max-height pour remplir exactement l'espace */
   flex: 1;
   display: flex;
   height: 100%;
+  max-height: 100%; /* Empêche le débordement */
   background-color: rgb(var(--color-background));
   margin: 0;
   padding: 0;
@@ -79,15 +88,20 @@
 
 @media (max-width: 768px) {
   .layout {
-    flex-direction: row;
+    flex-direction: row; /* Garde la direction horizontale */
     gap: 0.25rem;
+    /* 🎯 SOLUTION : Force les dimensions exactes */
+    height: 100%;
+    max-height: 100%;
   }
 }
 
-/* ==================== FOLDER GRID - OPTIMISÉ POUR TOUS LES ÉCRANS ==================== */
+/* ==================== FOLDER GRID - LARGEUR FIXE, HAUTEUR FLEXIBLE ==================== */
 .folderGrid {
+  /* 🔧 CORRECTION : Largeur fixe, hauteur 100% du parent */
   width: 100px;
   height: 100%;
+  max-height: 100%; /* Empêche le débordement */
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -97,15 +111,14 @@
   background-color: rgb(var(--color-surface));
   border: 1px solid rgb(var(--color-border));
   border-radius: 12px;
-  flex-shrink: 0;
+  flex-shrink: 0; /* Ne rétrécit jamais */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   
   /* Scrollbar personnalisée */
   scrollbar-width: thin;
   scrollbar-color: rgb(var(--color-primary)) rgb(var(--color-surface));
   
-  max-height: 100%;
-  min-height: 0;
+  min-height: 0; /* Important pour flex */
   box-sizing: border-box;
 }
 
@@ -125,7 +138,7 @@
 
 @media (max-width: 768px) {
   .folderGrid {
-    width: 80px;
+    width: 80px; /* Plus étroit sur mobile */
     padding: 0.25rem;
     gap: 0.25rem;
     border-radius: 8px;
@@ -134,7 +147,7 @@
 
 .folderThumbnail {
   width: 100%;
-  aspect-ratio: 1;
+  aspect-ratio: 1; /* Garde un ratio carré */
   min-height: 70px;
   max-height: 70px;
   border-radius: 8px;
@@ -173,7 +186,7 @@
   }
   
   .folderThumbnail:hover {
-    transform: none;
+    transform: none; /* Supprime hover sur mobile */
   }
 }
 
@@ -211,11 +224,13 @@
   }
 }
 
-/* ==================== MAIN VIEWER - MAXIMISE L'UTILISATION DE L'ESPACE ==================== */
+/* ==================== MAIN VIEWER - REMPLIT EXACTEMENT L'ESPACE RESTANT ==================== */
 .mainViewer {
+  /* 🔧 CORRECTION CLÉS : flex: 1 pour remplir l'espace restant après folderGrid */
   flex: 1;
   display: flex;
   height: 100%;
+  max-height: 100%; /* Empêche le débordement */
   margin: 0;
   padding: 0;
   justify-content: center;
@@ -223,26 +238,38 @@
   background-color: rgb(var(--color-background));
   overflow: hidden;
   border-radius: 12px;
-  min-width: 0;
-  min-height: 0;
+  min-width: 0; /* Important pour flex */
+  min-height: 0; /* Important pour flex */
   box-sizing: border-box;
 }
 
 @media (max-width: 768px) {
   .mainViewer {
-    height: 100%;
     border-radius: 8px;
+    /* 🎯 SOLUTION : Assure que ça remplit exactement l'espace */
     flex: 1;
     width: auto;
     min-width: 0;
+    max-height: 100%;
   }
 }
 
-/* ==================== DUAL, TRIPLE, QUAD VIEWERS ==================== */
+/* ==================== VIEWERS - HAUTEURS EN POURCENTAGES POUR ÉVITER LES DÉBORDEMENTS ==================== */
+
+/* Single viewer - remplit 100% */
+.singleViewer {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  margin: 0;
+}
+
+/* Dual viewer - chaque viewer fait 50% */
 .dualViewer {
   display: flex;
   width: 100%;
   height: 100%;
+  max-height: 100%;
   gap: 0.5rem;
   padding: 0;
   margin: 0;
@@ -250,31 +277,76 @@
 
 @media (max-width: 768px) {
   .dualViewer {
+    /* 🔧 CORRECTION : Sur mobile, passage en colonne avec hauteurs égales */
     flex-direction: column;
     gap: 0.25rem;
   }
 }
 
+.viewerHalf {
+  /* 🔧 CORRECTION : 50% de largeur sur desktop, 50% de hauteur sur mobile */
+  flex: 1;
+  width: 50%;
+  max-width: 50%;
+  height: 100%;
+  max-height: 100%;
+}
+
+@media (max-width: 768px) {
+  .viewerHalf {
+    /* 🎯 SOLUTION : Sur mobile, chaque viewer fait 50% de la hauteur */
+    width: 100%;
+    max-width: 100%;
+    height: 50%;
+    max-height: 50%;
+    flex: 1;
+  }
+}
+
+/* Triple viewer - chaque viewer fait 33.33% */
 .tripleViewer {
   display: flex;
   flex-direction: row;
   width: 100%;
   height: 100%;
+  max-height: 100%;
   gap: 0.5rem;
 }
 
 @media (max-width: 768px) {
   .tripleViewer {
+    /* 🔧 CORRECTION : Sur mobile, passage en colonne */
     flex-direction: column;
     gap: 0.25rem;
   }
 }
 
+.viewerThird {
+  /* 🔧 CORRECTION : 33.33% de largeur sur desktop */
+  width: 33.333%;
+  max-width: 33.333%;
+  height: 100%;
+  max-height: 100%;
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .viewerThird {
+    /* 🎯 SOLUTION : Sur mobile, chaque viewer fait 33.33% de la hauteur */
+    width: 100%;
+    max-width: 100%;
+    height: 33.333%;
+    max-height: 33.333%;
+  }
+}
+
+/* Quad viewer - 4 viewers en grille 2x2 */
 .quadViewer {
   display: flex;
   flex-direction: column;
   width: 100%;
   height: 100%;
+  max-height: 100%;
   gap: 0.5rem;
 }
 
@@ -287,8 +359,11 @@
 .quadTop, .quadBottom {
   display: flex;
   width: 100%;
+  /* 🔧 CORRECTION : Chaque ligne fait exactement 50% de la hauteur */
   height: 50%;
+  max-height: 50%;
   gap: 0.5rem;
+  flex: 1;
 }
 
 @media (max-width: 768px) {
@@ -298,23 +373,15 @@
 }
 
 .viewerQuarter {
+  /* 🔧 CORRECTION : Chaque viewer fait 50% de la largeur de sa ligne */
   width: 50%;
+  max-width: 50%;
   height: 100%;
+  max-height: 100%;
+  flex: 1;
 }
 
-.viewerThird {
-  width: 33.333%;
-  height: 100%;
-}
-
-@media (max-width: 768px) {
-  .viewerThird {
-    width: 100%;
-    height: 33.333%;
-  }
-}
-
-/* ==================== VIEWER TYPES - SOLUTION POUR DESKTOP ET MOBILE ==================== */
+/* ==================== VIEWER BASE - SOLUTION PROPRE POUR TOUS LES VIEWERS ==================== */
 .viewer, .viewerHalf, .singleViewer, .viewerQuarter, .viewerThird {
   position: relative;
   margin: 0;
@@ -324,8 +391,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  /* 🔧 CORRECTION : Hérite des dimensions de son parent */
   width: 100%;
   height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   overflow: hidden;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -347,45 +417,30 @@
   .viewer, .viewerHalf, .singleViewer, .viewerQuarter, .viewerThird {
     border-radius: 8px;
     border-width: 1px;
+    /* 🎯 SOLUTION : Assure que les dimensions sont respectées */
     width: 100%;
     height: 100%;
-    min-height: 80px;
+    max-width: 100%;
+    max-height: 100%;
+    min-height: 0; /* Permet le rétrécissement si nécessaire */
   }
   
   .viewer:hover, .viewerHalf:hover, .singleViewer:hover, .viewerQuarter:hover, .viewerThird:hover {
-    border-color: rgb(var(--color-border));
+    border-color: rgb(var(--color-border)); /* Supprime hover sur mobile */
   }
 }
 
-.viewerHalf {
-  flex: 1;
-  width: 50%;
-  max-width: 50%;
-}
-
-@media (max-width: 768px) {
-  .viewerHalf {
-    width: 100%;
-    max-width: 100%;
-    height: 50%;
-    flex: 1;
-  }
-}
-
-.singleViewer {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-}
-
-/* ==================== IMAGES - SOLUTION DESKTOP + MOBILE ==================== */
+/* ==================== IMAGES - SOLUTION DESKTOP + MOBILE OPTIMISÉE ==================== */
 .image {
+  /* Base communes */
   width: 100%;
   height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   margin: 0;
   padding: 0;
   
-  /* Desktop: Les images remplissent l'espace */
+  /* 🔧 DESKTOP : Les images remplissent l'espace (crop si nécessaire) */
   object-fit: cover;
   object-position: center;
   
@@ -413,13 +468,14 @@
   filter: contrast(100%) brightness(100%) !important;
 }
 
-/* Mobile: Ajustement pour une meilleure visibilité */
+/* 🔧 MOBILE : object-fit: contain pour voir l'image entière sans crop */
 @media (max-width: 768px) {
   .image {
-    /* Sur mobile, on peut garder contain pour voir l'image entière */
-    object-fit: contain;
-    max-width: 100%;
-    max-height: 100%;
+    /* 🎯 SOLUTION CLÉS : Sur mobile, on veut voir l'image entière */
+    object-fit: contain !important;
+    /* Assure que l'image ne déborde jamais */
+    max-width: 100% !important;
+    max-height: 100% !important;
     width: auto;
     height: auto;
   }
@@ -465,7 +521,7 @@
   }
 }
 
-/* ==================== BOTTOM BAR - POSITION FIXE STABLE ==================== */
+/* ==================== BOTTOM BAR - POSITION FIXE QUI NE COMPTE PAS DANS LE LAYOUT ==================== */
 .bottomBar {
   position: fixed;
   bottom: 0;
@@ -479,7 +535,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  z-index: 1001; /* Z-index plus élevé pour être sûr qu'elle reste visible */
+  z-index: 1001; /* Z-index élevé pour rester visible */
   box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
@@ -875,15 +931,13 @@
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
   }
-  
-  /* 🔧 SUPPRIMÉ : Plus de règle qui masque les boutons */
 }
 
 /* ==================== ORIENTATION LANDSCAPE ==================== */
 @media (max-width: 768px) and (orientation: landscape) {
   .container {
-    height: calc(100vh - 90px) !important;
-    height: calc(100dvh - 90px) !important;
+    height: calc(100vh - 50px) !important;
+    height: calc(100dvh - 50px) !important;
   }
   
   .folderGrid {
