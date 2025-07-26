@@ -1113,6 +1113,7 @@ function RadiologyViewer() {
           )}
         </div>
         <div>
+          {/* 🔧 CORRECTION : Conditionnel seulement pour le bouton mode, PAS pour le bouton réponse */}
           {!isMobile && (
             <button 
               className={styles.responseButton}
@@ -1121,6 +1122,7 @@ function RadiologyViewer() {
               {getViewModeText()}
             </button>
           )}
+          {/* 🔧 CORRECTION : Bouton réponse TOUJOURS visible */}
           <button 
             className={styles.responseButton}
             onClick={() => setIsResponseVisible(!isResponseVisible)}
@@ -1128,17 +1130,17 @@ function RadiologyViewer() {
             {isResponseVisible ? (
               <>
                 <EyeOff size={16} />
-                Cacher
+                {isMobile ? 'Cacher' : 'Cacher la réponse'}
               </>
             ) : (
               <>
                 <Eye size={16} />
-                Réponse
+                {isMobile ? 'Réponse' : 'Voir la réponse'}
               </>
             )}
           </button>
           <Link to={`/sheet/${caseId}`} className={styles.sheetLink}>
-            📋 Fiche
+            📋 {isMobile ? 'Fiche' : 'Fiche récapitulative'}
           </Link>
         </div>
       </div>

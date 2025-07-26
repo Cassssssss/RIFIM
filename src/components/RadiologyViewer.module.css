@@ -45,7 +45,7 @@
   }
 }
 
-/* ==================== CONTENT - LAISSE PLACE POUR LA BOTTOM BAR ==================== */
+/* ==================== CONTENT - PADDING MINIMAL POUR MOBILE ==================== */
 .content {
   flex: 1;
   display: flex;
@@ -53,13 +53,13 @@
   background-color: rgb(var(--color-background));
   overflow: hidden;
   margin: 0;
-  padding: 8px 0 70px 0; /* 🔧 CORRECTION : Padding-bottom pour la bottom bar */
+  padding: 8px 0 8px 0; /* 🔧 CORRECTION : Padding minimal */
   min-height: 0; /* Important pour flex */
 }
 
 @media (max-width: 768px) {
   .content {
-    padding: 4px 0 60px 0; /* 🔧 CORRECTION : Padding-bottom pour bottom bar mobile */
+    padding: 4px 0 4px 0; /* 🔧 CORRECTION : Padding très réduit sur mobile */
   }
 }
 
@@ -876,10 +876,7 @@
     -webkit-transform: translateZ(0);
   }
   
-  /* Masque le bouton de changement de mode sur mobile */
-  .responseButton:first-of-type {
-    display: none;
-  }
+  /* 🔧 SUPPRIMÉ : Plus de règle qui masque les boutons */
 }
 
 /* ==================== ORIENTATION LANDSCAPE ==================== */
