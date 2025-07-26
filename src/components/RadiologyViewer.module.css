@@ -428,19 +428,17 @@
   /* Classe pour identifier le viewer unique en mode 1 */
 }
 
-/* ==================== IMAGES - AFFICHAGE OPTIMAL SANS DÉFORMATION ==================== */
+/* ==================== IMAGES - AFFICHAGE OPTIMAL ADAPTÉ AU VIEWER ==================== */
 .image {
-  /* 🔧 CORRECTION MAJEURE : Affichage optimal sans déformation */
-  width: auto;                   /* Largeur naturelle */
-  height: auto;                  /* Hauteur naturelle */
-  min-width: 100%;              /* Remplit au minimum la largeur */
-  min-height: 100%;             /* Remplit au minimum la hauteur */
-  max-width: none;              /* Pas de limite de largeur */
-  max-height: none;             /* Pas de limite de hauteur */
+  /* 🔧 SOLUTION : Affichage adapté au conteneur */
+  width: 100%;                   /* Largeur du conteneur */
+  height: 100%;                  /* Hauteur du conteneur */
+  max-width: 100%;              /* Limite à la largeur du conteneur */
+  max-height: 100%;             /* Limite à la hauteur du conteneur */
   margin: 0;
   padding: 0;
-  object-fit: contain;          /* PRESERVE les proportions sans déformation */
-  object-position: center;
+  object-fit: contain;          /* PRESERVE les proportions + s'adapte au conteneur */
+  object-position: center;      /* Centre l'image */
   display: block;
   transform-origin: center;
   user-select: none;
