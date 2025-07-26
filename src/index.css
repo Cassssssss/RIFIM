@@ -82,7 +82,8 @@ body {
     
     /* 🔧 MOBILE : Padding réduit */
     @media (max-width: 768px) {
-      @apply px-2;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
     }
   }
 
@@ -92,12 +93,13 @@ body {
     
     /* 🔧 MOBILE : Adaptation pour mobile */
     @media (max-width: 768px) {
-      @apply rounded-xl shadow-sm;
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
       border-width: 1px;
       
       /* Supprime l'effet hover sur mobile */
       &:hover {
-        @apply shadow-sm;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
       }
     }
   }
@@ -108,7 +110,10 @@ body {
     
     /* 🔧 MOBILE : Taille tactile optimale */
     @media (max-width: 768px) {
-      @apply px-4 py-3 text-base rounded-lg;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      line-height: 1.5rem;
+      border-radius: 0.5rem;
       min-height: var(--touch-target-size);
       min-width: var(--touch-target-size);
       
@@ -128,7 +133,7 @@ body {
     
     @media (max-width: 768px) {
       &:hover {
-        @apply bg-primary;
+        background-color: rgb(var(--color-primary));
       }
     }
   }
@@ -138,7 +143,7 @@ body {
     
     @media (max-width: 768px) {
       &:hover {
-        @apply bg-secondary;
+        background-color: rgb(var(--color-secondary));
       }
     }
   }
@@ -149,7 +154,10 @@ body {
     
     /* 🔧 MOBILE : Optimisations pour mobile */
     @media (max-width: 768px) {
-      @apply px-3 py-3 text-base rounded-lg;
+      padding: 0.75rem;
+      font-size: 1rem;
+      line-height: 1.5rem;
+      border-radius: 0.5rem;
       min-height: var(--touch-target-size);
       
       /* Évite le zoom automatique sur iOS */
@@ -166,7 +174,10 @@ body {
     
     /* 🔧 MOBILE : Optimisations pour mobile */
     @media (max-width: 768px) {
-      @apply px-3 py-3 text-base rounded-lg;
+      padding: 0.75rem;
+      font-size: 1rem;
+      line-height: 1.5rem;
+      border-radius: 0.5rem;
       min-height: var(--touch-target-size);
       font-size: 16px;
     }
@@ -181,11 +192,15 @@ body {
     
     /* 🔧 MOBILE : Adaptation pour mobile */
     @media (max-width: 768px) {
-      @apply p-4 mb-4 rounded-xl shadow-none border-l-2;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 0.75rem;
+      box-shadow: none;
+      border-left-width: 2px;
       min-width: 0;
       
       &:hover {
-        @apply shadow-none;
+        box-shadow: none;
       }
     }
   }
@@ -195,11 +210,21 @@ body {
     
     /* 🔧 MOBILE : Adaptation pour mobile */
     @media (max-width: 768px) {
-      @apply p-3 mb-2 rounded-lg;
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      border-radius: 0.5rem;
       min-height: var(--touch-target-size);
       
       &:hover {
-        @apply bg-blue-50 dark:bg-gray-700;
+        background-color: rgb(239 246 255); /* bg-blue-50 */
+      }
+    }
+    
+    .dark & {
+      @media (max-width: 768px) {
+        &:hover {
+          background-color: rgb(55 65 81); /* bg-gray-700 */
+        }
       }
     }
   }
@@ -209,7 +234,9 @@ body {
     
     /* 🔧 MOBILE : Réduction des marges */
     @media (max-width: 768px) {
-      @apply ml-3 mt-3 pl-3;
+      margin-left: 0.75rem;
+      margin-top: 0.75rem;
+      padding-left: 0.75rem;
     }
   }
 
@@ -229,7 +256,7 @@ body {
     
     /* 🔧 MOBILE : Padding réduit */
     @media (max-width: 768px) {
-      @apply py-3 px-4;
+      padding: 0.75rem 1rem;
     }
   }
 
@@ -238,7 +265,8 @@ body {
     
     /* 🔧 MOBILE : Taille réduite */
     @media (max-width: 768px) {
-      @apply text-xl;
+      font-size: 1.25rem;
+      line-height: 1.75rem;
     }
   }
 
@@ -247,7 +275,7 @@ body {
     
     /* 🔧 MOBILE : Espacement réduit */
     @media (max-width: 768px) {
-      @apply space-x-3;
+      gap: 0.75rem;
     }
   }
 
@@ -257,14 +285,15 @@ body {
     
     /* 🔧 MOBILE : Optimisations tactiles */
     @media (max-width: 768px) {
-      @apply text-xs;
+      font-size: 0.75rem;
+      line-height: 1rem;
       display: flex;
       align-items: center;
       padding: 0.5rem;
       touch-action: manipulation;
       
       &:hover {
-        @apply text-white;
+        color: white;
       }
     }
   }
@@ -275,7 +304,9 @@ body {
     
     /* 🔧 MOBILE : Taille et marges ajustées */
     @media (max-width: 768px) {
-      @apply text-2xl mb-6;
+      font-size: 1.5rem;
+      line-height: 2rem;
+      margin-bottom: 1.5rem;
     }
   }
 
@@ -285,7 +316,7 @@ body {
     
     /* 🔧 MOBILE : Force la colonne */
     @media (max-width: 768px) {
-      @apply flex-col;
+      flex-direction: column;
     }
   }
 
@@ -294,7 +325,9 @@ body {
     
     /* 🔧 MOBILE : Largeur complète */
     @media (max-width: 768px) {
-      @apply w-full pr-0 mb-4;
+      width: 100%;
+      padding-right: 0;
+      margin-bottom: 1rem;
     }
   }
 
@@ -303,7 +336,8 @@ body {
     
     /* 🔧 MOBILE : Largeur complète */
     @media (max-width: 768px) {
-      @apply w-full pl-0;
+      width: 100%;
+      padding-left: 0;
     }
   }
 
@@ -478,7 +512,9 @@ body {
   
   /* Ajuste les textes en paysage */
   .main-title {
-    @apply text-xl mb-4;
+    font-size: 1.25rem !important;
+    line-height: 1.75rem !important;
+    margin-bottom: 1rem !important;
   }
 }
 
