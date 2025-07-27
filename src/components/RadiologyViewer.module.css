@@ -734,17 +734,17 @@
 @media (max-width: 1024px) and (orientation: landscape) {
   .container {
     /* 🔧 AJUSTE pour le mode paysage mobile */
-    top: 32px;
-    height: 100vh;
-    height: 98dvh;
+    top: -10px;
+    height: 120vh;
+    height: 120dvh;
   }
   
   .content {
     /* 🔧 RÉDUIT les marges en paysage */
     margin-top: calc(var(--header-height) - 10px);
     margin-bottom: calc(var(--bottom-bar-height) + 5px);
-    height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 15px);
-    max-height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 15px);
+    height: calc(100vh - var(--header-height) - var(--bottom-bar-height) );
+    max-height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 40px);
   }
   
   .layout {
