@@ -622,6 +622,40 @@ function RadiologyViewer() {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
+  // 🔧 AJOUT : Force le no-scroll sur mobile
+  useEffect(() => {
+    if (isMobile) {
+      // Sauvegarde les styles originaux
+      const originalHtmlStyle = document.documentElement.style.cssText;
+      const originalBodyStyle = document.body.style.cssText;
+      
+      // Force le no-scroll sur mobile
+      document.documentElement.style.cssText = `
+        overflow: hidden !important;
+        position: fixed !important;
+        width: 100% !important;
+        height: 100% !important;
+        touch-action: none !important;
+      `;
+      
+      document.body.style.cssText = `
+        overflow: hidden !important;
+        position: fixed !important;
+        width: 100% !important;
+        height: 100% !important;
+        touch-action: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      `;
+      
+      // Cleanup au démontage
+      return () => {
+        document.documentElement.style.cssText = originalHtmlStyle;
+        document.body.style.cssText = originalBodyStyle;
+      };
+    }
+  }, [isMobile]);
+
   // Force les bonnes dimensions sur mobile
   useEffect(() => {
     if (isMobile && viewMode > 2) {
