@@ -24,6 +24,33 @@ const HeaderWrapper = styled.header`
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
   }
+
+  /* ======================================================================================== */
+  /* 🌟 NOUVELLE SECTION : MOBILE PAYSAGE (HORIZONTAL) - HEADER COMPACT 🌟 */
+  /* ======================================================================================== */
+  
+  @media (max-width: 1024px) and (orientation: landscape) {
+    /* 🔧 HEADER ULTRA COMPACT en mode paysage mobile */
+    padding: 0.25rem 0;
+    min-height: 40px;
+    height: 40px;
+    
+    /* Support pour les safe areas en paysage */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-top: calc(0.25rem + env(safe-area-inset-top));
+  }
+  
+  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
+    /* 🔧 ENCORE PLUS COMPACT pour iPhone en paysage */
+    padding: 0.15rem 0;
+    min-height: 35px;
+    height: 35px;
+  }
+  
+  /* ======================================================================================== */
+  /* 🌟 FIN DE LA SECTION MODE PAYSAGE - HEADER 🌟 */
+  /* ======================================================================================== */
 `;
 
 const HeaderContent = styled.div`
@@ -41,6 +68,27 @@ const HeaderContent = styled.div`
     /* Ajuste l'espacement pour mobile */
     gap: 0.5rem;
   }
+
+  /* ======================================================================================== */
+  /* 🌟 MOBILE PAYSAGE - HEADER CONTENT COMPACT 🌟 */
+  /* ======================================================================================== */
+  
+  @media (max-width: 1024px) and (orientation: landscape) {
+    /* 🔧 PADDING RÉDUIT en paysage */
+    padding: 0 0.75rem;
+    gap: 0.25rem;
+    height: 100%;
+  }
+  
+  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
+    /* 🔧 ULTRA COMPACT pour iPhone paysage */
+    padding: 0 0.5rem;
+    gap: 0.15rem;
+  }
+  
+  /* ======================================================================================== */
+  /* 🌟 FIN MOBILE PAYSAGE - HEADER CONTENT 🌟 */
+  /* ======================================================================================== */
 `;
 
 const Logo = styled(Link)`
@@ -68,6 +116,43 @@ const Logo = styled(Link)`
       }
     }
   }
+
+  /* ======================================================================================== */
+  /* 🌟 MOBILE PAYSAGE - LOGO COMPACT 🌟 */
+  /* ======================================================================================== */
+  
+  @media (max-width: 1024px) and (orientation: landscape) {
+    /* 🔧 LOGO PLUS PETIT en paysage */
+    font-size: 1rem;
+    gap: 0.2rem;
+    
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+    
+    span {
+      font-size: 0.9rem;
+    }
+  }
+  
+  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
+    /* 🔧 LOGO ULTRA PETIT pour iPhone paysage */
+    font-size: 0.9rem;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+    
+    span {
+      font-size: 0.8rem;
+    }
+  }
+  
+  /* ======================================================================================== */
+  /* 🌟 FIN MOBILE PAYSAGE - LOGO 🌟 */
+  /* ======================================================================================== */
 `;
 
 const CenterTitle = styled.h2`
@@ -89,6 +174,25 @@ const CenterTitle = styled.h2`
       display: none;
     }
   }
+
+  /* ======================================================================================== */
+  /* 🌟 MOBILE PAYSAGE - TITRE CENTRAL 🌟 */
+  /* ======================================================================================== */
+  
+  @media (max-width: 1024px) and (orientation: landscape) {
+    /* 🔧 TITRE PLUS PETIT en paysage */
+    font-size: 0.9rem;
+    gap: 0.2rem;
+  }
+  
+  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
+    /* 🔧 CACHE COMPLÈTEMENT le titre sur iPhone paysage */
+    display: none;
+  }
+  
+  /* ======================================================================================== */
+  /* 🌟 FIN MOBILE PAYSAGE - TITRE CENTRAL 🌟 */
+  /* ======================================================================================== */
 `;
 
 const RightSection = styled.div`
@@ -101,6 +205,24 @@ const RightSection = styled.div`
   @media (max-width: 768px) {
     gap: 0.5rem;
   }
+
+  /* ======================================================================================== */
+  /* 🌟 MOBILE PAYSAGE - SECTION DROITE 🌟 */
+  /* ======================================================================================== */
+  
+  @media (max-width: 1024px) and (orientation: landscape) {
+    /* 🔧 GAP RÉDUIT en paysage */
+    gap: 0.25rem;
+  }
+  
+  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
+    /* 🔧 GAP ULTRA RÉDUIT pour iPhone paysage */
+    gap: 0.15rem;
+  }
+  
+  /* ======================================================================================== */
+  /* 🌟 FIN MOBILE PAYSAGE - SECTION DROITE 🌟 */
+  /* ======================================================================================== */
 `;
 
 const ThemeToggleButton = styled.button`
@@ -137,6 +259,39 @@ const ThemeToggleButton = styled.button`
       transform: none;
     }
   }
+
+  /* ======================================================================================== */
+  /* 🌟 MOBILE PAYSAGE - BOUTON THÈME 🌟 */
+  /* ======================================================================================== */
+  
+  @media (max-width: 1024px) and (orientation: landscape) {
+    /* 🔧 BOUTON PLUS COMPACT en paysage */
+    padding: 0.3rem;
+    min-height: 32px;
+    min-width: 32px;
+    border-radius: 6px;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+  
+  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
+    /* 🔧 BOUTON ULTRA COMPACT pour iPhone paysage */
+    padding: 0.25rem;
+    min-height: 28px;
+    min-width: 28px;
+    
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+  
+  /* ======================================================================================== */
+  /* 🌟 FIN MOBILE PAYSAGE - BOUTON THÈME 🌟 */
+  /* ======================================================================================== */
 `;
 
 const MenuButton = styled.button`
@@ -181,6 +336,45 @@ const MenuButton = styled.button`
       }
     }
   }
+
+  /* ======================================================================================== */
+  /* 🌟 MOBILE PAYSAGE - BOUTON MENU 🌟 */
+  /* ======================================================================================== */
+  
+  @media (max-width: 1024px) and (orientation: landscape) {
+    /* 🔧 BOUTON MENU COMPACT en paysage */
+    padding: 0.3rem;
+    gap: 0.2rem;
+    min-height: 32px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+  
+  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
+    /* 🔧 BOUTON MENU ULTRA COMPACT pour iPhone paysage */
+    padding: 0.25rem;
+    min-height: 28px;
+    font-size: 0.75rem;
+    
+    /* Cache le nom d'utilisateur en paysage iPhone */
+    span {
+      display: none;
+    }
+    
+    svg {
+      width: 12px;
+      height: 12px;
+    }
+  }
+  
+  /* ======================================================================================== */
+  /* 🌟 FIN MOBILE PAYSAGE - BOUTON MENU 🌟 */
+  /* ======================================================================================== */
 `;
 
 /* 🔧 CORRECTION MAJEURE : Menu dropdown adaptatif */
@@ -193,11 +387,11 @@ const DropdownMenu = styled.div`
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   padding: 0.75rem 0;
-  display: ${props => props.isOpen ? 'block' : 'none'};
+  display: ${props => props.$isOpen ? 'block' : 'none'};
   z-index: 99999; /* Z-index très élevé */
   min-width: 280px;
   backdrop-filter: blur(8px);
-  animation: ${props => props.isOpen ? 'dropdownSlideIn' : 'dropdownSlideOut'} 0.2s ease;
+  animation: ${props => props.$isOpen ? 'dropdownSlideIn' : 'dropdownSlideOut'} 0.2s ease;
   max-height: 80vh;
   overflow-y: auto;
 
@@ -249,7 +443,7 @@ const DropdownMenu = styled.div`
     padding-right: calc(1rem + env(safe-area-inset-right));
     
     /* Animation différente sur mobile */
-    animation: ${props => props.isOpen ? 'mobileSlideIn' : 'mobileSlideOut'} 0.3s ease;
+    animation: ${props => props.$isOpen ? 'mobileSlideIn' : 'mobileSlideOut'} 0.3s ease;
   }
   
   @keyframes mobileSlideIn {
@@ -561,7 +755,7 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
             />
           </MenuButton>
 
-          <DropdownMenu isOpen={showMenu}>
+          <DropdownMenu $isOpen={showMenu}>
             {/* 🔧 NOUVEAU : Header mobile uniquement */}
             <MobileMenuHeader>
               <MobileMenuTitle>Menu</MobileMenuTitle>
