@@ -769,190 +769,74 @@ function RadiologyViewer() {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // Force les dimensions exactes sur mobile - SOLUTION CORRIGÉE
+  // SOLUTION ULTRA-SIMPLE : Force juste les bonnes hauteurs sur mobile
   useEffect(() => {
     if (isMobile) {
-      // Fonction qui force les dimensions en continu
-      const forceMobileDimensions = () => {
+      const updateMobileDimensions = () => {
         const realHeight = window.innerHeight;
         const realWidth = window.innerWidth;
         const isLandscape = realWidth > realHeight;
         
-        // Sélectionne les éléments par leurs classes CSS modules
-        const containers = document.querySelectorAll('[class*="container"]');
-        const contents = document.querySelectorAll('[class*="content"]');
-        const bottomBars = document.querySelectorAll('[class*="bottomBar"]');
+        // Find the elements by class name (not CSS modules)
+        const container = document.querySelector('.container');
+        const content = document.querySelector('.content');
+        const bottomBar = document.querySelector('.bottomBar');
         
-        containers.forEach(container => {
-          if (container) {
-            container.style.cssText = `
-              position: fixed !important;
-              top: 0px !important;
-              left: 0px !important;
-              width: ${realWidth}px !important;
-              height: ${realHeight}px !important;
-              overflow: hidden !important;
-              z-index: 100 !important;
-              margin: 0 !important;
-              padding: 0 !important;
-            `;
-          }
-        });
+        // Simplified: just set the key dimensions
+        if (container) {
+          container.style.height = `${realHeight}px`;
+          container.style.width = `${realWidth}px`;
+        }
         
-        contents.forEach(content => {
-          if (content) {
-            // Hauteurs adaptées selon l'orientation
-            const headerHeight = isLandscape ? 50 : 60; // Plus petit en paysage
-            const bottomBarHeight = isLandscape ? 45 : 55; // Plus petit en paysage
-            const availableHeight = realHeight - headerHeight - bottomBarHeight;
-            
-            content.style.cssText = `
-              position: relative !important;
-              top: ${headerHeight}px !important;
-              height: ${availableHeight}px !important;
-              width: 100% !important;
-              overflow: hidden !important;
-              margin: 0 !important;
-              padding: 0 !important;
-              flex: 1 !important;
-              display: flex !important;
-              flex-direction: column !important;
-            `;
-          }
-        });
+        if (content && bottomBar) {
+          const headerHeight = isLandscape ? 50 : 60;
+          const bottomBarHeight = isLandscape ? 45 : 55;
+          const contentHeight = realHeight - headerHeight - bottomBarHeight;
+          
+          content.style.height = `${contentHeight}px`;
+          content.style.marginTop = `${headerHeight}px`;
+          
+          bottomBar.style.height = `${bottomBarHeight}px`;
+        }
         
-        bottomBars.forEach(bottomBar => {
-          if (bottomBar) {
-            const bottomBarHeight = isLandscape ? 45 : 55;
-            bottomBar.style.cssText = `
-              position: absolute !important;
-              bottom: 0px !important;
-              left: 0px !important;
-              right: 0px !important;
-              height: ${bottomBarHeight}px !important;
-              width: 100% !important;
-              z-index: 1002 !important;
-              display: flex !important;
-              align-items: center !important;
-              justify-content: space-between !important;
-              padding: ${isLandscape ? '4px 8px' : '6px 10px'} !important;
-              background: var(--header-background, #4f5b93) !important;
-              color: white !important;
-              box-shadow: 0 -2px 8px rgba(0,0,0,0.15) !important;
-            `;
-          }
-        });
-        
-        // CORRECTION : Ajuste aussi le header en paysage mobile
-        const headers = document.querySelectorAll('[class*="header"]');
-        headers.forEach(header => {
-          if (header && isLandscape) {
-            header.style.cssText = `
-              height: 50px !important;
-              min-height: 50px !important;
-              padding: 8px 16px !important;
-            `;
-            
-            // Ajuste le titre du header en paysage
-            const headerTitle = header.querySelector('[class*="header-title"]');
-            if (headerTitle) {
-              headerTitle.style.fontSize = '1.1rem !important';
-            }
-          }
+        console.log('📱 Mobile dimensions updated:', {
+          realHeight,
+          realWidth,
+          isLandscape,
+          elements: { container: !!container, content: !!content, bottomBar: !!bottomBar }
         });
       };
       
-      // Force initial
-      forceMobileDimensions();
+      // Initial update
+      updateMobileDimensions();
       
-      // Force à chaque resize/orientation
-      const forceUpdate = () => {
-        forceMobileDimensions();
-        setTimeout(forceMobileDimensions, 50);
-        setTimeout(forceMobileDimensions, 150);
-        setTimeout(forceMobileDimensions, 300);
+      // Update on resize/orientation change
+      const handleUpdate = () => {
+        setTimeout(updateMobileDimensions, 100);
+        setTimeout(updateMobileDimensions, 300);
       };
       
-      window.addEventListener('resize', forceUpdate);
-      window.addEventListener('orientationchange', forceUpdate);
+      window.addEventListener('resize', handleUpdate);
+      window.addEventListener('orientationchange', handleUpdate);
       
-      // Force périodiquement (réduit à 2s)
-      const interval = setInterval(forceMobileDimensions, 2000);
-      
-      // Empêche le scroll global
-      document.body.style.cssText = `
-        overflow: hidden !important;
-        position: fixed !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        top: 0 !important;
-        left: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        touch-action: none !important;
-      `;
-      
-      document.documentElement.style.cssText = `
-        overflow: hidden !important;
-        height: 100vh !important;
-        width: 100vw !important;
-        margin: 0 !important;
-        padding: 0 !important;
-      `;
-      
-      // Viewport meta agressif
-      let viewportMeta = document.querySelector('meta[name="viewport"]');
-      if (viewportMeta) {
-        viewportMeta.setAttribute('content', 
-          'width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no'
-        );
-      }
+      // Prevent page scroll/zoom
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.height = '100%';
+      document.body.style.touchAction = 'none';
       
       return () => {
-        clearInterval(interval);
-        window.removeEventListener('resize', forceUpdate);
-        window.removeEventListener('orientationchange', forceUpdate);
+        window.removeEventListener('resize', handleUpdate);
+        window.removeEventListener('orientationchange', handleUpdate);
         
-        // Reset styles
-        document.body.style.cssText = '';
-        document.documentElement.style.cssText = '';
-        
-        if (viewportMeta) {
-          viewportMeta.setAttribute('content', 
-            'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover'
-          );
-        }
+        // Reset
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+        document.body.style.height = '';
+        document.body.style.touchAction = '';
       };
-    } else {
-      // CORRECTION DESKTOP : Reset les styles forcés
-      const containers = document.querySelectorAll('[class*="container"]');
-      const contents = document.querySelectorAll('[class*="content"]');
-      const bottomBars = document.querySelectorAll('[class*="bottomBar"]');
-      const headers = document.querySelectorAll('[class*="header"]');
-      
-      containers.forEach(container => {
-        if (container) {
-          container.style.cssText = ''; // Reset tous les styles forcés
-        }
-      });
-      
-      contents.forEach(content => {
-        if (content) {
-          content.style.cssText = ''; // Reset tous les styles forcés
-        }
-      });
-      
-      bottomBars.forEach(bottomBar => {
-        if (bottomBar) {
-          bottomBar.style.cssText = ''; // Reset tous les styles forcés
-        }
-      });
-      
-      headers.forEach(header => {
-        if (header) {
-          header.style.cssText = ''; // Reset tous les styles forcés
-        }
-      });
     }
   }, [isMobile]);
 
