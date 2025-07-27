@@ -798,51 +798,102 @@ function RadiologyViewer() {
   // Empêche le scroll du body sur mobile et zoom de page
   useEffect(() => {
     if (isMobile) {
-      // Empêche le scroll et zoom du body
+      // SOLUTION RADICALE pour mobile
+      
+      // 1. Empêche tout scroll et zoom du body/html
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
-      document.body.style.height = '100%';
-      document.body.style.touchAction = 'pan-x pan-y';
+      document.body.style.width = '100vw';
+      document.body.style.height = '100vh';
+      document.body.style.top = '0';
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.bottom = '0';
+      document.body.style.touchAction = 'none'; // Empêche TOUS les gestes par défaut
       
-      // Force la hauteur de la page à 100% du viewport
-      document.documentElement.style.height = '100%';
       document.documentElement.style.overflow = 'hidden';
+      document.documentElement.style.height = '100vh';
+      document.documentElement.style.width = '100vw';
+      document.documentElement.style.position = 'fixed';
+      document.documentElement.style.top = '0';
+      document.documentElement.style.left = '0';
       
-      // Empêche le zoom de la page via meta viewport
+      // 2. Force le viewport à ne jamais changer
       let viewportMeta = document.querySelector('meta[name="viewport"]');
       if (viewportMeta) {
         viewportMeta.setAttribute('content', 
-          'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover'
+          'width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no'
         );
       }
       
-      // Event listener pour forcer le recalcul lors des changements de viewport
-      const handleViewportChange = () => {
-        updateViewport();
-        // Force un nouveau calcul après un délai
-        setTimeout(() => {
-          updateViewport();
-        }, 200);
+      // 3. Empêche le scroll de window
+      const preventScroll = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        window.scrollTo(0, 0);
+        return false;
       };
       
-      window.addEventListener('resize', handleViewportChange);
-      window.addEventListener('scroll', (e) => {
-        // Empêche le scroll sur mobile
-        e.preventDefault();
-        window.scrollTo(0, 0);
+      const preventTouchMove = (e) => {
+        // Autorise seulement les gestes sur les viewers d'images
+        const target = e.target.closest('.viewer, .mainViewer, .folderGrid');
+        if (!target) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      };
+      
+      // 4. Event listeners pour empêcher les interactions indésirables
+      window.addEventListener('scroll', preventScroll, { passive: false });
+      window.addEventListener('touchmove', preventTouchMove, { passive: false });
+      window.addEventListener('wheel', (e) => {
+        const target = e.target.closest('.viewer, .mainViewer');
+        if (!target) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+      
+      // 5. Force le recalcul du viewport régulièrement
+      const forceViewportUpdate = () => {
+        updateViewport();
+        // Force un recalcul après les animations du navigateur
+        requestAnimationFrame(() => {
+          updateViewport();
+        });
+      };
+      
+      window.addEventListener('resize', forceViewportUpdate);
+      window.addEventListener('orientationchange', () => {
+        setTimeout(forceViewportUpdate, 100);
+        setTimeout(forceViewportUpdate, 300);
+        setTimeout(forceViewportUpdate, 600);
       });
       
+      // 6. Initial viewport update
+      forceViewportUpdate();
+      
       return () => {
+        // Nettoyage
         document.body.style.overflow = '';
         document.body.style.position = '';
         document.body.style.width = '';
         document.body.style.height = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
+        document.body.style.bottom = '';
         document.body.style.touchAction = '';
-        document.documentElement.style.height = '';
-        document.documentElement.style.overflow = '';
         
-        window.removeEventListener('resize', handleViewportChange);
+        document.documentElement.style.overflow = '';
+        document.documentElement.style.height = '';
+        document.documentElement.style.width = '';
+        document.documentElement.style.position = '';
+        document.documentElement.style.top = '';
+        document.documentElement.style.left = '';
+        
+        window.removeEventListener('scroll', preventScroll);
+        window.removeEventListener('touchmove', preventTouchMove);
+        window.removeEventListener('resize', forceViewportUpdate);
         
         // Restaure le viewport original
         if (viewportMeta) {

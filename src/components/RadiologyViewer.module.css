@@ -59,13 +59,26 @@
   padding-right: env(safe-area-inset-right);
   
   @media (max-width: 768px) {
-    /* Force l'utilisation de toute la hauteur disponible sur mobile */
+    /* SOLUTION RADICALE : Force l'utilisation de TOUT l'écran mobile */
     height: 100vh;
     height: 100dvh;
+    height: 100svh;
+    
+    /* Force minimum et maximum */
     min-height: 100vh;
     min-height: 100dvh;
     max-height: 100vh;
     max-height: 100dvh;
+    
+    /* Empêche absolument tout débordement */
+    overflow: hidden !important;
+    
+    /* Ignore les safe areas sur mobile pour utiliser tout l'écran */
+    padding: 0;
+    
+    /* S'assure qu'on prend tout l'écran */
+    top: 0 !important;
+    bottom: 0 !important;
   }
 }
 
@@ -93,18 +106,22 @@
   min-height: 0;
   
   @media (max-width: 768px) {
-    /* Calcul spécial pour mobile avec bottom bar adaptable */
-    height: calc(100vh - var(--header-height) - 70px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-    height: calc(100dvh - var(--header-height) - 70px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    /* SOLUTION MOBILE : Utilise flex au lieu de hauteur fixe */
+    height: auto;
+    flex: 1;
     
-    /* Fallback pour les anciens navigateurs */
-    min-height: calc(100vh - 130px);
-    max-height: calc(100vh - 70px);
+    /* Laisse la bottom bar avoir sa hauteur naturelle */
+    margin-bottom: 0;
     
     /* Empêche le zoom de la page entière */
     touch-action: pan-x pan-y;
     user-select: none;
     -webkit-user-select: none;
+    
+    /* Force les limites */
+    overflow: hidden !important;
+    max-height: none;
+    min-height: 0;
   }
 }
 
@@ -533,7 +550,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  z-index: 1000;
+  z-index: 1001;
   
   box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -552,26 +569,31 @@
   }
   
   @media (max-width: 768px) {
-    /* Ajustements critiques pour mobile */
-    bottom: env(safe-area-inset-bottom);
-    padding: 8px;
-    padding-left: calc(8px + env(safe-area-inset-left));
-    padding-right: calc(8px + env(safe-area-inset-right));
+    /* SOLUTION MOBILE : Position absolue dans le container */
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    
+    /* Hauteur flexible */
+    height: auto;
+    min-height: 50px;
+    
+    /* Padding compact */
+    padding: 8px 12px;
     padding-bottom: calc(8px + env(safe-area-inset-bottom));
     
-    /* Force la hauteur et la visibilité */
-    min-height: 60px;
-    height: auto;
+    /* Z-index très élevé */
+    z-index: 1002;
     
-    /* S'assure que la bottom bar reste au-dessus de l'interface navigateur */
-    transform: translateY(0);
+    /* Force l'affichage au-dessus de tout */
+    transform: translateZ(0);
     
     /* Style adaptatif pour différentes orientations */
     @media (orientation: landscape) {
-      min-height: 50px;
-      padding: 6px;
-      padding-left: calc(6px + env(safe-area-inset-left));
-      padding-right: calc(6px + env(safe-area-inset-right));
+      min-height: 45px;
+      padding: 6px 10px;
+      padding-bottom: calc(6px + env(safe-area-inset-bottom));
     }
   }
 }
