@@ -1,60 +1,127 @@
-/* ==================== VARIABLES CSS DYNAMIQUES SIMPLES ==================== */
+/* ==================== VARIABLES CSS DYNAMIQUES AMÉLIORÉES ==================== */
 :root {
   --header-height: 60px;
   --bottom-bar-height: 50px;
   --safe-area-top: 0px;
   --safe-area-bottom: 0px;
   
-  /* Variables pour mobile viewport */
+  /* Nouvelles variables pour mobile */
   --mobile-padding: 4px;
   --mobile-gap: 4px;
   --desktop-padding: 8px;
   --desktop-gap: 8px;
+  
+  /* Variables pour le viewport réel mobile */
+  --real-vh: 100vh;
+  --browser-ui-height: 0px;
 }
 
-/* ==================== CONTAINER PRINCIPAL SIMPLE ==================== */
+/* Support des unités de viewport dynamiques pour mobile */
+@supports (height: 100dvh) {
+  :root {
+    --real-vh: 100dvh;
+  }
+}
+
+@supports (height: 100svh) {
+  :root {
+    --real-vh: 100svh;
+  }
+}
+
+/* ==================== CONTAINER PRINCIPAL COMPLÈTEMENT FIXE ==================== */
 .container {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: var(--real-vh);
   
+  /* Structure en flex pour contrôler parfaitement l'espace */
   display: flex;
   flex-direction: column;
   
   background: linear-gradient(135deg, rgb(var(--color-background)) 0%, rgb(var(--color-surface)) 100%);
   color: rgb(var(--color-text));
   z-index: 100;
+  
+  /* Empêche tout débordement */
   overflow: hidden;
-  margin: 0;
-  padding: 0;
+  
+  /* Optimisations de performance mobile */
+  will-change: auto;
+  contain: layout style;
+  
+  /* Ajustements pour les safe areas iPhone */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  
+  @media (max-width: 768px) {
+    /* SOLUTION RADICALE : Force l'utilisation de TOUT l'écran mobile */
+    height: 100vh;
+    height: 100dvh;
+    height: 100svh;
+    
+    /* Force minimum et maximum */
+    min-height: 100vh;
+    min-height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    
+    /* Empêche absolument tout débordement */
+    overflow: hidden !important;
+    
+    /* Ignore les safe areas sur mobile pour utiliser tout l'écran */
+    padding: 0;
+    
+    /* S'assure qu'on prend tout l'écran */
+    top: 0 !important;
+    bottom: 0 !important;
+  }
 }
 
-/* ==================== CONTENT SIMPLE ==================== */
+/* ==================== CONTENT AVEC HAUTEUR CALCULÉE PRÉCISÉMENT ==================== */
 .content {
+  /* Prend tout l'espace disponible moins header et bottom bar */
   flex: 1;
   display: flex;
   flex-direction: column;
+  
+  /* Calcul précis de la hauteur disponible */
+  height: calc(var(--real-vh) - var(--header-height) - var(--bottom-bar-height) - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  
+  /* Position par rapport au header */
+  margin-top: var(--header-height);
+  
   background-color: rgb(var(--color-background));
   overflow: hidden;
-  margin-top: var(--header-height);
-  margin-bottom: var(--bottom-bar-height);
   padding: 0;
+  margin-left: 0;
+  margin-right: 0;
+  margin-bottom: 0;
+  
+  /* Force la hauteur minimale */
+  min-height: 0;
   
   @media (max-width: 768px) {
-    /* Sur mobile, ajuste selon l'orientation */
-    margin-top: 60px;
-    margin-bottom: 55px;
+    /* SOLUTION MOBILE : Utilise flex au lieu de hauteur fixe */
+    height: auto;
+    flex: 1;
     
-    @media (orientation: landscape) {
-      margin-top: 50px;
-      margin-bottom: 45px;
-    }
+    /* Laisse la bottom bar avoir sa hauteur naturelle */
+    margin-bottom: 0;
     
+    /* Empêche le zoom de la page entière */
     touch-action: pan-x pan-y;
     user-select: none;
     -webkit-user-select: none;
+    
+    /* Force les limites */
+    overflow: hidden !important;
+    max-height: none;
+    min-height: 0;
   }
 }
 
@@ -467,13 +534,15 @@
   }
 }
 
-/* ==================== BOTTOM BAR FIXE ==================== */
+/* ==================== BOTTOM BAR PARFAITEMENT POSITIONNÉE ==================== */
 .bottomBar {
   position: fixed;
   bottom: 0;
   left: 0;
-  right: 0;
   height: var(--bottom-bar-height);
+  width: 100vw;
+  margin: 0;
+  padding: 0 24px;
   
   background: var(--header-background, #4f5b93);
   color: var(--header-text, #ffffff);
@@ -487,8 +556,10 @@
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   
-  padding: 0 24px;
+  /* Safe areas pour iPhone */
   padding-bottom: env(safe-area-inset-bottom);
+  padding-left: calc(24px + env(safe-area-inset-left));
+  padding-right: calc(24px + env(safe-area-inset-right));
   
   & > div:last-child {
     display: flex;
@@ -498,12 +569,29 @@
   }
   
   @media (max-width: 768px) {
-    height: 55px;
+    /* SOLUTION MOBILE : Position absolue dans le container */
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    
+    /* Hauteur flexible */
+    height: auto;
+    min-height: 50px;
+    
+    /* Padding compact */
     padding: 8px 12px;
     padding-bottom: calc(8px + env(safe-area-inset-bottom));
     
+    /* Z-index très élevé */
+    z-index: 1002;
+    
+    /* Force l'affichage au-dessus de tout */
+    transform: translateZ(0);
+    
+    /* Style adaptatif pour différentes orientations */
     @media (orientation: landscape) {
-      height: 45px;
+      min-height: 45px;
       padding: 6px 10px;
       padding-bottom: calc(6px + env(safe-area-inset-bottom));
     }
