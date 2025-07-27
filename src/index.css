@@ -87,26 +87,10 @@ body {
   .container {
     @apply w-full mx-auto px-4 sm:px-6 lg:px-8;
     max-width: 100%;
-    
-    /* Mobile adjustments */
-    @media (max-width: 768px) {
-      @apply px-3;
-    }
   }
 
   .card {
     @apply bg-surface rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg border border-blue-100 dark:border-gray-700;
-    
-    /* Mobile optimizations */
-    @media (max-width: 768px) {
-      @apply rounded-xl;
-      /* Supprime les transitions sur mobile pour de meilleures performances */
-      transition: none;
-      
-      &:hover {
-        @apply shadow-md; /* Garde l'ombre normale sur mobile */
-      }
-    }
   }
 
   .btn {
@@ -115,70 +99,22 @@ body {
     /* Optimisations mobiles */
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
-    
-    @media (max-width: 768px) {
-      @apply px-4 py-3 text-base;
-      transition: none;
-      transform: none;
-      min-height: 44px; /* Target touch size */
-      
-      &:hover {
-        transform: none;
-      }
-      
-      &:active {
-        transform: scale(0.98);
-        opacity: 0.8;
-      }
-    }
   }
 
   .btn-primary {
     @apply bg-primary hover:bg-blue-600 focus:ring-primary;
-    
-    @media (max-width: 768px) {
-      &:hover {
-        @apply bg-primary; /* Pas de changement de couleur au hover sur mobile */
-      }
-    }
   }
 
   .btn-secondary {
     @apply bg-secondary hover:bg-indigo-600 focus:ring-secondary;
-    
-    @media (max-width: 768px) {
-      &:hover {
-        @apply bg-secondary;
-      }
-    }
   }
 
   .input {
     @apply w-full px-4 py-2 rounded-md border-2 border-blue-200 dark:border-gray-600 bg-surface text-text focus:border-blue-400 dark:focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-700 focus:ring-opacity-50 transition-all duration-300 placeholder-gray-400 dark:placeholder-gray-500;
-    
-    /* Optimisations mobiles */
-    @media (max-width: 768px) {
-      @apply py-3 text-base rounded-lg;
-      min-height: 44px;
-      transition: none;
-      
-      /* Évite le zoom sur iOS */
-      font-size: 16px;
-      -webkit-appearance: none;
-      appearance: none;
-    }
   }
 
   .select {
     @apply w-full px-4 py-2 rounded-md border-2 border-blue-200 dark:border-gray-600 bg-surface text-text focus:border-blue-400 dark:focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-700 focus:ring-opacity-50 transition-all duration-300 appearance-none;
-    
-    @media (max-width: 768px) {
-      @apply py-3 text-base rounded-lg;
-      min-height: 44px;
-      transition: none;
-      font-size: 16px;
-      -webkit-appearance: none;
-    }
   }
 
   .question-card {
@@ -186,42 +122,14 @@ body {
     width: 100%;
     min-width: 300px;
     overflow-x: auto;
-    
-    @media (max-width: 768px) {
-      @apply p-4 mb-4 rounded-xl;
-      min-width: auto;
-      transition: none;
-      
-      &:hover {
-        @apply shadow-sm;
-      }
-    }
   }
 
   .option-card {
     @apply bg-blue-50 dark:bg-gray-700 rounded-md p-4 mb-3 transition-all duration-300 hover:bg-blue-100 dark:hover:bg-gray-600 border border-blue-200 dark:border-gray-600;
-    
-    @media (max-width: 768px) {
-      @apply p-3 mb-2 rounded-lg;
-      transition: none;
-      touch-action: manipulation;
-      
-      &:hover {
-        @apply bg-blue-50 dark:bg-gray-700;
-      }
-      
-      &:active {
-        @apply bg-blue-100 dark:bg-gray-600;
-      }
-    }
   }
 
   .sub-question {
     @apply ml-6 mt-4 border-l-2 border-indigo-300 dark:border-indigo-600 pl-4;
-    
-    @media (max-width: 768px) {
-      @apply ml-4 mt-3 pl-3;
-    }
   }
 
   .header {
@@ -229,39 +137,18 @@ body {
     
     /* Support des safe areas */
     padding-top: var(--mobile-safe-top);
-    
-    @media (max-width: 768px) {
-      position: fixed;
-      width: 100%;
-      /* S'assure que le header reste en haut */
-      top: 0;
-      left: 0;
-      right: 0;
-    }
   }
 
   .header-content {
     @apply container mx-auto py-4 flex justify-between items-center;
-    
-    @media (max-width: 768px) {
-      @apply py-3 px-4;
-    }
   }
 
   .header-title {
     @apply text-3xl font-bold;
-    
-    @media (max-width: 768px) {
-      @apply text-xl;
-    }
   }
 
   .header-nav {
     @apply flex space-x-6;
-    
-    @media (max-width: 768px) {
-      @apply space-x-4;
-    }
   }
 
   .header-link {
@@ -270,59 +157,221 @@ body {
     /* Optimisations tactiles */
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
-    
-    @media (max-width: 768px) {
-      @apply text-xs;
-      transition: none;
-      min-height: 40px;
-      display: flex;
-      align-items: center;
-      
-      &:hover {
-        @apply text-white;
-      }
-      
-      &:active {
-        @apply text-blue-200;
-      }
-    }
   }
 
   .main-title {
     @apply text-4xl font-bold text-center mb-12 text-gray-800 dark:text-gray-200;
-    
-    @media (max-width: 768px) {
-      @apply text-2xl mb-6;
-    }
   }
 
   .questionnaire-layout {
     @apply flex flex-wrap;
-    
-    @media (max-width: 768px) {
-      @apply flex-col;
-    }
   }
 
   .questionnaire-creator {
     @apply w-full lg:w-7/12 pr-0 lg:pr-4 mb-8 lg:mb-0;
-    
-    @media (max-width: 768px) {
-      @apply w-full pr-0 mb-4;
-    }
   }
 
   .questionnaire-preview {
     @apply w-full lg:w-5/12 pl-0 lg:pl-4;
-    
-    @media (max-width: 768px) {
-      @apply w-full pl-0;
-    }
   }
 
   /* Classe pour le texte des options en mode sombre */
   .questionnaire-option {
     @apply text-gray-700 dark:text-white;
+  }
+}
+
+/* ==================== MOBILE RESPONSIVE STYLES (après @layer components) ==================== */
+
+/* Container mobile */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
+/* Card mobile */
+@media (max-width: 768px) {
+  .card {
+    border-radius: 0.75rem;
+    transition: none;
+  }
+  
+  .card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+}
+
+/* Button mobile */
+@media (max-width: 768px) {
+  .btn {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    transition: none;
+    transform: none;
+    min-height: 44px;
+  }
+  
+  .btn:hover {
+    transform: none;
+  }
+  
+  .btn:active {
+    transform: scale(0.98);
+    opacity: 0.8;
+  }
+  
+  .btn-primary:hover {
+    background-color: rgb(59 130 246);
+  }
+  
+  .btn-secondary:hover {
+    background-color: rgb(99 102 241);
+  }
+}
+
+/* Input mobile */
+@media (max-width: 768px) {
+  .input {
+    padding: 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    border-radius: 0.5rem;
+    min-height: 44px;
+    transition: none;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  
+  .select {
+    padding: 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    border-radius: 0.5rem;
+    min-height: 44px;
+    transition: none;
+    -webkit-appearance: none;
+  }
+}
+
+/* Question card mobile */
+@media (max-width: 768px) {
+  .question-card {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0.75rem;
+    min-width: auto;
+    transition: none;
+  }
+  
+  .question-card:hover {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+}
+
+/* Option card mobile */
+@media (max-width: 768px) {
+  .option-card {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0.5rem;
+    transition: none;
+    touch-action: manipulation;
+  }
+  
+  .option-card:hover {
+    background-color: rgb(239 246 255);
+  }
+  
+  .option-card:active {
+    background-color: rgb(219 234 254);
+  }
+  
+  :global(.dark) .option-card:hover {
+    background-color: rgb(55 65 81);
+  }
+  
+  :global(.dark) .option-card:active {
+    background-color: rgb(75 85 99);
+  }
+}
+
+/* Sub question mobile */
+@media (max-width: 768px) {
+  .sub-question {
+    margin-left: 1rem;
+    margin-top: 0.75rem;
+    padding-left: 0.75rem;
+  }
+}
+
+/* Header mobile */
+@media (max-width: 768px) {
+  .header {
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+  
+  .header-content {
+    padding: 0.75rem 1rem;
+  }
+  
+  .header-title {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+  
+  .header-nav {
+    gap: 1rem;
+  }
+  
+  .header-link {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    transition: none;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .header-link:hover {
+    color: rgb(255 255 255);
+  }
+  
+  .header-link:active {
+    color: rgb(191 219 254);
+  }
+}
+
+/* Main title mobile */
+@media (max-width: 768px) {
+  .main-title {
+    font-size: 1.5rem;
+    line-height: 2rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Questionnaire layout mobile */
+@media (max-width: 768px) {
+  .questionnaire-layout {
+    flex-direction: column;
+  }
+  
+  .questionnaire-creator {
+    width: 100%;
+    padding-right: 0;
+    margin-bottom: 1rem;
+  }
+  
+  .questionnaire-preview {
+    width: 100%;
+    padding-left: 0;
   }
 }
 
