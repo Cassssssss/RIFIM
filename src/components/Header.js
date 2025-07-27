@@ -19,7 +19,7 @@ const HeaderWrapper = styled.header`
   
   /* Mobile optimizations */
   @media (max-width: 768px) {
-    padding: 0.75rem 0;
+    padding: 0.5rem 0;
     /* Support pour les safe areas iPhone */
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);

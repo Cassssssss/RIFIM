@@ -237,7 +237,7 @@
   align-items: center;
   background-color: rgb(var(--color-background));
   overflow: hidden;
-  border-radius: 10px;
+  border-radius: 12px;
   
   @media (max-width: 768px) {
     border-radius: 4px;
@@ -304,7 +304,7 @@
   align-items: center;
   overflow: hidden;
   height: 100%;
-  border-radius: 2px;
+  border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   
   &:hover {
@@ -312,7 +312,7 @@
   }
   
   @media (max-width: 768px) {
-    border-radius: 1px;
+    border-radius: 0px;
     border-width: 1px;
     
     &:hover {
