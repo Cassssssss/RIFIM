@@ -12,6 +12,14 @@
   --color-background: 249 250 251;
   --color-surface: 255 255 255;
   --color-text: 31 41 55;
+  --color-border: 229 231 235;
+  
+  /* Variables pour mobile viewport */
+  --vh: 1vh;
+  --mobile-safe-top: env(safe-area-inset-top);
+  --mobile-safe-bottom: env(safe-area-inset-bottom);
+  --mobile-safe-left: env(safe-area-inset-left);
+  --mobile-safe-right: env(safe-area-inset-right);
 }
 
 .dark {
@@ -21,45 +29,156 @@
   --color-background: 17 24 39;
   --color-surface: 31 41 55;
   --color-text: 243 244 246;
+  --color-border: 75 85 99;
+}
+
+/* ==================== BASE MOBILE-FIRST ==================== */
+
+html {
+  /* Support du viewport dynamique mobile */
+  height: 100vh;
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
+  scroll-behavior: smooth;
+  
+  /* Optimisations mobiles */
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  height: 100dvh;
   @apply bg-background text-text;
+  
+  /* Optimisations mobiles */
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: manipulation;
+  
+  /* Support des safe areas iPhone */
+  padding-left: var(--mobile-safe-left);
+  padding-right: var(--mobile-safe-right);
+}
+
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .font-report {
   font-family: 'Lato', 'Calibri', 'Arial', sans-serif;
 }
 
+/* ==================== COMPONENTS RESPONSIVE ==================== */
+
 @layer components {
   .container {
     @apply w-full mx-auto px-4 sm:px-6 lg:px-8;
     max-width: 100%;
+    
+    /* Mobile adjustments */
+    @media (max-width: 768px) {
+      @apply px-3;
+    }
   }
 
   .card {
     @apply bg-surface rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg border border-blue-100 dark:border-gray-700;
+    
+    /* Mobile optimizations */
+    @media (max-width: 768px) {
+      @apply rounded-xl;
+      /* Supprime les transitions sur mobile pour de meilleures performances */
+      transition: none;
+      
+      &:hover {
+        @apply shadow-md; /* Garde l'ombre normale sur mobile */
+      }
+    }
   }
 
   .btn {
     @apply px-6 py-2 rounded-md font-medium text-white transition-all duration-300 transform hover:translate-y-[-2px] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background uppercase tracking-wider text-sm shadow-md;
+    
+    /* Optimisations mobiles */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    
+    @media (max-width: 768px) {
+      @apply px-4 py-3 text-base;
+      transition: none;
+      transform: none;
+      min-height: 44px; /* Target touch size */
+      
+      &:hover {
+        transform: none;
+      }
+      
+      &:active {
+        transform: scale(0.98);
+        opacity: 0.8;
+      }
+    }
   }
 
   .btn-primary {
     @apply bg-primary hover:bg-blue-600 focus:ring-primary;
+    
+    @media (max-width: 768px) {
+      &:hover {
+        @apply bg-primary; /* Pas de changement de couleur au hover sur mobile */
+      }
+    }
   }
 
   .btn-secondary {
     @apply bg-secondary hover:bg-indigo-600 focus:ring-secondary;
+    
+    @media (max-width: 768px) {
+      &:hover {
+        @apply bg-secondary;
+      }
+    }
   }
 
   .input {
     @apply w-full px-4 py-2 rounded-md border-2 border-blue-200 dark:border-gray-600 bg-surface text-text focus:border-blue-400 dark:focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-700 focus:ring-opacity-50 transition-all duration-300 placeholder-gray-400 dark:placeholder-gray-500;
+    
+    /* Optimisations mobiles */
+    @media (max-width: 768px) {
+      @apply py-3 text-base rounded-lg;
+      min-height: 44px;
+      transition: none;
+      
+      /* Évite le zoom sur iOS */
+      font-size: 16px;
+      -webkit-appearance: none;
+      appearance: none;
+    }
   }
 
   .select {
     @apply w-full px-4 py-2 rounded-md border-2 border-blue-200 dark:border-gray-600 bg-surface text-text focus:border-blue-400 dark:focus:border-blue-300 focus:ring focus:ring-blue-200 dark:focus:ring-blue-700 focus:ring-opacity-50 transition-all duration-300 appearance-none;
+    
+    @media (max-width: 768px) {
+      @apply py-3 text-base rounded-lg;
+      min-height: 44px;
+      transition: none;
+      font-size: 16px;
+      -webkit-appearance: none;
+    }
   }
 
   .question-card {
@@ -67,90 +186,378 @@ body {
     width: 100%;
     min-width: 300px;
     overflow-x: auto;
+    
+    @media (max-width: 768px) {
+      @apply p-4 mb-4 rounded-xl;
+      min-width: auto;
+      transition: none;
+      
+      &:hover {
+        @apply shadow-sm;
+      }
+    }
   }
 
   .option-card {
     @apply bg-blue-50 dark:bg-gray-700 rounded-md p-4 mb-3 transition-all duration-300 hover:bg-blue-100 dark:hover:bg-gray-600 border border-blue-200 dark:border-gray-600;
+    
+    @media (max-width: 768px) {
+      @apply p-3 mb-2 rounded-lg;
+      transition: none;
+      touch-action: manipulation;
+      
+      &:hover {
+        @apply bg-blue-50 dark:bg-gray-700;
+      }
+      
+      &:active {
+        @apply bg-blue-100 dark:bg-gray-600;
+      }
+    }
   }
 
   .sub-question {
     @apply ml-6 mt-4 border-l-2 border-indigo-300 dark:border-indigo-600 pl-4;
+    
+    @media (max-width: 768px) {
+      @apply ml-4 mt-3 pl-3;
+    }
   }
 
   .header {
     @apply bg-blue-600 dark:bg-gray-800 text-white shadow-md sticky top-0 z-50;
+    
+    /* Support des safe areas */
+    padding-top: var(--mobile-safe-top);
+    
+    @media (max-width: 768px) {
+      position: fixed;
+      width: 100%;
+      /* S'assure que le header reste en haut */
+      top: 0;
+      left: 0;
+      right: 0;
+    }
   }
 
   .header-content {
     @apply container mx-auto py-4 flex justify-between items-center;
+    
+    @media (max-width: 768px) {
+      @apply py-3 px-4;
+    }
   }
 
   .header-title {
     @apply text-3xl font-bold;
+    
+    @media (max-width: 768px) {
+      @apply text-xl;
+    }
   }
 
   .header-nav {
     @apply flex space-x-6;
+    
+    @media (max-width: 768px) {
+      @apply space-x-4;
+    }
   }
 
   .header-link {
     @apply text-white hover:text-blue-200 dark:hover:text-blue-300 transition-colors duration-300 uppercase tracking-wider text-sm font-medium;
+    
+    /* Optimisations tactiles */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    
+    @media (max-width: 768px) {
+      @apply text-xs;
+      transition: none;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      
+      &:hover {
+        @apply text-white;
+      }
+      
+      &:active {
+        @apply text-blue-200;
+      }
+    }
   }
 
   .main-title {
     @apply text-4xl font-bold text-center mb-12 text-gray-800 dark:text-gray-200;
+    
+    @media (max-width: 768px) {
+      @apply text-2xl mb-6;
+    }
   }
 
   .questionnaire-layout {
     @apply flex flex-wrap;
+    
+    @media (max-width: 768px) {
+      @apply flex-col;
+    }
   }
 
   .questionnaire-creator {
     @apply w-full lg:w-7/12 pr-0 lg:pr-4 mb-8 lg:mb-0;
+    
+    @media (max-width: 768px) {
+      @apply w-full pr-0 mb-4;
+    }
   }
 
   .questionnaire-preview {
     @apply w-full lg:w-5/12 pl-0 lg:pl-4;
+    
+    @media (max-width: 768px) {
+      @apply w-full pl-0;
+    }
   }
 
-  /* Nouvelle classe pour le texte des options en mode sombre */
+  /* Classe pour le texte des options en mode sombre */
   .questionnaire-option {
     @apply text-gray-700 dark:text-white;
   }
-
-  @media (max-width: 768px) {
-    .questionnaire-layout {
-      @apply flex-col;
-    }
-    
-    .questionnaire-creator,
-    .questionnaire-preview {
-      @apply w-full;
-    }
-  }
 }
+
+/* ==================== TYPOGRAPHY RESPONSIVE ==================== */
 
 u {
   text-decoration: underline;
 }
 
-html, body, #root {
-  height: 100%;
-  margin: 0;
-  padding: 0;
+h1, h2, h3, h4, h5, h6 {
+  @media (max-width: 768px) {
+    line-height: 1.3;
+  }
 }
 
-body {
-  overflow-y: auto; /* Permet le défilement vertical */
+h1 {
+  @media (max-width: 768px) {
+    font-size: 1.75rem;
+  }
 }
 
-#root {
-  display: flex;
-  flex-direction: column;
+h2 {
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
 }
 
+h3 {
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+  }
+}
 
+p {
+  @media (max-width: 768px) {
+    line-height: 1.5;
+  }
+}
 
+/* ==================== SCROLLBARS ==================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  
+  /* Cache sur mobile */
+  @media (max-width: 768px) {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(var(--color-surface));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--color-border));
+  border-radius: 4px;
+  
+  &:hover {
+    background: rgb(var(--color-text) / 0.3);
+  }
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--color-border)) rgb(var(--color-surface));
+  
+  @media (max-width: 768px) {
+    scrollbar-width: none;
+  }
+}
+
+/* ==================== ACCESSIBILITY ==================== */
+
+:focus-visible {
+  outline: 2px solid rgb(var(--color-primary));
+  outline-offset: 2px;
+  
+  @media (max-width: 768px) {
+    outline-width: 3px;
+    outline-offset: 3px;
+  }
+}
+
+/* ==================== TOUCH OPTIMIZATIONS ==================== */
+
+@media (max-width: 768px) {
+  button, a, [role="button"], .clickable {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Évite la sélection de texte accidentelle */
+  .no-select-mobile {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Améliore le scroll sur mobile */
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+}
+
+/* ==================== VIEWPORT MOBILE FIXES ==================== */
+
+@media (max-width: 768px) {
+  /* Fix pour Safari iOS */
+  @supports (-webkit-appearance: none) {
+    html {
+      height: -webkit-fill-available;
+    }
+    
+    body {
+      height: -webkit-fill-available;
+    }
+    
+    #root {
+      min-height: -webkit-fill-available;
+    }
+  }
+  
+  /* Support des unités dvh sur les navigateurs compatibles */
+  @supports (height: 100dvh) {
+    html, body, #root {
+      height: 100dvh;
+      min-height: 100dvh;
+    }
+  }
+}
+
+/* ==================== PRINT STYLES ==================== */
+
+@media print {
+  * {
+    color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}
+
+/* ==================== DARK MODE SUPPORT ==================== */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-primary: 96 165 250;
+    --color-secondary: 129 140 248;
+    --color-accent: 244 114 182;
+    --color-background: 17 24 39;
+    --color-surface: 31 41 55;
+    --color-text: 243 244 246;
+    --color-border: 75 85 99;
+  }
+}
+
+/* ==================== PERFORMANCE OPTIMIZATIONS ==================== */
+
+@media (max-width: 768px) {
+  /* Réduit les animations sur mobile */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  
+  /* Force l'accélération matérielle uniquement où nécessaire */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+}
+
+/* ==================== UTILITY CLASSES MOBILE ==================== */
+
+@media (max-width: 768px) {
+  .mobile-hidden {
+    display: none !important;
+  }
+  
+  .mobile-only {
+    display: block;
+  }
+  
+  .mobile-full-width {
+    width: 100% !important;
+  }
+  
+  .mobile-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .mobile-safe-area {
+    padding-left: var(--mobile-safe-left);
+    padding-right: var(--mobile-safe-right);
+    padding-bottom: var(--mobile-safe-bottom);
+  }
+  
+  .mobile-safe-area-top {
+    padding-top: var(--mobile-safe-top);
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-only {
+    display: none;
+  }
+  
+  .desktop-only {
+    display: block;
+  }
+}
+
+/* ==================== TAILWIND IMPORTS (à la fin) ==================== */
 
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
