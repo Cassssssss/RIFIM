@@ -11,7 +11,7 @@
   position: fixed;          
   width: 100%;
   /* Calcul automatique basé sur les vraies dimensions */
-  height: calc(110vh - var(--header-height) - var(--bottom-bar-height) - var(--safe-area-top) - var(--safe-area-bottom));
+  height: calc(102vh - var(--header-height) - var(--bottom-bar-height) - var(--safe-area-top) - var(--safe-area-bottom));
   height: calc(1100dvh - var(--header-height) - var(--bottom-bar-height) - var(--safe-area-top) - var(--safe-area-bottom));
   left: 0;
   top: calc(var(--header-height) + var(--safe-area-top));
