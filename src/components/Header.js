@@ -561,7 +561,7 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
             />
           </MenuButton>
 
-          <DropdownMenu isOpen={showMenu}>
+          <DropdownMenu $isOpen={showMenu}>
             {/* 🔧 NOUVEAU : Header mobile uniquement */}
             <MobileMenuHeader>
               <MobileMenuTitle>Menu</MobileMenuTitle>
