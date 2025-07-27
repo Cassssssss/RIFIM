@@ -37,18 +37,51 @@ const CollapsibleImageGallery = memo(({ folder, images, onImageClick, onDeleteIm
 
 // ==================== HOOK MOBILE VIEWPORT FIX ====================
 
+// ==================== HOOK MOBILE VIEWPORT FIX AMÉLIORÉ ====================
+
 const useMobileViewportFix = () => {
   const updateViewport = useCallback(() => {
-    // Fix pour la hauteur du viewport mobile
-    const vh = window.innerHeight * 0.01;
-    document.documentElement.style.setProperty('--vh', `${vh}px`);
-    
     // Détection mobile améliorée
     const isMobile = window.innerWidth <= 768 || 
                      'ontouchstart' in window || 
                      navigator.maxTouchPoints > 0;
     
-    // Hauteurs des éléments fixes
+    if (isMobile) {
+      // Calcul du viewport réel mobile
+      const windowHeight = window.innerHeight;
+      const windowWidth = window.innerWidth;
+      
+      // Détection de l'interface du navigateur
+      const isPortrait = windowHeight > windowWidth;
+      const isLandscape = windowWidth > windowHeight;
+      
+      // Estimation de la hauteur de l'interface navigateur
+      let browserUIHeight = 0;
+      if (isPortrait) {
+        // En portrait, plus d'interface navigateur
+        browserUIHeight = Math.max(0, window.screen.height - windowHeight - 100);
+      } else {
+        // En paysage, moins d'interface navigateur
+        browserUIHeight = Math.max(0, window.screen.width - windowWidth - 50);
+      }
+      
+      // Hauteur réelle disponible
+      const realViewportHeight = windowHeight;
+      
+      // Fix pour la hauteur du viewport mobile
+      const vh = realViewportHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+      document.documentElement.style.setProperty('--real-vh', `${realViewportHeight}px`);
+      document.documentElement.style.setProperty('--browser-ui-height', `${browserUIHeight}px`);
+    } else {
+      // Desktop : utilise les valeurs standard
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+      document.documentElement.style.setProperty('--real-vh', '100vh');
+      document.documentElement.style.setProperty('--browser-ui-height', '0px');
+    }
+    
+    // Détection des éléments du layout
     const header = document.querySelector('header') || 
                    document.querySelector('.header') || 
                    document.querySelector('[data-header]');
@@ -63,6 +96,13 @@ const useMobileViewportFix = () => {
     }
     if (bottomBar) {
       bottomBarHeight = bottomBar.getBoundingClientRect().height;
+    }
+
+    // Ajustements mobile
+    if (isMobile) {
+      // Ajuste la hauteur de la bottom bar selon l'orientation
+      const isLandscape = window.innerWidth > window.innerHeight;
+      bottomBarHeight = isLandscape ? 50 : 60;
     }
 
     // Safe areas pour iPhone X+
@@ -83,12 +123,14 @@ const useMobileViewportFix = () => {
     if (process.env.NODE_ENV === 'development') {
       console.log('📱 Mobile Viewport Updated:', {
         viewport: { width: window.innerWidth, height: window.innerHeight },
-        vh: vh,
+        screen: { width: window.screen.width, height: window.screen.height },
+        realViewportHeight: isMobile ? parseInt(root.style.getPropertyValue('--real-vh')) : window.innerHeight,
+        browserUIHeight,
         headerHeight,
         bottomBarHeight,
         safeAreas: { top: safeAreaTop, bottom: safeAreaBottom },
         isMobile,
-        availableHeight: window.innerHeight - headerHeight - bottomBarHeight - safeAreaTop - safeAreaBottom
+        orientation: isMobile ? (window.innerWidth > window.innerHeight ? 'landscape' : 'portrait') : 'desktop'
       });
     }
   }, []);
@@ -99,17 +141,29 @@ const useMobileViewportFix = () => {
 
     const handleResize = () => {
       // Délai pour attendre que le navigateur mobile termine son animation
-      setTimeout(updateViewport, 100);
+      setTimeout(updateViewport, 150);
     };
 
     const handleOrientationChange = () => {
-      // Délai plus long pour l'orientation
-      setTimeout(updateViewport, 300);
+      // Délai plus long pour l'orientation mobile
+      setTimeout(updateViewport, 500);
+    };
+
+    // Détection spéciale pour les changements de viewport mobile
+    const handleVisualViewportChange = () => {
+      if (window.visualViewport) {
+        setTimeout(updateViewport, 100);
+      }
     };
 
     // Écouteurs d'événements
     window.addEventListener('resize', handleResize);
     window.addEventListener('orientationchange', handleOrientationChange);
+    
+    // Visual Viewport API pour les navigateurs qui le supportent
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleVisualViewportChange);
+    }
     
     // Observer pour détecter les changements DOM
     const observer = new MutationObserver(() => {
@@ -127,6 +181,9 @@ const useMobileViewportFix = () => {
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleOrientationChange);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleVisualViewportChange);
+      }
       observer.disconnect();
     };
   }, [updateViewport]);
@@ -748,6 +805,10 @@ function RadiologyViewer() {
       document.body.style.height = '100%';
       document.body.style.touchAction = 'pan-x pan-y';
       
+      // Force la hauteur de la page à 100% du viewport
+      document.documentElement.style.height = '100%';
+      document.documentElement.style.overflow = 'hidden';
+      
       // Empêche le zoom de la page via meta viewport
       let viewportMeta = document.querySelector('meta[name="viewport"]');
       if (viewportMeta) {
@@ -756,12 +817,32 @@ function RadiologyViewer() {
         );
       }
       
+      // Event listener pour forcer le recalcul lors des changements de viewport
+      const handleViewportChange = () => {
+        updateViewport();
+        // Force un nouveau calcul après un délai
+        setTimeout(() => {
+          updateViewport();
+        }, 200);
+      };
+      
+      window.addEventListener('resize', handleViewportChange);
+      window.addEventListener('scroll', (e) => {
+        // Empêche le scroll sur mobile
+        e.preventDefault();
+        window.scrollTo(0, 0);
+      });
+      
       return () => {
         document.body.style.overflow = '';
         document.body.style.position = '';
         document.body.style.width = '';
         document.body.style.height = '';
         document.body.style.touchAction = '';
+        document.documentElement.style.height = '';
+        document.documentElement.style.overflow = '';
+        
+        window.removeEventListener('resize', handleViewportChange);
         
         // Restaure le viewport original
         if (viewportMeta) {
@@ -771,7 +852,7 @@ function RadiologyViewer() {
         }
       };
     }
-  }, [isMobile]);
+  }, [isMobile, updateViewport]);
 
   // Force les bonnes dimensions sur mobile
   useEffect(() => {
