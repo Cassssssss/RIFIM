@@ -453,10 +453,14 @@ function RadiologyViewer() {
   const handleTouchStart = useCallback((e, side) => {
     if (!isMobile) return;
     
+    // Empêche le zoom de la page entière
     if (e.touches.length === 2) {
-      // Geste de pincement pour le zoom
       e.preventDefault();
       e.stopPropagation();
+    }
+    
+    if (e.touches.length === 2) {
+      // Geste de pincement pour le zoom
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       const distance = Math.hypot(
@@ -480,9 +484,14 @@ function RadiologyViewer() {
   const handleTouchMove = useCallback((e, side) => {
     if (!isMobile) return;
     
-    e.preventDefault();
+    // Empêche le zoom de la page entière
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
     if (e.touches.length === 2 && touchStartPoints) {
-      // Geste de pincement
+      // Geste de pincement - zoom de l'image uniquement
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       const newDistance = Math.hypot(
@@ -500,7 +509,27 @@ function RadiologyViewer() {
           scale: newScale
         }
       }));
-      applyImageTransforms(side);
+      
+      // Applique immédiatement le zoom à l'image
+      let imageElement;
+      switch(side) {
+        case 'left':
+          imageElement = leftViewerRef.current;
+          break;
+        case 'right':
+          imageElement = rightViewerRef.current;
+          break;
+        case 'single':
+          imageElement = singleViewerRef.current;
+          break;
+        default:
+          imageElement = singleViewerRef.current;
+      }
+      
+      if (imageElement) {
+        imageElement.style.transform = `scale(${newScale}) translate(${prev[side]?.translateX || 0}px, ${prev[side]?.translateY || 0}px)`;
+      }
+      
     } else if (e.touches.length === 1) {
       // Scroll vertical pour navigation d'images
       const touch = e.touches[0];
@@ -515,12 +544,19 @@ function RadiologyViewer() {
         y: touch.clientY
       });
     }
-  }, [isMobile, touchStartPoints, initialScale, applyImageTransforms, handleScroll, lastTouch]);
+  }, [isMobile, touchStartPoints, initialScale, handleScroll, lastTouch, leftViewerRef, rightViewerRef, singleViewerRef]);
   
-  const handleTouchEnd = useCallback(() => {
+  const handleTouchEnd = useCallback((e) => {
     if (!isMobile) return;
+    
+    // Empêche le zoom de la page entière
+    if (e.changedTouches.length === 2 || touchStartPoints) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
     setTouchStartPoints(null);
-  }, [isMobile]);
+  }, [isMobile, touchStartPoints]);
 
   // ==================== FONCTION DE CHANGEMENT DE MODE MOBILE-SAFE ====================
 
@@ -702,19 +738,37 @@ function RadiologyViewer() {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // Empêche le scroll du body sur mobile
+  // Empêche le scroll du body sur mobile et zoom de page
   useEffect(() => {
     if (isMobile) {
+      // Empêche le scroll et zoom du body
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
       document.body.style.width = '100%';
       document.body.style.height = '100%';
+      document.body.style.touchAction = 'pan-x pan-y';
+      
+      // Empêche le zoom de la page via meta viewport
+      let viewportMeta = document.querySelector('meta[name="viewport"]');
+      if (viewportMeta) {
+        viewportMeta.setAttribute('content', 
+          'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover'
+        );
+      }
       
       return () => {
         document.body.style.overflow = '';
         document.body.style.position = '';
         document.body.style.width = '';
         document.body.style.height = '';
+        document.body.style.touchAction = '';
+        
+        // Restaure le viewport original
+        if (viewportMeta) {
+          viewportMeta.setAttribute('content', 
+            'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover'
+          );
+        }
       };
     }
   }, [isMobile]);

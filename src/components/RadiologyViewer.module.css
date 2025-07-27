@@ -79,6 +79,17 @@
   
   /* Force la hauteur minimale */
   min-height: 0;
+  
+  @media (max-width: 768px) {
+    /* Ajustement pour la bottom bar mobile plus haute */
+    height: calc(100vh - var(--header-height) - 80px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    height: calc(var(--vh-fallback) - var(--header-height) - 80px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    
+    /* Empêche le zoom de la page entière */
+    touch-action: pan-x pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+  }
 }
 
 /* ==================== LAYOUT PRINCIPAL ==================== */
@@ -377,6 +388,11 @@
     /* Force les dimensions exactes sur mobile */
     max-height: 100%;
     max-width: 100%;
+    
+    /* CRITIQUE : Empêche le zoom de la page entière */
+    touch-action: pan-x pan-y pinch-zoom;
+    -webkit-user-select: none;
+    user-select: none;
   }
 }
 
@@ -520,8 +536,14 @@
   }
   
   @media (max-width: 768px) {
-    padding-left: calc(12px + env(safe-area-inset-left));
-    padding-right: calc(12px + env(safe-area-inset-right));
+    /* Ajustements critiques pour mobile */
+    padding-left: calc(8px + env(safe-area-inset-left));
+    padding-right: calc(8px + env(safe-area-inset-right));
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    
+    /* Force la hauteur minimale pour être toujours visible */
+    min-height: 60px;
+    height: auto;
   }
 }
 
