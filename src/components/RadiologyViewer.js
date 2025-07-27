@@ -769,13 +769,14 @@ function RadiologyViewer() {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // Force les dimensions exactes sur mobile - SOLUTION BRUTALE
+  // Force les dimensions exactes sur mobile - SOLUTION CORRIGÉE
   useEffect(() => {
     if (isMobile) {
       // Fonction qui force les dimensions en continu
       const forceMobileDimensions = () => {
         const realHeight = window.innerHeight;
         const realWidth = window.innerWidth;
+        const isLandscape = realWidth > realHeight;
         
         // Sélectionne les éléments par leurs classes CSS modules
         const containers = document.querySelectorAll('[class*="container"]');
@@ -800,8 +801,9 @@ function RadiologyViewer() {
         
         contents.forEach(content => {
           if (content) {
-            const headerHeight = 60; // Fixe pour simplifier
-            const bottomBarHeight = 60; // Fixe pour simplifier
+            // Hauteurs adaptées selon l'orientation
+            const headerHeight = isLandscape ? 50 : 60; // Plus petit en paysage
+            const bottomBarHeight = isLandscape ? 45 : 55; // Plus petit en paysage
             const availableHeight = realHeight - headerHeight - bottomBarHeight;
             
             content.style.cssText = `
@@ -821,21 +823,41 @@ function RadiologyViewer() {
         
         bottomBars.forEach(bottomBar => {
           if (bottomBar) {
+            const bottomBarHeight = isLandscape ? 45 : 55;
             bottomBar.style.cssText = `
               position: absolute !important;
               bottom: 0px !important;
               left: 0px !important;
               right: 0px !important;
-              height: 60px !important;
+              height: ${bottomBarHeight}px !important;
               width: 100% !important;
               z-index: 1002 !important;
               display: flex !important;
               align-items: center !important;
               justify-content: space-between !important;
-              padding: 8px 12px !important;
+              padding: ${isLandscape ? '4px 8px' : '6px 10px'} !important;
               background: var(--header-background, #4f5b93) !important;
               color: white !important;
+              box-shadow: 0 -2px 8px rgba(0,0,0,0.15) !important;
             `;
+          }
+        });
+        
+        // CORRECTION : Ajuste aussi le header en paysage mobile
+        const headers = document.querySelectorAll('[class*="header"]');
+        headers.forEach(header => {
+          if (header && isLandscape) {
+            header.style.cssText = `
+              height: 50px !important;
+              min-height: 50px !important;
+              padding: 8px 16px !important;
+            `;
+            
+            // Ajuste le titre du header en paysage
+            const headerTitle = header.querySelector('[class*="header-title"]');
+            if (headerTitle) {
+              headerTitle.style.fontSize = '1.1rem !important';
+            }
           }
         });
       };
@@ -854,8 +876,8 @@ function RadiologyViewer() {
       window.addEventListener('resize', forceUpdate);
       window.addEventListener('orientationchange', forceUpdate);
       
-      // Force périodiquement (en cas de problème)
-      const interval = setInterval(forceMobileDimensions, 1000);
+      // Force périodiquement (réduit à 2s)
+      const interval = setInterval(forceMobileDimensions, 2000);
       
       // Empêche le scroll global
       document.body.style.cssText = `
@@ -901,6 +923,36 @@ function RadiologyViewer() {
           );
         }
       };
+    } else {
+      // CORRECTION DESKTOP : Reset les styles forcés
+      const containers = document.querySelectorAll('[class*="container"]');
+      const contents = document.querySelectorAll('[class*="content"]');
+      const bottomBars = document.querySelectorAll('[class*="bottomBar"]');
+      const headers = document.querySelectorAll('[class*="header"]');
+      
+      containers.forEach(container => {
+        if (container) {
+          container.style.cssText = ''; // Reset tous les styles forcés
+        }
+      });
+      
+      contents.forEach(content => {
+        if (content) {
+          content.style.cssText = ''; // Reset tous les styles forcés
+        }
+      });
+      
+      bottomBars.forEach(bottomBar => {
+        if (bottomBar) {
+          bottomBar.style.cssText = ''; // Reset tous les styles forcés
+        }
+      });
+      
+      headers.forEach(header => {
+        if (header) {
+          header.style.cssText = ''; // Reset tous les styles forcés
+        }
+      });
     }
   }, [isMobile]);
 

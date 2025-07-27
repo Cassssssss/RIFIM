@@ -59,7 +59,7 @@
   padding-right: env(safe-area-inset-right);
   
   @media (max-width: 768px) {
-    /* SOLUTION RADICALE : Force l'utilisation de TOUT l'écran mobile */
+    /* SOLUTION MOBILE : Force l'utilisation de TOUT l'écran mobile */
     height: 100vh;
     height: 100dvh;
     height: 100svh;
@@ -79,6 +79,17 @@
     /* S'assure qu'on prend tout l'écran */
     top: 0 !important;
     bottom: 0 !important;
+  }
+  
+  /* CORRECTION DESKTOP : Retour aux dimensions normales */
+  @media (min-width: 769px) {
+    /* Reset les styles forcés pour desktop */
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    top: auto;
+    left: auto;
+    padding: 0;
   }
 }
 
@@ -122,6 +133,15 @@
     overflow: hidden !important;
     max-height: none;
     min-height: 0;
+  }
+  
+  /* CORRECTION DESKTOP : Retour aux dimensions normales */
+  @media (min-width: 769px) {
+    /* Reset pour desktop */
+    height: calc(100vh - var(--header-height) - var(--bottom-bar-height));
+    margin-top: var(--header-height);
+    position: relative;
+    flex: 1;
   }
 }
 
@@ -595,6 +615,19 @@
       padding: 6px 10px;
       padding-bottom: calc(6px + env(safe-area-inset-bottom));
     }
+  }
+  
+  /* CORRECTION DESKTOP : Retour à position normale */
+  @media (min-width: 769px) {
+    /* Reset pour desktop */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: var(--bottom-bar-height);
+    padding: 0 24px;
+    z-index: 1000;
+    transform: none;
   }
 }
 
