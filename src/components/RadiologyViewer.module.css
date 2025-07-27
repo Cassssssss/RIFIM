@@ -9,7 +9,7 @@
   
   /* 🔧 CORRECTION : Espaces exacts pour éviter le rognage */
   --content-padding-top: 8px;
-  --content-padding-bottom: 12px;
+  --content-padding-bottom: 8px;
   --desktop-gap: 8px;
   --mobile-gap: 4px;
 }
@@ -63,8 +63,8 @@
   
   @media (max-width: 768px) {
     /* 🔧 CORRECTION MOBILE : Réduit la marge top et augmente la hauteur */
-    margin-top: calc(var(--header-height) - 20px); /* 🔧 +0px au lieu de +2px - supprime l'espace vide */
-    margin-bottom: calc(var(--bottom-bar-height) + 15px);
+    margin-top: calc(var(--header-height) - 26px); /* 🔧 +0px au lieu de +2px - supprime l'espace vide */
+    margin-bottom: calc(var(--bottom-bar-height) + 14px);
     
     /* Force les dimensions exactes sur mobile */
     height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 55px); /* 🔧 +25px au lieu de +20px - augmente le container */
@@ -177,7 +177,7 @@
     border-radius: 6px;
     margin-bottom: 2px;
     cursor: pointer;
-    border-width: 1px;
+    border-width: px;
     
     &:hover {
       transform: none;
@@ -240,7 +240,7 @@
   border-radius: 12px;
   
   @media (max-width: 768px) {
-    border-radius: 8px;
+    border-radius: 4px;
     
     /* 🔧 FORCE les dimensions exactes sur mobile */
     height: 100%;
@@ -312,7 +312,7 @@
   }
   
   @media (max-width: 768px) {
-    border-radius: 8px;
+    border-radius: 0px;
     border-width: 1px;
     
     &:hover {
@@ -433,7 +433,7 @@
   @media (max-width: 768px) {
     /* 🔧 REMONTE ENCORE PLUS LA BOTTOM BAR pour qu'elle soit visible */
     position: fixed;
-    bottom: 35px;
+    bottom: 31.5px;
     left: 0; /* 🔧 Supprime les marges latérales comme le header */
     right: 0;
     width: 100vw; /* 🔧 Pleine largeur comme le header */
