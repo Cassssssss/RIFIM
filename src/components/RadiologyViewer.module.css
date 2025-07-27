@@ -734,7 +734,7 @@
 @media (max-width: 1024px) and (orientation: landscape) {
   .container {
     /* 🔧 AJUSTE pour le mode paysage mobile */
-    top: 29.5px;
+    top: 32px;
     height: 100vh;
     height: 98dvh;
   }
@@ -803,7 +803,7 @@
   
   .bottomBar {
     /* 🔧 BOTTOM BAR PLUS COMPACTE EN PAYSAGE */
-    bottom: 5px;
+    bottom: 0px;
     height: calc(var(--bottom-bar-height) - 20px);
     min-height: 35px;
     padding: 3px 8px;
