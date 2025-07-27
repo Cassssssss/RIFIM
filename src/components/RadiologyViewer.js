@@ -37,128 +37,154 @@ const CollapsibleImageGallery = memo(({ folder, images, onImageClick, onDeleteIm
 
 // ==================== HOOK MOBILE VIEWPORT FIX ====================
 
-// ==================== HOOK MOBILE VIEWPORT FIX ULTRA-AGRESSIF ====================
+// ==================== HOOK MOBILE VIEWPORT FIX AMÉLIORÉ ====================
 
 const useMobileViewportFix = () => {
   const updateViewport = useCallback(() => {
+    // Détection mobile améliorée
     const isMobile = window.innerWidth <= 768 || 
                      'ontouchstart' in window || 
                      navigator.maxTouchPoints > 0;
     
     if (isMobile) {
-      // 1. FORCE les dimensions en JavaScript directement
-      const realHeight = window.innerHeight;
-      const realWidth = window.innerWidth;
+      // Calcul du viewport réel mobile
+      const windowHeight = window.innerHeight;
+      const windowWidth = window.innerWidth;
       
-      // 2. Trouve les éléments critiques
-      const container = document.querySelector('.container');
-      const content = document.querySelector('.content');
-      const bottomBar = document.querySelector('.bottomBar');
-      const header = document.querySelector('.header');
+      // Détection de l'interface du navigateur
+      const isPortrait = windowHeight > windowWidth;
+      const isLandscape = windowWidth > windowHeight;
       
-      if (container) {
-        // Force les dimensions du container
-        container.style.position = 'fixed';
-        container.style.top = '0px';
-        container.style.left = '0px';
-        container.style.width = `${realWidth}px`;
-        container.style.height = `${realHeight}px`;
-        container.style.overflow = 'hidden';
-        container.style.zIndex = '100';
+      // Estimation de la hauteur de l'interface navigateur
+      let browserUIHeight = 0;
+      if (isPortrait) {
+        // En portrait, plus d'interface navigateur
+        browserUIHeight = Math.max(0, window.screen.height - windowHeight - 100);
+      } else {
+        // En paysage, moins d'interface navigateur
+        browserUIHeight = Math.max(0, window.screen.width - windowWidth - 50);
       }
       
-      if (header) {
-        const headerHeight = header.getBoundingClientRect().height;
-        document.documentElement.style.setProperty('--header-height', `${headerHeight}px`);
-      }
+      // Hauteur réelle disponible
+      const realViewportHeight = windowHeight;
       
-      if (bottomBar) {
-        // Force la bottom bar en bas
-        const bottomBarHeight = 60; // Hauteur fixe
-        bottomBar.style.position = 'absolute';
-        bottomBar.style.bottom = '0px';
-        bottomBar.style.left = '0px';
-        bottomBar.style.right = '0px';
-        bottomBar.style.height = `${bottomBarHeight}px`;
-        bottomBar.style.zIndex = '1002';
-        bottomBar.style.background = 'var(--header-background, #4f5b93)';
-        
-        document.documentElement.style.setProperty('--bottom-bar-height', `${bottomBarHeight}px`);
-      }
-      
-      if (content) {
-        // Calculate available space for content
-        const headerHeight = header ? header.getBoundingClientRect().height : 60;
-        const bottomBarHeight = 60;
-        const availableHeight = realHeight - headerHeight - bottomBarHeight;
-        
-        // Force content dimensions
-        content.style.position = 'relative';
-        content.style.top = `${headerHeight}px`;
-        content.style.height = `${availableHeight}px`;
-        content.style.width = '100%';
-        content.style.overflow = 'hidden';
-        content.style.marginTop = '0';
-        content.style.marginBottom = '0';
-      }
-      
-      // 3. Update CSS variables
-      const vh = realHeight * 0.01;
+      // Fix pour la hauteur du viewport mobile
+      const vh = realViewportHeight * 0.01;
       document.documentElement.style.setProperty('--vh', `${vh}px`);
-      document.documentElement.style.setProperty('--real-vh', `${realHeight}px`);
-      document.documentElement.style.setProperty('--real-vw', `${realWidth}px`);
-      
-      console.log('🔧 FORCE Mobile Layout:', {
-        realHeight,
-        realWidth,
-        elements: {
-          container: !!container,
-          content: !!content,
-          bottomBar: !!bottomBar,
-          header: !!header
-        }
+      document.documentElement.style.setProperty('--real-vh', `${realViewportHeight}px`);
+      document.documentElement.style.setProperty('--browser-ui-height', `${browserUIHeight}px`);
+    } else {
+      // Desktop : utilise les valeurs standard
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+      document.documentElement.style.setProperty('--real-vh', '100vh');
+      document.documentElement.style.setProperty('--browser-ui-height', '0px');
+    }
+    
+    // Détection des éléments du layout
+    const header = document.querySelector('header') || 
+                   document.querySelector('.header') || 
+                   document.querySelector('[data-header]');
+    const bottomBar = document.querySelector('.bottomBar') || 
+                      document.querySelector('.bottom-bar');
+
+    let headerHeight = 60; // Valeur par défaut
+    let bottomBarHeight = 50; // Valeur par défaut
+
+    if (header) {
+      headerHeight = header.getBoundingClientRect().height;
+    }
+    if (bottomBar) {
+      bottomBarHeight = bottomBar.getBoundingClientRect().height;
+    }
+
+    // Ajustements mobile
+    if (isMobile) {
+      // Ajuste la hauteur de la bottom bar selon l'orientation
+      const isLandscape = window.innerWidth > window.innerHeight;
+      bottomBarHeight = isLandscape ? 50 : 60;
+    }
+
+    // Safe areas pour iPhone X+
+    const safeAreaTop = parseInt(getComputedStyle(document.documentElement)
+      .getPropertyValue('env(safe-area-inset-top)') || '0');
+    const safeAreaBottom = parseInt(getComputedStyle(document.documentElement)
+      .getPropertyValue('env(safe-area-inset-bottom)') || '0');
+
+    // Mise à jour des variables CSS
+    const root = document.documentElement;
+    root.style.setProperty('--header-height', `${headerHeight}px`);
+    root.style.setProperty('--bottom-bar-height', `${bottomBarHeight}px`);
+    root.style.setProperty('--safe-area-top', `${safeAreaTop}px`);
+    root.style.setProperty('--safe-area-bottom', `${safeAreaBottom}px`);
+    root.style.setProperty('--is-mobile', isMobile ? '1' : '0');
+
+    // Debug en mode développement
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📱 Mobile Viewport Updated:', {
+        viewport: { width: window.innerWidth, height: window.innerHeight },
+        screen: { width: window.screen.width, height: window.screen.height },
+        realViewportHeight: isMobile ? parseInt(root.style.getPropertyValue('--real-vh')) : window.innerHeight,
+        browserUIHeight,
+        headerHeight,
+        bottomBarHeight,
+        safeAreas: { top: safeAreaTop, bottom: safeAreaBottom },
+        isMobile,
+        orientation: isMobile ? (window.innerWidth > window.innerHeight ? 'landscape' : 'portrait') : 'desktop'
       });
     }
   }, []);
 
+  // Gestion des changements d'orientation et de redimensionnement
   useEffect(() => {
     updateViewport();
 
     const handleResize = () => {
-      // Force immediate update
-      updateViewport();
-      // Also after animation
-      setTimeout(updateViewport, 100);
+      // Délai pour attendre que le navigateur mobile termine son animation
+      setTimeout(updateViewport, 150);
     };
 
     const handleOrientationChange = () => {
-      // Multiple updates for orientation change
-      setTimeout(updateViewport, 100);
-      setTimeout(updateViewport, 300);
+      // Délai plus long pour l'orientation mobile
       setTimeout(updateViewport, 500);
-      setTimeout(updateViewport, 1000);
     };
 
+    // Détection spéciale pour les changements de viewport mobile
+    const handleVisualViewportChange = () => {
+      if (window.visualViewport) {
+        setTimeout(updateViewport, 100);
+      }
+    };
+
+    // Écouteurs d'événements
     window.addEventListener('resize', handleResize);
     window.addEventListener('orientationchange', handleOrientationChange);
     
-    // Visual Viewport API if available
+    // Visual Viewport API pour les navigateurs qui le supportent
     if (window.visualViewport) {
-      const handleVisualViewportChange = () => {
-        setTimeout(updateViewport, 50);
-      };
       window.visualViewport.addEventListener('resize', handleVisualViewportChange);
-      
-      return () => {
-        window.removeEventListener('resize', handleResize);
-        window.removeEventListener('orientationchange', handleOrientationChange);
-        window.visualViewport.removeEventListener('resize', handleVisualViewportChange);
-      };
     }
+    
+    // Observer pour détecter les changements DOM
+    const observer = new MutationObserver(() => {
+      setTimeout(updateViewport, 50);
+    });
+    
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['style', 'class']
+    });
 
+    // Nettoyage
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleOrientationChange);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleVisualViewportChange);
+      }
+      observer.disconnect();
     };
   }, [updateViewport]);
 
@@ -769,116 +795,30 @@ function RadiologyViewer() {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // Force les dimensions exactes sur mobile - SOLUTION BRUTALE
+  // Empêche le scroll du body sur mobile et zoom de page
   useEffect(() => {
     if (isMobile) {
-      // Fonction qui force les dimensions en continu
-      const forceMobileDimensions = () => {
-        const realHeight = window.innerHeight;
-        const realWidth = window.innerWidth;
-        
-        // Sélectionne les éléments par leurs classes CSS modules
-        const containers = document.querySelectorAll('[class*="container"]');
-        const contents = document.querySelectorAll('[class*="content"]');
-        const bottomBars = document.querySelectorAll('[class*="bottomBar"]');
-        
-        containers.forEach(container => {
-          if (container) {
-            container.style.cssText = `
-              position: fixed !important;
-              top: 0px !important;
-              left: 0px !important;
-              width: ${realWidth}px !important;
-              height: ${realHeight}px !important;
-              overflow: hidden !important;
-              z-index: 100 !important;
-              margin: 0 !important;
-              padding: 0 !important;
-            `;
-          }
-        });
-        
-        contents.forEach(content => {
-          if (content) {
-            const headerHeight = 60; // Fixe pour simplifier
-            const bottomBarHeight = 60; // Fixe pour simplifier
-            const availableHeight = realHeight - headerHeight - bottomBarHeight;
-            
-            content.style.cssText = `
-              position: relative !important;
-              top: ${headerHeight}px !important;
-              height: ${availableHeight}px !important;
-              width: 100% !important;
-              overflow: hidden !important;
-              margin: 0 !important;
-              padding: 0 !important;
-              flex: 1 !important;
-              display: flex !important;
-              flex-direction: column !important;
-            `;
-          }
-        });
-        
-        bottomBars.forEach(bottomBar => {
-          if (bottomBar) {
-            bottomBar.style.cssText = `
-              position: absolute !important;
-              bottom: 0px !important;
-              left: 0px !important;
-              right: 0px !important;
-              height: 60px !important;
-              width: 100% !important;
-              z-index: 1002 !important;
-              display: flex !important;
-              align-items: center !important;
-              justify-content: space-between !important;
-              padding: 8px 12px !important;
-              background: var(--header-background, #4f5b93) !important;
-              color: white !important;
-            `;
-          }
-        });
-      };
+      // SOLUTION RADICALE pour mobile
       
-      // Force initial
-      forceMobileDimensions();
+      // 1. Empêche tout scroll et zoom du body/html
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100vw';
+      document.body.style.height = '100vh';
+      document.body.style.top = '0';
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.bottom = '0';
+      document.body.style.touchAction = 'none'; // Empêche TOUS les gestes par défaut
       
-      // Force à chaque resize/orientation
-      const forceUpdate = () => {
-        forceMobileDimensions();
-        setTimeout(forceMobileDimensions, 50);
-        setTimeout(forceMobileDimensions, 150);
-        setTimeout(forceMobileDimensions, 300);
-      };
+      document.documentElement.style.overflow = 'hidden';
+      document.documentElement.style.height = '100vh';
+      document.documentElement.style.width = '100vw';
+      document.documentElement.style.position = 'fixed';
+      document.documentElement.style.top = '0';
+      document.documentElement.style.left = '0';
       
-      window.addEventListener('resize', forceUpdate);
-      window.addEventListener('orientationchange', forceUpdate);
-      
-      // Force périodiquement (en cas de problème)
-      const interval = setInterval(forceMobileDimensions, 1000);
-      
-      // Empêche le scroll global
-      document.body.style.cssText = `
-        overflow: hidden !important;
-        position: fixed !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        top: 0 !important;
-        left: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        touch-action: none !important;
-      `;
-      
-      document.documentElement.style.cssText = `
-        overflow: hidden !important;
-        height: 100vh !important;
-        width: 100vw !important;
-        margin: 0 !important;
-        padding: 0 !important;
-      `;
-      
-      // Viewport meta agressif
+      // 2. Force le viewport à ne jamais changer
       let viewportMeta = document.querySelector('meta[name="viewport"]');
       if (viewportMeta) {
         viewportMeta.setAttribute('content', 
@@ -886,15 +826,76 @@ function RadiologyViewer() {
         );
       }
       
+      // 3. Empêche le scroll de window
+      const preventScroll = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        window.scrollTo(0, 0);
+        return false;
+      };
+      
+      const preventTouchMove = (e) => {
+        // Autorise seulement les gestes sur les viewers d'images
+        const target = e.target.closest('.viewer, .mainViewer, .folderGrid');
+        if (!target) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      };
+      
+      // 4. Event listeners pour empêcher les interactions indésirables
+      window.addEventListener('scroll', preventScroll, { passive: false });
+      window.addEventListener('touchmove', preventTouchMove, { passive: false });
+      window.addEventListener('wheel', (e) => {
+        const target = e.target.closest('.viewer, .mainViewer');
+        if (!target) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+      
+      // 5. Force le recalcul du viewport régulièrement
+      const forceViewportUpdate = () => {
+        updateViewport();
+        // Force un recalcul après les animations du navigateur
+        requestAnimationFrame(() => {
+          updateViewport();
+        });
+      };
+      
+      window.addEventListener('resize', forceViewportUpdate);
+      window.addEventListener('orientationchange', () => {
+        setTimeout(forceViewportUpdate, 100);
+        setTimeout(forceViewportUpdate, 300);
+        setTimeout(forceViewportUpdate, 600);
+      });
+      
+      // 6. Initial viewport update
+      forceViewportUpdate();
+      
       return () => {
-        clearInterval(interval);
-        window.removeEventListener('resize', forceUpdate);
-        window.removeEventListener('orientationchange', forceUpdate);
+        // Nettoyage
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+        document.body.style.height = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
+        document.body.style.bottom = '';
+        document.body.style.touchAction = '';
         
-        // Reset styles
-        document.body.style.cssText = '';
-        document.documentElement.style.cssText = '';
+        document.documentElement.style.overflow = '';
+        document.documentElement.style.height = '';
+        document.documentElement.style.width = '';
+        document.documentElement.style.position = '';
+        document.documentElement.style.top = '';
+        document.documentElement.style.left = '';
         
+        window.removeEventListener('scroll', preventScroll);
+        window.removeEventListener('touchmove', preventTouchMove);
+        window.removeEventListener('resize', forceViewportUpdate);
+        
+        // Restaure le viewport original
         if (viewportMeta) {
           viewportMeta.setAttribute('content', 
             'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover'
@@ -902,7 +903,7 @@ function RadiologyViewer() {
         }
       };
     }
-  }, [isMobile]);
+  }, [isMobile, updateViewport]);
 
   // Force les bonnes dimensions sur mobile
   useEffect(() => {
