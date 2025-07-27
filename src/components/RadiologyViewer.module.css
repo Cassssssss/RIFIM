@@ -36,6 +36,8 @@
   touch-action: none;
   
   @media (max-width: 768px) {
+    /* 🔧 MODIFICATION : Valeur spécifique pour mobile uniquement */
+    top: -0px;  /* Ici vous pouvez modifier uniquement pour mobile */
     height: 100vh;
     height: 100dvh;
     /* Force le no-scroll absolu sur mobile */
@@ -63,7 +65,7 @@
   
   @media (max-width: 768px) {
     /* 🔧 CORRECTION MOBILE : Réduit la marge top et augmente la hauteur */
-    margin-top: calc(var(--header-height) - 26px); /* 🔧 +0px au lieu de +2px - supprime l'espace vide */
+    margin-top: calc(var(--header-height) - 35px); /* 🔧 +0px au lieu de +2px - supprime l'espace vide */
     margin-bottom: calc(var(--bottom-bar-height) + 14px);
     
     /* Force les dimensions exactes sur mobile */
