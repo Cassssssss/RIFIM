@@ -734,9 +734,9 @@
 @media (max-width: 1024px) and (orientation: landscape) {
   .container {
     /* 🔧 AJUSTE pour le mode paysage mobile */
-    top: 0px;
+    top: 29.5px;
     height: 100vh;
-    height: 100dvh;
+    height: 98dvh;
   }
   
   .content {
