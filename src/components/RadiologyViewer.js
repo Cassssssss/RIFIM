@@ -769,73 +769,37 @@ function RadiologyViewer() {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // SOLUTION ULTRA-SIMPLE : Force juste les bonnes hauteurs sur mobile
+  // SOLUTION SIMPLE : Juste empêcher le scroll sur mobile
   useEffect(() => {
     if (isMobile) {
-      const updateMobileDimensions = () => {
-        const realHeight = window.innerHeight;
-        const realWidth = window.innerWidth;
-        const isLandscape = realWidth > realHeight;
-        
-        // Find the elements by class name (not CSS modules)
-        const container = document.querySelector('.container');
-        const content = document.querySelector('.content');
-        const bottomBar = document.querySelector('.bottomBar');
-        
-        // Simplified: just set the key dimensions
-        if (container) {
-          container.style.height = `${realHeight}px`;
-          container.style.width = `${realWidth}px`;
-        }
-        
-        if (content && bottomBar) {
-          const headerHeight = isLandscape ? 50 : 60;
-          const bottomBarHeight = isLandscape ? 45 : 55;
-          const contentHeight = realHeight - headerHeight - bottomBarHeight;
-          
-          content.style.height = `${contentHeight}px`;
-          content.style.marginTop = `${headerHeight}px`;
-          
-          bottomBar.style.height = `${bottomBarHeight}px`;
-        }
-        
-        console.log('📱 Mobile dimensions updated:', {
-          realHeight,
-          realWidth,
-          isLandscape,
-          elements: { container: !!container, content: !!content, bottomBar: !!bottomBar }
-        });
-      };
-      
-      // Initial update
-      updateMobileDimensions();
-      
-      // Update on resize/orientation change
-      const handleUpdate = () => {
-        setTimeout(updateMobileDimensions, 100);
-        setTimeout(updateMobileDimensions, 300);
-      };
-      
-      window.addEventListener('resize', handleUpdate);
-      window.addEventListener('orientationchange', handleUpdate);
-      
-      // Prevent page scroll/zoom
+      // Empêche le scroll du body
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
       document.body.style.width = '100%';
       document.body.style.height = '100%';
       document.body.style.touchAction = 'none';
       
+      // Viewport meta
+      let viewportMeta = document.querySelector('meta[name="viewport"]');
+      if (viewportMeta) {
+        viewportMeta.setAttribute('content', 
+          'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover'
+        );
+      }
+      
       return () => {
-        window.removeEventListener('resize', handleUpdate);
-        window.removeEventListener('orientationchange', handleUpdate);
-        
         // Reset
         document.body.style.overflow = '';
         document.body.style.position = '';
         document.body.style.width = '';
         document.body.style.height = '';
         document.body.style.touchAction = '';
+        
+        if (viewportMeta) {
+          viewportMeta.setAttribute('content', 
+            'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover'
+          );
+        }
       };
     }
   }, [isMobile]);

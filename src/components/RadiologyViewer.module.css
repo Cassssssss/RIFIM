@@ -1,90 +1,57 @@
-/* ==================== VARIABLES CSS DYNAMIQUES AMÉLIORÉES ==================== */
+/* ==================== VARIABLES CSS DYNAMIQUES SIMPLES ==================== */
 :root {
   --header-height: 60px;
   --bottom-bar-height: 50px;
   --safe-area-top: 0px;
   --safe-area-bottom: 0px;
   
-  /* Nouvelles variables pour mobile */
+  /* Variables pour mobile viewport */
   --mobile-padding: 4px;
   --mobile-gap: 4px;
   --desktop-padding: 8px;
   --desktop-gap: 8px;
-  
-  /* Variables pour le viewport réel mobile */
-  --real-vh: 100vh;
-  --browser-ui-height: 0px;
 }
 
-/* Support des unités de viewport dynamiques pour mobile */
-@supports (height: 100dvh) {
-  :root {
-    --real-vh: 100dvh;
-  }
-}
-
-@supports (height: 100svh) {
-  :root {
-    --real-vh: 100svh;
-  }
-}
-
-/* ==================== CONTAINER PRINCIPAL FIXE POUR DESKTOP ET MOBILE ==================== */
+/* ==================== CONTAINER PRINCIPAL SIMPLE ==================== */
 .container {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  height: 100dvh;
   
-  /* Structure en flex pour contrôler parfaitement l'espace */
   display: flex;
   flex-direction: column;
   
   background: linear-gradient(135deg, rgb(var(--color-background)) 0%, rgb(var(--color-surface)) 100%);
   color: rgb(var(--color-text));
   z-index: 100;
-  
-  /* Empêche tout débordement */
   overflow: hidden;
-  
-  /* Optimisations de performance */
-  will-change: auto;
-  contain: layout style;
-  
-  /* Safe areas pour iPhone */
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
-  
-  @media (max-width: 768px) {
-    /* Mobile : ignore les safe areas temporairement */
-    padding: 0;
-  }
+  margin: 0;
+  padding: 0;
 }
 
-/* ==================== CONTENT AVEC FLEX INTELLIGENT ==================== */
+/* ==================== CONTENT SIMPLE ==================== */
 .content {
-  /* Utilise flex pour prendre l'espace disponible */
   flex: 1;
   display: flex;
   flex-direction: column;
-  
   background-color: rgb(var(--color-background));
   overflow: hidden;
+  margin-top: var(--header-height);
+  margin-bottom: var(--bottom-bar-height);
   padding: 0;
-  margin: 0;
-  
-  /* Force la hauteur minimale */
-  min-height: 0;
-  
-  /* Position après le header */
-  order: 2;
   
   @media (max-width: 768px) {
-    /* Mobile : empêche le zoom de la page entière */
+    /* Sur mobile, ajuste selon l'orientation */
+    margin-top: 60px;
+    margin-bottom: 55px;
+    
+    @media (orientation: landscape) {
+      margin-top: 50px;
+      margin-bottom: 45px;
+    }
+    
     touch-action: pan-x pan-y;
     user-select: none;
     -webkit-user-select: none;
@@ -500,14 +467,13 @@
   }
 }
 
-/* ==================== BOTTOM BAR ABSOLUE DANS LE CONTAINER ==================== */
+/* ==================== BOTTOM BAR FIXE ==================== */
 .bottomBar {
-  /* Position absolue dans le container fixe */
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: var(--bottom-bar-height);
   
   background: var(--header-background, #4f5b93);
   color: var(--header-text, #ffffff);
@@ -515,7 +481,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  z-index: 1002;
+  z-index: 1001;
   
   box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -523,11 +489,6 @@
   
   padding: 0 24px;
   padding-bottom: env(safe-area-inset-bottom);
-  padding-left: calc(24px + env(safe-area-inset-left));
-  padding-right: calc(24px + env(safe-area-inset-right));
-  
-  /* Order pour être en bas */
-  order: 3;
   
   & > div:last-child {
     display: flex;
@@ -537,7 +498,6 @@
   }
   
   @media (max-width: 768px) {
-    /* Mobile : hauteur adaptée selon orientation */
     height: 55px;
     padding: 8px 12px;
     padding-bottom: calc(8px + env(safe-area-inset-bottom));
