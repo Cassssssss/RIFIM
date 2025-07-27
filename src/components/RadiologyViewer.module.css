@@ -63,7 +63,7 @@
   
   @media (max-width: 768px) {
     /* 🔧 CORRECTION MOBILE : Réduit les marges pour que tout rentre */
-    margin-top: calc(var(--header-height) + 4px);
+    margin-top: calc(var(--header-height) + 8px);
     margin-bottom: calc(var(--bottom-bar-height) + 4px);
     
     /* Force les dimensions exactes sur mobile */
