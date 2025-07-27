@@ -8,7 +8,7 @@
   --safe-area-right: env(safe-area-inset-right, 0px);
   
   /* 🔧 CORRECTION : Espaces exacts pour éviter le rognage */
-  --content-padding-top: 15px;
+  --content-padding-top: 8px;
   --content-padding-bottom: 8px;
   --desktop-gap: 8px;
   --mobile-gap: 4px;
@@ -62,13 +62,13 @@
   padding: 0;
   
   @media (max-width: 768px) {
-    /* 🔧 CORRECTION MOBILE : Marges ultra-réduites pour que tout rentre */
+    /* 🔧 CORRECTION MOBILE : Marges ultra-réduites + remonte plus le content */
     margin-top: calc(var(--header-height) + 2px);
-    margin-bottom: calc(var(--bottom-bar-height) - 15px);
+    margin-bottom: calc(var(--bottom-bar-height) - 25px); /* 🔧 -25px au lieu de -15px */
     
     /* Force les dimensions exactes sur mobile */
-    height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 10px);
-    max-height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 10px);
+    height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 20px); /* 🔧 +20px au lieu de +10px */
+    max-height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 20px);
     flex-shrink: 0;
   }
 }
@@ -431,9 +431,9 @@
   }
   
   @media (max-width: 768px) {
-    /* 🔧 REMONTE LA BOTTOM BAR pour qu'elle soit visible */
+    /* 🔧 REMONTE ENCORE PLUS LA BOTTOM BAR pour qu'elle soit visible */
     position: fixed;
-    bottom: 20px; /* 🔧 Remonte de 20px au lieu de 0 */
+    bottom: 35px; /* 🔧 35px au lieu de 20px - remonte de 15px supplémentaires */
     left: 8px;
     right: 8px;
     width: auto; /* 🔧 Permet les marges latérales */
