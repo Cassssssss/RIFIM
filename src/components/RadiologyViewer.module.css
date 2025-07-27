@@ -62,13 +62,13 @@
   padding: 0;
   
   @media (max-width: 768px) {
-    /* 🔧 CORRECTION MOBILE : Marges ultra-réduites + remonte plus le content */
-    margin-top: calc(var(--header-height) + 2px);
-    margin-bottom: calc(var(--bottom-bar-height) - 25px); /* 🔧 -25px au lieu de -15px */
+    /* 🔧 CORRECTION MOBILE : Réduit la marge top et augmente la hauteur */
+    margin-top: calc(var(--header-height) + 0px); /* 🔧 +0px au lieu de +2px - supprime l'espace vide */
+    margin-bottom: calc(var(--bottom-bar-height) - 25px);
     
     /* Force les dimensions exactes sur mobile */
-    height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 20px); /* 🔧 +20px au lieu de +10px */
-    max-height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 20px);
+    height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 25px); /* 🔧 +25px au lieu de +20px - augmente le container */
+    max-height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 25px);
     flex-shrink: 0;
   }
 }
@@ -433,25 +433,25 @@
   @media (max-width: 768px) {
     /* 🔧 REMONTE ENCORE PLUS LA BOTTOM BAR pour qu'elle soit visible */
     position: fixed;
-    bottom: 35px; /* 🔧 35px au lieu de 20px - remonte de 15px supplémentaires */
-    left: 8px;
-    right: 8px;
-    width: auto; /* 🔧 Permet les marges latérales */
+    bottom: 35px;
+    left: 0; /* 🔧 Supprime les marges latérales comme le header */
+    right: 0;
+    width: 100vw; /* 🔧 Pleine largeur comme le header */
     
-    /* 🔧 HAUTEUR ET STYLE COMPACT */
+    /* 🔧 HAUTEUR ET STYLE COMME LE HEADER */
     height: calc(var(--bottom-bar-height) - 15px);
     min-height: 45px;
-    border-radius: 12px; /* 🔧 Arrondi pour effet flottant */
+    border-radius: 0; /* 🔧 Supprime les bords ronds - forme comme le header */
     
     padding: 6px 10px;
-    padding-bottom: 6px; /* 🔧 Supprime le safe-area-bottom */
+    padding-bottom: 6px;
     padding-left: 10px;
     padding-right: 10px;
     
     z-index: 1002;
     
-    /* 🔧 Ombre plus marquée pour l'effet flottant */
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    /* 🔧 Ombre plus subtile comme le header */
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15);
     
     & > div:last-child {
       gap: 4px;
