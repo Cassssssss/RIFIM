@@ -8,8 +8,8 @@
   --safe-area-right: env(safe-area-inset-right, 0px);
   
   /* 🔧 CORRECTION : Espaces exacts pour éviter le rognage */
-  --content-padding-top: 12px;
-  --content-padding-bottom: 8px;
+  --content-padding-top: 8px;
+  --content-padding-bottom: 12px;
   --desktop-gap: 8px;
   --mobile-gap: 4px;
 }
