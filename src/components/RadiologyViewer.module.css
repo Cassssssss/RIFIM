@@ -17,7 +17,7 @@
 /* ==================== CONTAINER PRINCIPAL - FIXE ET STABLE ==================== */
 .container {
   position: fixed;
-  top: 0;
+  top: 10px;
   left: 0;
   width: 100vw;
   height: 100vh;
@@ -711,7 +711,7 @@
   &::before {
     content: '💡';
     margin-right: 8px;
-    font-size: 18px;
+    font-size: 8px;
   }
   
   @media (max-width: 768px) {
