@@ -8,7 +8,7 @@
   --safe-area-right: env(safe-area-inset-right, 0px);
   
   /* 🔧 CORRECTION : Espaces exacts pour éviter le rognage */
-  --content-padding-top: 12px;
+  --content-padding-top: 15px;
   --content-padding-bottom: 8px;
   --desktop-gap: 8px;
   --mobile-gap: 4px;
@@ -44,7 +44,7 @@
   }
 }
 
-/* ==================== CONTENT - DIMENSIONS PRÉCISES ==================== */
+/* ==================== CONTENT - DIMENSIONS RÉDUITES MOBILE ==================== */
 .content {
   /* 🔧 CORRECTION : Espace exact entre header et bottom bar avec padding */
   flex: 1;
@@ -62,13 +62,13 @@
   padding: 0;
   
   @media (max-width: 768px) {
-    /* 🔧 CORRECTION MOBILE : Réduit les marges pour que tout rentre */
-    margin-top: calc(var(--header-height) + 15px);
-    margin-bottom: calc(var(--bottom-bar-height) + 4px);
+    /* 🔧 CORRECTION MOBILE : Marges ultra-réduites pour que tout rentre */
+    margin-top: calc(var(--header-height) + 2px);
+    margin-bottom: calc(var(--bottom-bar-height) - 15px);
     
     /* Force les dimensions exactes sur mobile */
-    height: calc(100vh - var(--header-height) - var(--bottom-bar-height) - 8px);
-    max-height: calc(100vh - var(--header-height) - var(--bottom-bar-height) - 8px);
+    height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 10px);
+    max-height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 10px);
     flex-shrink: 0;
   }
 }
@@ -396,7 +396,7 @@
   }
 }
 
-/* ==================== BOTTOM BAR - POSITION STABLE ==================== */
+/* ==================== BOTTOM BAR - POSITION PLUS HAUTE SUR MOBILE ==================== */
 .bottomBar {
   position: fixed;
   bottom: 0;
@@ -431,22 +431,27 @@
   }
   
   @media (max-width: 768px) {
-    /* 🔧 RESTE EN POSITION FIXE sur mobile */
+    /* 🔧 REMONTE LA BOTTOM BAR pour qu'elle soit visible */
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: 20px; /* 🔧 Remonte de 20px au lieu de 0 */
+    left: 8px;
+    right: 8px;
+    width: auto; /* 🔧 Permet les marges latérales */
     
-    /* 🔧 HAUTEUR RÉDUITE sur mobile pour que tout rentre */
-    height: calc(var(--bottom-bar-height) - 10px);
-    min-height: 50px;
+    /* 🔧 HAUTEUR ET STYLE COMPACT */
+    height: calc(var(--bottom-bar-height) - 15px);
+    min-height: 45px;
+    border-radius: 12px; /* 🔧 Arrondi pour effet flottant */
     
     padding: 6px 10px;
-    padding-bottom: calc(6px + var(--safe-area-bottom));
-    padding-left: calc(10px + var(--safe-area-left));
-    padding-right: calc(10px + var(--safe-area-right));
+    padding-bottom: 6px; /* 🔧 Supprime le safe-area-bottom */
+    padding-left: 10px;
+    padding-right: 10px;
     
     z-index: 1002;
+    
+    /* 🔧 Ombre plus marquée pour l'effet flottant */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
     
     & > div:last-child {
       gap: 4px;
@@ -595,6 +600,8 @@
     left: -220px;
     padding: 14px;
     border-radius: 8px;
+    /* 🔧 AJUSTE pour la bottom bar flottante */
+    bottom: calc(var(--bottom-bar-height) + 30px);
   }
 }
 
@@ -656,7 +663,7 @@
   font-weight: 600;
 }
 
-/* ==================== RESPONSE BOX ==================== */
+/* ==================== RESPONSE BOX - AJUSTÉE POUR BOTTOM BAR FLOTTANTE ==================== */
 .responseBox {
   position: fixed;
   bottom: calc(var(--bottom-bar-height) + 20px + var(--safe-area-bottom));
@@ -684,8 +691,10 @@
   }
   
   @media (max-width: 768px) {
+    /* 🔧 AJUSTE pour la bottom bar flottante */
     right: calc(10px + var(--safe-area-right));
     left: calc(10px + var(--safe-area-left));
+    bottom: calc(var(--bottom-bar-height) + 50px); /* 🔧 Plus haut car bottom bar remontée */
     max-width: none;
     padding: 14px;
     border-radius: 8px;
