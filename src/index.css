@@ -14,12 +14,33 @@
   --color-text: 31 41 55;
   --color-border: 229 231 235;
   
-  /* Variables pour mobile viewport */
+  /* 🔧 CORRECTION : Variables pour mobile viewport ULTRA PRÉCISES */
   --vh: 1vh;
+  --real-vh: 100vh;
   --mobile-safe-top: env(safe-area-inset-top);
   --mobile-safe-bottom: env(safe-area-inset-bottom);
   --mobile-safe-left: env(safe-area-inset-left);
   --mobile-safe-right: env(safe-area-inset-right);
+  
+  /* 🔧 AJOUT : Variables pour les hauteurs de header et bottom bar */
+  --header-height: 60px;
+  --bottom-bar-height: 60px;
+  --content-height: calc(100vh - var(--header-height) - var(--bottom-bar-height));
+}
+
+/* 🔧 CORRECTION : Support dynamique viewport mobile */
+@supports (height: 100dvh) {
+  :root {
+    --real-vh: 100dvh;
+    --content-height: calc(100dvh - var(--header-height) - var(--bottom-bar-height));
+  }
+}
+
+@supports (height: 100svh) {
+  :root {
+    --real-vh: 100svh;
+    --content-height: calc(100svh - var(--header-height) - var(--bottom-bar-height));
+  }
 }
 
 .dark {
@@ -32,12 +53,12 @@
   --color-border: 75 85 99;
 }
 
-/* ==================== BASE MOBILE-FIRST ==================== */
+/* ==================== BASE MOBILE-FIRST ULTRA OPTIMISÉ ==================== */
 
 html {
-  /* Support du viewport dynamique mobile */
+  /* 🔧 CORRECTION : Support du viewport dynamique mobile ULTRA précis */
   height: 100vh;
-  height: 100dvh;
+  height: var(--real-vh);
   margin: 0;
   padding: 0;
   scroll-behavior: smooth;
@@ -47,6 +68,11 @@ html {
   -ms-text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  
+  /* 🔧 AJOUT : Support iOS Safari */
+  @supports (-webkit-appearance: none) {
+    height: -webkit-fill-available;
+  }
 }
 
 body {
@@ -54,10 +80,10 @@ body {
   margin: 0;
   padding: 0;
   height: 100vh;
-  height: 100dvh;
+  height: var(--real-vh);
   @apply bg-background text-text;
   
-  /* Optimisations mobiles */
+  /* 🔧 CORRECTION : Optimisations mobiles ULTRA précises */
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
   touch-action: manipulation;
@@ -65,6 +91,19 @@ body {
   /* Support des safe areas iPhone */
   padding-left: var(--mobile-safe-left);
   padding-right: var(--mobile-safe-right);
+  
+  /* 🔧 AJOUT : Support iOS Safari */
+  @supports (-webkit-appearance: none) {
+    height: -webkit-fill-available;
+  }
+  
+  /* 🔧 CORRECTION : Classe pour empêcher le scroll quand le menu mobile est ouvert */
+  &.menu-open {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
 }
 
 #root {
@@ -74,19 +113,30 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  min-height: 100dvh;
+  min-height: var(--real-vh);
+  
+  /* 🔧 AJOUT : Support iOS Safari */
+  @supports (-webkit-appearance: none) {
+    min-height: -webkit-fill-available;
+  }
 }
 
 .font-report {
   font-family: 'Lato', 'Calibri', 'Arial', sans-serif;
 }
 
-/* ==================== COMPONENTS RESPONSIVE ==================== */
+/* ==================== COMPONENTS RESPONSIVE ULTRA OPTIMISÉS ==================== */
 
 @layer components {
   .container {
     @apply w-full mx-auto px-4 sm:px-6 lg:px-8;
     max-width: 100%;
+    
+    /* 🔧 CORRECTION : Padding mobile ultra-compact */
+    @media (max-width: 768px) {
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
   }
 
   .card {
@@ -181,13 +231,13 @@ body {
   }
 }
 
-/* ==================== MOBILE RESPONSIVE STYLES (après @layer components) ==================== */
+/* ==================== MOBILE RESPONSIVE STYLES ULTRA OPTIMISÉS ==================== */
 
-/* Container mobile */
+/* Container mobile ultra-compact */
 @media (max-width: 768px) {
   .container {
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
 }
 
@@ -203,7 +253,7 @@ body {
   }
 }
 
-/* Button mobile */
+/* Button mobile ultra-optimisé */
 @media (max-width: 768px) {
   .btn {
     padding: 0.75rem 1rem;
@@ -232,7 +282,7 @@ body {
   }
 }
 
-/* Input mobile */
+/* Input mobile ultra-optimisé */
 @media (max-width: 768px) {
   .input {
     padding: 0.75rem;
@@ -256,7 +306,7 @@ body {
   }
 }
 
-/* Question card mobile */
+/* Question card mobile ultra-optimisé */
 @media (max-width: 768px) {
   .question-card {
     padding: 1rem;
@@ -271,7 +321,7 @@ body {
   }
 }
 
-/* Option card mobile */
+/* Option card mobile ultra-optimisé */
 @media (max-width: 768px) {
   .option-card {
     padding: 0.75rem;
@@ -307,7 +357,7 @@ body {
   }
 }
 
-/* Header mobile */
+/* 🔧 CORRECTION MAJEURE : Header mobile PARFAITEMENT CALCULÉ */
 @media (max-width: 768px) {
   .header {
     position: fixed;
@@ -315,10 +365,13 @@ body {
     top: 0;
     left: 0;
     right: 0;
+    height: var(--header-height);
+    z-index: 999998;
   }
   
   .header-content {
     padding: 0.75rem 1rem;
+    height: 100%;
   }
   
   .header-title {
@@ -486,10 +539,10 @@ p {
   }
 }
 
-/* ==================== VIEWPORT MOBILE FIXES ==================== */
+/* ==================== VIEWPORT MOBILE FIXES ULTRA PRÉCIS ==================== */
 
 @media (max-width: 768px) {
-  /* Fix pour Safari iOS */
+  /* 🔧 CORRECTION : Fix pour Safari iOS ULTRA précis */
   @supports (-webkit-appearance: none) {
     html {
       height: -webkit-fill-available;
@@ -501,14 +554,23 @@ p {
     
     #root {
       min-height: -webkit-fill-available;
+      height: -webkit-fill-available;
     }
   }
   
-  /* Support des unités dvh sur les navigateurs compatibles */
+  /* 🔧 CORRECTION : Support des unités dvh ULTRA précis */
   @supports (height: 100dvh) {
     html, body, #root {
       height: 100dvh;
       min-height: 100dvh;
+    }
+  }
+  
+  /* 🔧 AJOUT : Support des unités svh pour stabilité maximale */
+  @supports (height: 100svh) {
+    html, body, #root {
+      height: 100svh;
+      min-height: 100svh;
     }
   }
 }
@@ -564,7 +626,7 @@ p {
   }
 }
 
-/* ==================== UTILITY CLASSES MOBILE ==================== */
+/* ==================== UTILITY CLASSES MOBILE ULTRA OPTIMISÉES ==================== */
 
 @media (max-width: 768px) {
   .mobile-hidden {
@@ -594,6 +656,17 @@ p {
   .mobile-safe-area-top {
     padding-top: var(--mobile-safe-top);
   }
+  
+  /* 🔧 AJOUT : Classes spéciales pour le RadiologyViewer */
+  .mobile-content-height {
+    height: var(--content-height) !important;
+    max-height: var(--content-height) !important;
+  }
+  
+  .mobile-no-scroll {
+    overflow: hidden !important;
+    -webkit-overflow-scrolling: auto !important;
+  }
 }
 
 @media (min-width: 769px) {
@@ -603,6 +676,35 @@ p {
   
   .desktop-only {
     display: block;
+  }
+}
+
+/* ==================== CORRECTIONS SPÉCIALES RADIOLOGYVIEWER ==================== */
+
+/* 🔧 AJOUT : Corrections spéciales pour RadiologyViewer mobile */
+@media (max-width: 768px) {
+  /* Force le bon calcul des hauteurs pour les composants avec position fixed */
+  .radiologyviewer-container {
+    height: 100vh !important;
+    height: 100dvh !important;
+    overflow: hidden !important;
+  }
+  
+  .radiologyviewer-content {
+    height: calc(100vh - var(--header-height) - var(--bottom-bar-height)) !important;
+    height: calc(100dvh - var(--header-height) - var(--bottom-bar-height)) !important;
+    max-height: calc(100vh - var(--header-height) - var(--bottom-bar-height)) !important;
+    margin-top: var(--header-height) !important;
+    overflow: hidden !important;
+  }
+  
+  .radiologyviewer-bottom-bar {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: var(--bottom-bar-height) !important;
+    z-index: 1002 !important;
   }
 }
 

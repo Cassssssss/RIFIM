@@ -1,35 +1,33 @@
-/* ==================== VARIABLES CSS DYNAMIQUES AMÉLIORÉES ==================== */
+/* ==================== VARIABLES CSS DYNAMIQUES ULTRA PRÉCISES ==================== */
 :root {
+  /* 🔧 CORRECTION : Variables précises pour calculer l'espace exact */
   --header-height: 60px;
-  --bottom-bar-height: 50px;
-  --safe-area-top: 0px;
-  --safe-area-bottom: 0px;
+  --bottom-bar-height: 60px; /* Augmenté pour mobile */
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
   
-  /* Nouvelles variables pour mobile */
-  --mobile-padding: 4px;
-  --mobile-gap: 4px;
+  /* Variables pour mobile */
+  --mobile-padding: 2px;
+  --mobile-gap: 2px;
   --desktop-padding: 8px;
   --desktop-gap: 8px;
   
-  /* Variables pour le viewport réel mobile */
+  /* Variables pour le viewport réel mobile - CORRECTION IMPORTANTE */
   --real-vh: 100vh;
-  --browser-ui-height: 0px;
+  --available-height: calc(100vh - var(--header-height) - var(--bottom-bar-height));
 }
 
 /* Support des unités de viewport dynamiques pour mobile */
 @supports (height: 100dvh) {
   :root {
     --real-vh: 100dvh;
+    --available-height: calc(100dvh - var(--header-height) - var(--bottom-bar-height));
   }
 }
 
-@supports (height: 100svh) {
-  :root {
-    --real-vh: 100svh;
-  }
-}
-
-/* ==================== CONTAINER PRINCIPAL COMPLÈTEMENT FIXE ==================== */
+/* ==================== CONTAINER PRINCIPAL PARFAITEMENT CALCULÉ ==================== */
 .container {
   position: fixed;
   top: 0;
@@ -47,87 +45,73 @@
   
   /* Empêche tout débordement */
   overflow: hidden;
+  margin: 0;
+  padding: 0;
   
   /* Optimisations de performance mobile */
   will-change: auto;
   contain: layout style;
   
-  /* Ajustements pour les safe areas iPhone */
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
-  
   @media (max-width: 768px) {
-    /* SOLUTION RADICALE : Force l'utilisation de TOUT l'écran mobile */
+    /* 🔧 SOLUTION MOBILE : Force l'utilisation de TOUT l'écran */
     height: 100vh;
-    height: 100dvh;
-    height: 100svh;
-    
-    /* Force minimum et maximum */
     min-height: 100vh;
-    min-height: 100dvh;
     max-height: 100vh;
-    max-height: 100dvh;
+    
+    /* Force le viewport exact */
+    width: 100vw;
+    min-width: 100vw;
+    max-width: 100vw;
     
     /* Empêche absolument tout débordement */
     overflow: hidden !important;
     
-    /* Ignore les safe areas sur mobile pour utiliser tout l'écran */
-    padding: 0;
-    
-    /* S'assure qu'on prend tout l'écran */
-    top: 0 !important;
-    bottom: 0 !important;
+    /* Ignore les transformations potentielles */
+    transform: none !important;
   }
 }
 
-/* ==================== CONTENT AVEC HAUTEUR CALCULÉE PRÉCISÉMENT ==================== */
+/* ==================== CONTENT AVEC CALCUL EXACT DE L'ESPACE DISPONIBLE ==================== */
 .content {
-  /* Prend tout l'espace disponible moins header et bottom bar */
-  flex: 1;
+  /* 🔧 CORRECTION MAJEURE : Calcul exact de l'espace disponible */
+  height: var(--available-height);
+  flex: 1 1 auto; /* Permet de s'adapter si nécessaire */
+  
+  /* Position exacte après le header */
+  margin-top: var(--header-height);
+  margin-bottom: 0;
+  margin-left: 0;
+  margin-right: 0;
+  
   display: flex;
   flex-direction: column;
-  
-  /* Calcul précis de la hauteur disponible */
-  height: calc(var(--real-vh) - var(--header-height) - var(--bottom-bar-height) - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-  
-  /* Position par rapport au header */
-  margin-top: var(--header-height);
-  
   background-color: rgb(var(--color-background));
   overflow: hidden;
   padding: 0;
-  margin-left: 0;
-  margin-right: 0;
-  margin-bottom: 0;
   
-  /* Force la hauteur minimale */
+  /* Force les dimensions exactes */
   min-height: 0;
+  max-height: var(--available-height);
   
   @media (max-width: 768px) {
-    /* SOLUTION MOBILE : Utilise flex au lieu de hauteur fixe */
-    height: auto;
-    flex: 1;
-    
-    /* Laisse la bottom bar avoir sa hauteur naturelle */
-    margin-bottom: 0;
+    /* 🔧 SOLUTION MOBILE : Calcul précis avec safe areas */
+    height: calc(100vh - var(--header-height) - var(--bottom-bar-height) - var(--safe-area-top) - var(--safe-area-bottom));
+    max-height: calc(100vh - var(--header-height) - var(--bottom-bar-height) - var(--safe-area-top) - var(--safe-area-bottom));
     
     /* Empêche le zoom de la page entière */
     touch-action: pan-x pan-y;
     user-select: none;
     -webkit-user-select: none;
     
-    /* Force les limites */
+    /* Force les limites strictes */
     overflow: hidden !important;
-    max-height: none;
-    min-height: 0;
+    flex-shrink: 0; /* Ne rétrécit jamais */
   }
 }
 
-/* ==================== LAYOUT PRINCIPAL ==================== */
+/* ==================== LAYOUT PRINCIPAL OPTIMISÉ ==================== */
 .layout {
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
   height: 100%;
   background-color: rgb(var(--color-background));
@@ -138,27 +122,31 @@
   /* Force les dimensions exactes */
   min-height: 0;
   min-width: 0;
+  max-height: 100%;
+  overflow: hidden;
   
-  /* Mobile : layout optimisé */
+  /* Mobile : layout ultra-optimisé */
   @media (max-width: 768px) {
     flex-direction: row;
     padding: var(--mobile-padding);
     gap: var(--mobile-gap);
     
-    /* Force le respect des dimensions sur mobile */
+    /* Force le respect strict des dimensions sur mobile */
+    height: 100%;
     max-height: 100%;
-    overflow: hidden;
+    min-height: 100%;
+    flex-shrink: 0;
   }
 }
 
-/* ==================== FOLDER GRID MOBILE OPTIMISÉ ==================== */
+/* ==================== FOLDER GRID ULTRA COMPACT MOBILE ==================== */
 .folderGrid {
   width: 120px;
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 8px;
+  gap: 6px;
+  padding: 6px;
   margin: 0;
   overflow-y: auto;
   overflow-x: hidden;
@@ -187,12 +175,12 @@
     border-radius: 3px;
   }
   
-  /* Mobile : version compacte */
+  /* Mobile : version ultra-compacte */
   @media (max-width: 768px) {
-    width: 70px;
-    padding: 4px;
-    gap: 4px;
-    border-radius: 8px;
+    width: 60px; /* 🔧 RÉDUIT encore plus */
+    padding: 2px;
+    gap: 2px;
+    border-radius: 6px;
     
     /* Cache complètement la scrollbar sur mobile */
     scrollbar-width: none;
@@ -210,16 +198,16 @@
   }
 }
 
-/* ==================== FOLDER THUMBNAILS ==================== */
+/* ==================== FOLDER THUMBNAILS ULTRA COMPACTS ==================== */
 .folderThumbnail {
   width: 100%;
   aspect-ratio: 1;
-  min-height: 90px;
-  max-height: 90px;
+  min-height: 85px;
+  max-height: 85px;
   border-radius: 8px;
   overflow: hidden;
   position: relative;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
   flex-shrink: 0;
   
   background-color: rgb(var(--color-background));
@@ -235,17 +223,19 @@
   }
   
   @media (max-width: 768px) {
-    min-height: 60px;
-    max-height: 60px;
-    border-radius: 6px;
-    margin-bottom: 2px;
+    /* 🔧 ULTRA COMPACT mobile */
+    min-height: 50px;
+    max-height: 50px;
+    border-radius: 4px;
+    margin-bottom: 1px;
     cursor: pointer;
+    border-width: 1px;
     
     /* Supprime les effets hover sur mobile */
     &:hover {
       transform: none;
       border-color: rgb(var(--color-border));
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
     
     /* Feedback tactile */
@@ -267,7 +257,7 @@
   image-rendering: crisp-edges;
   
   @media (max-width: 768px) {
-    transition: none; /* Supprime les transitions sur mobile pour de meilleures performances */
+    transition: none;
   }
 }
 
@@ -278,9 +268,9 @@
   right: 0;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
   color: white;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
-  padding: 6px 4px;
+  padding: 4px 2px;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -288,14 +278,14 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
   
   @media (max-width: 768px) {
-    font-size: 9px;
-    padding: 4px 2px;
+    font-size: 8px;
+    padding: 2px 1px;
   }
 }
 
-/* ==================== MAIN VIEWER - HAUTEUR PARFAITEMENT CONTRÔLÉE ==================== */
+/* ==================== MAIN VIEWER - UTILISE TOUT L'ESPACE DISPONIBLE ==================== */
 .mainViewer {
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
   height: 100%;
   margin: 0;
@@ -309,34 +299,42 @@
   /* Force les dimensions exactes */
   min-height: 0;
   min-width: 0;
+  max-height: 100%;
+  max-width: 100%;
   
   @media (max-width: 768px) {
-    border-radius: 8px;
+    border-radius: 6px;
     
-    /* S'assure que le viewer utilise EXACTEMENT l'espace disponible */
+    /* 🔧 ASSURE que le viewer utilise EXACTEMENT l'espace disponible */
+    height: 100%;
+    width: 100%;
     max-height: 100%;
     max-width: 100%;
+    min-height: 100%;
+    flex-shrink: 0;
   }
 }
 
-/* ==================== DUAL VIEWER - MOBILE PARFAIT ==================== */
+/* ==================== DUAL VIEWER MOBILE PARFAIT ==================== */
 .dualViewer {
   display: flex;
   width: 100%;
   height: 100%;
-  gap: 8px;
+  gap: 6px;
   padding: 0;
   margin: 0;
   
   /* Force les dimensions exactes */
   min-height: 0;
   min-width: 0;
+  max-height: 100%;
   
   @media (max-width: 768px) {
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
     
-    /* Force la hauteur maximale */
+    /* Force la hauteur maximale stricte */
+    height: 100%;
     max-height: 100%;
     overflow: hidden;
   }
@@ -354,7 +352,7 @@
   
   /* Mobile : fallback vers mode simple */
   @media (max-width: 768px) {
-    display: none; /* Cache complètement sur mobile */
+    display: none;
   }
 }
 
@@ -369,7 +367,7 @@
   
   /* Mobile : fallback vers mode simple */
   @media (max-width: 768px) {
-    display: none; /* Cache complètement sur mobile */
+    display: none;
   }
 }
 
@@ -400,6 +398,7 @@
   /* Force les dimensions exactes */
   min-height: 0;
   min-width: 0;
+  max-height: 100%;
   
   /* Optimisations de performance */
   will-change: scroll-position;
@@ -410,7 +409,7 @@
   }
   
   @media (max-width: 768px) {
-    border-radius: 8px;
+    border-radius: 6px;
     border-width: 1px;
     
     /* Supprime hover sur mobile */
@@ -418,9 +417,11 @@
       border-color: rgb(var(--color-border));
     }
     
-    /* Force les dimensions exactes sur mobile */
+    /* 🔧 Force les dimensions exactes sur mobile */
+    height: 100%;
     max-height: 100%;
     max-width: 100%;
+    min-height: 0;
     
     /* CRITIQUE : Empêche le zoom de la page entière */
     touch-action: pan-x pan-y pinch-zoom;
@@ -430,7 +431,7 @@
 }
 
 .viewerHalf {
-  flex: 1;
+  flex: 1 1 50%;
   width: 50%;
   max-width: 50%;
   
@@ -439,7 +440,7 @@
     max-width: 100%;
     height: 50%;
     max-height: 50%;
-    flex: 1;
+    flex: 1 1 50%;
   }
 }
 
@@ -502,20 +503,20 @@
   min-height: 0;
 }
 
-/* ==================== FOLDER LABELS ==================== */
+/* ==================== FOLDER LABELS OPTIMISÉS ==================== */
 .folderLabel {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  top: 8px;
+  left: 8px;
   background: rgba(0, 0, 0, 0.85);
   color: rgba(255, 255, 255, 0.95);
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 600;
   z-index: 10;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
   
@@ -523,11 +524,11 @@
   will-change: transform;
   
   @media (max-width: 768px) {
-    top: 8px;
-    left: 8px;
-    padding: 6px 8px;
-    font-size: 12px;
-    border-radius: 6px;
+    top: 4px;
+    left: 4px;
+    padding: 4px 6px;
+    font-size: 10px;
+    border-radius: 4px;
     
     /* Supprime les transitions sur mobile */
     transition: none;
@@ -539,10 +540,11 @@
   position: fixed;
   bottom: 0;
   left: 0;
+  right: 0;
   height: var(--bottom-bar-height);
   width: 100vw;
   margin: 0;
-  padding: 0 24px;
+  padding: 0 20px;
   
   background: var(--header-background, #4f5b93);
   color: var(--header-text, #ffffff);
@@ -557,9 +559,9 @@
   backdrop-filter: blur(10px);
   
   /* Safe areas pour iPhone */
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: calc(24px + env(safe-area-inset-left));
-  padding-right: calc(24px + env(safe-area-inset-right));
+  padding-bottom: var(--safe-area-bottom);
+  padding-left: calc(20px + var(--safe-area-left));
+  padding-right: calc(20px + var(--safe-area-right));
   
   & > div:last-child {
     display: flex;
@@ -569,19 +571,21 @@
   }
   
   @media (max-width: 768px) {
-    /* SOLUTION MOBILE : Position absolue dans le container */
+    /* 🔧 SOLUTION MOBILE : Position absolue dans le container */
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
     
-    /* Hauteur flexible */
-    height: auto;
-    min-height: 50px;
+    /* Hauteur plus compacte */
+    height: var(--bottom-bar-height);
+    min-height: var(--bottom-bar-height);
     
-    /* Padding compact */
-    padding: 8px 12px;
-    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    /* Padding ultra-compact */
+    padding: 4px 8px;
+    padding-bottom: calc(4px + var(--safe-area-bottom));
+    padding-left: calc(8px + var(--safe-area-left));
+    padding-right: calc(8px + var(--safe-area-right));
     
     /* Z-index très élevé */
     z-index: 1002;
@@ -591,34 +595,35 @@
     
     /* Style adaptatif pour différentes orientations */
     @media (orientation: landscape) {
-      min-height: 45px;
-      padding: 6px 10px;
-      padding-bottom: calc(6px + env(safe-area-inset-bottom));
+      min-height: 50px;
+      padding: 3px 6px;
+      padding-bottom: calc(3px + var(--safe-area-bottom));
     }
   }
 }
 
-/* ==================== BUTTONS OPTIMISÉS MOBILE ==================== */
+/* ==================== BUTTONS ULTRA COMPACTS MOBILE ==================== */
 .responseButton, .sheetLink {
   background: rgba(255, 255, 255, 0.12);
   color: white;
-  padding: 10px 18px;
+  padding: 8px 14px;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   border: 1px solid rgba(255, 255, 255, 0.15);
   cursor: pointer;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   transition: all 0.2s ease;
   backdrop-filter: blur(4px);
-  margin-left: 8px;
+  margin-left: 6px;
   vertical-align: middle;
   line-height: 1;
-  height: 40px;
+  height: 36px;
   box-sizing: border-box;
+  white-space: nowrap;
   
   /* Optimisations tactiles */
   touch-action: manipulation;
@@ -632,11 +637,12 @@
   }
   
   @media (max-width: 768px) {
-    padding: 8px 12px;
-    font-size: 12px;
-    white-space: nowrap;
-    margin-left: 4px;
-    height: 36px;
+    /* 🔧 ULTRA COMPACT sur mobile */
+    padding: 6px 8px;
+    font-size: 11px;
+    margin-left: 2px;
+    height: 32px;
+    gap: 2px;
     
     /* Supprime hover, ajoute feedback tactile */
     &:hover {
@@ -653,7 +659,24 @@
   }
 }
 
-/* ==================== SHORTCUT GUIDE ==================== */
+/* 🔧 CORRECTION IMPORTANTE : Texte "Fiche" sur mobile */
+.sheetLink {
+  @media (max-width: 768px) {
+    &::before {
+      content: '📋 ';
+    }
+    
+    /* Cache le texte original et remplace par "Fiche" */
+    font-size: 0;
+    
+    &::after {
+      content: 'Fiche';
+      font-size: 11px;
+    }
+  }
+}
+
+/* ==================== SHORTCUT GUIDE MOBILE OPTIMISÉ ==================== */
 .shortcutGuide {
   display: flex;
   align-items: center;
@@ -661,14 +684,14 @@
 }
 
 .shortcutIcon {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   background: rgba(255, 255, 255, 0.08);
@@ -688,9 +711,9 @@
   }
   
   @media (max-width: 768px) {
-    width: 28px;
-    height: 28px;
-    font-size: 12px;
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
     
     &:hover {
       background: rgba(255, 255, 255, 0.08);
@@ -708,14 +731,14 @@
 
 .shortcutPopup {
   position: absolute;
-  bottom: calc(var(--bottom-bar-height) + 10px);
-  left: -10px;
+  bottom: calc(var(--bottom-bar-height) + 8px);
+  left: -8px;
   background-color: rgb(var(--color-surface));
   color: rgb(var(--color-text));
   border: 2px solid rgb(var(--color-border));
   border-radius: 12px;
-  padding: 20px;
-  width: 320px;
+  padding: 16px;
+  width: 280px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   z-index: 1000;
   opacity: 0;
@@ -731,34 +754,34 @@
   }
   
   @media (max-width: 768px) {
-    width: 280px;
-    left: -240px;
-    padding: 16px;
+    width: 240px;
+    left: -200px;
+    padding: 12px;
     border-radius: 8px;
   }
 }
 
 .shortcutTitle {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   color: rgb(var(--color-primary));
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   
   &::before {
     content: '⌨️';
-    font-size: 18px;
+    font-size: 16px;
   }
   
   @media (max-width: 768px) {
-    font-size: 14px;
-    margin-bottom: 12px;
+    font-size: 12px;
+    margin-bottom: 8px;
     
     &::before {
       content: '👆';
-      font-size: 16px;
+      font-size: 14px;
     }
   }
 }
@@ -770,12 +793,12 @@
 }
 
 .shortcutList li {
-  margin-bottom: 12px;
-  font-size: 14px;
-  line-height: 1.5;
-  padding: 8px 12px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  padding: 6px 8px;
   background-color: rgb(var(--color-background));
-  border-radius: 6px;
+  border-radius: 4px;
   border: 1px solid rgb(var(--color-border));
   
   &:last-child {
@@ -783,28 +806,28 @@
   }
   
   @media (max-width: 768px) {
-    font-size: 12px;
-    padding: 6px 8px;
-    margin-bottom: 8px;
+    font-size: 10px;
+    padding: 4px 6px;
+    margin-bottom: 6px;
   }
 }
 
 .shortcutList strong {
   display: inline-block;
-  margin-right: 8px;
+  margin-right: 6px;
   color: rgb(var(--color-primary));
   font-weight: 600;
 }
 
-/* ==================== RESPONSE BOX ==================== */
+/* ==================== RESPONSE BOX MOBILE OPTIMISÉE ==================== */
 .responseBox {
   position: fixed;
-  bottom: calc(var(--bottom-bar-height) + 20px + env(safe-area-inset-bottom));
-  right: calc(24px + env(safe-area-inset-right));
-  padding: 20px;
+  bottom: calc(var(--bottom-bar-height) + 16px + var(--safe-area-bottom));
+  right: calc(16px + var(--safe-area-right));
+  padding: 16px;
   border-radius: 12px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  max-width: 350px;
+  max-width: 320px;
   z-index: 1001;
   background-color: rgb(var(--color-surface));
   border: 2px solid rgb(var(--color-border));
@@ -824,10 +847,10 @@
   }
   
   @media (max-width: 768px) {
-    right: calc(12px + env(safe-area-inset-right));
-    left: calc(12px + env(safe-area-inset-left));
+    right: calc(8px + var(--safe-area-right));
+    left: calc(8px + var(--safe-area-left));
     max-width: none;
-    padding: 16px;
+    padding: 12px;
     border-radius: 8px;
   }
 }
@@ -835,21 +858,21 @@
 .responseText {
   color: rgb(var(--color-text));
   font-weight: 600;
-  font-size: 16px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.4;
   margin: 0;
   
   &::before {
     content: '💡';
-    margin-right: 8px;
-    font-size: 18px;
+    margin-right: 6px;
+    font-size: 16px;
   }
   
   @media (max-width: 768px) {
-    font-size: 14px;
+    font-size: 12px;
     
     &::before {
-      font-size: 16px;
+      font-size: 14px;
     }
   }
 }
@@ -909,13 +932,13 @@
   .viewer::after {
     content: '👆';
     position: absolute;
-    bottom: 8px;
-    right: 8px;
+    bottom: 4px;
+    right: 4px;
     background: rgba(0, 0, 0, 0.7);
     color: white;
-    padding: 4px 6px;
+    padding: 2px 4px;
     border-radius: 50%;
-    font-size: 10px;
+    font-size: 8px;
     opacity: 0.6;
     pointer-events: none;
     z-index: 5;

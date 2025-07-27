@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
-import { Moon, Sun, Menu, X, User, LogOut, ChevronDown, ChevronRight, FileText, FolderOpen, Stethoscope } from 'lucide-react';
+import { Moon, Sun, Menu, X, User, LogOut, ChevronDown, ChevronRight, FileText, FolderOpen, Stethoscope, Activity } from 'lucide-react';
 
 const HeaderWrapper = styled.header`
   background-color: ${props => props.theme.headerBackground};
@@ -614,6 +614,25 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
               </MenuItem>
               <MenuItem to="/public-cases" onClick={handleMenuItemClick}>
                 <span>📂</span> Cas Publics
+              </MenuItem>
+            </MenuSection>
+
+            <MenuDivider />
+
+            {/* 🔧 AJOUT IMPORTANT : Section Protocoles */}
+            <MenuSection>
+              <SectionTitle>
+                <Activity size={18} />
+                Protocoles
+              </SectionTitle>
+              <MenuItem to="/protocols/create" onClick={handleMenuItemClick}>
+                <span>➕</span> Créer un protocole
+              </MenuItem>
+              <MenuItem to="/protocols/personal" onClick={handleMenuItemClick}>
+                <span>📋</span> Mes Protocoles
+              </MenuItem>
+              <MenuItem to="/protocols/public" onClick={handleMenuItemClick}>
+                <span>📖</span> Protocoles Publics
               </MenuItem>
             </MenuSection>
 

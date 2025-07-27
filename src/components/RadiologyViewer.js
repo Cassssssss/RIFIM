@@ -35,9 +35,7 @@ const CollapsibleImageGallery = memo(({ folder, images, onImageClick, onDeleteIm
   );
 });
 
-// ==================== HOOK MOBILE VIEWPORT FIX ====================
-
-// ==================== HOOK MOBILE VIEWPORT FIX ULTRA-AGRESSIF ====================
+// ==================== HOOK MOBILE VIEWPORT FIX ULTRA-PRÉCIS ====================
 
 const useMobileViewportFix = () => {
   const updateViewport = useCallback(() => {
@@ -46,76 +44,87 @@ const useMobileViewportFix = () => {
                      navigator.maxTouchPoints > 0;
     
     if (isMobile) {
-      // 1. FORCE les dimensions en JavaScript directement
+      // 🔧 CORRECTION : Force les dimensions EXACTES avec les variables CSS
       const realHeight = window.innerHeight;
       const realWidth = window.innerWidth;
+      const headerHeight = 60; // Fixe
+      const bottomBarHeight = 60; // Fixe
+      const availableHeight = realHeight - headerHeight - bottomBarHeight;
       
-      // 2. Trouve les éléments critiques
-      const container = document.querySelector('.container');
-      const content = document.querySelector('.content');
-      const bottomBar = document.querySelector('.bottomBar');
-      const header = document.querySelector('.header');
-      
-      if (container) {
-        // Force les dimensions du container
-        container.style.position = 'fixed';
-        container.style.top = '0px';
-        container.style.left = '0px';
-        container.style.width = `${realWidth}px`;
-        container.style.height = `${realHeight}px`;
-        container.style.overflow = 'hidden';
-        container.style.zIndex = '100';
-      }
-      
-      if (header) {
-        const headerHeight = header.getBoundingClientRect().height;
-        document.documentElement.style.setProperty('--header-height', `${headerHeight}px`);
-      }
-      
-      if (bottomBar) {
-        // Force la bottom bar en bas
-        const bottomBarHeight = 60; // Hauteur fixe
-        bottomBar.style.position = 'absolute';
-        bottomBar.style.bottom = '0px';
-        bottomBar.style.left = '0px';
-        bottomBar.style.right = '0px';
-        bottomBar.style.height = `${bottomBarHeight}px`;
-        bottomBar.style.zIndex = '1002';
-        bottomBar.style.background = 'var(--header-background, #4f5b93)';
-        
-        document.documentElement.style.setProperty('--bottom-bar-height', `${bottomBarHeight}px`);
-      }
-      
-      if (content) {
-        // Calculate available space for content
-        const headerHeight = header ? header.getBoundingClientRect().height : 60;
-        const bottomBarHeight = 60;
-        const availableHeight = realHeight - headerHeight - bottomBarHeight;
-        
-        // Force content dimensions
-        content.style.position = 'relative';
-        content.style.top = `${headerHeight}px`;
-        content.style.height = `${availableHeight}px`;
-        content.style.width = '100%';
-        content.style.overflow = 'hidden';
-        content.style.marginTop = '0';
-        content.style.marginBottom = '0';
-      }
-      
-      // 3. Update CSS variables
-      const vh = realHeight * 0.01;
-      document.documentElement.style.setProperty('--vh', `${vh}px`);
+      // 🔧 UPDATE les variables CSS globales
       document.documentElement.style.setProperty('--real-vh', `${realHeight}px`);
       document.documentElement.style.setProperty('--real-vw', `${realWidth}px`);
+      document.documentElement.style.setProperty('--header-height', `${headerHeight}px`);
+      document.documentElement.style.setProperty('--bottom-bar-height', `${bottomBarHeight}px`);
+      document.documentElement.style.setProperty('--available-height', `${availableHeight}px`);
       
-      console.log('🔧 FORCE Mobile Layout:', {
+      // 🔧 TROUVE et force les éléments critiques avec les classes CSS modules
+      const containers = document.querySelectorAll(`[class*="container"]`);
+      const contents = document.querySelectorAll(`[class*="content"]`);
+      const bottomBars = document.querySelectorAll(`[class*="bottomBar"]`);
+      
+      containers.forEach(container => {
+        if (container.className.includes('container')) {
+          container.style.cssText += `
+            position: fixed !important;
+            top: 0px !important;
+            left: 0px !important;
+            width: ${realWidth}px !important;
+            height: ${realHeight}px !important;
+            overflow: hidden !important;
+            z-index: 100 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          `;
+        }
+      });
+      
+      contents.forEach(content => {
+        if (content.className.includes('content')) {
+          content.style.cssText += `
+            position: relative !important;
+            top: ${headerHeight}px !important;
+            height: ${availableHeight}px !important;
+            max-height: ${availableHeight}px !important;
+            width: 100% !important;
+            overflow: hidden !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+          `;
+        }
+      });
+      
+      bottomBars.forEach(bottomBar => {
+        if (bottomBar.className.includes('bottomBar')) {
+          bottomBar.style.cssText += `
+            position: absolute !important;
+            bottom: 0px !important;
+            left: 0px !important;
+            right: 0px !important;
+            height: ${bottomBarHeight}px !important;
+            width: 100% !important;
+            z-index: 1002 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            padding: 6px 8px !important;
+            background: var(--header-background, #4f5b93) !important;
+            color: white !important;
+          `;
+        }
+      });
+      
+      console.log('🔧 Mobile Layout forcé:', {
         realHeight,
         realWidth,
+        availableHeight,
         elements: {
-          container: !!container,
-          content: !!content,
-          bottomBar: !!bottomBar,
-          header: !!header
+          containers: containers.length,
+          contents: contents.length,
+          bottomBars: bottomBars.length
         }
       });
     }
@@ -125,14 +134,11 @@ const useMobileViewportFix = () => {
     updateViewport();
 
     const handleResize = () => {
-      // Force immediate update
       updateViewport();
-      // Also after animation
       setTimeout(updateViewport, 100);
     };
 
     const handleOrientationChange = () => {
-      // Multiple updates for orientation change
       setTimeout(updateViewport, 100);
       setTimeout(updateViewport, 300);
       setTimeout(updateViewport, 500);
@@ -142,7 +148,6 @@ const useMobileViewportFix = () => {
     window.addEventListener('resize', handleResize);
     window.addEventListener('orientationchange', handleOrientationChange);
     
-    // Visual Viewport API if available
     if (window.visualViewport) {
       const handleVisualViewportChange = () => {
         setTimeout(updateViewport, 50);
@@ -184,7 +189,7 @@ function RadiologyViewer() {
   const [currentFolderBottomLeft, setCurrentFolderBottomLeft] = useState('');
   const [currentFolderBottomRight, setCurrentFolderBottomRight] = useState('');
   
-  // Détection mobile améliorée et stable
+  // 🔧 CORRECTION : Détection mobile stable et précise
   const [isMobile] = useState(() => {
     if (typeof window === 'undefined') return false;
     return window.innerWidth <= 768 || 
@@ -401,7 +406,7 @@ function RadiologyViewer() {
   }, [imageControls]);
 
   const handleZoom = useCallback((side, deltaY) => {
-    const zoomSensitivity = isMobile ? 0.002 : 0.001; // Plus sensible sur mobile
+    const zoomSensitivity = isMobile ? 0.002 : 0.001;
     const zoomFactor = 1 + (deltaY * zoomSensitivity);
     
     setImageControls(prevControls => {
@@ -484,14 +489,10 @@ function RadiologyViewer() {
   const handleTouchStart = useCallback((e, side) => {
     if (!isMobile) return;
     
-    // Empêche le zoom de la page entière
     if (e.touches.length === 2) {
       e.preventDefault();
       e.stopPropagation();
-    }
-    
-    if (e.touches.length === 2) {
-      // Geste de pincement pour le zoom
+      
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       const distance = Math.hypot(
@@ -504,7 +505,6 @@ function RadiologyViewer() {
       });
       setInitialScale(imageControls[side].scale);
     } else if (e.touches.length === 1) {
-      // Touch simple pour le scroll
       setLastTouch({
         x: e.touches[0].clientX,
         y: e.touches[0].clientY
@@ -515,59 +515,55 @@ function RadiologyViewer() {
   const handleTouchMove = useCallback((e, side) => {
     if (!isMobile) return;
     
-    // Empêche le zoom de la page entière
     if (e.touches.length === 2) {
       e.preventDefault();
       e.stopPropagation();
-    }
+      
+      if (touchStartPoints) {
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+        const newDistance = Math.hypot(
+          touch2.clientX - touch1.clientX,
+          touch2.clientY - touch1.clientY
+        );
     
-    if (e.touches.length === 2 && touchStartPoints) {
-      // Geste de pincement - zoom de l'image uniquement
-      const touch1 = e.touches[0];
-      const touch2 = e.touches[1];
-      const newDistance = Math.hypot(
-        touch2.clientX - touch1.clientX,
-        touch2.clientY - touch1.clientY
-      );
-  
-      const scaleFactor = newDistance / touchStartPoints.distance;
-      const newScale = Math.max(0.1, Math.min(5, initialScale * scaleFactor));
-  
-      setImageControls(prev => ({
-        ...prev,
-        [side]: {
-          ...prev[side],
-          scale: newScale
+        const scaleFactor = newDistance / touchStartPoints.distance;
+        const newScale = Math.max(0.1, Math.min(5, initialScale * scaleFactor));
+    
+        setImageControls(prev => ({
+          ...prev,
+          [side]: {
+            ...prev[side],
+            scale: newScale
+          }
+        }));
+        
+        let imageElement;
+        switch(side) {
+          case 'left':
+            imageElement = leftViewerRef.current;
+            break;
+          case 'right':
+            imageElement = rightViewerRef.current;
+            break;
+          case 'single':
+            imageElement = singleViewerRef.current;
+            break;
+          default:
+            imageElement = singleViewerRef.current;
         }
-      }));
-      
-      // Applique immédiatement le zoom à l'image
-      let imageElement;
-      switch(side) {
-        case 'left':
-          imageElement = leftViewerRef.current;
-          break;
-        case 'right':
-          imageElement = rightViewerRef.current;
-          break;
-        case 'single':
-          imageElement = singleViewerRef.current;
-          break;
-        default:
-          imageElement = singleViewerRef.current;
+        
+        if (imageElement) {
+          const controls = prev[side] || { translateX: 0, translateY: 0 };
+          imageElement.style.transform = `scale(${newScale}) translate(${controls.translateX}px, ${controls.translateY}px)`;
+        }
       }
-      
-      if (imageElement) {
-        imageElement.style.transform = `scale(${newScale}) translate(${prev[side]?.translateX || 0}px, ${prev[side]?.translateY || 0}px)`;
-      }
-      
     } else if (e.touches.length === 1) {
-      // Scroll vertical pour navigation d'images
       const touch = e.touches[0];
       const deltaY = touch.clientY - lastTouch.y;
       
-      if (Math.abs(deltaY) > 2) { // Seuil plus bas pour mobile
-        handleScroll(deltaY * 3, false, side); // Facteur plus sensible pour mobile
+      if (Math.abs(deltaY) > 2) {
+        handleScroll(deltaY * 3, false, side);
       }
       
       setLastTouch({
@@ -575,12 +571,11 @@ function RadiologyViewer() {
         y: touch.clientY
       });
     }
-  }, [isMobile, touchStartPoints, initialScale, handleScroll, lastTouch, leftViewerRef, rightViewerRef, singleViewerRef]);
+  }, [isMobile, touchStartPoints, initialScale, handleScroll, lastTouch]);
   
   const handleTouchEnd = useCallback((e) => {
     if (!isMobile) return;
     
-    // Empêche le zoom de la page entière
     if (e.changedTouches.length === 2 || touchStartPoints) {
       e.preventDefault();
       e.stopPropagation();
@@ -769,96 +764,11 @@ function RadiologyViewer() {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // Force les dimensions exactes sur mobile - SOLUTION BRUTALE
+  // 🔧 CORRECTION MAJEURE : Force les dimensions mobiles ULTRA PRÉCISES
   useEffect(() => {
     if (isMobile) {
-      // Fonction qui force les dimensions en continu
-      const forceMobileDimensions = () => {
-        const realHeight = window.innerHeight;
-        const realWidth = window.innerWidth;
-        
-        // Sélectionne les éléments par leurs classes CSS modules
-        const containers = document.querySelectorAll('[class*="container"]');
-        const contents = document.querySelectorAll('[class*="content"]');
-        const bottomBars = document.querySelectorAll('[class*="bottomBar"]');
-        
-        containers.forEach(container => {
-          if (container) {
-            container.style.cssText = `
-              position: fixed !important;
-              top: 0px !important;
-              left: 0px !important;
-              width: ${realWidth}px !important;
-              height: ${realHeight}px !important;
-              overflow: hidden !important;
-              z-index: 100 !important;
-              margin: 0 !important;
-              padding: 0 !important;
-            `;
-          }
-        });
-        
-        contents.forEach(content => {
-          if (content) {
-            const headerHeight = 60; // Fixe pour simplifier
-            const bottomBarHeight = 60; // Fixe pour simplifier
-            const availableHeight = realHeight - headerHeight - bottomBarHeight;
-            
-            content.style.cssText = `
-              position: relative !important;
-              top: ${headerHeight}px !important;
-              height: ${availableHeight}px !important;
-              width: 100% !important;
-              overflow: hidden !important;
-              margin: 0 !important;
-              padding: 0 !important;
-              flex: 1 !important;
-              display: flex !important;
-              flex-direction: column !important;
-            `;
-          }
-        });
-        
-        bottomBars.forEach(bottomBar => {
-          if (bottomBar) {
-            bottomBar.style.cssText = `
-              position: absolute !important;
-              bottom: 0px !important;
-              left: 0px !important;
-              right: 0px !important;
-              height: 60px !important;
-              width: 100% !important;
-              z-index: 1002 !important;
-              display: flex !important;
-              align-items: center !important;
-              justify-content: space-between !important;
-              padding: 8px 12px !important;
-              background: var(--header-background, #4f5b93) !important;
-              color: white !important;
-            `;
-          }
-        });
-      };
-      
-      // Force initial
-      forceMobileDimensions();
-      
-      // Force à chaque resize/orientation
-      const forceUpdate = () => {
-        forceMobileDimensions();
-        setTimeout(forceMobileDimensions, 50);
-        setTimeout(forceMobileDimensions, 150);
-        setTimeout(forceMobileDimensions, 300);
-      };
-      
-      window.addEventListener('resize', forceUpdate);
-      window.addEventListener('orientationchange', forceUpdate);
-      
-      // Force périodiquement (en cas de problème)
-      const interval = setInterval(forceMobileDimensions, 1000);
-      
-      // Empêche le scroll global
-      document.body.style.cssText = `
+      // Force les styles CSS pour éviter tous problèmes de dimensions
+      document.body.style.cssText += `
         overflow: hidden !important;
         position: fixed !important;
         width: 100vw !important;
@@ -870,7 +780,7 @@ function RadiologyViewer() {
         touch-action: none !important;
       `;
       
-      document.documentElement.style.cssText = `
+      document.documentElement.style.cssText += `
         overflow: hidden !important;
         height: 100vh !important;
         width: 100vw !important;
@@ -887,11 +797,7 @@ function RadiologyViewer() {
       }
       
       return () => {
-        clearInterval(interval);
-        window.removeEventListener('resize', forceUpdate);
-        window.removeEventListener('orientationchange', forceUpdate);
-        
-        // Reset styles
+        // Reset styles au démontage
         document.body.style.cssText = '';
         document.documentElement.style.cssText = '';
         
@@ -907,7 +813,7 @@ function RadiologyViewer() {
   // Force les bonnes dimensions sur mobile
   useEffect(() => {
     if (isMobile && viewMode > 2) {
-      setViewMode(1); // Force le mode 1 si on est en mode 3/4 sur mobile
+      setViewMode(1);
     }
   }, [isMobile, viewMode]);
 
@@ -1003,7 +909,6 @@ function RadiologyViewer() {
           setCurrentFolderBottomLeft(folders[2] || folders[0] || '');
           setCurrentFolderBottomRight(folders[3] || folders[1] || folders[0] || '');
           
-          // Initialiser tous les index à 0
           setCurrentIndexLeft(0);
           setCurrentIndexRight(0);
           setCurrentIndexTopLeft(0);
@@ -1186,7 +1091,6 @@ function RadiologyViewer() {
             onDragStart={(e) => !isMobile && handleDragStart(e, folder)}
             onClick={() => {
               if (isMobile) {
-                // Sur mobile, charge toujours dans le viewer principal
                 loadImage(folder, 0, viewMode === 1 ? 'single' : 'left');
                 setCurrentFolderLeft(folder);
                 setCurrentIndexLeft(0);
@@ -1213,7 +1117,6 @@ function RadiologyViewer() {
   // ==================== FONCTION DE RENDU DU MAIN VIEWER ====================
 
   const renderMainViewer = useCallback(() => {
-    // Sur mobile, force les modes 3 et 4 vers le mode 1
     if (isMobile && (viewMode === 3 || viewMode === 4)) {
       return renderViewer('single', styles.singleViewer);
     }
@@ -1231,7 +1134,6 @@ function RadiologyViewer() {
         );
       
       case 3:
-        // Mode 3 uniquement sur desktop
         return (
           <div className={styles.tripleViewer}>
             {renderViewer('topLeft', styles.viewerThird)}
@@ -1241,7 +1143,6 @@ function RadiologyViewer() {
         );
       
       case 4:
-        // Mode 4 uniquement sur desktop
         return (
           <div className={styles.quadViewer}>
             <div className={styles.quadTop}>
@@ -1354,6 +1255,7 @@ function RadiologyViewer() {
               </>
             )}
           </button>
+          {/* 🔧 CORRECTION : Texte "Fiche" sur mobile géré par CSS */}
           <Link to={`/sheet/${caseId}`} className={styles.sheetLink}>
             📋 Fiche récapitulative
           </Link>
