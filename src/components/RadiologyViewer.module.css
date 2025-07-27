@@ -67,8 +67,8 @@
     margin-bottom: calc(var(--bottom-bar-height) - 25px);
     
     /* Force les dimensions exactes sur mobile */
-    height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 25px); /* 🔧 +25px au lieu de +20px - augmente le container */
-    max-height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 25px);
+    height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 45px); /* 🔧 +25px au lieu de +20px - augmente le container */
+    max-height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 45px);
     flex-shrink: 0;
   }
 }
