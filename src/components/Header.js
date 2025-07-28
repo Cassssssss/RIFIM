@@ -9,18 +9,16 @@ const HeaderWrapper = styled.header`
   padding: 1rem 0;
   width: 100%;
   transition: background-color 0.3s ease, color 0.3s ease;
+  
+  /* 🔧 SOLUTION : Position fixed MAIS avec z-index plus BAS que RadiologyViewer */
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 999998; /* Juste en dessous du menu */
+  z-index: 50; /* 🔧 TRÈS IMPORTANT : Plus bas que RadiologyViewer (z-index: 100) */
+  
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(8px);
-  
-  /* 🔧 CORRECTION PRINCIPALE : Hauteur fixe stable pour tous les écrans */
-  height: 60px;
-  min-height: 60px;
-  max-height: 60px;
   
   /* Mobile optimizations */
   @media (max-width: 768px) {
@@ -28,32 +26,6 @@ const HeaderWrapper = styled.header`
     /* Support pour les safe areas iPhone */
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
-    
-    /* 🔧 GARDE la même hauteur sur mobile */
-    height: 60px;
-    min-height: 60px;
-    max-height: 60px;
-  }
-
-  /* 🔧 AJOUT : Gestion du mode paysage mobile */
-  @media (max-width: 1024px) and (orientation: landscape) {
-    padding: 0.25rem 0;
-    /* 🔧 HAUTEUR RÉDUITE en paysage mais stable */
-    height: 50px;
-    min-height: 50px;
-    max-height: 50px;
-    
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-    padding-top: calc(0.25rem + env(safe-area-inset-top));
-  }
-  
-  /* 🔧 iPhone en paysage - encore plus compact */
-  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    padding: 0.25rem 0;
-    height: 45px;
-    min-height: 45px;
-    max-height: 45px;
   }
 `;
 
@@ -65,25 +37,12 @@ const HeaderContent = styled.div`
   width: 100%;
   margin: 0 auto;
   padding: 0 2rem;
-  height: 100%;
   
   /* Mobile responsive */
   @media (max-width: 768px) {
     padding: 0 1rem;
+    /* Ajuste l'espacement pour mobile */
     gap: 0.5rem;
-    height: 100%;
-  }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    padding: 0 0.75rem;
-    gap: 0.25rem;
-    height: 100%;
-  }
-  
-  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    padding: 0 0.5rem;
-    gap: 0.15rem;
-    height: 100%;
   }
 `;
 
@@ -112,33 +71,6 @@ const Logo = styled(Link)`
       }
     }
   }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    font-size: 1rem;
-    gap: 0.2rem;
-    
-    svg {
-      width: 18px;
-      height: 18px;
-    }
-    
-    span {
-      font-size: 0.9rem;
-    }
-  }
-  
-  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    font-size: 0.9rem;
-    
-    svg {
-      width: 16px;
-      height: 16px;
-    }
-    
-    span {
-      font-size: 0.8rem;
-    }
-  }
 `;
 
 const CenterTitle = styled.h2`
@@ -160,15 +92,6 @@ const CenterTitle = styled.h2`
       display: none;
     }
   }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    font-size: 0.9rem;
-    gap: 0.2rem;
-  }
-  
-  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    display: none;
-  }
 `;
 
 const RightSection = styled.div`
@@ -180,14 +103,6 @@ const RightSection = styled.div`
   /* Mobile responsive */
   @media (max-width: 768px) {
     gap: 0.5rem;
-  }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    gap: 0.25rem;
-  }
-  
-  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    gap: 0.15rem;
   }
 `;
 
@@ -223,29 +138,6 @@ const ThemeToggleButton = styled.button`
     /* Supprime l'effet hover sur mobile */
     &:hover {
       transform: none;
-    }
-  }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    padding: 0.3rem;
-    min-height: 32px;
-    min-width: 32px;
-    border-radius: 6px;
-    
-    svg {
-      width: 16px;
-      height: 16px;
-    }
-  }
-  
-  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    padding: 0.25rem;
-    min-height: 28px;
-    min-width: 28px;
-    
-    svg {
-      width: 14px;
-      height: 14px;
     }
   }
 `;
@@ -292,37 +184,9 @@ const MenuButton = styled.button`
       }
     }
   }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    padding: 0.3rem;
-    gap: 0.2rem;
-    min-height: 32px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    
-    svg {
-      width: 14px;
-      height: 14px;
-    }
-  }
-  
-  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    padding: 0.25rem;
-    min-height: 28px;
-    font-size: 0.75rem;
-    
-    span {
-      display: none;
-    }
-    
-    svg {
-      width: 12px;
-      height: 12px;
-    }
-  }
 `;
 
-/* 🔧 CORRECTION MAJEURE : Menu dropdown adaptatif */
+/* 🔧 Menu dropdown avec z-index TRÈS ÉLEVÉ pour passer au-dessus de TOUT */
 const DropdownMenu = styled.div`
   position: absolute;
   top: calc(100% + 0.5rem);
@@ -333,7 +197,7 @@ const DropdownMenu = styled.div`
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   padding: 0.75rem 0;
   display: ${props => props.isOpen ? 'block' : 'none'};
-  z-index: 99999; /* Z-index très élevé */
+  z-index: 999999; /* 🔧 Z-index MAXIMAL pour le menu */
   min-width: 280px;
   backdrop-filter: blur(8px);
   animation: ${props => props.isOpen ? 'dropdownSlideIn' : 'dropdownSlideOut'} 0.2s ease;
@@ -362,7 +226,7 @@ const DropdownMenu = styled.div`
     }
   }
   
-  /* 🔧 CORRECTION : Menu plein écran sur mobile */
+  /* 🔧 Menu plein écran sur mobile */
   @media (max-width: 768px) {
     /* Menu plein écran sur mobile */
     position: fixed;
@@ -377,7 +241,7 @@ const DropdownMenu = styled.div`
     padding: 1rem;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    z-index: 999999; /* Z-index encore plus élevé sur mobile */
+    z-index: 9999999; /* 🔧 Z-index ENCORE PLUS ÉLEVÉ sur mobile */
     max-height: none;
     border: none;
     
@@ -414,7 +278,7 @@ const DropdownMenu = styled.div`
   }
 `;
 
-/* 🔧 NOUVEAU : Header mobile avec bouton fermer */
+/* Header mobile avec bouton fermer */
 const MobileMenuHeader = styled.div`
   display: none;
   
@@ -632,7 +496,7 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
   const handleMenuToggle = () => {
     setShowMenu(!showMenu);
     
-    // 🔧 CORRECTION : Empêche le scroll du body quand le menu mobile est ouvert
+    // 🔧 Empêche le scroll du body quand le menu mobile est ouvert
     if (!showMenu) {
       document.body.classList.add('menu-open');
     } else {
@@ -701,7 +565,7 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
           </MenuButton>
 
           <DropdownMenu isOpen={showMenu}>
-            {/* 🔧 NOUVEAU : Header mobile uniquement */}
+            {/* Header mobile uniquement */}
             <MobileMenuHeader>
               <MobileMenuTitle>Menu</MobileMenuTitle>
               <MobileCloseButton onClick={handleMenuItemClick}>
@@ -758,7 +622,7 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
 
             <MenuDivider />
 
-            {/* 🔧 AJOUT IMPORTANT : Section Protocoles */}
+            {/* Section Protocoles */}
             <MenuSection>
               <SectionTitle>
                 <Activity size={18} />
