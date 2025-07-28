@@ -7,17 +7,20 @@
   --safe-area-left: env(safe-area-inset-left, 0px);
   --safe-area-right: env(safe-area-inset-right, 0px);
   
-  /* 🔧 CORRECTION : Espaces exacts pour éviter le rognage */
+  /* 🔧 NOUVEAU : Variables ajustées pour header sticky */
   --content-padding-top: 8px;
   --content-padding-bottom: 8px;
   --desktop-gap: 8px;
   --mobile-gap: 4px;
+  
+  /* 🔧 CORRECTION : Calcul ajusté pour header sticky */
+  --sticky-header-offset: 0px; /* Header sticky ne nécessite pas d'offset */
 }
 
-/* ==================== CONTAINER PRINCIPAL - FIXE ET STABLE ==================== */
+/* ==================== CONTAINER PRINCIPAL - ADAPTÉ POUR HEADER STICKY ==================== */
 .container {
   position: fixed;
-  top: 10px;
+  top: 0px; /* 🔧 CORRECTION : Pas d'offset pour header sticky */
   left: 0;
   width: 100vw;
   height: 100vh;
@@ -32,12 +35,12 @@
   margin: 0;
   padding: 0;
   
-  /* 🔧 AJOUT : Empêche le scroll sur mobile */
+  /* Empêche le scroll sur mobile */
   touch-action: none;
   
   @media (max-width: 768px) {
-    /* 🔧 MODIFICATION : Valeur spécifique pour mobile uniquement */
-    top: -0px;  /* Ici vous pouvez modifier uniquement pour mobile */
+    /* 🔧 CORRECTION : Header sticky libère l'espace automatiquement */
+    top: 0px;
     height: 100vh;
     height: 100dvh;
     /* Force le no-scroll absolu sur mobile */
@@ -46,15 +49,15 @@
   }
 }
 
-/* ==================== CONTENT - DIMENSIONS RÉDUITES MOBILE ==================== */
+/* ==================== CONTENT - DIMENSIONS AJUSTÉES POUR STICKY ==================== */
 .content {
-  /* 🔧 CORRECTION : Espace exact entre header et bottom bar avec padding */
+  /* 🔧 CORRECTION MAJEURE : Avec header sticky, on n'a plus besoin de margin-top ! */
   flex: 1;
   display: flex;
   flex-direction: column;
   
-  /* Position après le header avec padding pour éviter le rognage */
-  margin-top: calc(var(--header-height) + var(--content-padding-top));
+  /* 🔧 NOUVEAU : Le header sticky libère automatiquement l'espace */
+  margin-top: 0px;
   
   /* Espace pour la bottom bar avec padding */
   margin-bottom: calc(var(--bottom-bar-height) + var(--content-padding-bottom));
@@ -64,13 +67,13 @@
   padding: 0;
   
   @media (max-width: 768px) {
-    /* 🔧 CORRECTION MOBILE : Réduit la marge top et augmente la hauteur */
-    margin-top: calc(var(--header-height) - 35px); /* 🔧 +0px au lieu de +2px - supprime l'espace vide */
+    /* 🔧 CORRECTION MOBILE : Header sticky s'occupe automatiquement de l'espace */
+    margin-top: 0px; /* 🔧 Pas de marge nécessaire avec sticky */
     margin-bottom: calc(var(--bottom-bar-height) + 14px);
     
-    /* Force les dimensions exactes sur mobile */
-    height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 55px); /* 🔧 +25px au lieu de +20px - augmente le container */
-    max-height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 55px);
+    /* 🔧 NOUVEAU : Hauteur recalculée pour sticky header */
+    height: calc(100vh - var(--bottom-bar-height) - 14px);
+    max-height: calc(100vh - var(--bottom-bar-height) - 14px);
     flex-shrink: 0;
   }
 }
@@ -89,7 +92,7 @@
     padding: var(--mobile-gap);
     gap: var(--mobile-gap);
     
-    /* 🔧 FORCE les dimensions exactes sur mobile */
+    /* Force les dimensions exactes sur mobile */
     height: 100%;
     max-height: 100%;
   }
@@ -130,7 +133,7 @@
   }
   
   @media (max-width: 768px) {
-    /* 🔧 RÉDUIT encore plus sur mobile */
+    /* RÉDUIT encore plus sur mobile */
     width: 65px;
     padding: 3px;
     gap: 3px;
@@ -173,13 +176,13 @@
   }
   
   @media (max-width: 768px) {
-    /* 🔧 ULTRA COMPACT mobile */
+    /* ULTRA COMPACT mobile */
     min-height: 55px;
     max-height: 55px;
     border-radius: 6px;
     margin-bottom: 2px;
     cursor: pointer;
-    border-width: px;
+    border-width: 1px;
     
     &:hover {
       transform: none;
@@ -244,7 +247,7 @@
   @media (max-width: 768px) {
     border-radius: 4px;
     
-    /* 🔧 FORCE les dimensions exactes sur mobile */
+    /* Force les dimensions exactes sur mobile */
     height: 100%;
     max-height: 100%;
     flex-shrink: 0;
@@ -309,19 +312,9 @@
   border-radius: 0px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   
-  /* 🔧 SUPPRESSION : Supprime l'effet hover qui crée la surbrillance bleue */
-  /* &:hover {
-    border-color: rgb(var(--color-primary));
-  } */
-  
   @media (max-width: 768px) {
     border-radius: 0px;
     border-width: 1px;
-    
-    /* 🔧 SUPPRESSION : Supprime aussi l'effet hover sur mobile */
-    /* &:hover {
-      border-color: rgb(var(--color-border));
-    } */
     
     touch-action: pan-x pan-y pinch-zoom;
     -webkit-user-select: none;
@@ -400,7 +393,7 @@
   }
 }
 
-/* ==================== BOTTOM BAR - POSITION PLUS HAUTE SUR MOBILE ==================== */
+/* ==================== BOTTOM BAR - AJUSTÉE POUR HEADER STICKY ==================== */
 .bottomBar {
   position: fixed;
   bottom: 0;
@@ -435,26 +428,25 @@
   }
   
   @media (max-width: 768px) {
-    /* 🔧 REMONTE ENCORE PLUS LA BOTTOM BAR pour qu'elle soit visible */
+    /* 🔧 CORRECTION : Bottom bar ajustée pour header sticky */
     position: fixed;
-    bottom: 31.5px;
-    left: 0; /* 🔧 Supprime les marges latérales comme le header */
+    bottom: 0px; /* 🔧 Reste en bas, header sticky ne l'affecte pas */
+    left: 0;
     right: 0;
-    width: 100vw; /* 🔧 Pleine largeur comme le header */
+    width: 100vw;
     
-    /* 🔧 HAUTEUR ET STYLE COMME LE HEADER */
+    /* Hauteur et style comme avant */
     height: calc(var(--bottom-bar-height) - 15px);
     min-height: 45px;
-    border-radius: 0; /* 🔧 Supprime les bords ronds - forme comme le header */
+    border-radius: 0;
     
     padding: 6px 10px;
-    padding-bottom: 6px;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-bottom: calc(6px + var(--safe-area-bottom));
+    padding-left: calc(10px + var(--safe-area-left));
+    padding-right: calc(10px + var(--safe-area-right));
     
     z-index: 1002;
     
-    /* 🔧 Ombre plus subtile comme le header */
     box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15);
     
     & > div:last-child {
@@ -493,7 +485,7 @@
   }
   
   @media (max-width: 768px) {
-    /* 🔧 ENCORE PLUS COMPACT sur mobile */
+    /* ENCORE PLUS COMPACT sur mobile */
     padding: 6px 10px;
     font-size: 11px;
     margin-left: 3px;
@@ -557,7 +549,7 @@
   }
   
   @media (max-width: 768px) {
-    /* 🔧 PLUS PETIT sur mobile */
+    /* PLUS PETIT sur mobile */
     width: 26px;
     height: 26px;
     font-size: 11px;
@@ -604,8 +596,8 @@
     left: -220px;
     padding: 14px;
     border-radius: 8px;
-    /* 🔧 AJUSTE pour la bottom bar flottante */
-    bottom: calc(var(--bottom-bar-height) + 30px);
+    /* Ajuste pour la bottom bar */
+    bottom: calc(var(--bottom-bar-height) + 15px);
   }
 }
 
@@ -667,7 +659,7 @@
   font-weight: 600;
 }
 
-/* ==================== RESPONSE BOX - AJUSTÉE POUR BOTTOM BAR FLOTTANTE ==================== */
+/* ==================== RESPONSE BOX - AJUSTÉE POUR HEADER STICKY ==================== */
 .responseBox {
   position: fixed;
   bottom: calc(var(--bottom-bar-height) + 20px + var(--safe-area-bottom));
@@ -695,10 +687,10 @@
   }
   
   @media (max-width: 768px) {
-    /* 🔧 AJUSTE pour la bottom bar flottante */
+    /* Ajuste pour header sticky */
     right: calc(10px + var(--safe-area-right));
     left: calc(10px + var(--safe-area-left));
-    bottom: calc(var(--bottom-bar-height) + 50px); /* 🔧 Plus haut car bottom bar remontée */
+    bottom: calc(var(--bottom-bar-height) + 35px); /* Un peu plus haut */
     max-width: none;
     padding: 14px;
     border-radius: 8px;
@@ -715,7 +707,7 @@
   &::before {
     content: '💡';
     margin-right: 8px;
-    font-size: 8px;
+    font-size: 18px;
   }
   
   @media (max-width: 768px) {
@@ -728,40 +720,37 @@
 }
 
 /* ======================================================================================== */
-/* 🌟 NOUVELLE SECTION : MOBILE PAYSAGE (HORIZONTAL) OPTIMISÉ 🌟 */
+/* 🌟 MOBILE PAYSAGE (HORIZONTAL) OPTIMISÉ - AJUSTÉ POUR HEADER STICKY 🌟 */
 /* ======================================================================================== */
 
 @media (max-width: 1024px) and (orientation: landscape) {
   .container {
-    /* 🔧 AJUSTE pour le mode paysage mobile */
-    top: 9px;
-    height: 110vh;
-    height: 104dvh;
+    /* Ajuste pour header sticky */
+    top: 0px;
+    height: 100vh;
+    height: 100dvh;
   }
   
   .content {
-    /* 🔧 RÉDUIT les marges en paysage */
-    margin-top: calc(var(--header-height) - 10px);
+    /* Header sticky s'occupe automatiquement de l'espace */
+    margin-top: 0px;
     margin-bottom: calc(var(--bottom-bar-height) + 5px);
-    height: calc(100vh - var(--header-height) - var(--bottom-bar-height) );
-    max-height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 40px);
+    height: calc(100vh - var(--bottom-bar-height) - 5px);
+    max-height: calc(100vh - var(--bottom-bar-height) - 5px);
   }
   
   .layout {
-    /* 🔧 RÉDUIT le padding en paysage */
     padding: 2px;
     gap: 2px;
   }
   
   .folderGrid {
-    /* 🔧 ULTRA COMPACT en paysage */
     width: 50px;
     padding: 2px;
     gap: 2px;
   }
   
   .folderThumbnail {
-    /* 🔧 TRÈS PETITES vignettes en paysage */
     min-height: 40px;
     max-height: 40px;
     margin-bottom: 1px;
@@ -769,31 +758,26 @@
   }
   
   .folderThumbnailLabel {
-    /* 🔧 TEXTE ENCORE PLUS PETIT */
     font-size: 7px;
     padding: 2px 1px;
   }
   
   .mainViewer {
-    /* 🔧 ASSURE l'utilisation maximale de l'espace */
     border-radius: 2px;
   }
   
   .dualViewer {
-    /* 🔧 EN PAYSAGE : garde la disposition côte à côte */
     flex-direction: row;
     gap: 1px;
   }
   
   .viewerHalf {
-    /* 🔧 EN PAYSAGE : 50% chacun */
     width: 50%;
     height: 100%;
     flex: 1;
   }
   
   .folderLabel {
-    /* 🔧 LABELS PLUS PETITS */
     top: 3px;
     left: 3px;
     padding: 2px 4px;
@@ -802,7 +786,6 @@
   }
   
   .bottomBar {
-    /* 🔧 BOTTOM BAR PLUS COMPACTE EN PAYSAGE */
     bottom: 0px;
     height: calc(var(--bottom-bar-height) - 20px);
     min-height: 35px;
@@ -810,7 +793,6 @@
   }
   
   .responseButton, .sheetLink {
-    /* 🔧 BOUTONS ULTRA COMPACTS */
     padding: 4px 6px;
     font-size: 9px;
     height: 26px;
@@ -818,13 +800,11 @@
   }
   
   .shortcutIcon {
-    /* 🔧 ICÔNE PLUS PETITE */
     width: 22px;
     height: 22px;
     font-size: 9px;
   }
   
-  /* 🔧 CORRECTION SPÉCIALE : Cache le text "Fiche récapitulative" complètement */
   .sheetLink {
     font-size: 0;
     min-width: 30px;
@@ -839,7 +819,6 @@
 /* ==================== MOBILE PAYSAGE TRÈS PETIT (iPhone en paysage) ==================== */
 @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
   .folderGrid {
-    /* 🔧 ENCORE PLUS COMPACT pour iPhone paysage */
     width: 45px;
   }
   
@@ -854,7 +833,7 @@
   }
   
   .bottomBar {
-    bottom: 2px;
+    bottom: 0px;
     height: calc(var(--bottom-bar-height) - 25px);
     min-height: 30px;
   }
@@ -872,7 +851,7 @@
 
 /* ==================== FIXES POUR EMPÊCHER LE SCROLL MOBILE ==================== */
 @media (max-width: 768px) {
-  /* 🔧 CORRECTION : Force le no-scroll UNIQUEMENT sur le container du RadiologyViewer */
+  /* Force le no-scroll UNIQUEMENT sur le container du RadiologyViewer */
   .container {
     overflow: hidden !important;
     touch-action: none !important;
