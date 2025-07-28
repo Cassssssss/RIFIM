@@ -46,6 +46,11 @@ const HeaderWrapper = styled.header`
     height: 60px !important;
     min-height: 60px !important;
     max-height: 60px !important;
+    
+    /* 🔧 FORCE ABSOLUE pour éviter la disparition */
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
   }
 
   /* ======================================================================================== */
@@ -736,36 +741,63 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
     document.body.classList.remove('menu-open');
   };
 
-  // 🔧 NOUVEAU : Effect pour forcer la position fixe sur mobile
+  // 🔧 EFFECT RENFORCÉ : Force la position fixe sur mobile
   useEffect(() => {
     const forceHeaderPosition = () => {
       const header = document.querySelector('header');
       if (header && window.innerWidth <= 768) {
-        header.style.position = 'fixed';
-        header.style.top = '0';
-        header.style.left = '0';
-        header.style.right = '0';
-        header.style.zIndex = '999998';
-        header.style.transform = 'translate3d(0, 0, 0)';
+        // Force tous les styles critiques
+        header.style.cssText = `
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          width: 100vw !important;
+          z-index: 999998 !important;
+          transform: translate3d(0, 0, 0) !important;
+          -webkit-transform: translate3d(0, 0, 0) !important;
+          will-change: transform !important;
+          backface-visibility: hidden !important;
+          -webkit-backface-visibility: hidden !important;
+          display: block !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+        `;
       }
     };
 
-    // Force la position au montage
+    // Force immédiatement
     forceHeaderPosition();
     
-    // Force la position lors du scroll sur mobile
+    // Force à chaque scroll
     const handleScroll = () => {
       if (window.innerWidth <= 768) {
-        forceHeaderPosition();
+        requestAnimationFrame(forceHeaderPosition);
       }
+    };
+
+    // Force à chaque resize
+    const handleResize = () => {
+      forceHeaderPosition();
+    };
+
+    // Force à chaque changement d'orientation
+    const handleOrientationChange = () => {
+      setTimeout(forceHeaderPosition, 100);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', forceHeaderPosition);
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleOrientationChange);
+    
+    // Force aussi après un délai (pour les cas extrêmes)
+    const timeout = setTimeout(forceHeaderPosition, 500);
     
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', forceHeaderPosition);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleOrientationChange);
+      clearTimeout(timeout);
     };
   }, []);
 
