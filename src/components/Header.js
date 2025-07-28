@@ -24,30 +24,42 @@ const HeaderWrapper = styled.header`
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
     
-    /* 🔧 CORRECTION SIMPLE : Position fixe stable sur mobile */
+    /* 🔧 SOLUTION ULTIME : Position sticky + fixed pour forcer la visibilité */
+    position: -webkit-sticky !important;
+    position: sticky !important;
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
-    width: 100% !important;
-    z-index: 999998 !important;
+    width: 100vw !important;
+    z-index: 999999 !important;
     
-    /* Force l'affichage */
+    /* 🔧 FORCE l'affichage avec contain pour isoler */
+    contain: layout style paint !important;
+    isolation: isolate !important;
+    
+    /* 🔧 GPU Layer pour performance */
+    will-change: transform, position !important;
+    transform: translate3d(0, 0, 0) !important;
+    -webkit-transform: translate3d(0, 0, 0) !important;
+    
+    /* 🔧 FORCE l'affichage absolu */
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
     
-    /* Hauteur fixe */
-    height: 60px;
-    min-height: 60px;
+    /* 🔧 Hauteur fixe stable */
+    height: 60px !important;
+    min-height: 60px !important;
+    max-height: 60px !important;
     
-    /* Améliore le rendu sur iOS Safari */
+    /* 🔧 Empêche les navigateurs de cacher le header */
+    -webkit-backface-visibility: hidden !important;
+    backface-visibility: hidden !important;
+    
+    /* Améliore le rendu */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    
-    /* Empêche les transformations */
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
   }
 
   @media (max-width: 1024px) and (orientation: landscape) {
@@ -55,6 +67,7 @@ const HeaderWrapper = styled.header`
     min-height: 50px;
     height: 50px;
     
+    position: sticky !important;
     position: fixed !important;
     top: 0 !important;
     
@@ -68,6 +81,7 @@ const HeaderWrapper = styled.header`
     min-height: 45px;
     height: 45px;
     
+    position: sticky !important;
     position: fixed !important;
     top: 0 !important;
   }
@@ -618,6 +632,7 @@ const UserInfo = styled.div`
 function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = null }) {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
+  const headerRef = useRef(null);
   const location = useLocation();
 
   const handleMenuToggle = () => {
@@ -635,32 +650,94 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
     document.body.classList.remove('menu-open');
   };
 
-  // 🔧 CORRECTION SIMPLE : Juste force la position sur mobile sans surveillance excessive
+  // 🔧 SOLUTION ULTIME : Force le header à rester visible avec Intersection Observer
   useEffect(() => {
-    const forceHeaderPosition = () => {
-      const header = document.querySelector('header');
-      if (header && window.innerWidth <= 768) {
-        header.style.position = 'fixed';
-        header.style.top = '0px';
-        header.style.left = '0px';
-        header.style.right = '0px';
-        header.style.zIndex = '999998';
+    if (typeof window === 'undefined' || window.innerWidth > 768) return;
+
+    const header = headerRef.current;
+    if (!header) return;
+
+    // 🔧 FORCE la position sticky + fixed en permanence
+    const forceHeaderVisibility = () => {
+      header.style.cssText = `
+        position: -webkit-sticky !important;
+        position: sticky !important;
+        position: fixed !important;
+        top: 0px !important;
+        left: 0px !important;
+        right: 0px !important;
+        width: 100vw !important;
+        z-index: 999999 !important;
+        contain: layout style paint !important;
+        isolation: isolate !important;
+        will-change: transform, position !important;
+        transform: translate3d(0, 0, 0) !important;
+        -webkit-transform: translate3d(0, 0, 0) !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        height: 60px !important;
+        min-height: 60px !important;
+        max-height: 60px !important;
+        -webkit-backface-visibility: hidden !important;
+        backface-visibility: hidden !important;
+      `;
+    };
+
+    // 🔧 Intersection Observer pour détecter si le header sort de la vue
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting || entry.intersectionRatio < 1) {
+            // Si le header n'est pas complètement visible, force sa visibilité
+            forceHeaderVisibility();
+          }
+        });
+      },
+      {
+        threshold: [0, 0.1, 0.5, 1.0], // Multiple seuils pour détecter toute disparition
+        rootMargin: '0px 0px 0px 0px'
+      }
+    );
+
+    // 🔧 Observer le header
+    observer.observe(header);
+
+    // 🔧 Force immédiatement
+    forceHeaderVisibility();
+
+    // 🔧 Surveillance continue avec RAF
+    let rafId;
+    const continuousCheck = () => {
+      if (window.innerWidth <= 768) {
+        forceHeaderVisibility();
+      }
+      rafId = requestAnimationFrame(continuousCheck);
+    };
+    continuousCheck();
+
+    // 🔧 Force sur tous les événements possibles
+    const events = ['scroll', 'resize', 'orientationchange', 'touchstart', 'touchmove', 'touchend'];
+    const handleEvent = () => {
+      if (window.innerWidth <= 768) {
+        setTimeout(forceHeaderVisibility, 0);
+        setTimeout(forceHeaderVisibility, 50);
+        setTimeout(forceHeaderVisibility, 100);
       }
     };
 
-    // Force au chargement
-    forceHeaderPosition();
-    
-    // Force au redimensionnement et changement d'orientation
-    const handleResize = () => forceHeaderPosition();
-    const handleOrientationChange = () => setTimeout(forceHeaderPosition, 100);
+    events.forEach(event => {
+      window.addEventListener(event, handleEvent, { passive: true });
+      document.addEventListener(event, handleEvent, { passive: true });
+    });
 
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleOrientationChange);
-    
     return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleOrientationChange);
+      observer.disconnect();
+      if (rafId) cancelAnimationFrame(rafId);
+      events.forEach(event => {
+        window.removeEventListener(event, handleEvent);
+        document.removeEventListener(event, handleEvent);
+      });
     };
   }, []);
 
@@ -688,7 +765,7 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
   }, [location.pathname]);
 
   return (
-    <HeaderWrapper>
+    <HeaderWrapper ref={headerRef}>
       <HeaderContent>
         <Logo to="/">
           <Stethoscope size={24} />
