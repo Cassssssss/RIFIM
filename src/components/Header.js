@@ -31,7 +31,7 @@ const HeaderWrapper = styled.header`
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     
-    /* Force la position fixe stable */
+    /* 🔧 CORRECTION CRITIQUE : Force la position fixe stable */
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
@@ -41,6 +41,11 @@ const HeaderWrapper = styled.header`
     /* Améliore le rendu sur iOS Safari */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    
+    /* 🔧 NOUVEAU : Empêche la barre d'adresse de cacher le header */
+    height: 60px !important;
+    min-height: 60px !important;
+    max-height: 60px !important;
   }
 
   /* ======================================================================================== */
@@ -49,9 +54,13 @@ const HeaderWrapper = styled.header`
   
   @media (max-width: 1024px) and (orientation: landscape) {
     /* 🔧 HEADER ULTRA COMPACT en mode paysage mobile */
-    padding: 0.25rem ;
-    min-height: 60px;
-    height: 60px;
+    padding: 0.25rem 0; /* 🔧 CORRECTION : padding corrigé */
+    min-height: 50px; /* 🔧 CORRECTION : hauteur réduite mais stable */
+    height: 50px;
+    
+    /* 🔧 FORCE position fixe en paysage aussi */
+    position: fixed !important;
+    top: 0 !important;
     
     /* Support pour les safe areas en paysage */
     padding-left: env(safe-area-inset-left);
@@ -59,11 +68,16 @@ const HeaderWrapper = styled.header`
     padding-top: calc(0.25rem + env(safe-area-inset-top));
   }
   
-  @media (max-width: 896px) and (orientation: landscape) and (max-height: 14px) {
+  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
+    /* 🔧 CORRECTION : max-height corrigé */
     /* 🔧 ENCORE PLUS COMPACT pour iPhone en paysage */
-    padding: 0.5rem 0;
-    min-height: 35px;
-    height: 35px;
+    padding: 0.25rem 0; /* 🔧 CORRECTION : padding corrigé */
+    min-height: 45px; /* 🔧 CORRECTION : hauteur réduite mais pas trop */
+    height: 45px;
+    
+    /* 🔧 FORCE position fixe */
+    position: fixed !important;
+    top: 0 !important;
   }
   
   /* ======================================================================================== */
@@ -79,12 +93,14 @@ const HeaderContent = styled.div`
   width: 100%;
   margin: 0 auto;
   padding: 0 2rem;
+  height: 100%; /* 🔧 AJOUT : Force la hauteur complète */
   
   /* Mobile responsive */
   @media (max-width: 768px) {
     padding: 0 1rem;
     /* Ajuste l'espacement pour mobile */
     gap: 0.5rem;
+    height: 100%; /* 🔧 FORCE la hauteur sur mobile */
   }
 
   /* ======================================================================================== */
@@ -102,6 +118,7 @@ const HeaderContent = styled.div`
     /* 🔧 ULTRA COMPACT pour iPhone paysage */
     padding: 0 0.5rem;
     gap: 0.15rem;
+    height: 100%;
   }
   
   /* ======================================================================================== */
@@ -718,6 +735,39 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
     // Restaure le scroll du body
     document.body.classList.remove('menu-open');
   };
+
+  // 🔧 NOUVEAU : Effect pour forcer la position fixe sur mobile
+  useEffect(() => {
+    const forceHeaderPosition = () => {
+      const header = document.querySelector('header');
+      if (header && window.innerWidth <= 768) {
+        header.style.position = 'fixed';
+        header.style.top = '0';
+        header.style.left = '0';
+        header.style.right = '0';
+        header.style.zIndex = '999998';
+        header.style.transform = 'translate3d(0, 0, 0)';
+      }
+    };
+
+    // Force la position au montage
+    forceHeaderPosition();
+    
+    // Force la position lors du scroll sur mobile
+    const handleScroll = () => {
+      if (window.innerWidth <= 768) {
+        forceHeaderPosition();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', forceHeaderPosition);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', forceHeaderPosition);
+    };
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
