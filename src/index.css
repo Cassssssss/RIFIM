@@ -182,33 +182,6 @@ body {
     @apply ml-6 mt-4 border-l-2 border-indigo-300 dark:border-indigo-600 pl-4;
   }
 
-  .header {
-    @apply bg-blue-600 dark:bg-gray-800 text-white shadow-md sticky top-0 z-50;
-    
-    /* Support des safe areas */
-    padding-top: var(--mobile-safe-top);
-  }
-
-  .header-content {
-    @apply container mx-auto py-4 flex justify-between items-center;
-  }
-
-  .header-title {
-    @apply text-3xl font-bold;
-  }
-
-  .header-nav {
-    @apply flex space-x-6;
-  }
-
-  .header-link {
-    @apply text-white hover:text-blue-200 dark:hover:text-blue-300 transition-colors duration-300 uppercase tracking-wider text-sm font-medium;
-    
-    /* Optimisations tactiles */
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-  }
-
   .main-title {
     @apply text-4xl font-bold text-center mb-12 text-gray-800 dark:text-gray-200;
   }
@@ -228,6 +201,33 @@ body {
   /* Classe pour le texte des options en mode sombre */
   .questionnaire-option {
     @apply text-gray-700 dark:text-white;
+  }
+}
+
+/* ==================== 🔧 CORRECTION CRITIQUE : HEADER MOBILE STABLE ==================== */
+
+/* 🔧 SUPPRESSION COMPLÈTE des anciennes règles header problématiques */
+/* Toutes les règles .header ont été supprimées pour éviter les conflits */
+
+/* 🔧 NOUVELLE APPROCHE : Support du Header styled-component uniquement */
+@media (max-width: 768px) {
+  /* 🔧 ASSURE que le header styled-component reste visible */
+  header[class*="HeaderWrapper"] {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    z-index: 999998 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  /* 🔧 ASSURE que le contenu principal laisse l'espace pour le header */
+  main, .main-content, [class*="PageContainer"] {
+    margin-top: var(--header-height) !important;
+    padding-top: 0 !important;
   }
 }
 
@@ -354,50 +354,6 @@ body {
     margin-left: 1rem;
     margin-top: 0.75rem;
     padding-left: 0.75rem;
-  }
-}
-
-/* 🔧 CORRECTION MAJEURE : Header mobile PARFAITEMENT CALCULÉ */
-@media (max-width: 768px) {
-  .header {
-    position: fixed;
-    width: 100%;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: var(--header-height);
-    z-index: 999998;
-  }
-  
-  .header-content {
-    padding: 0.75rem 1rem;
-    height: 100%;
-  }
-  
-  .header-title {
-    font-size: 1.25rem;
-    line-height: 1.75rem;
-  }
-  
-  .header-nav {
-    gap: 1rem;
-  }
-  
-  .header-link {
-    font-size: 0.75rem;
-    line-height: 1rem;
-    transition: none;
-    min-height: 40px;
-    display: flex;
-    align-items: center;
-  }
-  
-  .header-link:hover {
-    color: rgb(255 255 255);
-  }
-  
-  .header-link:active {
-    color: rgb(191 219 254);
   }
 }
 
@@ -706,47 +662,6 @@ p {
     height: var(--bottom-bar-height) !important;
     z-index: 1002 !important;
   }
-  /* ==================== CORRECTION HEADER FIXE MOBILE ==================== */
-@media (max-width: 768px) {
-  /* 🔧 CLASSE pour empêcher le scroll quand le menu mobile est ouvert */
-  body.menu-open {
-    overflow: hidden !important;
-    position: fixed !important;
-    width: 100% !important;
-    height: 100% !important;
-  }
-  
-  /* 🔧 FORCE le header à rester fixe - règle globale de sécurité */
-  header {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    z-index: 999998 !important;
-    transform: translate3d(0, 0, 0) !important;
-    -webkit-transform: translate3d(0, 0, 0) !important;
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-  }
-  
-  /* 🔧 CORRECTION pour tous les elements fixed sur mobile */
-  *[style*="position: fixed"] {
-    transform: translate3d(0, 0, 0) !important;
-    -webkit-transform: translate3d(0, 0, 0) !important;
-  }
-}
-
-/* 🔧 FORCE la position même sur changement d'orientation */
-@media (max-width: 768px) and (orientation: landscape),
-       (max-width: 768px) and (orientation: portrait) {
-  header {
-    position: fixed !important;
-    top: 0 !important;
-    transform: translate3d(0, 0, 0) !important;
-    -webkit-transform: translate3d(0, 0, 0) !important;
-  }
-}
 }
 
 /* ==================== TAILWIND IMPORTS (à la fin) ==================== */
