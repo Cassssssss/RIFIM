@@ -373,50 +373,81 @@ const DropdownMenu = styled.div`
   }
   
   @media (max-width: 768px) {
+    /* 🔧 NOUVELLE MÉTHODE : Menu modal compact centré */
+    position: fixed;
+    top: 800%;
+    left: -70%;
+    transform: translate(-50%, -50%);
+    width: 90vw;
+    max-width: 350px;
+    max-height: 70vh;
+    min-width: unset;
+    border-radius: 16px;
+    padding: 1.5rem;
+    
+    /* Style modal avec overlay sombre */
+    background-color: ${props => props.theme.card};
+    backdrop-filter: blur(16px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    border: 2px solid ${props => props.theme.border};
+    
+    /* Scroll fluide */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    
+    /* Z-index très élevé pour passer au-dessus de tout */
+    z-index: 1000000;
+    
+    animation: ${props => props.$isOpen ? 'mobileModalIn' : 'mobileModalOut'} 0.3s ease;
+  }
+  
+  @keyframes mobileModalIn {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
+  @keyframes mobileModalOut {
+    from {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.9);
+    }
+  }
+`;
+
+const MobileOverlay = styled.div`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: ${props => props.$isOpen ? 'block' : 'none'};
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    width: 100vw;
-    height: 100vh;
-    min-width: unset;
-    border-radius: 0;
-    padding: 1rem;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    background-color: rgba(0, 0, 0, 0.5);
     z-index: 999999;
-    max-height: none;
-    border: none;
-    
-    padding-top: calc(1rem + env(safe-area-inset-top));
-    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
-    padding-left: calc(1rem + env(safe-area-inset-left));
-    padding-right: calc(1rem + env(safe-area-inset-right));
-    
-    animation: ${props => props.$isOpen ? 'mobileSlideIn' : 'mobileSlideOut'} 0.3s ease;
+    backdrop-filter: blur(4px);
+    animation: ${props => props.$isOpen ? 'overlayFadeIn' : 'overlayFadeOut'} 0.3s ease;
   }
   
-  @keyframes mobileSlideIn {
-    from {
-      opacity: 0;
-      transform: translateX(100%);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
+  @keyframes overlayFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
-  @keyframes mobileSlideOut {
-    from {
-      opacity: 1;
-      transform: translateX(0);
-    }
-    to {
-      opacity: 0;
-      transform: translateX(100%);
-    }
+  @keyframes overlayFadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
   }
 `;
 
@@ -427,7 +458,7 @@ const MobileMenuHeader = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     padding-bottom: 1rem;
     border-bottom: 1px solid ${props => props.theme.border};
   }
@@ -467,7 +498,7 @@ const MenuSection = styled.div`
   }
   
   @media (max-width: 768px) {
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
   }
 `;
 
@@ -486,10 +517,10 @@ const SectionTitle = styled.div`
   letter-spacing: 0.5px;
   
   @media (max-width: 768px) {
-    padding: 1rem;
+    padding: 0.75rem;
     margin: 0;
-    font-size: 1rem;
-    border-radius: 12px;
+    font-size: 0.875rem;
+    border-radius: 8px;
   }
 `;
 
@@ -499,7 +530,7 @@ const MenuDivider = styled.div`
   margin: 0.5rem 0;
   
   @media (max-width: 768px) {
-    margin: 1rem 0;
+    margin: 0.75rem 0;
   }
 `;
 
@@ -529,19 +560,19 @@ const MenuItem = styled(Link)`
   }
   
   @media (max-width: 768px) {
-    padding: 1rem;
-    margin: 0 0 0.5rem 0;
-    border-radius: 12px;
-    font-size: 1rem;
-    min-height: 56px;
+    padding: 0.75rem;
+    margin: 0 0 0.25rem 0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    min-height: 48px;
     
     &:hover {
       transform: none;
     }
     
     svg {
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
     }
   }
 `;
@@ -574,19 +605,19 @@ const LogoutItem = styled.button`
   }
   
   @media (max-width: 768px) {
-    padding: 1rem;
+    padding: 0.75rem;
     margin: 0;
-    border-radius: 12px;
-    font-size: 1rem;
-    min-height: 56px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    min-height: 48px;
     
     &:hover {
       transform: none;
     }
     
     svg {
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
     }
   }
 `;
@@ -609,14 +640,14 @@ const UserInfo = styled.div`
   }
   
   @media (max-width: 768px) {
-    padding: 1rem;
+    padding: 0.75rem;
     margin: 0 0 1rem 0;
-    border-radius: 12px;
-    font-size: 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
     
     svg {
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
     }
   }
 `;
@@ -694,6 +725,8 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
               }} 
             />
           </MenuButton>
+
+          <MobileOverlay $isOpen={showMenu} onClick={handleMenuItemClick} />
 
           <DropdownMenu $isOpen={showMenu}>
             <MobileMenuHeader>

@@ -600,12 +600,16 @@
   }
   
   @media (max-width: 768px) {
-    width: 260px;
-    left: -220px;
-    padding: 14px;
+    /* 🔧 CORRECTION SIMPLE : Juste ajuster pour rester dans le cadre */
+    position: fixed;
+    bottom: 50px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    max-width: calc(100vw - 16px);
+    padding: 12px;
     border-radius: 8px;
-    /* 🔧 AJUSTE pour la bottom bar flottante */
-    bottom: calc(var(--bottom-bar-height) + 30px);
+    z-index: 10000;
   }
 }
 
@@ -869,35 +873,6 @@
 /* ======================================================================================== */
 /* 🌟 FIN DE LA SECTION MODE PAYSAGE 🌟 */
 /* ======================================================================================== */
-
-/* ==================== FIXES POUR EMPÊCHER LE SCROLL MOBILE ==================== */
-@media (max-width: 768px) {
-  /* 🔧 AJOUT : Force le no-scroll global sur mobile */
-  html, body {
-    overflow: hidden !important;
-    position: fixed !important;
-    width: 100% !important;
-    height: 100% !important;
-    touch-action: none !important;
-  }
-  
-  /* Supprime les transitions lourdes sur mobile */
-  .folderThumbnail,
-  .folderThumbnailImage,
-  .folderLabel {
-    transition: none;
-  }
-  
-  /* Force l'accélération matérielle uniquement où nécessaire */
-  .image {
-    transform: translateZ(0);
-  }
-  
-  /* Optimise le rendu des viewers */
-  .viewer, .viewerHalf, .singleViewer {
-    contain: strict;
-  }
-}
 
 /* ==================== ÉTATS DRAG & DROP (DESKTOP SEULEMENT) ==================== */
 @media (min-width: 769px) {
