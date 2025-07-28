@@ -14,21 +14,20 @@
   --mobile-gap: 4px;
 }
 
-/* ==================== CONTAINER PRINCIPAL - CORRIGÉ POUR HEADER FIXE ==================== */
+/* ==================== CONTAINER PRINCIPAL - FIXE ET STABLE ==================== */
 .container {
-  /* 🔧 CORRECTION MAJEURE : Position fixed corrigée pour header fixe */
   position: fixed;
-  top: var(--header-height); /* 🔧 COMMENCE APRÈS LE HEADER au lieu de top: 10px */
+  top: 10px;
   left: 0;
   width: 100vw;
-  height: calc(100vh - var(--header-height)); /* 🔧 HAUTEUR RÉDUITE pour tenir compte du header */
+  height: 100vh;
   
   display: flex;
   flex-direction: column;
   
   background: linear-gradient(135deg, rgb(var(--color-background)) 0%, rgb(var(--color-surface)) 100%);
   color: rgb(var(--color-text));
-  z-index: 100; /* 🔧 RÉDUIT : en dessous du header (999998) */
+  z-index: 100;
   overflow: hidden;
   margin: 0;
   padding: 0;
@@ -37,40 +36,25 @@
   touch-action: none;
   
   @media (max-width: 768px) {
-    /* 🔧 MOBILE : Même logique - position après le header */
-    top: var(--header-height);
-    height: calc(100vh - var(--header-height));
-    height: calc(100dvh - var(--header-height));
+    /* 🔧 MODIFICATION : Valeur spécifique pour mobile uniquement */
+    top: -0px;  /* Ici vous pouvez modifier uniquement pour mobile */
+    height: 100vh;
+    height: 100dvh;
     /* Force le no-scroll absolu sur mobile */
     overscroll-behavior: none;
     -webkit-overflow-scrolling: auto;
-  }
-
-  /* 🔧 AJOUT : Mode paysage mobile */
-  @media (max-width: 1024px) and (orientation: landscape) {
-    --header-height: 50px; /* Header plus petit en paysage */
-    top: var(--header-height);
-    height: calc(100vh - var(--header-height));
-    height: calc(100dvh - var(--header-height));
-  }
-  
-  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    --header-height: 45px; /* iPhone en paysage encore plus petit */
-    top: var(--header-height);
-    height: calc(100vh - var(--header-height));
-    height: calc(100dvh - var(--header-height));
   }
 }
 
 /* ==================== CONTENT - DIMENSIONS RÉDUITES MOBILE ==================== */
 .content {
-  /* 🔧 CORRECTION : Plus de marge top car le container commence déjà après le header */
+  /* 🔧 CORRECTION : Espace exact entre header et bottom bar avec padding */
   flex: 1;
   display: flex;
   flex-direction: column;
   
-  /* 🔧 SUPPRIME margin-top car le container est déjà positionné après le header */
-  margin-top: var(--content-padding-top);
+  /* Position après le header avec padding pour éviter le rognage */
+  margin-top: calc(var(--header-height) + var(--content-padding-top));
   
   /* Espace pour la bottom bar avec padding */
   margin-bottom: calc(var(--bottom-bar-height) + var(--content-padding-bottom));
@@ -80,23 +64,14 @@
   padding: 0;
   
   @media (max-width: 768px) {
-    /* 🔧 MOBILE : Marges simplifiées */
-    margin-top: var(--content-padding-top);
+    /* 🔧 CORRECTION MOBILE : Réduit la marge top et augmente la hauteur */
+    margin-top: calc(var(--header-height) - 35px); /* 🔧 +0px au lieu de +2px - supprime l'espace vide */
     margin-bottom: calc(var(--bottom-bar-height) + 14px);
     
-    /* 🔧 HAUTEUR CALCULÉE automatiquement par le flex */
-    height: auto;
-    max-height: none;
-    flex: 1;
+    /* Force les dimensions exactes sur mobile */
+    height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 55px); /* 🔧 +25px au lieu de +20px - augmente le container */
+    max-height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 55px);
     flex-shrink: 0;
-  }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    margin-bottom: calc(var(--bottom-bar-height) + 5px);
-  }
-  
-  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    margin-bottom: calc(var(--bottom-bar-height) + 2px);
   }
 }
 
@@ -117,16 +92,6 @@
     /* 🔧 FORCE les dimensions exactes sur mobile */
     height: 100%;
     max-height: 100%;
-  }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    padding: 2px;
-    gap: 2px;
-  }
-  
-  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    padding: 1px;
-    gap: 1px;
   }
 }
 
@@ -181,18 +146,6 @@
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    width: 50px;
-    padding: 2px;
-    gap: 2px;
-  }
-  
-  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    width: 45px;
-    padding: 1px;
-    gap: 1px;
-  }
 }
 
 /* ==================== FOLDER THUMBNAILS ==================== */
@@ -226,7 +179,7 @@
     border-radius: 6px;
     margin-bottom: 2px;
     cursor: pointer;
-    border-width: 1px;
+    border-width: px;
     
     &:hover {
       transform: none;
@@ -238,19 +191,6 @@
       transform: scale(0.95);
       opacity: 0.8;
     }
-  }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    min-height: 40px;
-    max-height: 40px;
-    margin-bottom: 1px;
-    border-width: 1px;
-  }
-  
-  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    min-height: 35px;
-    max-height: 35px;
-    margin-bottom: 0px;
   }
 }
 
@@ -288,16 +228,6 @@
     font-size: 8px;
     padding: 3px 2px;
   }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    font-size: 7px;
-    padding: 2px 1px;
-  }
-  
-  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    font-size: 6px;
-    padding: 1px;
-  }
 }
 
 /* ==================== MAIN VIEWER ==================== */
@@ -319,10 +249,6 @@
     max-height: 100%;
     flex-shrink: 0;
   }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    border-radius: 2px;
-  }
 }
 
 /* ==================== DUAL VIEWER ==================== */
@@ -335,12 +261,6 @@
   @media (max-width: 768px) {
     flex-direction: column;
     gap: 3px;
-  }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    /* 🔧 EN PAYSAGE : garde la disposition côte à côte */
-    flex-direction: row;
-    gap: 1px;
   }
 }
 
@@ -373,7 +293,7 @@
   display: flex;
   width: 100%;
   height: 50%;
-  gap: 0px;
+  gap:0px;
 }
 
 /* ==================== VIEWER TYPES ==================== */
@@ -407,10 +327,6 @@
     -webkit-user-select: none;
     user-select: none;
   }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    border-width: 1px;
-  }
 }
 
 .viewerHalf {
@@ -420,13 +336,6 @@
   @media (max-width: 768px) {
     width: 100%;
     height: 50%;
-    flex: 1;
-  }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    /* 🔧 EN PAYSAGE : 50% chacun */
-    width: 50%;
-    height: 100%;
     flex: 1;
   }
 }
@@ -488,14 +397,6 @@
     padding: 4px 6px;
     font-size: 10px;
     border-radius: 4px;
-  }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    top: 3px;
-    left: 3px;
-    padding: 2px 4px;
-    font-size: 8px;
-    border-radius: 2px;
   }
 }
 
@@ -560,19 +461,6 @@
       gap: 4px;
     }
   }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    bottom: 5px;
-    height: calc(var(--bottom-bar-height) - 20px);
-    min-height: 35px;
-    padding: 3px 8px;
-  }
-  
-  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    bottom: 2px;
-    height: calc(var(--bottom-bar-height) - 25px);
-    min-height: 30px;
-  }
 }
 
 /* ==================== BUTTONS COMPACTS ==================== */
@@ -622,19 +510,6 @@
       transform: scale(0.98);
     }
   }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    padding: 4px 6px;
-    font-size: 9px;
-    height: 26px;
-    margin-left: 2px;
-  }
-  
-  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    padding: 3px 5px;
-    font-size: 8px;
-    height: 24px;
-  }
 }
 
 /* ==================== CORRECTION "FICHE" SUR MOBILE ==================== */
@@ -645,23 +520,6 @@
     &::before {
       content: '📋 Fiche';
       font-size: 11px;
-    }
-  }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    font-size: 0;
-    min-width: 30px;
-    
-    &::before {
-      content: '📋';
-      font-size: 9px;
-    }
-  }
-  
-  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    &::before {
-      content: '📋';
-      font-size: 8px;
     }
   }
 }
@@ -715,18 +573,6 @@
       transform: scale(0.95);
     }
   }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    width: 22px;
-    height: 22px;
-    font-size: 9px;
-  }
-  
-  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    width: 20px;
-    height: 20px;
-    font-size: 8px;
-  }
 }
 
 .shortcutPopup {
@@ -761,14 +607,6 @@
     /* 🔧 AJUSTE pour la bottom bar flottante */
     bottom: calc(var(--bottom-bar-height) + 30px);
   }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    width: 200px;
-    left: -160px;
-    padding: 10px;
-    border-radius: 6px;
-    bottom: calc(var(--bottom-bar-height) + 20px);
-  }
 }
 
 .shortcutTitle {
@@ -792,15 +630,6 @@
     &::before {
       content: '👆';
       font-size: 14px;
-    }
-  }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    font-size: 11px;
-    margin-bottom: 8px;
-    
-    &::before {
-      font-size: 12px;
     }
   }
 }
@@ -828,12 +657,6 @@
     font-size: 11px;
     padding: 5px 7px;
     margin-bottom: 7px;
-  }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    font-size: 9px;
-    padding: 3px 5px;
-    margin-bottom: 5px;
   }
 }
 
@@ -880,12 +703,6 @@
     padding: 14px;
     border-radius: 8px;
   }
-
-  @media (max-width: 1024px) and (orientation: landscape) {
-    bottom: calc(var(--bottom-bar-height) + 30px);
-    padding: 12px;
-    border-radius: 6px;
-  }
 }
 
 .responseText {
@@ -898,7 +715,7 @@
   &::before {
     content: '💡';
     margin-right: 8px;
-    font-size: 18px;
+    font-size: 8px;
   }
   
   @media (max-width: 768px) {
@@ -908,23 +725,161 @@
       font-size: 15px;
     }
   }
+}
 
-  @media (max-width: 1024px) and (orientation: landscape) {
-    font-size: 11px;
+/* ======================================================================================== */
+/* 🌟 NOUVELLE SECTION : MOBILE PAYSAGE (HORIZONTAL) OPTIMISÉ 🌟 */
+/* ======================================================================================== */
+
+@media (max-width: 1024px) and (orientation: landscape) {
+  .container {
+    /* 🔧 AJUSTE pour le mode paysage mobile */
+    top: 0px;
+    height: 100vh;
+    height: 100dvh;
+  }
+  
+  .content {
+    /* 🔧 RÉDUIT les marges en paysage */
+    margin-top: calc(var(--header-height) - 10px);
+    margin-bottom: calc(var(--bottom-bar-height) + 5px);
+    height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 15px);
+    max-height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 15px);
+  }
+  
+  .layout {
+    /* 🔧 RÉDUIT le padding en paysage */
+    padding: 2px;
+    gap: 2px;
+  }
+  
+  .folderGrid {
+    /* 🔧 ULTRA COMPACT en paysage */
+    width: 50px;
+    padding: 2px;
+    gap: 2px;
+  }
+  
+  .folderThumbnail {
+    /* 🔧 TRÈS PETITES vignettes en paysage */
+    min-height: 40px;
+    max-height: 40px;
+    margin-bottom: 1px;
+    border-width: 1px;
+  }
+  
+  .folderThumbnailLabel {
+    /* 🔧 TEXTE ENCORE PLUS PETIT */
+    font-size: 7px;
+    padding: 2px 1px;
+  }
+  
+  .mainViewer {
+    /* 🔧 ASSURE l'utilisation maximale de l'espace */
+    border-radius: 2px;
+  }
+  
+  .dualViewer {
+    /* 🔧 EN PAYSAGE : garde la disposition côte à côte */
+    flex-direction: row;
+    gap: 1px;
+  }
+  
+  .viewerHalf {
+    /* 🔧 EN PAYSAGE : 50% chacun */
+    width: 50%;
+    height: 100%;
+    flex: 1;
+  }
+  
+  .folderLabel {
+    /* 🔧 LABELS PLUS PETITS */
+    top: 3px;
+    left: 3px;
+    padding: 2px 4px;
+    font-size: 8px;
+    border-radius: 2px;
+  }
+  
+  .bottomBar {
+    /* 🔧 BOTTOM BAR PLUS COMPACTE EN PAYSAGE */
+    bottom: 5px;
+    height: calc(var(--bottom-bar-height) - 20px);
+    min-height: 35px;
+    padding: 3px 8px;
+  }
+  
+  .responseButton, .sheetLink {
+    /* 🔧 BOUTONS ULTRA COMPACTS */
+    padding: 4px 6px;
+    font-size: 9px;
+    height: 26px;
+    margin-left: 2px;
+  }
+  
+  .shortcutIcon {
+    /* 🔧 ICÔNE PLUS PETITE */
+    width: 22px;
+    height: 22px;
+    font-size: 9px;
+  }
+  
+  /* 🔧 CORRECTION SPÉCIALE : Cache le text "Fiche récapitulative" complètement */
+  .sheetLink {
+    font-size: 0;
+    min-width: 30px;
     
     &::before {
-      font-size: 13px;
+      content: '📋';
+      font-size: 9px;
     }
   }
 }
 
+/* ==================== MOBILE PAYSAGE TRÈS PETIT (iPhone en paysage) ==================== */
+@media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
+  .folderGrid {
+    /* 🔧 ENCORE PLUS COMPACT pour iPhone paysage */
+    width: 45px;
+  }
+  
+  .folderThumbnail {
+    min-height: 35px;
+    max-height: 35px;
+  }
+  
+  .folderThumbnailLabel {
+    font-size: 6px;
+    padding: 1px;
+  }
+  
+  .bottomBar {
+    bottom: 2px;
+    height: calc(var(--bottom-bar-height) - 25px);
+    min-height: 30px;
+  }
+  
+  .responseButton, .sheetLink {
+    padding: 3px 5px;
+    font-size: 8px;
+    height: 24px;
+  }
+}
+
+/* ======================================================================================== */
+/* 🌟 FIN DE LA SECTION MODE PAYSAGE 🌟 */
+/* ======================================================================================== */
+
 /* ==================== FIXES POUR EMPÊCHER LE SCROLL MOBILE ==================== */
 @media (max-width: 768px) {
-  /* 🔧 SUPPRIME : Le scroll sera géré par le header fixe maintenant */
-  /* html, body {
+  /* 🔧 AJOUT : Force le no-scroll global sur mobile */
+  html, body {
     overflow: hidden !important;
     position: fixed !important;
-  } */
+    width: 100% !important;
+    height: 100% !important;
+    touch-action: none !important;
+  }
   
   /* Supprime les transitions lourdes sur mobile */
   .folderThumbnail,
