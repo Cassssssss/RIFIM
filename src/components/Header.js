@@ -13,7 +13,7 @@ const HeaderWrapper = styled.header`
   top: 0;
   left: 0;
   right: 0;
-  z-index: 999998; /* Juste en dessous du menu */
+  z-index: 999998;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(8px);
   
@@ -24,77 +24,53 @@ const HeaderWrapper = styled.header`
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
     
-    /* 🔧 CORRECTION MAJEURE : FORCE ABSOLUE de la position fixe sur mobile */
+    /* 🔧 CORRECTION SIMPLE : Position fixe stable sur mobile */
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
-    width: 100vw !important;
+    width: 100% !important;
     z-index: 999998 !important;
     
-    /* 🔧 NOUVEAU : Empêche COMPLÈTEMENT la disparition du header */
-    transform: translate3d(0, 0, 0) !important;
-    -webkit-transform: translate3d(0, 0, 0) !important;
-    will-change: transform !important;
-    backface-visibility: hidden !important;
-    -webkit-backface-visibility: hidden !important;
-    
-    /* 🔧 FORCE l'affichage même si JS essaie de le cacher */
+    /* Force l'affichage */
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
     
-    /* 🔧 EMPÊCHE toute transformation par JS ou CSS */
-    transform-style: preserve-3d !important;
-    perspective: 1000px !important;
-    
-    /* 🔧 FORCE une hauteur stable qui ne change jamais */
-    height: 60px !important;
-    min-height: 60px !important;
-    max-height: 60px !important;
-    
-    /* 🔧 EMPÊCHE le header de suivre le scroll */
-    contain: layout style paint !important;
+    /* Hauteur fixe */
+    height: 60px;
+    min-height: 60px;
     
     /* Améliore le rendu sur iOS Safari */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    
+    /* Empêche les transformations */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
   }
 
-  /* ======================================================================================== */
-  /* 🌟 MOBILE PAYSAGE (HORIZONTAL) - HEADER COMPACT 🌟 */
-  /* ======================================================================================== */
-  
   @media (max-width: 1024px) and (orientation: landscape) {
-    /* 🔧 HEADER ULTRA COMPACT en mode paysage mobile */
     padding: 0.25rem 0;
     min-height: 50px;
     height: 50px;
     
-    /* 🔧 FORCE position fixe en paysage aussi */
     position: fixed !important;
     top: 0 !important;
     
-    /* Support pour les safe areas en paysage */
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
     padding-top: calc(0.25rem + env(safe-area-inset-top));
   }
   
   @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    /* 🔧 ENCORE PLUS COMPACT pour iPhone en paysage */
     padding: 0.25rem 0;
     min-height: 45px;
     height: 45px;
     
-    /* 🔧 FORCE position fixe */
     position: fixed !important;
     top: 0 !important;
   }
-  
-  /* ======================================================================================== */
-  /* 🌟 FIN DE LA SECTION MODE PAYSAGE - HEADER 🌟 */
-  /* ======================================================================================== */
 `;
 
 const HeaderContent = styled.div`
@@ -105,37 +81,25 @@ const HeaderContent = styled.div`
   width: 100%;
   margin: 0 auto;
   padding: 0 2rem;
-  height: 100%; /* 🔧 AJOUT : Force la hauteur complète */
+  height: 100%;
   
-  /* Mobile responsive */
   @media (max-width: 768px) {
     padding: 0 1rem;
-    /* Ajuste l'espacement pour mobile */
     gap: 0.5rem;
-    height: 100%; /* 🔧 FORCE la hauteur sur mobile */
+    height: 100%;
   }
 
-  /* ======================================================================================== */
-  /* 🌟 MOBILE PAYSAGE - HEADER CONTENT COMPACT 🌟 */
-  /* ======================================================================================== */
-  
   @media (max-width: 1024px) and (orientation: landscape) {
-    /* 🔧 PADDING RÉDUIT en paysage */
     padding: 0 0.75rem;
     gap: 0.25rem;
     height: 100%;
   }
   
   @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    /* 🔧 ULTRA COMPACT pour iPhone paysage */
     padding: 0 0.5rem;
     gap: 0.15rem;
     height: 100%;
   }
-  
-  /* ======================================================================================== */
-  /* 🌟 FIN MOBILE PAYSAGE - HEADER CONTENT 🌟 */
-  /* ======================================================================================== */
 `;
 
 const Logo = styled(Link)`
@@ -151,12 +115,10 @@ const Logo = styled(Link)`
     opacity: 0.8;
   }
   
-  /* Mobile responsive */
   @media (max-width: 768px) {
     font-size: 1.25rem;
     gap: 0.25rem;
     
-    /* Masque le texte sur très petits écrans, garde juste l'icône */
     span {
       @media (max-width: 480px) {
         display: none;
@@ -164,12 +126,7 @@ const Logo = styled(Link)`
     }
   }
 
-  /* ======================================================================================== */
-  /* 🌟 MOBILE PAYSAGE - LOGO COMPACT 🌟 */
-  /* ======================================================================================== */
-  
   @media (max-width: 1024px) and (orientation: landscape) {
-    /* 🔧 LOGO PLUS PETIT en paysage */
     font-size: 1rem;
     gap: 0.2rem;
     
@@ -184,7 +141,6 @@ const Logo = styled(Link)`
   }
   
   @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    /* 🔧 LOGO ULTRA PETIT pour iPhone paysage */
     font-size: 0.9rem;
     
     svg {
@@ -196,10 +152,6 @@ const Logo = styled(Link)`
       font-size: 0.8rem;
     }
   }
-  
-  /* ======================================================================================== */
-  /* 🌟 FIN MOBILE PAYSAGE - LOGO 🌟 */
-  /* ======================================================================================== */
 `;
 
 const CenterTitle = styled.h2`
@@ -211,35 +163,23 @@ const CenterTitle = styled.h2`
   align-items: center;
   gap: 0.5rem;
   
-  /* Mobile responsive */
   @media (max-width: 768px) {
     font-size: 1rem;
     gap: 0.25rem;
     
-    /* Cache le titre sur très petits écrans */
     @media (max-width: 480px) {
       display: none;
     }
   }
 
-  /* ======================================================================================== */
-  /* 🌟 MOBILE PAYSAGE - TITRE CENTRAL 🌟 */
-  /* ======================================================================================== */
-  
   @media (max-width: 1024px) and (orientation: landscape) {
-    /* 🔧 TITRE PLUS PETIT en paysage */
     font-size: 0.9rem;
     gap: 0.2rem;
   }
   
   @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    /* 🔧 CACHE COMPLÈTEMENT le titre sur iPhone paysage */
     display: none;
   }
-  
-  /* ======================================================================================== */
-  /* 🌟 FIN MOBILE PAYSAGE - TITRE CENTRAL 🌟 */
-  /* ======================================================================================== */
 `;
 
 const RightSection = styled.div`
@@ -248,28 +188,17 @@ const RightSection = styled.div`
   gap: 1rem;
   position: relative;
   
-  /* Mobile responsive */
   @media (max-width: 768px) {
     gap: 0.5rem;
   }
 
-  /* ======================================================================================== */
-  /* 🌟 MOBILE PAYSAGE - SECTION DROITE 🌟 */
-  /* ======================================================================================== */
-  
   @media (max-width: 1024px) and (orientation: landscape) {
-    /* 🔧 GAP RÉDUIT en paysage */
     gap: 0.25rem;
   }
   
   @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    /* 🔧 GAP ULTRA RÉDUIT pour iPhone paysage */
     gap: 0.15rem;
   }
-  
-  /* ======================================================================================== */
-  /* 🌟 FIN MOBILE PAYSAGE - SECTION DROITE 🌟 */
-  /* ======================================================================================== */
 `;
 
 const ThemeToggleButton = styled.button`
@@ -295,24 +224,17 @@ const ThemeToggleButton = styled.button`
     transform: translateY(0);
   }
   
-  /* Mobile optimizations */
   @media (max-width: 768px) {
     padding: 0.5rem;
     min-height: 44px;
     min-width: 44px;
     
-    /* Supprime l'effet hover sur mobile */
     &:hover {
       transform: none;
     }
   }
 
-  /* ======================================================================================== */
-  /* 🌟 MOBILE PAYSAGE - BOUTON THÈME 🌟 */
-  /* ======================================================================================== */
-  
   @media (max-width: 1024px) and (orientation: landscape) {
-    /* 🔧 BOUTON PLUS COMPACT en paysage */
     padding: 0.3rem;
     min-height: 32px;
     min-width: 32px;
@@ -325,7 +247,6 @@ const ThemeToggleButton = styled.button`
   }
   
   @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    /* 🔧 BOUTON ULTRA COMPACT pour iPhone paysage */
     padding: 0.25rem;
     min-height: 28px;
     min-width: 28px;
@@ -335,10 +256,6 @@ const ThemeToggleButton = styled.button`
       height: 14px;
     }
   }
-  
-  /* ======================================================================================== */
-  /* 🌟 FIN MOBILE PAYSAGE - BOUTON THÈME 🌟 */
-  /* ======================================================================================== */
 `;
 
 const MenuButton = styled.button`
@@ -365,18 +282,15 @@ const MenuButton = styled.button`
     transform: translateY(0);
   }
   
-  /* Mobile optimizations */
   @media (max-width: 768px) {
     padding: 0.5rem;
     gap: 0.25rem;
     min-height: 44px;
     
-    /* Supprime l'effet hover sur mobile */
     &:hover {
       transform: none;
     }
     
-    /* Cache le nom d'utilisateur sur très petits écrans */
     span {
       @media (max-width: 480px) {
         display: none;
@@ -384,12 +298,7 @@ const MenuButton = styled.button`
     }
   }
 
-  /* ======================================================================================== */
-  /* 🌟 MOBILE PAYSAGE - BOUTON MENU 🌟 */
-  /* ======================================================================================== */
-  
   @media (max-width: 1024px) and (orientation: landscape) {
-    /* 🔧 BOUTON MENU COMPACT en paysage */
     padding: 0.3rem;
     gap: 0.2rem;
     min-height: 32px;
@@ -403,12 +312,10 @@ const MenuButton = styled.button`
   }
   
   @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    /* 🔧 BOUTON MENU ULTRA COMPACT pour iPhone paysage */
     padding: 0.25rem;
     min-height: 28px;
     font-size: 0.75rem;
     
-    /* Cache le nom d'utilisateur en paysage iPhone */
     span {
       display: none;
     }
@@ -418,13 +325,8 @@ const MenuButton = styled.button`
       height: 12px;
     }
   }
-  
-  /* ======================================================================================== */
-  /* 🌟 FIN MOBILE PAYSAGE - BOUTON MENU 🌟 */
-  /* ======================================================================================== */
 `;
 
-/* 🔧 CORRECTION MAJEURE : Menu dropdown adaptatif */
 const DropdownMenu = styled.div`
   position: absolute;
   top: calc(100% + 0.5rem);
@@ -435,7 +337,7 @@ const DropdownMenu = styled.div`
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   padding: 0.75rem 0;
   display: ${props => props.$isOpen ? 'block' : 'none'};
-  z-index: 99999; /* Z-index très élevé */
+  z-index: 99999;
   min-width: 280px;
   backdrop-filter: blur(8px);
   animation: ${props => props.$isOpen ? 'dropdownSlideIn' : 'dropdownSlideOut'} 0.2s ease;
@@ -464,9 +366,7 @@ const DropdownMenu = styled.div`
     }
   }
   
-  /* 🔧 CORRECTION : Menu plein écran sur mobile */
   @media (max-width: 768px) {
-    /* Menu plein écran sur mobile */
     position: fixed;
     top: 0;
     left: 0;
@@ -479,17 +379,15 @@ const DropdownMenu = styled.div`
     padding: 1rem;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    z-index: 999999; /* Z-index encore plus élevé sur mobile */
+    z-index: 999999;
     max-height: none;
     border: none;
     
-    /* Support pour les safe areas */
     padding-top: calc(1rem + env(safe-area-inset-top));
     padding-bottom: calc(1rem + env(safe-area-inset-bottom));
     padding-left: calc(1rem + env(safe-area-inset-left));
     padding-right: calc(1rem + env(safe-area-inset-right));
     
-    /* Animation différente sur mobile */
     animation: ${props => props.$isOpen ? 'mobileSlideIn' : 'mobileSlideOut'} 0.3s ease;
   }
   
@@ -516,7 +414,6 @@ const DropdownMenu = styled.div`
   }
 `;
 
-/* 🔧 NOUVEAU : Header mobile avec bouton fermer */
 const MobileMenuHeader = styled.div`
   display: none;
   
@@ -563,7 +460,6 @@ const MenuSection = styled.div`
     margin-bottom: 0;
   }
   
-  /* Mobile spacing */
   @media (max-width: 768px) {
     margin-bottom: 1rem;
   }
@@ -583,7 +479,6 @@ const SectionTitle = styled.div`
   text-transform: uppercase;
   letter-spacing: 0.5px;
   
-  /* Mobile responsive */
   @media (max-width: 768px) {
     padding: 1rem;
     margin: 0;
@@ -597,7 +492,6 @@ const MenuDivider = styled.div`
   background-color: ${props => props.theme.border || '#e0e6ed'};
   margin: 0.5rem 0;
   
-  /* Mobile spacing */
   @media (max-width: 768px) {
     margin: 1rem 0;
   }
@@ -628,7 +522,6 @@ const MenuItem = styled(Link)`
     opacity: 0.7;
   }
   
-  /* Mobile responsive */
   @media (max-width: 768px) {
     padding: 1rem;
     margin: 0 0 0.5rem 0;
@@ -636,7 +529,6 @@ const MenuItem = styled(Link)`
     font-size: 1rem;
     min-height: 56px;
     
-    /* Supprime l'effet de translation sur mobile */
     &:hover {
       transform: none;
     }
@@ -675,7 +567,6 @@ const LogoutItem = styled.button`
     height: 18px;
   }
   
-  /* Mobile responsive */
   @media (max-width: 768px) {
     padding: 1rem;
     margin: 0;
@@ -683,7 +574,6 @@ const LogoutItem = styled.button`
     font-size: 1rem;
     min-height: 56px;
     
-    /* Supprime l'effet de translation sur mobile */
     &:hover {
       transform: none;
     }
@@ -712,7 +602,6 @@ const UserInfo = styled.div`
     opacity: 0.7;
   }
   
-  /* Mobile responsive */
   @media (max-width: 768px) {
     padding: 1rem;
     margin: 0 0 1rem 0;
@@ -734,7 +623,6 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
   const handleMenuToggle = () => {
     setShowMenu(!showMenu);
     
-    // 🔧 CORRECTION : Empêche le scroll du body quand le menu mobile est ouvert
     if (!showMenu) {
       document.body.classList.add('menu-open');
     } else {
@@ -744,154 +632,35 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
 
   const handleMenuItemClick = () => {
     setShowMenu(false);
-    // Restaure le scroll du body
     document.body.classList.remove('menu-open');
   };
 
-  // 🔧 EFFECT ULTRA RENFORCÉ : Force la position fixe sur mobile avec surveillance continue
+  // 🔧 CORRECTION SIMPLE : Juste force la position sur mobile sans surveillance excessive
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    let animationFrameId;
-    let intervalId;
-    
     const forceHeaderPosition = () => {
       const header = document.querySelector('header');
       if (header && window.innerWidth <= 768) {
-        // 🔧 FORCE ABSOLUE tous les styles critiques à chaque frame
-        const criticalStyles = {
-          position: 'fixed',
-          top: '0px',
-          left: '0px',
-          right: '0px',
-          width: '100vw',
-          zIndex: '999998',
-          transform: 'translate3d(0, 0, 0)',
-          webkitTransform: 'translate3d(0, 0, 0)',
-          willChange: 'transform',
-          backfaceVisibility: 'hidden',
-          webkitBackfaceVisibility: 'hidden',
-          display: 'block',
-          visibility: 'visible',
-          opacity: '1',
-          transformStyle: 'preserve-3d',
-          perspective: '1000px',
-          height: '60px',
-          minHeight: '60px',
-          maxHeight: '60px',
-          contain: 'layout style paint'
-        };
-
-        // Applique chaque style de force
-        Object.entries(criticalStyles).forEach(([prop, value]) => {
-          const cssProp = prop.replace(/([A-Z])/g, '-$1').toLowerCase();
-          header.style.setProperty(cssProp, value, 'important');
-        });
-        
-        // 🔧 NOUVEAU : Empêche aussi les transformations par d'autres scripts
-        header.style.cssText += `
-          position: fixed !important;
-          top: 0 !important;
-          left: 0 !important;
-          right: 0 !important;
-          width: 100vw !important;
-          z-index: 999998 !important;
-          transform: translate3d(0, 0, 0) !important;
-          -webkit-transform: translate3d(0, 0, 0) !important;
-          display: block !important;
-          visibility: visible !important;
-          opacity: 1 !important;
-        `;
+        header.style.position = 'fixed';
+        header.style.top = '0px';
+        header.style.left = '0px';
+        header.style.right = '0px';
+        header.style.zIndex = '999998';
       }
     };
 
-    // 🔧 SURVEILLANCE ULTRA AGRESSIVE
-    const continuousCheck = () => {
-      forceHeaderPosition();
-      animationFrameId = requestAnimationFrame(continuousCheck);
-    };
-
-    // Démarre la surveillance continue
-    continuousCheck();
-    
-    // 🔧 VÉRIFICATION SUPPLÉMENTAIRE toutes les 100ms
-    intervalId = setInterval(forceHeaderPosition, 100);
-
-    // Force immédiatement
+    // Force au chargement
     forceHeaderPosition();
     
-    // Force à chaque scroll avec throttling optimisé
-    let scrollTimeout;
-    const handleScroll = () => {
-      if (scrollTimeout) clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        if (window.innerWidth <= 768) {
-          forceHeaderPosition();
-        }
-      }, 16); // 60fps
-    };
+    // Force au redimensionnement et changement d'orientation
+    const handleResize = () => forceHeaderPosition();
+    const handleOrientationChange = () => setTimeout(forceHeaderPosition, 100);
 
-    // Force à chaque resize
-    const handleResize = () => {
-      setTimeout(forceHeaderPosition, 50);
-      setTimeout(forceHeaderPosition, 200); // Double vérification
-    };
-
-    // Force à chaque changement d'orientation
-    const handleOrientationChange = () => {
-      setTimeout(forceHeaderPosition, 100);
-      setTimeout(forceHeaderPosition, 300); // Double vérification
-      setTimeout(forceHeaderPosition, 600); // Triple vérification
-    };
-
-    // 🔧 NOUVEAU : Force quand l'URL change (navigation)
-    const handlePopState = () => {
-      setTimeout(forceHeaderPosition, 50);
-    };
-
-    // 🔧 NOUVEAU : Force quand la visibilité de la page change
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        setTimeout(forceHeaderPosition, 100);
-      }
-    };
-
-    // Ajoute tous les event listeners
-    window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', handleResize);
     window.addEventListener('orientationchange', handleOrientationChange);
-    window.addEventListener('popstate', handlePopState);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    
-    // 🔧 NOUVEAU : Force aussi sur les événements de focus/blur
-    window.addEventListener('focus', forceHeaderPosition);
-    window.addEventListener('blur', forceHeaderPosition);
-    
-    // Force aussi après un délai (pour les cas extrêmes)
-    const timeouts = [100, 300, 500, 1000, 2000].map(delay => 
-      setTimeout(forceHeaderPosition, delay)
-    );
     
     return () => {
-      // Cleanup complet
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-      if (scrollTimeout) {
-        clearTimeout(scrollTimeout);
-      }
-      timeouts.forEach(clearTimeout);
-      
-      window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleOrientationChange);
-      window.removeEventListener('popstate', handlePopState);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('focus', forceHeaderPosition);
-      window.removeEventListener('blur', forceHeaderPosition);
     };
   }, []);
 
@@ -903,19 +672,16 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
       }
     };
 
-    // Seulement si le menu est ouvert
     if (showMenu) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     
-    // Cleanup au démontage du composant
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.body.classList.remove('menu-open');
     };
   }, [showMenu]);
 
-  // Cleanup si le composant change de route
   useEffect(() => {
     setShowMenu(false);
     document.body.classList.remove('menu-open');
@@ -950,7 +716,6 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
           </MenuButton>
 
           <DropdownMenu $isOpen={showMenu}>
-            {/* 🔧 NOUVEAU : Header mobile uniquement */}
             <MobileMenuHeader>
               <MobileMenuTitle>Menu</MobileMenuTitle>
               <MobileCloseButton onClick={handleMenuItemClick}>
@@ -958,7 +723,6 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
               </MobileCloseButton>
             </MobileMenuHeader>
 
-            {/* Informations utilisateur */}
             {userName && (
               <>
                 <UserInfo>
@@ -969,7 +733,6 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
               </>
             )}
 
-            {/* Section Questionnaires */}
             <MenuSection>
               <SectionTitle>
                 <FileText size={18} />
@@ -988,7 +751,6 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
 
             <MenuDivider />
 
-            {/* Section Cas Cliniques */}
             <MenuSection>
               <SectionTitle>
                 <FolderOpen size={18} />
@@ -1007,7 +769,6 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
 
             <MenuDivider />
 
-            {/* 🔧 AJOUT IMPORTANT : Section Protocoles */}
             <MenuSection>
               <SectionTitle>
                 <Activity size={18} />
@@ -1026,7 +787,6 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
 
             <MenuDivider />
 
-            {/* Section Déconnexion */}
             <MenuSection>
               <LogoutItem onClick={() => { handleMenuItemClick(); onLogout(); }}>
                 <LogOut size={18} />
