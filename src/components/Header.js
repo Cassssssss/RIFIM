@@ -9,20 +9,73 @@ const HeaderWrapper = styled.header`
   padding: 1rem 0;
   width: 100%;
   transition: background-color 0.3s ease, color 0.3s ease;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 999998; /* Juste en dessous du menu */
+  z-index: 999998;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(8px);
   
-  /* Mobile optimizations */
+  /* 🔧 LOGIQUE CONDITIONNELLE : Position selon la page */
+  ${props => props.$isRadiologyViewer ? `
+    /* Pour RadiologyViewer : position fixed normale */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+  ` : `
+    /* Pour toutes les autres pages : position sticky sur mobile, fixed sur desktop */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    
+    @media (max-width: 768px) {
+      position: sticky !important;
+      top: 0 !important;
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+      will-change: transform;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  `}
+  
+  /* Mobile optimizations communes */
   @media (max-width: 768px) {
     padding: 0.5rem 0;
-    /* Support pour les safe areas iPhone */
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+    height: 60px;
+    min-height: 60px;
+    max-height: 60px;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    padding: 0.25rem 0;
+    min-height: 50px;
+    height: 50px;
+    
+    @media (max-width: 768px) {
+      ${props => !props.$isRadiologyViewer && `
+        position: sticky !important;
+        top: 0 !important;
+      `}
+    }
+    
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-top: calc(0.25rem + env(safe-area-inset-top));
+  }
+  
+  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
+    padding: 0.25rem 0;
+    min-height: 45px;
+    height: 45px;
+    
+    @media (max-width: 768px) {
+      ${props => !props.$isRadiologyViewer && `
+        position: sticky !important;
+        top: 0 !important;
+      `}
+    }
   }
 `;
 
@@ -34,12 +87,24 @@ const HeaderContent = styled.div`
   width: 100%;
   margin: 0 auto;
   padding: 0 2rem;
+  height: 100%;
   
-  /* Mobile responsive */
   @media (max-width: 768px) {
     padding: 0 1rem;
-    /* Ajuste l'espacement pour mobile */
     gap: 0.5rem;
+    height: 100%;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    padding: 0 0.75rem;
+    gap: 0.25rem;
+    height: 100%;
+  }
+  
+  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
+    padding: 0 0.5rem;
+    gap: 0.15rem;
+    height: 100%;
   }
 `;
 
@@ -56,16 +121,41 @@ const Logo = styled(Link)`
     opacity: 0.8;
   }
   
-  /* Mobile responsive */
   @media (max-width: 768px) {
     font-size: 1.25rem;
     gap: 0.25rem;
     
-    /* Masque le texte sur très petits écrans, garde juste l'icône */
     span {
       @media (max-width: 480px) {
         display: none;
       }
+    }
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    font-size: 1rem;
+    gap: 0.2rem;
+    
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+    
+    span {
+      font-size: 0.9rem;
+    }
+  }
+  
+  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
+    font-size: 0.9rem;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+    
+    span {
+      font-size: 0.8rem;
     }
   }
 `;
@@ -79,15 +169,22 @@ const CenterTitle = styled.h2`
   align-items: center;
   gap: 0.5rem;
   
-  /* Mobile responsive */
   @media (max-width: 768px) {
     font-size: 1rem;
     gap: 0.25rem;
     
-    /* Cache le titre sur très petits écrans */
     @media (max-width: 480px) {
       display: none;
     }
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    font-size: 0.9rem;
+    gap: 0.2rem;
+  }
+  
+  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
+    display: none;
   }
 `;
 
@@ -97,9 +194,16 @@ const RightSection = styled.div`
   gap: 1rem;
   position: relative;
   
-  /* Mobile responsive */
   @media (max-width: 768px) {
     gap: 0.5rem;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    gap: 0.25rem;
+  }
+  
+  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
+    gap: 0.15rem;
   }
 `;
 
@@ -126,15 +230,36 @@ const ThemeToggleButton = styled.button`
     transform: translateY(0);
   }
   
-  /* Mobile optimizations */
   @media (max-width: 768px) {
     padding: 0.5rem;
     min-height: 44px;
     min-width: 44px;
     
-    /* Supprime l'effet hover sur mobile */
     &:hover {
       transform: none;
+    }
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    padding: 0.3rem;
+    min-height: 32px;
+    min-width: 32px;
+    border-radius: 6px;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+  
+  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
+    padding: 0.25rem;
+    min-height: 28px;
+    min-width: 28px;
+    
+    svg {
+      width: 14px;
+      height: 14px;
     }
   }
 `;
@@ -163,27 +288,51 @@ const MenuButton = styled.button`
     transform: translateY(0);
   }
   
-  /* Mobile optimizations */
   @media (max-width: 768px) {
     padding: 0.5rem;
     gap: 0.25rem;
     min-height: 44px;
     
-    /* Supprime l'effet hover sur mobile */
     &:hover {
       transform: none;
     }
     
-    /* Cache le nom d'utilisateur sur très petits écrans */
     span {
       @media (max-width: 480px) {
         display: none;
       }
     }
   }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    padding: 0.3rem;
+    gap: 0.2rem;
+    min-height: 32px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+  
+  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
+    padding: 0.25rem;
+    min-height: 28px;
+    font-size: 0.75rem;
+    
+    span {
+      display: none;
+    }
+    
+    svg {
+      width: 12px;
+      height: 12px;
+    }
+  }
 `;
 
-/* 🔧 CORRECTION MAJEURE : Menu dropdown adaptatif */
 const DropdownMenu = styled.div`
   position: absolute;
   top: calc(100% + 0.5rem);
@@ -193,11 +342,11 @@ const DropdownMenu = styled.div`
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   padding: 0.75rem 0;
-  display: ${props => props.isOpen ? 'block' : 'none'};
-  z-index: 99999; /* Z-index très élevé */
+  display: ${props => props.$isOpen ? 'block' : 'none'};
+  z-index: 99999;
   min-width: 280px;
   backdrop-filter: blur(8px);
-  animation: ${props => props.isOpen ? 'dropdownSlideIn' : 'dropdownSlideOut'} 0.2s ease;
+  animation: ${props => props.$isOpen ? 'dropdownSlideIn' : 'dropdownSlideOut'} 0.2s ease;
   max-height: 80vh;
   overflow-y: auto;
 
@@ -223,9 +372,7 @@ const DropdownMenu = styled.div`
     }
   }
   
-  /* 🔧 CORRECTION : Menu plein écran sur mobile */
   @media (max-width: 768px) {
-    /* Menu plein écran sur mobile */
     position: fixed;
     top: 0;
     left: 0;
@@ -238,18 +385,16 @@ const DropdownMenu = styled.div`
     padding: 1rem;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    z-index: 999999; /* Z-index encore plus élevé sur mobile */
+    z-index: 999999;
     max-height: none;
     border: none;
     
-    /* Support pour les safe areas */
     padding-top: calc(1rem + env(safe-area-inset-top));
     padding-bottom: calc(1rem + env(safe-area-inset-bottom));
     padding-left: calc(1rem + env(safe-area-inset-left));
     padding-right: calc(1rem + env(safe-area-inset-right));
     
-    /* Animation différente sur mobile */
-    animation: ${props => props.isOpen ? 'mobileSlideIn' : 'mobileSlideOut'} 0.3s ease;
+    animation: ${props => props.$isOpen ? 'mobileSlideIn' : 'mobileSlideOut'} 0.3s ease;
   }
   
   @keyframes mobileSlideIn {
@@ -275,7 +420,6 @@ const DropdownMenu = styled.div`
   }
 `;
 
-/* 🔧 NOUVEAU : Header mobile avec bouton fermer */
 const MobileMenuHeader = styled.div`
   display: none;
   
@@ -322,7 +466,6 @@ const MenuSection = styled.div`
     margin-bottom: 0;
   }
   
-  /* Mobile spacing */
   @media (max-width: 768px) {
     margin-bottom: 1rem;
   }
@@ -342,7 +485,6 @@ const SectionTitle = styled.div`
   text-transform: uppercase;
   letter-spacing: 0.5px;
   
-  /* Mobile responsive */
   @media (max-width: 768px) {
     padding: 1rem;
     margin: 0;
@@ -356,7 +498,6 @@ const MenuDivider = styled.div`
   background-color: ${props => props.theme.border || '#e0e6ed'};
   margin: 0.5rem 0;
   
-  /* Mobile spacing */
   @media (max-width: 768px) {
     margin: 1rem 0;
   }
@@ -387,7 +528,6 @@ const MenuItem = styled(Link)`
     opacity: 0.7;
   }
   
-  /* Mobile responsive */
   @media (max-width: 768px) {
     padding: 1rem;
     margin: 0 0 0.5rem 0;
@@ -395,7 +535,6 @@ const MenuItem = styled(Link)`
     font-size: 1rem;
     min-height: 56px;
     
-    /* Supprime l'effet de translation sur mobile */
     &:hover {
       transform: none;
     }
@@ -434,7 +573,6 @@ const LogoutItem = styled.button`
     height: 18px;
   }
   
-  /* Mobile responsive */
   @media (max-width: 768px) {
     padding: 1rem;
     margin: 0;
@@ -442,7 +580,6 @@ const LogoutItem = styled.button`
     font-size: 1rem;
     min-height: 56px;
     
-    /* Supprime l'effet de translation sur mobile */
     &:hover {
       transform: none;
     }
@@ -471,7 +608,6 @@ const UserInfo = styled.div`
     opacity: 0.7;
   }
   
-  /* Mobile responsive */
   @media (max-width: 768px) {
     padding: 1rem;
     margin: 0 0 1rem 0;
@@ -490,10 +626,12 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
   const menuRef = useRef(null);
   const location = useLocation();
 
+  // 🔧 AJOUT : Détecte si on est sur la page RadiologyViewer
+  const isRadiologyViewer = location.pathname.includes('/radiology-viewer');
+
   const handleMenuToggle = () => {
     setShowMenu(!showMenu);
     
-    // 🔧 CORRECTION : Empêche le scroll du body quand le menu mobile est ouvert
     if (!showMenu) {
       document.body.classList.add('menu-open');
     } else {
@@ -503,7 +641,6 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
 
   const handleMenuItemClick = () => {
     setShowMenu(false);
-    // Restaure le scroll du body
     document.body.classList.remove('menu-open');
   };
 
@@ -515,26 +652,23 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
       }
     };
 
-    // Seulement si le menu est ouvert
     if (showMenu) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     
-    // Cleanup au démontage du composant
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.body.classList.remove('menu-open');
     };
   }, [showMenu]);
 
-  // Cleanup si le composant change de route
   useEffect(() => {
     setShowMenu(false);
     document.body.classList.remove('menu-open');
   }, [location.pathname]);
 
   return (
-    <HeaderWrapper>
+    <HeaderWrapper $isRadiologyViewer={isRadiologyViewer}>
       <HeaderContent>
         <Logo to="/">
           <Stethoscope size={24} />
@@ -561,8 +695,7 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
             />
           </MenuButton>
 
-          <DropdownMenu isOpen={showMenu}>
-            {/* 🔧 NOUVEAU : Header mobile uniquement */}
+          <DropdownMenu $isOpen={showMenu}>
             <MobileMenuHeader>
               <MobileMenuTitle>Menu</MobileMenuTitle>
               <MobileCloseButton onClick={handleMenuItemClick}>
@@ -570,7 +703,6 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
               </MobileCloseButton>
             </MobileMenuHeader>
 
-            {/* Informations utilisateur */}
             {userName && (
               <>
                 <UserInfo>
@@ -581,7 +713,6 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
               </>
             )}
 
-            {/* Section Questionnaires */}
             <MenuSection>
               <SectionTitle>
                 <FileText size={18} />
@@ -600,7 +731,6 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
 
             <MenuDivider />
 
-            {/* Section Cas Cliniques */}
             <MenuSection>
               <SectionTitle>
                 <FolderOpen size={18} />
@@ -619,7 +749,6 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
 
             <MenuDivider />
 
-            {/* 🔧 AJOUT IMPORTANT : Section Protocoles */}
             <MenuSection>
               <SectionTitle>
                 <Activity size={18} />
@@ -638,7 +767,6 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
 
             <MenuDivider />
 
-            {/* Section Déconnexion */}
             <MenuSection>
               <LogoutItem onClick={() => { handleMenuItemClick(); onLogout(); }}>
                 <LogOut size={18} />
