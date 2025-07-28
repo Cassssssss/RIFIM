@@ -31,7 +31,7 @@ const HeaderWrapper = styled.header`
   
   @media (max-width: 1024px) and (orientation: landscape) {
     /* 🔧 HEADER ULTRA COMPACT en mode paysage mobile */
-    padding: 0.25rem 0;
+    padding: 0.5rem 0;
     min-height: 60px;
     height: 60px;
     
@@ -43,7 +43,7 @@ const HeaderWrapper = styled.header`
   
   @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
     /* 🔧 ENCORE PLUS COMPACT pour iPhone en paysage */
-    padding: 0.15rem 0;
+    padding: 0.5rem 0;
     min-height: 35px;
     height: 35px;
   }
