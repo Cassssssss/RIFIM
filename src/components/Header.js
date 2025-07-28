@@ -13,63 +13,47 @@ const HeaderWrapper = styled.header`
   top: 0;
   left: 0;
   right: 0;
-  z-index: 999998;
+  z-index: 999998; /* Juste en dessous du menu */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(8px);
   
-  /* Mobile : APPROCHE DIFFÉRENTE - Sticky au lieu de fixed */
+  /* 🔧 CORRECTION PRINCIPALE : Hauteur fixe stable pour tous les écrans */
+  height: 60px;
+  min-height: 60px;
+  max-height: 60px;
+  
+  /* Mobile optimizations */
   @media (max-width: 768px) {
-    /* 🔧 SOLUTION SIMPLE : Position sticky qui reste toujours visible */
-    position: sticky !important;
-    top: 0 !important;
-    left: 0;
-    right: 0;
-    width: 100%;
-    z-index: 999998;
-    
     padding: 0.5rem 0;
+    /* Support pour les safe areas iPhone */
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
     
-    /* Hauteur stable */
+    /* 🔧 GARDE la même hauteur sur mobile */
     height: 60px;
     min-height: 60px;
     max-height: 60px;
-    
-    /* GPU optimizations */
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    will-change: transform;
-    
-    /* Améliore le rendu */
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
   }
 
+  /* 🔧 AJOUT : Gestion du mode paysage mobile */
   @media (max-width: 1024px) and (orientation: landscape) {
     padding: 0.25rem 0;
-    min-height: 50px;
+    /* 🔧 HAUTEUR RÉDUITE en paysage mais stable */
     height: 50px;
-    
-    @media (max-width: 768px) {
-      position: sticky !important;
-      top: 0 !important;
-    }
+    min-height: 50px;
+    max-height: 50px;
     
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
     padding-top: calc(0.25rem + env(safe-area-inset-top));
   }
   
+  /* 🔧 iPhone en paysage - encore plus compact */
   @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
     padding: 0.25rem 0;
-    min-height: 45px;
     height: 45px;
-    
-    @media (max-width: 768px) {
-      position: sticky !important;
-      top: 0 !important;
-    }
+    min-height: 45px;
+    max-height: 45px;
   }
 `;
 
@@ -83,6 +67,7 @@ const HeaderContent = styled.div`
   padding: 0 2rem;
   height: 100%;
   
+  /* Mobile responsive */
   @media (max-width: 768px) {
     padding: 0 1rem;
     gap: 0.5rem;
@@ -115,10 +100,12 @@ const Logo = styled(Link)`
     opacity: 0.8;
   }
   
+  /* Mobile responsive */
   @media (max-width: 768px) {
     font-size: 1.25rem;
     gap: 0.25rem;
     
+    /* Masque le texte sur très petits écrans, garde juste l'icône */
     span {
       @media (max-width: 480px) {
         display: none;
@@ -163,10 +150,12 @@ const CenterTitle = styled.h2`
   align-items: center;
   gap: 0.5rem;
   
+  /* Mobile responsive */
   @media (max-width: 768px) {
     font-size: 1rem;
     gap: 0.25rem;
     
+    /* Cache le titre sur très petits écrans */
     @media (max-width: 480px) {
       display: none;
     }
@@ -188,6 +177,7 @@ const RightSection = styled.div`
   gap: 1rem;
   position: relative;
   
+  /* Mobile responsive */
   @media (max-width: 768px) {
     gap: 0.5rem;
   }
@@ -224,11 +214,13 @@ const ThemeToggleButton = styled.button`
     transform: translateY(0);
   }
   
+  /* Mobile optimizations */
   @media (max-width: 768px) {
     padding: 0.5rem;
     min-height: 44px;
     min-width: 44px;
     
+    /* Supprime l'effet hover sur mobile */
     &:hover {
       transform: none;
     }
@@ -282,15 +274,18 @@ const MenuButton = styled.button`
     transform: translateY(0);
   }
   
+  /* Mobile optimizations */
   @media (max-width: 768px) {
     padding: 0.5rem;
     gap: 0.25rem;
     min-height: 44px;
     
+    /* Supprime l'effet hover sur mobile */
     &:hover {
       transform: none;
     }
     
+    /* Cache le nom d'utilisateur sur très petits écrans */
     span {
       @media (max-width: 480px) {
         display: none;
@@ -327,6 +322,7 @@ const MenuButton = styled.button`
   }
 `;
 
+/* 🔧 CORRECTION MAJEURE : Menu dropdown adaptatif */
 const DropdownMenu = styled.div`
   position: absolute;
   top: calc(100% + 0.5rem);
@@ -336,11 +332,11 @@ const DropdownMenu = styled.div`
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   padding: 0.75rem 0;
-  display: ${props => props.$isOpen ? 'block' : 'none'};
-  z-index: 99999;
+  display: ${props => props.isOpen ? 'block' : 'none'};
+  z-index: 99999; /* Z-index très élevé */
   min-width: 280px;
   backdrop-filter: blur(8px);
-  animation: ${props => props.$isOpen ? 'dropdownSlideIn' : 'dropdownSlideOut'} 0.2s ease;
+  animation: ${props => props.isOpen ? 'dropdownSlideIn' : 'dropdownSlideOut'} 0.2s ease;
   max-height: 80vh;
   overflow-y: auto;
 
@@ -366,7 +362,9 @@ const DropdownMenu = styled.div`
     }
   }
   
+  /* 🔧 CORRECTION : Menu plein écran sur mobile */
   @media (max-width: 768px) {
+    /* Menu plein écran sur mobile */
     position: fixed;
     top: 0;
     left: 0;
@@ -379,16 +377,18 @@ const DropdownMenu = styled.div`
     padding: 1rem;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    z-index: 999999;
+    z-index: 999999; /* Z-index encore plus élevé sur mobile */
     max-height: none;
     border: none;
     
+    /* Support pour les safe areas */
     padding-top: calc(1rem + env(safe-area-inset-top));
     padding-bottom: calc(1rem + env(safe-area-inset-bottom));
     padding-left: calc(1rem + env(safe-area-inset-left));
     padding-right: calc(1rem + env(safe-area-inset-right));
     
-    animation: ${props => props.$isOpen ? 'mobileSlideIn' : 'mobileSlideOut'} 0.3s ease;
+    /* Animation différente sur mobile */
+    animation: ${props => props.isOpen ? 'mobileSlideIn' : 'mobileSlideOut'} 0.3s ease;
   }
   
   @keyframes mobileSlideIn {
@@ -414,6 +414,7 @@ const DropdownMenu = styled.div`
   }
 `;
 
+/* 🔧 NOUVEAU : Header mobile avec bouton fermer */
 const MobileMenuHeader = styled.div`
   display: none;
   
@@ -460,6 +461,7 @@ const MenuSection = styled.div`
     margin-bottom: 0;
   }
   
+  /* Mobile spacing */
   @media (max-width: 768px) {
     margin-bottom: 1rem;
   }
@@ -479,6 +481,7 @@ const SectionTitle = styled.div`
   text-transform: uppercase;
   letter-spacing: 0.5px;
   
+  /* Mobile responsive */
   @media (max-width: 768px) {
     padding: 1rem;
     margin: 0;
@@ -492,6 +495,7 @@ const MenuDivider = styled.div`
   background-color: ${props => props.theme.border || '#e0e6ed'};
   margin: 0.5rem 0;
   
+  /* Mobile spacing */
   @media (max-width: 768px) {
     margin: 1rem 0;
   }
@@ -522,6 +526,7 @@ const MenuItem = styled(Link)`
     opacity: 0.7;
   }
   
+  /* Mobile responsive */
   @media (max-width: 768px) {
     padding: 1rem;
     margin: 0 0 0.5rem 0;
@@ -529,6 +534,7 @@ const MenuItem = styled(Link)`
     font-size: 1rem;
     min-height: 56px;
     
+    /* Supprime l'effet de translation sur mobile */
     &:hover {
       transform: none;
     }
@@ -567,6 +573,7 @@ const LogoutItem = styled.button`
     height: 18px;
   }
   
+  /* Mobile responsive */
   @media (max-width: 768px) {
     padding: 1rem;
     margin: 0;
@@ -574,6 +581,7 @@ const LogoutItem = styled.button`
     font-size: 1rem;
     min-height: 56px;
     
+    /* Supprime l'effet de translation sur mobile */
     &:hover {
       transform: none;
     }
@@ -602,6 +610,7 @@ const UserInfo = styled.div`
     opacity: 0.7;
   }
   
+  /* Mobile responsive */
   @media (max-width: 768px) {
     padding: 1rem;
     margin: 0 0 1rem 0;
@@ -623,6 +632,7 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
   const handleMenuToggle = () => {
     setShowMenu(!showMenu);
     
+    // 🔧 CORRECTION : Empêche le scroll du body quand le menu mobile est ouvert
     if (!showMenu) {
       document.body.classList.add('menu-open');
     } else {
@@ -632,6 +642,7 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
 
   const handleMenuItemClick = () => {
     setShowMenu(false);
+    // Restaure le scroll du body
     document.body.classList.remove('menu-open');
   };
 
@@ -643,16 +654,19 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
       }
     };
 
+    // Seulement si le menu est ouvert
     if (showMenu) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     
+    // Cleanup au démontage du composant
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.body.classList.remove('menu-open');
     };
   }, [showMenu]);
 
+  // Cleanup si le composant change de route
   useEffect(() => {
     setShowMenu(false);
     document.body.classList.remove('menu-open');
@@ -686,7 +700,8 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
             />
           </MenuButton>
 
-          <DropdownMenu $isOpen={showMenu}>
+          <DropdownMenu isOpen={showMenu}>
+            {/* 🔧 NOUVEAU : Header mobile uniquement */}
             <MobileMenuHeader>
               <MobileMenuTitle>Menu</MobileMenuTitle>
               <MobileCloseButton onClick={handleMenuItemClick}>
@@ -694,6 +709,7 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
               </MobileCloseButton>
             </MobileMenuHeader>
 
+            {/* Informations utilisateur */}
             {userName && (
               <>
                 <UserInfo>
@@ -704,6 +720,7 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
               </>
             )}
 
+            {/* Section Questionnaires */}
             <MenuSection>
               <SectionTitle>
                 <FileText size={18} />
@@ -722,6 +739,7 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
 
             <MenuDivider />
 
+            {/* Section Cas Cliniques */}
             <MenuSection>
               <SectionTitle>
                 <FolderOpen size={18} />
@@ -740,6 +758,7 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
 
             <MenuDivider />
 
+            {/* 🔧 AJOUT IMPORTANT : Section Protocoles */}
             <MenuSection>
               <SectionTitle>
                 <Activity size={18} />
@@ -758,6 +777,7 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
 
             <MenuDivider />
 
+            {/* Section Déconnexion */}
             <MenuSection>
               <LogoutItem onClick={() => { handleMenuItemClick(); onLogout(); }}>
                 <LogOut size={18} />
