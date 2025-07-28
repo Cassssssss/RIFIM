@@ -24,43 +24,51 @@ const HeaderWrapper = styled.header`
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
     
-    /* 🔧 CORRECTION : Fix pour la disparition du header sur mobile */
-    transform: translate3d(0, 0, 0);
-    -webkit-transform: translate3d(0, 0, 0);
-    will-change: transform;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    
-    /* 🔧 CORRECTION CRITIQUE : Force la position fixe stable */
+    /* 🔧 CORRECTION MAJEURE : FORCE ABSOLUE de la position fixe sur mobile */
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
     width: 100vw !important;
+    z-index: 999998 !important;
     
-    /* Améliore le rendu sur iOS Safari */
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    /* 🔧 NOUVEAU : Empêche COMPLÈTEMENT la disparition du header */
+    transform: translate3d(0, 0, 0) !important;
+    -webkit-transform: translate3d(0, 0, 0) !important;
+    will-change: transform !important;
+    backface-visibility: hidden !important;
+    -webkit-backface-visibility: hidden !important;
     
-    /* 🔧 NOUVEAU : Empêche la barre d'adresse de cacher le header */
+    /* 🔧 FORCE l'affichage même si JS essaie de le cacher */
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    
+    /* 🔧 EMPÊCHE toute transformation par JS ou CSS */
+    transform-style: preserve-3d !important;
+    perspective: 1000px !important;
+    
+    /* 🔧 FORCE une hauteur stable qui ne change jamais */
     height: 60px !important;
     min-height: 60px !important;
     max-height: 60px !important;
     
-    /* 🔧 FORCE ABSOLUE pour éviter la disparition */
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+    /* 🔧 EMPÊCHE le header de suivre le scroll */
+    contain: layout style paint !important;
+    
+    /* Améliore le rendu sur iOS Safari */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   /* ======================================================================================== */
-  /* 🌟 NOUVELLE SECTION : MOBILE PAYSAGE (HORIZONTAL) - HEADER COMPACT 🌟 */
+  /* 🌟 MOBILE PAYSAGE (HORIZONTAL) - HEADER COMPACT 🌟 */
   /* ======================================================================================== */
   
   @media (max-width: 1024px) and (orientation: landscape) {
     /* 🔧 HEADER ULTRA COMPACT en mode paysage mobile */
-    padding: 0.25rem 0; /* 🔧 CORRECTION : padding corrigé */
-    min-height: 50px; /* 🔧 CORRECTION : hauteur réduite mais stable */
+    padding: 0.25rem 0;
+    min-height: 50px;
     height: 50px;
     
     /* 🔧 FORCE position fixe en paysage aussi */
@@ -74,10 +82,9 @@ const HeaderWrapper = styled.header`
   }
   
   @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
-    /* 🔧 CORRECTION : max-height corrigé */
     /* 🔧 ENCORE PLUS COMPACT pour iPhone en paysage */
-    padding: 0.25rem 0; /* 🔧 CORRECTION : padding corrigé */
-    min-height: 45px; /* 🔧 CORRECTION : hauteur réduite mais pas trop */
+    padding: 0.25rem 0;
+    min-height: 45px;
     height: 45px;
     
     /* 🔧 FORCE position fixe */
@@ -741,13 +748,48 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
     document.body.classList.remove('menu-open');
   };
 
-  // 🔧 EFFECT RENFORCÉ : Force la position fixe sur mobile
+  // 🔧 EFFECT ULTRA RENFORCÉ : Force la position fixe sur mobile avec surveillance continue
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    let animationFrameId;
+    let intervalId;
+    
     const forceHeaderPosition = () => {
       const header = document.querySelector('header');
       if (header && window.innerWidth <= 768) {
-        // Force tous les styles critiques
-        header.style.cssText = `
+        // 🔧 FORCE ABSOLUE tous les styles critiques à chaque frame
+        const criticalStyles = {
+          position: 'fixed',
+          top: '0px',
+          left: '0px',
+          right: '0px',
+          width: '100vw',
+          zIndex: '999998',
+          transform: 'translate3d(0, 0, 0)',
+          webkitTransform: 'translate3d(0, 0, 0)',
+          willChange: 'transform',
+          backfaceVisibility: 'hidden',
+          webkitBackfaceVisibility: 'hidden',
+          display: 'block',
+          visibility: 'visible',
+          opacity: '1',
+          transformStyle: 'preserve-3d',
+          perspective: '1000px',
+          height: '60px',
+          minHeight: '60px',
+          maxHeight: '60px',
+          contain: 'layout style paint'
+        };
+
+        // Applique chaque style de force
+        Object.entries(criticalStyles).forEach(([prop, value]) => {
+          const cssProp = prop.replace(/([A-Z])/g, '-$1').toLowerCase();
+          header.style.setProperty(cssProp, value, 'important');
+        });
+        
+        // 🔧 NOUVEAU : Empêche aussi les transformations par d'autres scripts
+        header.style.cssText += `
           position: fixed !important;
           top: 0 !important;
           left: 0 !important;
@@ -756,9 +798,6 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
           z-index: 999998 !important;
           transform: translate3d(0, 0, 0) !important;
           -webkit-transform: translate3d(0, 0, 0) !important;
-          will-change: transform !important;
-          backface-visibility: hidden !important;
-          -webkit-backface-visibility: hidden !important;
           display: block !important;
           visibility: visible !important;
           opacity: 1 !important;
@@ -766,38 +805,93 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
       }
     };
 
+    // 🔧 SURVEILLANCE ULTRA AGRESSIVE
+    const continuousCheck = () => {
+      forceHeaderPosition();
+      animationFrameId = requestAnimationFrame(continuousCheck);
+    };
+
+    // Démarre la surveillance continue
+    continuousCheck();
+    
+    // 🔧 VÉRIFICATION SUPPLÉMENTAIRE toutes les 100ms
+    intervalId = setInterval(forceHeaderPosition, 100);
+
     // Force immédiatement
     forceHeaderPosition();
     
-    // Force à chaque scroll
+    // Force à chaque scroll avec throttling optimisé
+    let scrollTimeout;
     const handleScroll = () => {
-      if (window.innerWidth <= 768) {
-        requestAnimationFrame(forceHeaderPosition);
-      }
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        if (window.innerWidth <= 768) {
+          forceHeaderPosition();
+        }
+      }, 16); // 60fps
     };
 
     // Force à chaque resize
     const handleResize = () => {
-      forceHeaderPosition();
+      setTimeout(forceHeaderPosition, 50);
+      setTimeout(forceHeaderPosition, 200); // Double vérification
     };
 
     // Force à chaque changement d'orientation
     const handleOrientationChange = () => {
       setTimeout(forceHeaderPosition, 100);
+      setTimeout(forceHeaderPosition, 300); // Double vérification
+      setTimeout(forceHeaderPosition, 600); // Triple vérification
     };
 
+    // 🔧 NOUVEAU : Force quand l'URL change (navigation)
+    const handlePopState = () => {
+      setTimeout(forceHeaderPosition, 50);
+    };
+
+    // 🔧 NOUVEAU : Force quand la visibilité de la page change
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        setTimeout(forceHeaderPosition, 100);
+      }
+    };
+
+    // Ajoute tous les event listeners
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', handleResize);
     window.addEventListener('orientationchange', handleOrientationChange);
+    window.addEventListener('popstate', handlePopState);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // 🔧 NOUVEAU : Force aussi sur les événements de focus/blur
+    window.addEventListener('focus', forceHeaderPosition);
+    window.addEventListener('blur', forceHeaderPosition);
     
     // Force aussi après un délai (pour les cas extrêmes)
-    const timeout = setTimeout(forceHeaderPosition, 500);
+    const timeouts = [100, 300, 500, 1000, 2000].map(delay => 
+      setTimeout(forceHeaderPosition, delay)
+    );
     
     return () => {
+      // Cleanup complet
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
+      }
+      timeouts.forEach(clearTimeout);
+      
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleOrientationChange);
-      clearTimeout(timeout);
+      window.removeEventListener('popstate', handlePopState);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', forceHeaderPosition);
+      window.removeEventListener('blur', forceHeaderPosition);
     };
   }, []);
 
