@@ -10,12 +10,12 @@ const HeaderWrapper = styled.header`
   width: 100%;
   transition: background-color 0.3s ease, color 0.3s ease;
   
-  /* 🔧 SOLUTION : Position fixed MAIS avec z-index plus BAS que RadiologyViewer */
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 50; /* 🔧 TRÈS IMPORTANT : Plus bas que RadiologyViewer (z-index: 100) */
+  /* 🔧 SOLUTION CONDITIONNELLE : Fixed partout SAUF sur RadiologyViewer */
+  position: ${props => props.$isRadiologyViewer ? 'static' : 'fixed'};
+  top: ${props => props.$isRadiologyViewer ? 'auto' : '0'};
+  left: ${props => props.$isRadiologyViewer ? 'auto' : '0'};
+  right: ${props => props.$isRadiologyViewer ? 'auto' : '0'};
+  z-index: ${props => props.$isRadiologyViewer ? 'auto' : '999998'};
   
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(8px);
@@ -186,7 +186,7 @@ const MenuButton = styled.button`
   }
 `;
 
-/* 🔧 Menu dropdown avec z-index TRÈS ÉLEVÉ pour passer au-dessus de TOUT */
+/* 🔧 Menu dropdown avec z-index adaptatif */
 const DropdownMenu = styled.div`
   position: absolute;
   top: calc(100% + 0.5rem);
@@ -197,7 +197,8 @@ const DropdownMenu = styled.div`
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   padding: 0.75rem 0;
   display: ${props => props.isOpen ? 'block' : 'none'};
-  z-index: 999999; /* 🔧 Z-index MAXIMAL pour le menu */
+  /* 🔧 Z-index adaptatif selon la page */
+  z-index: ${props => props.$isRadiologyViewer ? '999999' : '99999'};
   min-width: 280px;
   backdrop-filter: blur(8px);
   animation: ${props => props.isOpen ? 'dropdownSlideIn' : 'dropdownSlideOut'} 0.2s ease;
@@ -241,7 +242,7 @@ const DropdownMenu = styled.div`
     padding: 1rem;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    z-index: 9999999; /* 🔧 Z-index ENCORE PLUS ÉLEVÉ sur mobile */
+    z-index: 9999999; /* 🔧 Z-index MAXIMAL sur mobile */
     max-height: none;
     border: none;
     
@@ -488,10 +489,27 @@ const UserInfo = styled.div`
   }
 `;
 
+/* 🔧 NOUVEAU : Spacer pour compenser le header fixe sur les autres pages */
+const HeaderSpacer = styled.div`
+  /* 🔧 Seulement visible quand le header est fixe (pas sur RadiologyViewer) */
+  display: ${props => props.$isRadiologyViewer ? 'none' : 'block'};
+  height: 60px; /* Même hauteur que le header */
+  width: 100%;
+  
+  @media (max-width: 768px) {
+    height: 60px;
+  }
+`;
+
 function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = null }) {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
   const location = useLocation();
+  
+  // 🔧 DÉTECTION de la page RadiologyViewer
+  const isRadiologyViewer = location.pathname.includes('/viewer/') || 
+                           location.pathname.includes('/radiology/') ||
+                           location.pathname.includes('/case/') && location.pathname.includes('/viewer');
 
   const handleMenuToggle = () => {
     setShowMenu(!showMenu);
@@ -537,121 +555,126 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
   }, [location.pathname]);
 
   return (
-    <HeaderWrapper>
-      <HeaderContent>
-        <Logo to="/">
-          <Stethoscope size={24} />
-          <span>RIFIM</span>
-        </Logo>
-        
-        {pageTitle && (
-          <CenterTitle>{pageTitle}</CenterTitle>
-        )}
-        
-        <RightSection ref={menuRef}>
-          <ThemeToggleButton onClick={toggleDarkMode} title={isDarkMode ? 'Passer en mode clair' : 'Passer en mode sombre'}>
-            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-          </ThemeToggleButton>
+    <>
+      <HeaderWrapper $isRadiologyViewer={isRadiologyViewer}>
+        <HeaderContent>
+          <Logo to="/">
+            <Stethoscope size={24} />
+            <span>RIFIM</span>
+          </Logo>
+          
+          {pageTitle && (
+            <CenterTitle>{pageTitle}</CenterTitle>
+          )}
+          
+          <RightSection ref={menuRef}>
+            <ThemeToggleButton onClick={toggleDarkMode} title={isDarkMode ? 'Passer en mode clair' : 'Passer en mode sombre'}>
+              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+            </ThemeToggleButton>
 
-          <MenuButton onClick={handleMenuToggle}>
-            <span>{userName}</span>
-            <ChevronDown 
-              size={16} 
-              style={{ 
-                transform: showMenu ? 'rotate(180deg)' : 'rotate(0deg)',
-                transition: 'transform 0.2s ease'
-              }} 
-            />
-          </MenuButton>
+            <MenuButton onClick={handleMenuToggle}>
+              <span>{userName}</span>
+              <ChevronDown 
+                size={16} 
+                style={{ 
+                  transform: showMenu ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s ease'
+                }} 
+              />
+            </MenuButton>
 
-          <DropdownMenu isOpen={showMenu}>
-            {/* Header mobile uniquement */}
-            <MobileMenuHeader>
-              <MobileMenuTitle>Menu</MobileMenuTitle>
-              <MobileCloseButton onClick={handleMenuItemClick}>
-                <X size={24} />
-              </MobileCloseButton>
-            </MobileMenuHeader>
+            <DropdownMenu isOpen={showMenu} $isRadiologyViewer={isRadiologyViewer}>
+              {/* Header mobile uniquement */}
+              <MobileMenuHeader>
+                <MobileMenuTitle>Menu</MobileMenuTitle>
+                <MobileCloseButton onClick={handleMenuItemClick}>
+                  <X size={24} />
+                </MobileCloseButton>
+              </MobileMenuHeader>
 
-            {/* Informations utilisateur */}
-            {userName && (
-              <>
-                <UserInfo>
-                  <User size={18} />
-                  Connecté en tant que <strong>{userName}</strong>
-                </UserInfo>
-                <MenuDivider />
-              </>
-            )}
+              {/* Informations utilisateur */}
+              {userName && (
+                <>
+                  <UserInfo>
+                    <User size={18} />
+                    Connecté en tant que <strong>{userName}</strong>
+                  </UserInfo>
+                  <MenuDivider />
+                </>
+              )}
 
-            {/* Section Questionnaires */}
-            <MenuSection>
-              <SectionTitle>
-                <FileText size={18} />
-                Questionnaires
-              </SectionTitle>
-              <MenuItem to="/questionnaires" onClick={handleMenuItemClick}>
-                <span>➕</span> Gérer les questionnaires
-              </MenuItem>
-              <MenuItem to="/questionnaires-list" onClick={handleMenuItemClick}>
-                <span>📋</span> Mes Questionnaires
-              </MenuItem>
-              <MenuItem to="/public-questionnaires" onClick={handleMenuItemClick}>
-                <span>📖</span> Questionnaires Publics
-              </MenuItem>
-            </MenuSection>
+              {/* Section Questionnaires */}
+              <MenuSection>
+                <SectionTitle>
+                  <FileText size={18} />
+                  Questionnaires
+                </SectionTitle>
+                <MenuItem to="/questionnaires" onClick={handleMenuItemClick}>
+                  <span>➕</span> Gérer les questionnaires
+                </MenuItem>
+                <MenuItem to="/questionnaires-list" onClick={handleMenuItemClick}>
+                  <span>📋</span> Mes Questionnaires
+                </MenuItem>
+                <MenuItem to="/public-questionnaires" onClick={handleMenuItemClick}>
+                  <span>📖</span> Questionnaires Publics
+                </MenuItem>
+              </MenuSection>
 
-            <MenuDivider />
+              <MenuDivider />
 
-            {/* Section Cas Cliniques */}
-            <MenuSection>
-              <SectionTitle>
-                <FolderOpen size={18} />
-                Cas Cliniques
-              </SectionTitle>
-              <MenuItem to="/cases" onClick={handleMenuItemClick}>
-                <span>➕</span> Gérer les Cas
-              </MenuItem>
-              <MenuItem to="/cases-list" onClick={handleMenuItemClick}>
-                <span>📁</span> Mes Cas
-              </MenuItem>
-              <MenuItem to="/public-cases" onClick={handleMenuItemClick}>
-                <span>📂</span> Cas Publics
-              </MenuItem>
-            </MenuSection>
+              {/* Section Cas Cliniques */}
+              <MenuSection>
+                <SectionTitle>
+                  <FolderOpen size={18} />
+                  Cas Cliniques
+                </SectionTitle>
+                <MenuItem to="/cases" onClick={handleMenuItemClick}>
+                  <span>➕</span> Gérer les Cas
+                </MenuItem>
+                <MenuItem to="/cases-list" onClick={handleMenuItemClick}>
+                  <span>📁</span> Mes Cas
+                </MenuItem>
+                <MenuItem to="/public-cases" onClick={handleMenuItemClick}>
+                  <span>📂</span> Cas Publics
+                </MenuItem>
+              </MenuSection>
 
-            <MenuDivider />
+              <MenuDivider />
 
-            {/* Section Protocoles */}
-            <MenuSection>
-              <SectionTitle>
-                <Activity size={18} />
-                Protocoles
-              </SectionTitle>
-              <MenuItem to="/protocols/create" onClick={handleMenuItemClick}>
-                <span>➕</span> Créer un protocole
-              </MenuItem>
-              <MenuItem to="/protocols/personal" onClick={handleMenuItemClick}>
-                <span>📋</span> Mes Protocoles
-              </MenuItem>
-              <MenuItem to="/protocols/public" onClick={handleMenuItemClick}>
-                <span>📖</span> Protocoles Publics
-              </MenuItem>
-            </MenuSection>
+              {/* Section Protocoles */}
+              <MenuSection>
+                <SectionTitle>
+                  <Activity size={18} />
+                  Protocoles
+                </SectionTitle>
+                <MenuItem to="/protocols/create" onClick={handleMenuItemClick}>
+                  <span>➕</span> Créer un protocole
+                </MenuItem>
+                <MenuItem to="/protocols/personal" onClick={handleMenuItemClick}>
+                  <span>📋</span> Mes Protocoles
+                </MenuItem>
+                <MenuItem to="/protocols/public" onClick={handleMenuItemClick}>
+                  <span>📖</span> Protocoles Publics
+                </MenuItem>
+              </MenuSection>
 
-            <MenuDivider />
+              <MenuDivider />
 
-            {/* Section Déconnexion */}
-            <MenuSection>
-              <LogoutItem onClick={() => { handleMenuItemClick(); onLogout(); }}>
-                <LogOut size={18} />
-                Se déconnecter
-              </LogoutItem>
-            </MenuSection>
-          </DropdownMenu>
-        </RightSection>
-      </HeaderContent>
-    </HeaderWrapper>
+              {/* Section Déconnexion */}
+              <MenuSection>
+                <LogoutItem onClick={() => { handleMenuItemClick(); onLogout(); }}>
+                  <LogOut size={18} />
+                  Se déconnecter
+                </LogoutItem>
+              </MenuSection>
+            </DropdownMenu>
+          </RightSection>
+        </HeaderContent>
+      </HeaderWrapper>
+      
+      {/* 🔧 SPACER : Compense la hauteur du header fixe sur toutes les pages SAUF RadiologyViewer */}
+      <HeaderSpacer $isRadiologyViewer={isRadiologyViewer} />
+    </>
   );
 }
 
