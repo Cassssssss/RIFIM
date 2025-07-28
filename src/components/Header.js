@@ -23,6 +23,24 @@ const HeaderWrapper = styled.header`
     /* Support pour les safe areas iPhone */
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+    
+    /* 🔧 CORRECTION : Fix pour la disparition du header sur mobile */
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    
+    /* Force la position fixe stable */
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100vw !important;
+    
+    /* Améliore le rendu sur iOS Safari */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   /* ======================================================================================== */
@@ -31,9 +49,9 @@ const HeaderWrapper = styled.header`
   
   @media (max-width: 1024px) and (orientation: landscape) {
     /* 🔧 HEADER ULTRA COMPACT en mode paysage mobile */
-    padding: 0.5rem 0;
-    min-height: 60px;
-    height: 60px;
+    padding: 0.25rem ;
+    min-height: 80px;
+    height: 80px;
     
     /* Support pour les safe areas en paysage */
     padding-left: env(safe-area-inset-left);
@@ -41,7 +59,7 @@ const HeaderWrapper = styled.header`
     padding-top: calc(0.25rem + env(safe-area-inset-top));
   }
   
-  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
+  @media (max-width: 896px) and (orientation: landscape) and (max-height: 14px) {
     /* 🔧 ENCORE PLUS COMPACT pour iPhone en paysage */
     padding: 0.5rem 0;
     min-height: 35px;
