@@ -17,45 +17,29 @@ const HeaderWrapper = styled.header`
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(8px);
   
-  /* Mobile optimizations */
+  /* Mobile : APPROCHE DIFFÉRENTE - Sticky au lieu de fixed */
   @media (max-width: 768px) {
+    /* 🔧 SOLUTION SIMPLE : Position sticky qui reste toujours visible */
+    position: sticky !important;
+    top: 0 !important;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 999998;
+    
     padding: 0.5rem 0;
-    /* Support pour les safe areas iPhone */
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
     
-    /* 🔧 SOLUTION ULTIME : Position sticky + fixed pour forcer la visibilité */
-    position: -webkit-sticky !important;
-    position: sticky !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100vw !important;
-    z-index: 999999 !important;
+    /* Hauteur stable */
+    height: 60px;
+    min-height: 60px;
+    max-height: 60px;
     
-    /* 🔧 FORCE l'affichage avec contain pour isoler */
-    contain: layout style paint !important;
-    isolation: isolate !important;
-    
-    /* 🔧 GPU Layer pour performance */
-    will-change: transform, position !important;
-    transform: translate3d(0, 0, 0) !important;
-    -webkit-transform: translate3d(0, 0, 0) !important;
-    
-    /* 🔧 FORCE l'affichage absolu */
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    
-    /* 🔧 Hauteur fixe stable */
-    height: 60px !important;
-    min-height: 60px !important;
-    max-height: 60px !important;
-    
-    /* 🔧 Empêche les navigateurs de cacher le header */
-    -webkit-backface-visibility: hidden !important;
-    backface-visibility: hidden !important;
+    /* GPU optimizations */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    will-change: transform;
     
     /* Améliore le rendu */
     -webkit-font-smoothing: antialiased;
@@ -67,9 +51,10 @@ const HeaderWrapper = styled.header`
     min-height: 50px;
     height: 50px;
     
-    position: sticky !important;
-    position: fixed !important;
-    top: 0 !important;
+    @media (max-width: 768px) {
+      position: sticky !important;
+      top: 0 !important;
+    }
     
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
@@ -81,9 +66,10 @@ const HeaderWrapper = styled.header`
     min-height: 45px;
     height: 45px;
     
-    position: sticky !important;
-    position: fixed !important;
-    top: 0 !important;
+    @media (max-width: 768px) {
+      position: sticky !important;
+      top: 0 !important;
+    }
   }
 `;
 
@@ -632,7 +618,6 @@ const UserInfo = styled.div`
 function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = null }) {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
-  const headerRef = useRef(null);
   const location = useLocation();
 
   const handleMenuToggle = () => {
@@ -649,97 +634,6 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
     setShowMenu(false);
     document.body.classList.remove('menu-open');
   };
-
-  // 🔧 SOLUTION ULTIME : Force le header à rester visible avec Intersection Observer
-  useEffect(() => {
-    if (typeof window === 'undefined' || window.innerWidth > 768) return;
-
-    const header = headerRef.current;
-    if (!header) return;
-
-    // 🔧 FORCE la position sticky + fixed en permanence
-    const forceHeaderVisibility = () => {
-      header.style.cssText = `
-        position: -webkit-sticky !important;
-        position: sticky !important;
-        position: fixed !important;
-        top: 0px !important;
-        left: 0px !important;
-        right: 0px !important;
-        width: 100vw !important;
-        z-index: 999999 !important;
-        contain: layout style paint !important;
-        isolation: isolate !important;
-        will-change: transform, position !important;
-        transform: translate3d(0, 0, 0) !important;
-        -webkit-transform: translate3d(0, 0, 0) !important;
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        height: 60px !important;
-        min-height: 60px !important;
-        max-height: 60px !important;
-        -webkit-backface-visibility: hidden !important;
-        backface-visibility: hidden !important;
-      `;
-    };
-
-    // 🔧 Intersection Observer pour détecter si le header sort de la vue
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting || entry.intersectionRatio < 1) {
-            // Si le header n'est pas complètement visible, force sa visibilité
-            forceHeaderVisibility();
-          }
-        });
-      },
-      {
-        threshold: [0, 0.1, 0.5, 1.0], // Multiple seuils pour détecter toute disparition
-        rootMargin: '0px 0px 0px 0px'
-      }
-    );
-
-    // 🔧 Observer le header
-    observer.observe(header);
-
-    // 🔧 Force immédiatement
-    forceHeaderVisibility();
-
-    // 🔧 Surveillance continue avec RAF
-    let rafId;
-    const continuousCheck = () => {
-      if (window.innerWidth <= 768) {
-        forceHeaderVisibility();
-      }
-      rafId = requestAnimationFrame(continuousCheck);
-    };
-    continuousCheck();
-
-    // 🔧 Force sur tous les événements possibles
-    const events = ['scroll', 'resize', 'orientationchange', 'touchstart', 'touchmove', 'touchend'];
-    const handleEvent = () => {
-      if (window.innerWidth <= 768) {
-        setTimeout(forceHeaderVisibility, 0);
-        setTimeout(forceHeaderVisibility, 50);
-        setTimeout(forceHeaderVisibility, 100);
-      }
-    };
-
-    events.forEach(event => {
-      window.addEventListener(event, handleEvent, { passive: true });
-      document.addEventListener(event, handleEvent, { passive: true });
-    });
-
-    return () => {
-      observer.disconnect();
-      if (rafId) cancelAnimationFrame(rafId);
-      events.forEach(event => {
-        window.removeEventListener(event, handleEvent);
-        document.removeEventListener(event, handleEvent);
-      });
-    };
-  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -765,7 +659,7 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
   }, [location.pathname]);
 
   return (
-    <HeaderWrapper ref={headerRef}>
+    <HeaderWrapper>
       <HeaderContent>
         <Logo to="/">
           <Stethoscope size={24} />
