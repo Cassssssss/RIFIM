@@ -50,8 +50,8 @@ const HeaderWrapper = styled.header`
   @media (max-width: 1024px) and (orientation: landscape) {
     /* 🔧 HEADER ULTRA COMPACT en mode paysage mobile */
     padding: 0.25rem ;
-    min-height: 70px;
-    height: 70px;
+    min-height: 60px;
+    height: 60px;
     
     /* Support pour les safe areas en paysage */
     padding-left: env(safe-area-inset-left);
