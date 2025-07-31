@@ -1,21 +1,17 @@
-// pages/QuestionnaireListPage.js - VERSION COMPLÈTE AVEC SHARED COMPONENTS
+// pages/QuestionnaireListPage.js - VERSION AVEC UNIFIED FILTER SYSTEM ROBUSTE
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
 import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/CasesPage.styles';
-import { ChevronDown, ChevronUp, Edit, FileText, Copy, Trash2, Eye, EyeOff, Clock, Users, Plus, X } from 'lucide-react';
+import { Edit, FileText, Copy, Trash2, Eye, EyeOff, Clock, Users, Plus, X } from 'lucide-react';
 import TutorialOverlay from './TutorialOverlay';
+
+// Import du nouveau système de filtres unifié
+import UnifiedFilterSystem from '../components/shared/UnifiedFilterSystem';
 
 // Import des composants partagés
 import {
   PageContainer,
-  FilterSection,
-  FilterGroup,
-  FilterTitle,
-  FilterDropdown,
-  DropdownButton,
-  DropdownContent,
-  DropdownOption,
   TopActionsContainer,
   ListContainer,
   SearchInput,
@@ -56,9 +52,6 @@ function QuestionnaireListPage() {
   const [specialtyFilters, setSpecialtyFilters] = useState([]);
   const [locationFilters, setLocationFilters] = useState([]);
   const [showTutorial, setShowTutorial] = useState(false);
-  const [locationDropdownOpen, setLocationDropdownOpen] = useState(false);
-  const [modalityDropdownOpen, setModalityDropdownOpen] = useState(false);
-  const [specialtyDropdownOpen, setSpecialtyDropdownOpen] = useState(false);
 
   // États pour la gestion des tags
   const [newTags, setNewTags] = useState({});
@@ -88,7 +81,7 @@ function QuestionnaireListPage() {
     try {
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: '12', // Uniformisé avec les autres pages
+        limit: '12',
         search: searchTerm,
         modality: modalityFilters.join(','),
         specialty: specialtyFilters.join(','),
@@ -168,31 +161,6 @@ function QuestionnaireListPage() {
     }
   };
 
-  // Handlers des filtres
-  const handleModalityFilter = (modality) => {
-    setModalityFilters(prev => 
-      prev.includes(modality) 
-        ? prev.filter(m => m !== modality)
-        : [...prev, modality]
-    );
-  };
-
-  const handleSpecialtyFilter = (specialty) => {
-    setSpecialtyFilters(prev => 
-      prev.includes(specialty) 
-        ? prev.filter(s => s !== specialty)
-        : [...prev, specialty]
-    );
-  };
-
-  const handleLocationFilter = (location) => {
-    setLocationFilters(prev => 
-      prev.includes(location) 
-        ? prev.filter(l => l !== location)
-        : [...prev, location]
-    );
-  };
-
   const toggleVisibility = async (id, isPublic) => {
     try {
       await axios.patch(`/questionnaires/${id}/togglePublic`);
@@ -238,98 +206,51 @@ function QuestionnaireListPage() {
     return `~${estimatedMinutes} min`;
   };
 
+  // Configuration des filtres pour UnifiedFilterSystem
+  const filtersConfig = [
+    {
+      key: 'modality',
+      title: 'Modalités',
+      icon: '📊',
+      options: modalities,
+      selectedValues: modalityFilters,
+      onChange: setModalityFilters
+    },
+    {
+      key: 'specialty',
+      title: 'Spécialités',
+      icon: '🏥',
+      options: specialties,
+      selectedValues: specialtyFilters,
+      onChange: setSpecialtyFilters
+    },
+    {
+      key: 'location',
+      title: 'Localisation',
+      icon: '📍',
+      options: locations,
+      selectedValues: locationFilters,
+      onChange: setLocationFilters
+    }
+  ];
+
   return (
     <PageContainer>
-      {/* SECTION FILTRES */}
-      <FilterSection className="filter-section">
-        <FilterGroup>
-          <FilterTitle>📊 Modalités</FilterTitle>
-          <FilterDropdown>
-            <DropdownButton onClick={() => setModalityDropdownOpen(!modalityDropdownOpen)}>
-              Modalités ({modalityFilters.length})
-              {modalityDropdownOpen ? <ChevronUp /> : <ChevronDown />}
-            </DropdownButton>
-            {modalityDropdownOpen && (
-              <DropdownContent>
-                {modalities.map(modality => (
-                  <DropdownOption key={modality}>
-                    <input
-                      type="checkbox"
-                      checked={modalityFilters.includes(modality)}
-                      onChange={() => handleModalityFilter(modality)}
-                    />
-                    <span>{modality}</span>
-                  </DropdownOption>
-                ))}
-              </DropdownContent>
-            )}
-          </FilterDropdown>
-        </FilterGroup>
+      {/* BOUTONS D'ACTIONS PRINCIPAUX */}
+      <TopActionsContainer>
+        <ActionButton 
+          as={Link} 
+          to="/create" 
+          variant="primary"
+          style={{ padding: '1rem 1.5rem', fontSize: '1rem', fontWeight: '600', textAlign: 'center' }}
+        >
+          ➕ CRÉER UN NOUVEAU QUESTIONNAIRE
+        </ActionButton>
 
-        <FilterGroup>
-          <FilterTitle>🏥 Spécialités</FilterTitle>
-          <FilterDropdown>
-            <DropdownButton onClick={() => setSpecialtyDropdownOpen(!specialtyDropdownOpen)}>
-              Spécialités ({specialtyFilters.length})
-              {specialtyDropdownOpen ? <ChevronUp /> : <ChevronDown />}
-            </DropdownButton>
-            {specialtyDropdownOpen && (
-              <DropdownContent>
-                {specialties.map(specialty => (
-                  <DropdownOption key={specialty}>
-                    <input
-                      type="checkbox"
-                      checked={specialtyFilters.includes(specialty)}
-                      onChange={() => handleSpecialtyFilter(specialty)}
-                    />
-                    <span>{specialty}</span>
-                  </DropdownOption>
-                ))}
-              </DropdownContent>
-            )}
-          </FilterDropdown>
-        </FilterGroup>
-
-        <FilterGroup>
-          <FilterTitle>📍 Localisation</FilterTitle>
-          <FilterDropdown>
-            <DropdownButton onClick={() => setLocationDropdownOpen(!locationDropdownOpen)}>
-              Localisation ({locationFilters.length})
-              {locationDropdownOpen ? <ChevronUp /> : <ChevronDown />}
-            </DropdownButton>
-            {locationDropdownOpen && (
-              <DropdownContent>
-                {locations.map(location => (
-                  <DropdownOption key={location}>
-                    <input
-                      type="checkbox"
-                      checked={locationFilters.includes(location)}
-                      onChange={() => handleLocationFilter(location)}
-                    />
-                    <span>{location}</span>
-                  </DropdownOption>
-                ))}
-              </DropdownContent>
-            )}
-          </FilterDropdown>
-        </FilterGroup>
-
-        {/* BOUTONS D'ACTIONS PRINCIPAUX */}
-        <TopActionsContainer>
-          <ActionButton 
-            as={Link} 
-            to="/create" 
-            variant="primary"
-            style={{ padding: '1rem 1.5rem', fontSize: '1rem', fontWeight: '600', textAlign: 'center' }}
-          >
-            ➕ CRÉER UN NOUVEAU QUESTIONNAIRE
-          </ActionButton>
-
-          <TutorialButton onClick={() => setShowTutorial(true)}>
-            📚 Voir le tutoriel
-          </TutorialButton>
-        </TopActionsContainer>
-      </FilterSection>
+        <TutorialButton onClick={() => setShowTutorial(true)}>
+          📚 Voir le tutoriel
+        </TutorialButton>
+      </TopActionsContainer>
 
       {/* CONTENU PRINCIPAL */}
       <ListContainer>
@@ -341,6 +262,14 @@ function QuestionnaireListPage() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
+
+        {/* NOUVEAU SYSTÈME DE FILTRES UNIFIÉ */}
+        <div className="filter-section" style={{ marginBottom: '2rem' }}>
+          <UnifiedFilterSystem
+            filters={filtersConfig}
+            style={{ justifyContent: 'flex-start' }}
+          />
+        </div>
 
         {/* GRILLE DES QUESTIONNAIRES */}
         <QuestionnairesGrid>

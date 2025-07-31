@@ -94,6 +94,8 @@ export const UnifiedFilterContainer = styled.div`
 
 export const UnifiedFilterSection = styled.div`
   position: relative;
+  /* CORRECTION CRITIQUE : Assurer que le dropdown soit au-dessus des autres éléments */
+  z-index: ${props => props.isOpen ? '1000' : 'auto'};
 `;
 
 export const UnifiedFilterButton = styled.button`
@@ -118,6 +120,11 @@ export const UnifiedFilterButton = styled.button`
     background-color: ${props => props.active ? props.theme.primary : props.theme.hover};
   }
 
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
+  }
+
   svg {
     transition: transform 0.2s ease;
     transform: ${props => props.isOpen ? 'rotate(180deg)' : 'rotate(0deg)'};
@@ -131,7 +138,10 @@ export const UnifiedFilterButton = styled.button`
 
 export const UnifiedSpoilerButton = styled.button`
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #5A9FD4, #6ABFA5);
+  background: ${props => props.active 
+    ? 'linear-gradient(135deg, #10b981, #059669)' 
+    : 'linear-gradient(135deg, #5A9FD4, #6ABFA5)'
+  };
   color: white;
   border: none;
   border-radius: 12px;
@@ -146,8 +156,22 @@ export const UnifiedSpoilerButton = styled.button`
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(90, 159, 212, 0.3);
-    background: linear-gradient(135deg, #4E8BC0, #5AAB91);
+    box-shadow: 0 4px 12px ${props => props.active 
+      ? 'rgba(16, 185, 129, 0.3)' 
+      : 'rgba(90, 159, 212, 0.3)'
+    };
+    background: ${props => props.active 
+      ? 'linear-gradient(135deg, #059669, #047857)' 
+      : 'linear-gradient(135deg, #4E8BC0, #5AAB91)'
+    };
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px ${props => props.active 
+      ? 'rgba(16, 185, 129, 0.2)' 
+      : 'rgba(90, 159, 212, 0.2)'
+    };
   }
 
   @media (max-width: 768px) {
@@ -158,20 +182,41 @@ export const UnifiedSpoilerButton = styled.button`
 
 export const UnifiedDropdownContent = styled.div`
   position: absolute;
-  top: 100%;
+  top: calc(100% + 4px);
   left: 0;
   right: 0;
-  max-height: 250px;
+  max-height: 280px;
   overflow-y: auto;
   background-color: ${props => props.theme.card};
   border: 2px solid ${props => props.theme.border};
-  border-top: none;
-  border-radius: 0 0 12px 12px;
-  z-index: 10;
+  border-radius: 12px;
+  /* CORRECTION MAJEURE : Z-index élevé pour être au-dessus de tout */
+  z-index: 9999;
   box-shadow: 0 8px 25px ${props => props.theme.shadow};
+  /* CORRECTION : Fond solide pour éviter la transparence */
+  backdrop-filter: blur(10px);
+  
+  /* Style personnalisé pour les scrollbars */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: ${props => props.theme.background};
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: ${props => props.theme.textSecondary};
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: ${props => props.theme.text};
+  }
 `;
 
-// CORRECTION MAJEURE : UnifiedDropdownItem doit empêcher la propagation ET garder le menu ouvert
+// CORRECTION MAJEURE : UnifiedDropdownItem avec meilleure gestion des événements
 export const UnifiedDropdownItem = styled.div`
   display: flex;
   align-items: center;
@@ -181,23 +226,40 @@ export const UnifiedDropdownItem = styled.div`
   transition: background-color 0.2s ease;
   font-weight: 500;
   user-select: none;
-
+  /* CORRECTION : Empêcher la propagation d'événements */
+  
   &:hover {
     background-color: ${props => props.theme.hover};
+  }
+
+  &:first-child {
+    border-radius: 12px 12px 0 0;
   }
 
   &:last-child {
     border-radius: 0 0 12px 12px;
   }
+
+  &:only-child {
+    border-radius: 12px;
+  }
+
+  /* CORRECTION : Gérer les clics sur les checkbox correctement */
+  input[type="checkbox"] {
+    pointer-events: auto;
+  }
 `;
 
 // CORRECTION MAJEURE : UnifiedDropdownCheckbox avec gestion d'événements améliorée
 export const UnifiedDropdownCheckbox = styled.input`
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   accent-color: ${props => props.theme.primary};
   cursor: pointer;
   flex-shrink: 0;
+  margin: 0;
+  /* CORRECTION : Assurer que les événements de checkbox fonctionnent */
+  pointer-events: auto;
 `;
 
 // ==================== LISTE ET CARTES DES CAS ====================
@@ -224,11 +286,16 @@ export const UnifiedCaseCard = styled(Link)`
   text-decoration: none;
   color: inherit;
   display: block;
+  /* CORRECTION : Z-index normal pour les cartes */
+  z-index: 1;
+  position: relative;
 
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 30px ${props => props.theme.shadow};
     border-color: ${props => props.theme.primary}50;
+    /* CORRECTION : Élever légèrement au hover mais rester sous les dropdowns */
+    z-index: 2;
   }
 `;
 
@@ -307,6 +374,9 @@ export const UnifiedStatItem = styled.div`
 export const UnifiedActionsContainer = styled.div`
   display: flex;
   gap: 0.5rem;
+  /* CORRECTION : Z-index pour que les boutons d'action restent cliquables */
+  position: relative;
+  z-index: 3;
 `;
 
 export const UnifiedActionButton = styled.button`
@@ -325,6 +395,11 @@ export const UnifiedActionButton = styled.button`
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px ${props => props.theme.shadow};
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}30;
   }
 `;
 
@@ -383,6 +458,11 @@ export const UnifiedPaginationButton = styled.button`
   &:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 4px 15px ${props => props.theme.shadow};
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}30;
   }
 
   &:disabled {
@@ -449,4 +529,17 @@ export const UnifiedErrorMessage = styled.div`
   border: 1px solid ${props => props.theme.errorBorder || '#fecaca'};
   margin: 2rem 0;
   font-weight: 500;
+`;
+
+// ==================== BACKDROP POUR FERMER LES DROPDOWNS ====================
+
+export const DropdownBackdrop = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  background: transparent;
+  cursor: default;
 `;

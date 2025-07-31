@@ -1,21 +1,16 @@
-// pages/QuestionnairePage.js - VERSION COMPLÈTE AVEC SHARED COMPONENTS
+// pages/QuestionnairePage.js - VERSION AVEC UNIFIED FILTER SYSTEM ROBUSTE
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
 import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/CasesPage.styles';
-import { ChevronDown, ChevronUp, Trash2, Clock, Users, FileText } from 'lucide-react';
+import { Trash2, Clock, Users, FileText } from 'lucide-react';
+
+// Import du nouveau système de filtres unifié
+import UnifiedFilterSystem from '../components/shared/UnifiedFilterSystem';
 
 // Import des composants partagés
 import {
   PageContainer,
-  FilterSection,
-  FilterGroup,
-  FilterTitle,
-  FilterDropdown,
-  DropdownButton,
-  DropdownContent,
-  DropdownOption,
-  FilterIndicator,
   ListContainer,
   SearchInput,
   QuestionnairesGrid,
@@ -40,9 +35,6 @@ function QuestionnairePage() {
   const [modalityFilters, setModalityFilters] = useState([]);
   const [specialtyFilters, setSpecialtyFilters] = useState([]);
   const [locationFilters, setLocationFilters] = useState([]);
-  const [isModalityDropdownOpen, setIsModalityDropdownOpen] = useState(false);
-  const [isSpecialtyDropdownOpen, setIsSpecialtyDropdownOpen] = useState(false);
-  const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
 
   const modalityOptions = ['Rx', 'TDM', 'IRM', 'Echo'];
   const specialtyOptions = ['Cardiovasc', 'Dig', 'Neuro', 'ORL', 'Ostéo', 'Pedia', 'Pelvis', 'Séno', 'Thorax', 'Uro'];
@@ -56,7 +48,7 @@ function QuestionnairePage() {
       const response = await axios.get('/questionnaires/my', {
         params: {
           page,
-          limit: 12, // Uniformisé avec les autres pages
+          limit: 12,
           search: searchTerm,
           modality: modalityFilters.join(','),
           specialty: specialtyFilters.join(','),
@@ -86,40 +78,6 @@ function QuestionnairePage() {
       headerTitle.textContent = 'Liste des questionnaires';
     }
   }, [fetchQuestionnaires]);
-
-  const handleSearch = (event) => {
-    setSearchTerm(event.target.value);
-  };
-
-  const handleModalityFilter = (modality) => {
-    setModalityFilters(prev => {
-      if (prev.includes(modality)) {
-        return prev.filter(m => m !== modality);
-      } else {
-        return [...prev, modality];
-      }
-    });
-  };
-
-  const handleSpecialtyFilter = (specialty) => {
-    setSpecialtyFilters(prev => {
-      if (prev.includes(specialty)) {
-        return prev.filter(s => s !== specialty);
-      } else {
-        return [...prev, specialty];
-      }
-    });
-  };
-
-  const handleLocationFilter = (location) => {
-    setLocationFilters(prev => {
-      if (prev.includes(location)) {
-        return prev.filter(l => l !== location);
-      } else {
-        return [...prev, location];
-      }
-    });
-  };
 
   const deleteQuestionnaire = async (id) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce questionnaire ?')) {
@@ -156,90 +114,36 @@ function QuestionnairePage() {
     return `~${estimatedMinutes} min`;
   };
 
+  // Configuration des filtres pour UnifiedFilterSystem
+  const filtersConfig = [
+    {
+      key: 'modality',
+      title: 'Modalités',
+      icon: '📊',
+      options: modalityOptions,
+      selectedValues: modalityFilters,
+      onChange: setModalityFilters
+    },
+    {
+      key: 'specialty',
+      title: 'Spécialités',
+      icon: '🏥',
+      options: specialtyOptions,
+      selectedValues: specialtyFilters,
+      onChange: setSpecialtyFilters
+    },
+    {
+      key: 'location',
+      title: 'Localisation',
+      icon: '📍',
+      options: locationOptions,
+      selectedValues: locationFilters,
+      onChange: setLocationFilters
+    }
+  ];
+
   return (
     <PageContainer>
-      {/* SECTION FILTRES */}
-      <FilterSection>
-        <FilterGroup>
-          <FilterTitle>📊 Modalités</FilterTitle>
-          <FilterDropdown>
-            <DropdownButton onClick={() => setIsModalityDropdownOpen(!isModalityDropdownOpen)}>
-              Modalités ({modalityFilters.length})
-              {isModalityDropdownOpen ? <ChevronUp /> : <ChevronDown />}
-            </DropdownButton>
-            {isModalityDropdownOpen && (
-              <DropdownContent>
-                {modalityOptions.map(modality => (
-                  <DropdownOption key={modality}>
-                    <input
-                      type="checkbox"
-                      checked={modalityFilters.includes(modality)}
-                      onChange={() => handleModalityFilter(modality)}
-                    />
-                    <span>{modality}</span>
-                  </DropdownOption>
-                ))}
-              </DropdownContent>
-            )}
-          </FilterDropdown>
-        </FilterGroup>
-
-        <FilterGroup>
-          <FilterTitle>🏥 Spécialités</FilterTitle>
-          <FilterDropdown>
-            <DropdownButton onClick={() => setIsSpecialtyDropdownOpen(!isSpecialtyDropdownOpen)}>
-              Spécialités ({specialtyFilters.length})
-              {isSpecialtyDropdownOpen ? <ChevronUp /> : <ChevronDown />}
-            </DropdownButton>
-            {isSpecialtyDropdownOpen && (
-              <DropdownContent>
-                {specialtyOptions.map(specialty => (
-                  <DropdownOption key={specialty}>
-                    <input
-                      type="checkbox"
-                      checked={specialtyFilters.includes(specialty)}
-                      onChange={() => handleSpecialtyFilter(specialty)}
-                    />
-                    <span>{specialty}</span>
-                  </DropdownOption>
-                ))}
-              </DropdownContent>
-            )}
-          </FilterDropdown>
-        </FilterGroup>
-
-        <FilterGroup>
-          <FilterTitle>📍 Localisation</FilterTitle>
-          <FilterDropdown>
-            <DropdownButton onClick={() => setIsLocationDropdownOpen(!isLocationDropdownOpen)}>
-              Localisation ({locationFilters.length})
-              {isLocationDropdownOpen ? <ChevronUp /> : <ChevronDown />}
-            </DropdownButton>
-            {isLocationDropdownOpen && (
-              <DropdownContent>
-                {locationOptions.map(location => (
-                  <DropdownOption key={location}>
-                    <input
-                      type="checkbox"
-                      checked={locationFilters.includes(location)}
-                      onChange={() => handleLocationFilter(location)}
-                    />
-                    <span>{location}</span>
-                  </DropdownOption>
-                ))}
-              </DropdownContent>
-            )}
-          </FilterDropdown>
-        </FilterGroup>
-
-        {(modalityFilters.length > 0 || specialtyFilters.length > 0 || locationFilters.length > 0) && (
-          <FilterIndicator>
-            Filtres appliqués : 
-            {[...modalityFilters, ...specialtyFilters, ...locationFilters].join(', ')}
-          </FilterIndicator>
-        )}
-      </FilterSection>
-
       {/* CONTENU PRINCIPAL */}
       <ListContainer>
         {/* BARRE DE RECHERCHE */}
@@ -247,8 +151,16 @@ function QuestionnairePage() {
           type="text"
           placeholder="🔍 Rechercher un questionnaire..."
           value={searchTerm}
-          onChange={handleSearch}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
+
+        {/* NOUVEAU SYSTÈME DE FILTRES UNIFIÉ */}
+        <div style={{ marginBottom: '2rem' }}>
+          <UnifiedFilterSystem
+            filters={filtersConfig}
+            style={{ justifyContent: 'flex-start' }}
+          />
+        </div>
 
         {/* GRILLE DES QUESTIONNAIRES */}
         <QuestionnairesGrid>
