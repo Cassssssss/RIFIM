@@ -170,7 +170,7 @@ function RadiologyViewer() {
   // ==================== FONCTION handleScroll ==================== 
   
   const handleScroll = useCallback((deltaY, slowMode = false, side) => {
-    const threshold = slowMode ? 10 : 50;
+    const threshold = slowMode ? 8: 40;
     
     setAccumulatedDelta(prev => {
       const newDelta = prev + deltaY;
@@ -427,9 +427,9 @@ function RadiologyViewer() {
       const touch = e.touches[0];
       const deltaY = touch.clientY - lastTouch.y;
       
-      if (Math.abs(deltaY) > 2) {
-        handleScroll(deltaY * 3, false, side);
-      }
+    if (Math.abs(deltaY) > 2) {
+  handleScroll(deltaY * 5, false, side);  // 🔧 5 au lieu de 3 = plus rapide sur mobile
+}
       
       setLastTouch({
         x: touch.clientX,
