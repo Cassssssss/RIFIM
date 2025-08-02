@@ -270,9 +270,11 @@ export const UnifiedCasesList = styled.div`
   gap: 2rem;
   margin-bottom: 2rem;
 
+  /* 🔧 MODIFICATION PRINCIPALE : Optimisation pour mobile avec 2 colonnes compactes */
   @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
   }
 `;
 
@@ -297,6 +299,19 @@ export const UnifiedCaseCard = styled(Link)`
     /* CORRECTION : Élever légèrement au hover mais rester sous les dropdowns */
     z-index: 2;
   }
+
+  /* 🔧 MODIFICATION : Optimisation mobile compacte */
+  @media (max-width: 768px) {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px ${props => props.theme.shadow};
+    
+    &:hover {
+      transform: none;
+      box-shadow: 0 2px 8px ${props => props.theme.shadow};
+      border-color: ${props => props.theme.border};
+      z-index: 1;
+    }
+  }
 `;
 
 export const UnifiedCaseImage = styled.img`
@@ -304,10 +319,20 @@ export const UnifiedCaseImage = styled.img`
   height: 200px;
   object-fit: cover;
   border-bottom: 1px solid ${props => props.theme.border};
+
+  /* 🔧 MODIFICATION : Image plus compacte sur mobile */
+  @media (max-width: 768px) {
+    height: 120px;
+  }
 `;
 
 export const UnifiedCaseContent = styled.div`
   padding: 1.5rem;
+
+  /* 🔧 MODIFICATION : Padding réduit sur mobile */
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+  }
 `;
 
 export const UnifiedCaseHeader = styled.div`
@@ -315,6 +340,13 @@ export const UnifiedCaseHeader = styled.div`
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 1rem;
+
+  /* 🔧 MODIFICATION : Espacement réduit sur mobile */
+  @media (max-width: 768px) {
+    margin-bottom: 0.5rem;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
 `;
 
 export const UnifiedCaseTitle = styled.h3`
@@ -323,6 +355,13 @@ export const UnifiedCaseTitle = styled.h3`
   font-weight: 600;
   color: ${props => props.theme.text};
   line-height: 1.4;
+
+  /* 🔧 MODIFICATION : Texte plus compact sur mobile */
+  @media (max-width: 768px) {
+    font-size: 0.9rem;
+    line-height: 1.3;
+    margin: 0 0 0.5rem 0;
+  }
 `;
 
 export const UnifiedStarRating = styled.div`
@@ -330,6 +369,18 @@ export const UnifiedStarRating = styled.div`
   gap: 2px;
   margin-bottom: 1rem;
   align-items: center;
+
+  /* 🔧 MODIFICATION : Étoiles plus petites sur mobile */
+  @media (max-width: 768px) {
+    gap: 1px;
+    margin-bottom: 0.5rem;
+    justify-content: center;
+    
+    svg {
+      width: 16px !important;
+      height: 16px !important;
+    }
+  }
 `;
 
 export const UnifiedPopularityBadge = styled.div`
@@ -343,6 +394,18 @@ export const UnifiedPopularityBadge = styled.div`
   align-items: center;
   gap: 0.25rem;
   box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
+
+  /* 🔧 MODIFICATION : Badge plus petit sur mobile */
+  @media (max-width: 768px) {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.4rem;
+    border-radius: 8px;
+    
+    svg {
+      width: 10px !important;
+      height: 10px !important;
+    }
+  }
 `;
 
 export const UnifiedAuthorInfo = styled.div`
@@ -352,6 +415,17 @@ export const UnifiedAuthorInfo = styled.div`
   color: ${props => props.theme.textSecondary};
   font-size: 0.9rem;
   margin-bottom: 1rem;
+
+  /* 🔧 MODIFICATION : Texte plus compact sur mobile */
+  @media (max-width: 768px) {
+    font-size: 0.75rem;
+    margin-bottom: 0.5rem;
+    
+    svg {
+      width: 12px !important;
+      height: 12px !important;
+    }
+  }
 `;
 
 export const UnifiedStatsContainer = styled.div`
@@ -361,6 +435,15 @@ export const UnifiedStatsContainer = styled.div`
   margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid ${props => props.theme.border};
+
+  /* 🔧 MODIFICATION : Layout plus compact sur mobile */
+  @media (max-width: 768px) {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
 `;
 
 export const UnifiedStatItem = styled.div`
@@ -369,6 +452,16 @@ export const UnifiedStatItem = styled.div`
   gap: 0.25rem;
   font-size: 0.8rem;
   color: ${props => props.theme.textSecondary};
+
+  /* 🔧 MODIFICATION : Statistiques plus compactes sur mobile */
+  @media (max-width: 768px) {
+    font-size: 0.7rem;
+    
+    svg {
+      width: 12px !important;
+      height: 12px !important;
+    }
+  }
 `;
 
 export const UnifiedActionsContainer = styled.div`
@@ -377,6 +470,12 @@ export const UnifiedActionsContainer = styled.div`
   /* CORRECTION : Z-index pour que les boutons d'action restent cliquables */
   position: relative;
   z-index: 3;
+
+  /* 🔧 MODIFICATION : Actions centrées sur mobile */
+  @media (max-width: 768px) {
+    justify-content: center;
+    gap: 0.25rem;
+  }
 `;
 
 export const UnifiedActionButton = styled.button`
@@ -401,10 +500,31 @@ export const UnifiedActionButton = styled.button`
     outline: none;
     box-shadow: 0 0 0 3px ${props => props.theme.primary}30;
   }
+
+  /* 🔧 MODIFICATION : Bouton plus compact sur mobile */
+  @media (max-width: 768px) {
+    padding: 0.375rem;
+    border-radius: 6px;
+    
+    &:hover {
+      transform: none;
+      box-shadow: 0 2px 4px ${props => props.theme.shadow};
+    }
+    
+    svg {
+      width: 14px !important;
+      height: 14px !important;
+    }
+  }
 `;
 
 export const UnifiedRatingSection = styled.div`
   margin: 1rem 0;
+
+  /* 🔧 MODIFICATION : Section rating plus compacte sur mobile */
+  @media (max-width: 768px) {
+    margin: 0.5rem 0;
+  }
 `;
 
 export const UnifiedTagsContainer = styled.div`
@@ -412,6 +532,13 @@ export const UnifiedTagsContainer = styled.div`
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-top: 1rem;
+
+  /* 🔧 MODIFICATION : Tags plus compacts sur mobile */
+  @media (max-width: 768px) {
+    gap: 0.25rem;
+    margin-top: 0.5rem;
+    justify-content: center;
+  }
 `;
 
 export const UnifiedTag = styled.span`
@@ -422,6 +549,13 @@ export const UnifiedTag = styled.span`
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 500;
+
+  /* 🔧 MODIFICATION : Tags plus petits sur mobile */
+  @media (max-width: 768px) {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 8px;
+  }
 `;
 
 // ==================== PAGINATION ====================
@@ -441,6 +575,8 @@ export const UnifiedPaginationContainer = styled.div`
   @media (max-width: 768px) {
     flex-direction: column;
     gap: 1rem;
+    margin-top: 2rem;
+    padding: 1rem;
   }
 `;
 
@@ -507,6 +643,19 @@ export const UnifiedEmptyState = styled.div`
     line-height: 1.6;
     margin: 0;
   }
+
+  /* 🔧 MODIFICATION : État vide plus compact sur mobile */
+  @media (max-width: 768px) {
+    padding: 2rem 1rem;
+    
+    h3 {
+      font-size: 1.1rem;
+    }
+    
+    p {
+      font-size: 0.9rem;
+    }
+  }
 `;
 
 export const UnifiedLoadingMessage = styled.div`
@@ -518,6 +667,12 @@ export const UnifiedLoadingMessage = styled.div`
   border-radius: 16px;
   box-shadow: 0 4px 15px ${props => props.theme.shadow};
   margin: 2rem 0;
+
+  /* 🔧 MODIFICATION : Message de chargement plus compact sur mobile */
+  @media (max-width: 768px) {
+    padding: 2rem 1rem;
+    font-size: 1rem;
+  }
 `;
 
 export const UnifiedErrorMessage = styled.div`
@@ -529,6 +684,12 @@ export const UnifiedErrorMessage = styled.div`
   border: 1px solid ${props => props.theme.errorBorder || '#fecaca'};
   margin: 2rem 0;
   font-weight: 500;
+
+  /* 🔧 MODIFICATION : Message d'erreur plus compact sur mobile */
+  @media (max-width: 768px) {
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
 `;
 
 // ==================== BACKDROP POUR FERMER LES DROPDOWNS ====================

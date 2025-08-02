@@ -85,6 +85,11 @@ function RadiologyViewer() {
   const [accumulatedDelta, setAccumulatedDelta] = useState(0);
   const [isShortcutGuideVisible, setIsShortcutGuideVisible] = useState(false);
 
+  // 🔧 NOUVEAUX ÉTATS POUR DRAG & DROP MOBILE
+  const [isDraggingFolder, setIsDraggingFolder] = useState(false);
+  const [draggedFolder, setDraggedFolder] = useState(null);
+  const [dragOverTarget, setDragOverTarget] = useState(null);
+
   const leftViewerRef = useRef(null);
   const rightViewerRef = useRef(null);
   const singleViewerRef = useRef(null);
@@ -474,7 +479,105 @@ function RadiologyViewer() {
     });
   }, [isMobile]);
 
-  // ==================== GESTION DRAG & DROP (DESKTOP SEULEMENT) ====================
+  // ==================== 🔧 NOUVEAU SYSTÈME DRAG & DROP MOBILE ====================
+
+  // Fonction de gestion du début de drag (mobile uniquement pour dossiers)
+  const handleMobileDragStart = useCallback((event, folder) => {
+    if (!isMobile) return;
+    
+    event.preventDefault();
+    setIsDraggingFolder(true);
+    setDraggedFolder(folder);
+    
+    // Feedback visuel
+    event.currentTarget.style.opacity = '0.7';
+    event.currentTarget.style.transform = 'scale(0.95)';
+  }, [isMobile]);
+
+  // Fonction de gestion du drag move (mobile)
+  const handleMobileDragMove = useCallback((event) => {
+    if (!isMobile || !isDraggingFolder) return;
+    
+    event.preventDefault();
+    
+    // Obtenir l'élément sous le doigt
+    const touch = event.touches[0];
+    const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+    
+    // Vérifier si on est au-dessus d'un viewer
+    const viewer = elementBelow?.closest('[data-viewer-side]');
+    if (viewer) {
+      const side = viewer.getAttribute('data-viewer-side');
+      setDragOverTarget(side);
+      viewer.style.borderColor = '#007bff';
+      viewer.style.backgroundColor = 'rgba(0, 123, 255, 0.1)';
+    } else {
+      setDragOverTarget(null);
+      // Nettoyer les styles des viewers
+      document.querySelectorAll('[data-viewer-side]').forEach(v => {
+        v.style.borderColor = '';
+        v.style.backgroundColor = '';
+      });
+    }
+  }, [isMobile, isDraggingFolder]);
+
+  // Fonction de gestion de la fin du drag (mobile)
+  const handleMobileDragEnd = useCallback((event) => {
+    if (!isMobile) return;
+    
+    event.preventDefault();
+    
+    // Restaurer l'apparence du thumbnail
+    event.currentTarget.style.opacity = '';
+    event.currentTarget.style.transform = '';
+    
+    // Si on a un target valide, charger l'image
+    if (dragOverTarget && draggedFolder && currentCase?.images?.[draggedFolder]) {
+      loadImage(draggedFolder, 0, dragOverTarget);
+      
+      // Mettre à jour le dossier et l'index selon le côté
+      switch(dragOverTarget) {
+        case 'left':
+        case 'single':
+          setCurrentFolderLeft(draggedFolder);
+          setCurrentIndexLeft(0);
+          break;
+        case 'right':
+          setCurrentFolderRight(draggedFolder);
+          setCurrentIndexRight(0);
+          break;
+        case 'topLeft':
+          setCurrentFolderTopLeft(draggedFolder);
+          setCurrentIndexTopLeft(0);
+          break;
+        case 'topRight':
+          setCurrentFolderTopRight(draggedFolder);
+          setCurrentIndexTopRight(0);
+          break;
+        case 'bottomLeft':
+          setCurrentFolderBottomLeft(draggedFolder);
+          setCurrentIndexBottomLeft(0);
+          break;
+        case 'bottomRight':
+          setCurrentFolderBottomRight(draggedFolder);
+          setCurrentIndexBottomRight(0);
+          break;
+      }
+    }
+    
+    // Nettoyer les styles des viewers
+    document.querySelectorAll('[data-viewer-side]').forEach(v => {
+      v.style.borderColor = '';
+      v.style.backgroundColor = '';
+    });
+    
+    // Reset des états
+    setIsDraggingFolder(false);
+    setDraggedFolder(null);
+    setDragOverTarget(null);
+  }, [isMobile, dragOverTarget, draggedFolder, currentCase, loadImage]);
+
+  // ==================== GESTION DRAG & DROP (DESKTOP) ====================
 
   const handleDragStart = useCallback((event, folder) => {
     if (isMobile) {
@@ -871,6 +974,7 @@ function RadiologyViewer() {
     return (
       <div 
         className={`${styles.viewer} ${className} ${styles[side]}`}
+        data-viewer-side={side}
         onMouseDown={(e) => handleMouseDown(e, side)}
         onMouseMove={(e) => handleMouseMove(e, side)}
         onMouseUp={handleMouseUp}
@@ -907,8 +1011,11 @@ function RadiologyViewer() {
             className={styles.folderThumbnail}
             draggable={!isMobile}
             onDragStart={(e) => !isMobile && handleDragStart(e, folder)}
+            onTouchStart={(e) => isMobile && handleMobileDragStart(e, folder)}
+            onTouchMove={(e) => isMobile && handleMobileDragMove(e)}
+            onTouchEnd={(e) => isMobile && handleMobileDragEnd(e)}
             onClick={() => {
-              if (isMobile) {
+              if (isMobile && !isDraggingFolder) {
                 loadImage(folder, 0, viewMode === 1 ? 'single' : 'left');
                 setCurrentFolderLeft(folder);
                 setCurrentIndexLeft(0);
@@ -930,7 +1037,8 @@ function RadiologyViewer() {
         ))}
       </div>
     );
-  }, [currentCase, isMobile, handleDragStart, loadImage, viewMode]);
+  }, [currentCase, isMobile, handleDragStart, handleMobileDragStart, handleMobileDragMove, 
+      handleMobileDragEnd, loadImage, viewMode, isDraggingFolder]);
 
   // ==================== FONCTION DE RENDU DU MAIN VIEWER ====================
 
@@ -1030,6 +1138,7 @@ function RadiologyViewer() {
                 {isMobile ? (
                   <>
                     <li><strong>Tap</strong> Sélectionner séquence</li>
+                    <li><strong>Drag</strong> Glisser dossier vers viewer</li>
                     <li><strong>Glisser ↕</strong> Navigation images</li>
                     <li><strong>Pincer</strong> Zoom</li>
                     <li><strong>Bouton</strong> Changer mode</li>
