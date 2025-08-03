@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
-import { Star, StarHalf, Edit, Save, Upload, X, Folder, Image as ImageIcon, File, ArrowUp, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Trash2, Plus } from 'lucide-react';
+import { Star, StarHalf, Edit, Save, Upload, X, Folder, Image as ImageIcon, File, ArrowUp, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Trash2, Plus, FileText } from 'lucide-react';
 import ImageViewer from '../components/ImageViewer';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
@@ -82,6 +82,31 @@ const ModernInput = styled(S.Input)`
   background-color: ${props => props.theme.inputBackground || props.theme.background};
   color: ${props => props.theme.text};
   transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${props => props.theme.primary};
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
+  }
+
+  &::placeholder {
+    color: ${props => props.theme.textSecondary || props.theme.textLight};
+  }
+`;
+
+const ModernTextarea = styled.textarea`
+  width: 100%;
+  min-height: 120px;
+  padding: 0.75rem 1rem;
+  border: 2px solid ${props => props.theme.border};
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: ${props => props.theme.inputBackground || props.theme.background};
+  color: ${props => props.theme.text};
+  transition: all 0.2s ease;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.5;
 
   &:focus {
     outline: none;
@@ -573,8 +598,9 @@ const CollapsibleImageGallery = memo(({ folder, images, onImageClick, onDeleteIm
   );
 });
 
-const CaseCard = memo(({ cas, onUpdateDifficulty, onUpdateAnswer, onAddTag, onRemoveTag, onDeleteCase, onLoadCase, onTogglePublic }) => {
+const CaseCard = memo(({ cas, onUpdateDifficulty, onUpdateAnswer, onUpdateClinicalInfo, onAddTag, onRemoveTag, onDeleteCase, onLoadCase, onTogglePublic }) => {
   const [editingAnswer, setEditingAnswer] = useState(null);
+  const [editingClinicalInfo, setEditingClinicalInfo] = useState(null);
   const [newTag, setNewTag] = useState('');
 
   const handleAnswerEdit = useCallback(() => {
@@ -587,6 +613,17 @@ const CaseCard = memo(({ cas, onUpdateDifficulty, onUpdateAnswer, onAddTag, onRe
       setEditingAnswer(null);
     }
   }, [editingAnswer, onUpdateAnswer]);
+
+  const handleClinicalInfoEdit = useCallback(() => {
+    setEditingClinicalInfo({ id: cas._id, value: cas.clinicalInfo || '' });
+  }, [cas._id, cas.clinicalInfo]);
+
+  const handleClinicalInfoSave = useCallback(() => {
+    if (editingClinicalInfo) {
+      onUpdateClinicalInfo(editingClinicalInfo.id, editingClinicalInfo.value);
+      setEditingClinicalInfo(null);
+    }
+  }, [editingClinicalInfo, onUpdateClinicalInfo]);
 
   const handleAddTag = useCallback((e) => {
     e.preventDefault();
@@ -638,6 +675,44 @@ const CaseCard = memo(({ cas, onUpdateDifficulty, onUpdateAnswer, onAddTag, onRe
           </>
         )}
       </S.AnswerSection>
+
+      {/* 🆕 NOUVEAU : Section pour les infos cliniques */}
+      <S.AnswerSection style={{ marginTop: '1rem' }}>
+        <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <FileText size={14} />
+          Informations cliniques
+        </h4>
+        {editingClinicalInfo && editingClinicalInfo.id === cas._id ? (
+          <>
+            <ModernTextarea
+              value={editingClinicalInfo.value}
+              onChange={(e) => setEditingClinicalInfo({ ...editingClinicalInfo, value: e.target.value })}
+              placeholder="Entrez les informations cliniques du patient (âge, symptômes, antécédents, etc.)..."
+              style={{ marginBottom: '0.5rem' }}
+            />
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <PrimaryButton onClick={handleClinicalInfoSave}>
+                <Save size={16} />
+                Sauvegarder
+              </PrimaryButton>
+              <SecondaryButton onClick={() => setEditingClinicalInfo(null)}>
+                Annuler
+              </SecondaryButton>
+            </div>
+          </>
+        ) : (
+          <>
+            <S.AnswerText style={{ fontSize: '0.85rem', fontStyle: cas.clinicalInfo ? 'normal' : 'italic', opacity: cas.clinicalInfo ? 1 : 0.7 }}>
+              {cas.clinicalInfo || 'Aucune information clinique renseignée'}
+            </S.AnswerText>
+            <SecondaryButton onClick={handleClinicalInfoEdit} style={{ fontSize: '0.8rem', padding: '0.5rem 1rem' }}>
+              <Edit size={14} />
+              Modifier les infos cliniques
+            </SecondaryButton>
+          </>
+        )}
+      </S.AnswerSection>
+
       <ModernTagsContainer>
         {cas.tags && cas.tags.map(tag => (
           <ModernTag key={tag}>
@@ -857,7 +932,8 @@ function CasesPage() {
         folders: [],
         images: {},
         difficulty: 1,
-        answer: ''
+        answer: '',
+        clinicalInfo: ''
       });
       setCases(prevCases => [...prevCases, response.data]);
       setNewCaseTitle('');
@@ -1073,6 +1149,18 @@ function CasesPage() {
       ));
     } catch (error) {
       console.error('Erreur lors de la mise à jour de la réponse:', error);
+    }
+  }, []);
+
+  // 🆕 NOUVEAU : Fonction pour mettre à jour les infos cliniques
+  const updateCaseClinicalInfo = useCallback(async (id, clinicalInfo) => {
+    try {
+      await axios.patch(`/cases/${id}`, { clinicalInfo });
+      setCases(prevCases => prevCases.map(c => 
+        c._id === id ? { ...c, clinicalInfo } : c
+      ));
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour des infos cliniques:', error);
     }
   }, []);
   
@@ -1318,6 +1406,7 @@ const handleReorderImages = useCallback(async (folder, reorderedImages) => {
               cas={cas}
               onUpdateDifficulty={updateCaseDifficulty}
               onUpdateAnswer={updateCaseAnswer}
+              onUpdateClinicalInfo={updateCaseClinicalInfo}
               onAddTag={handleAddTag}
               onRemoveTag={handleRemoveTag}
               onDeleteCase={deleteCase}

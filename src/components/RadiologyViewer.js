@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ChevronDown, ChevronUp, X, ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react';
+import { ChevronDown, ChevronUp, X, ChevronLeft, ChevronRight, Eye, EyeOff, FileText } from 'lucide-react';
 import axios from '../utils/axiosConfig';
 import styles from './RadiologyViewer.module.css';
 
@@ -65,6 +65,9 @@ function RadiologyViewer() {
   // Mode viewer : forcé à 1 sur mobile au démarrage
   const [viewMode, setViewMode] = useState(() => isMobile ? 1 : 1);
   const [isResponseVisible, setIsResponseVisible] = useState(false);
+  
+  // 🆕 NOUVEAU : État pour les infos cliniques
+  const [isClinicalInfoVisible, setIsClinicalInfoVisible] = useState(false);
   
   const [imageControls, setImageControls] = useState({
     left: { scale: 1, contrast: 100, brightness: 100, translateX: 0, translateY: 0 },
@@ -1160,6 +1163,16 @@ function RadiologyViewer() {
           )}
         </div>
         <div>
+          {/* 🆕 NOUVEAU : Bouton pour les infos cliniques */}
+          <button 
+            className={styles.responseButton}
+            onClick={() => setIsClinicalInfoVisible(!isClinicalInfoVisible)}
+            title="Informations cliniques du patient"
+          >
+            <FileText size={16} />
+            {!isMobile && 'Infos cliniques'}
+          </button>
+
           <button 
             className={styles.responseButton}
             onClick={cycleViewMode}
@@ -1187,6 +1200,31 @@ function RadiologyViewer() {
           </Link>
         </div>
       </div>
+
+      {/* 🆕 NOUVEAU : Popup pour les infos cliniques */}
+      {isClinicalInfoVisible && currentCase && (
+        <div className={styles.clinicalInfoBox}>
+          <div className={styles.clinicalInfoHeader}>
+            <h3>📋 Informations cliniques</h3>
+            <button 
+              onClick={() => setIsClinicalInfoVisible(false)}
+              className={styles.closeButton}
+              title="Fermer"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <div className={styles.clinicalInfoContent}>
+            {currentCase.clinicalInfo ? (
+              <p>{currentCase.clinicalInfo}</p>
+            ) : (
+              <p className={styles.noClinicalInfo}>
+                Aucune information clinique n'a été renseignée pour ce cas.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       {isResponseVisible && currentCase && currentCase.answer && (
         <div className={styles.responseBox}>

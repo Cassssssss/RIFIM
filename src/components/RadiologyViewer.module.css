@@ -750,6 +750,114 @@
   font-weight: 600;
 }
 
+/* ==================== 🆕 NOUVEAU : CLINICAL INFO BOX ==================== */
+.clinicalInfoBox {
+  position: fixed;
+  top: calc(var(--header-height) + 20px);
+  left: 20px;
+  max-width: 400px;
+  background-color: rgb(var(--color-surface));
+  border: 2px solid rgb(var(--color-border));
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  backdrop-filter: blur(8px);
+  animation: slideInLeft 0.3s ease-out;
+  
+  @keyframes slideInLeft {
+    from {
+      transform: translateX(-20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    /* 🔧 AJUSTE pour mobile */
+    top: calc(var(--header-height) + 10px);
+    left: 10px;
+    right: 10px;
+    max-width: none;
+    border-radius: 8px;
+  }
+}
+
+.clinicalInfoHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px 12px 20px;
+  border-bottom: 1px solid rgb(var(--color-border));
+  
+  h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: rgb(var(--color-primary));
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 12px 16px 8px 16px;
+    
+    h3 {
+      font-size: 14px;
+    }
+  }
+}
+
+.clinicalInfoContent {
+  padding: 16px 20px;
+  
+  p {
+    margin: 0;
+    line-height: 1.6;
+    color: rgb(var(--color-text));
+    font-size: 14px;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 12px 16px;
+    
+    p {
+      font-size: 13px;
+    }
+  }
+}
+
+.noClinicalInfo {
+  color: rgb(var(--color-text-secondary)) !important;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: rgb(var(--color-text-secondary));
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: rgb(var(--color-hover));
+    color: rgb(var(--color-text));
+  }
+  
+  @media (max-width: 768px) {
+    padding: 2px;
+  }
+}
+
 /* ==================== RESPONSE BOX - AJUSTÉE POUR BOTTOM BAR FLOTTANTE ==================== */
 .responseBox {
   position: fixed;
@@ -917,6 +1025,13 @@
       font-size: 9px;
     }
   }
+  
+  /* 🆕 NOUVEAU : Clinical info box en paysage */
+  .clinicalInfoBox {
+    top: calc(var(--header-height) + 5px);
+    left: 5px;
+    max-width: 300px;
+  }
 }
 
 /* ==================== MOBILE PAYSAGE TRÈS PETIT (iPhone en paysage) ==================== */
@@ -946,6 +1061,11 @@
     padding: 3px 5px;
     font-size: 8px;
     height: 24px;
+  }
+  
+  /* 🆕 Clinical info box très petit */
+  .clinicalInfoBox {
+    max-width: 250px;
   }
 }
 
@@ -1023,6 +1143,11 @@
 }
 
 :global(.dark) .shortcutPopup {
+  backdrop-filter: blur(12px);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+:global(.dark) .clinicalInfoBox {
   backdrop-filter: blur(12px);
   border-color: rgba(255, 255, 255, 0.1);
 }

@@ -1,4 +1,4 @@
-// models/Case.js - Modèle complet avec système de notation
+// models/Case.js - Modèle complet avec système de notation ET clinicalInfo
 const mongoose = require('mongoose');
 
 const caseSchema = new mongoose.Schema({
@@ -40,6 +40,13 @@ const caseSchema = new mongoose.Schema({
     type: String,
     trim: true,
     maxlength: 1000
+  },
+  // 🆕 NOUVEAU CHAMP : Informations cliniques du patient
+  clinicalInfo: {
+    type: String,
+    trim: true,
+    maxlength: 2000,
+    default: ''
   },
   sheet: {
     type: String,
@@ -146,56 +153,18 @@ caseSchema.methods.isPopular = function() {
 // NOUVELLE MÉTHODE : Obtenir les statistiques du cas
 caseSchema.methods.getStats = function() {
   return {
-    averageRating: this.averageRating,
-    ratingsCount: this.ratingsCount,
-    views: this.views,
-    copies: this.copies,
-    isPopular: this.isPopular()
+    totalImages: this.images ? Object.values(this.images).reduce((total, folderImages) => {
+      return total + (Array.isArray(folderImages) ? folderImages.length : 0);
+    }, 0) : 0,
+    totalFolders: this.folders ? this.folders.length : 0,
+    isPopular: this.isPopular(),
+    engagement: this.views + (this.copies * 2) + (this.ratingsCount * 3)
   };
 };
 
-// NOUVELLE MÉTHODE : Obtenir la note en étoiles (conversion 0-10 vers 0-5)
-caseSchema.methods.getStarsRating = function() {
-  return Math.round(this.averageRating / 2);
-};
-
-// NOUVELLE MÉTHODE : Incrémenter les vues
-caseSchema.methods.incrementViews = async function() {
-  this.views += 1;
-  return await this.save();
-};
-
-// NOUVELLE MÉTHODE : Incrémenter les copies
-caseSchema.methods.incrementCopies = async function() {
-  this.copies += 1;
-  return await this.save();
-};
-
-// MÉTHODE VIRTUELLE : Obtenir l'URL de l'image principale ou la première image disponible
-caseSchema.virtual('displayImage').get(function() {
-  if (this.mainImage) {
-    return this.mainImage;
-  }
-  
-  // Chercher la première image dans les dossiers
-  if (this.folders && this.folders.length > 0) {
-    for (const folder of this.folders) {
-      if (this.folderMainImages && this.folderMainImages.get(folder)) {
-        return this.folderMainImages.get(folder);
-      }
-      if (this.images && this.images[folder] && this.images[folder].length > 0) {
-        return this.images[folder][0];
-      }
-    }
-  }
-  
-  return '/images/default-case.jpg'; // Image par défaut
-});
-
-// MÉTHODE VIRTUELLE : Compter le nombre total d'images
+// MÉTHODE VIRTUELLE : Calculer le nombre total d'images
 caseSchema.virtual('totalImages').get(function() {
   if (!this.images) return 0;
-  
   return Object.values(this.images).reduce((total, folderImages) => {
     return total + (Array.isArray(folderImages) ? folderImages.length : 0);
   }, 0);
@@ -216,6 +185,11 @@ caseSchema.pre('save', function(next) {
   // Nettoyer les dossiers vides
   if (this.folders) {
     this.folders = this.folders.filter(folder => folder && folder.trim().length > 0);
+  }
+  
+  // 🆕 NETTOYAGE : Nettoyer les infos cliniques
+  if (this.clinicalInfo) {
+    this.clinicalInfo = this.clinicalInfo.trim();
   }
   
   // Valider la cohérence des données
