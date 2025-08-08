@@ -1,467 +1,375 @@
-// PublicCasesPage.js - VERSION OPTIMISÉE PLEINE LARGEUR
+// PublicQuestionnairesPage.js - VERSION OPTIMISÉE PLEINE LARGEUR
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from '../utils/axiosConfig';
-import { Star, TrendingUp, User, Eye, Copy, Plus } from 'lucide-react';
+import { Clock, Users, FileText, Star, TrendingUp, User } from 'lucide-react';
 import RatingStars from '../components/RatingStars';
 
-// Import du nouveau système de filtres unifié
+// Import du système de filtres unifié
 import UnifiedFilterSystem from '../components/shared/UnifiedFilterSystem';
 
-// Import des composants partagés unifiés
+// Import des composants partagés
 import {
-  UnifiedPageContainer,
-  PageHeader,
-  UnifiedPageTitle,
-  PageSubtitle,
-  SearchAndFiltersSection,
-  UnifiedSearchInput,
-  UnifiedCasesList,
-  UnifiedCaseCard,
-  UnifiedCaseImage,
-  UnifiedCaseContent,
-  UnifiedCaseHeader,
-  UnifiedCaseTitle,
-  UnifiedStarRating,
-  UnifiedPopularityBadge,
-  UnifiedAuthorInfo,
-  UnifiedStatsContainer,
-  UnifiedStatItem,
-  UnifiedActionsContainer,
-  UnifiedActionButton,
-  UnifiedRatingSection,
-  UnifiedTagsContainer,
-  UnifiedTag,
-  UnifiedPaginationContainer,
-  UnifiedPaginationButton,
-  UnifiedPaginationInfo,
-  UnifiedEmptyState,
-  UnifiedLoadingMessage,
-  UnifiedErrorMessage
-} from '../components/shared/SharedCasesComponents';
+  PageContainer,
+  ListContainer,
+  SearchInput,
+  QuestionnairesGrid,
+  QuestionnaireCard,
+  CardHeader,
+  QuestionnaireTitle,
+  QuestionnaireIcon,
+  CardMeta,
+  MetaItem,
+  TagsContainer,
+  Tag,
+  ActionButtons,
+  ActionButton,
+  LoadingMessage,
+  ErrorMessage
+} from '../components/shared/SharedComponents';
 
-// ==================== COMPOSANT CARTE CAS PUBLIC ====================
+// Import pour la pagination
+import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/CasesPage.styles';
 
-function PublicCaseCardComponent({ cas, showSpoilers, onCopyCase, caseRating, onRatingUpdate }) {
-  const getImageSrc = (cas) => {
-    if (cas.mainImage) return cas.mainImage;
-    if (cas.folders && cas.folders[0] && cas.folderMainImages && cas.folderMainImages[cas.folders[0]]) {
-      return cas.folderMainImages[cas.folders[0]];
+function PublicQuestionnairesPage() {
+  const [questionnaires, setQuestionnaires] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [modalityFilters, setModalityFilters] = useState([]);
+  const [specialtyFilters, setSpecialtyFilters] = useState([]);
+  const [locationFilters, setLocationFilters] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [questionnaireRatings, setQuestionnaireRatings] = useState({});
+
+  // 🔧 OPTIMISATION : Plus de questionnaires par page
+  const ITEMS_PER_PAGE = 24;
+
+  const modalityOptions = ['Rx', 'TDM', 'IRM', 'Echo'];
+  const specialtyOptions = ['Cardiovasc', 'Dig', 'Neuro', 'ORL', 'Ostéo', 'Pedia', 'Pelvis', 'Séno', 'Thorax', 'Uro'];
+  const locationOptions = [
+    "Avant-pied", "Bras", "Bassin", "Cheville", "Coude", "Cuisse", "Doigts", "Epaule", 
+    "Genou", "Hanche", "Jambe", "Parties molles", "Poignet", "Rachis"
+  ];
+
+  const fetchQuestionnaires = useCallback(async (page = 1) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get('/questionnaires/public', {
+        params: {
+          page,
+          limit: ITEMS_PER_PAGE,
+          search: searchTerm,
+          modality: modalityFilters.join(','),
+          specialty: specialtyFilters.join(','),
+          location: locationFilters.join(',')
+        }
+      });
+      
+      const questionnaires = response.data?.questionnaires;
+      const safeQuestionnaires = Array.isArray(questionnaires) ? questionnaires : [];
+
+      setQuestionnaires(safeQuestionnaires);
+      setCurrentPage(page);
+      setTotalPages(response.data?.totalPages || 0);
+
+      // Initialisation des ratings
+      const ratings = {};
+      safeQuestionnaires.forEach(q => {
+        ratings[q._id] = {
+          averageRating: q.averageRating || 0,
+          ratingsCount: q.ratingsCount || 0,
+          userRating: q.userRating || 0
+        };
+      });
+      setQuestionnaireRatings(ratings);
+
+    } catch (error) {
+      console.error('❌ Erreur lors de la récupération des questionnaires publics:', error);
+      setQuestionnaires([]);
+      setCurrentPage(1);
+      setTotalPages(0);
+      setError('Erreur lors du chargement des questionnaires publics');
+    } finally {
+      setIsLoading(false);
     }
-    return '/images/default.jpg';
+  }, [searchTerm, modalityFilters, specialtyFilters, locationFilters, ITEMS_PER_PAGE]);
+
+  useEffect(() => {
+    fetchQuestionnaires(1);
+  }, [fetchQuestionnaires]);
+
+  const getQuestionnaireIcon = (tags) => {
+    if (!tags || tags.length === 0) return '📋';
+    if (tags.includes('IRM') || tags.includes('irm')) return '🧲';
+    if (tags.includes('TDM') || tags.includes('tdm')) return '🔍';
+    if (tags.includes('Rx') || tags.includes('rx')) return '🩻';
+    if (tags.includes('Echo') || tags.includes('echo')) return '📡';
+    return '📋';
   };
 
-  const isPopular = cas.views > 100 || cas.copies > 20;
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
 
-  // Fonction pour obtenir le nom d'affichage de l'auteur
-  const getAuthorDisplayName = (cas) => {
-    if (!cas.author) return 'Auteur anonyme';
+  const estimateTime = (questionnaire) => {
+    const questionCount = questionnaire.questions ? questionnaire.questions.length : 0;
+    const estimatedMinutes = Math.max(2, Math.ceil(questionCount * 0.5));
+    return `~${estimatedMinutes} min`;
+  };
+
+  const handleRatingUpdate = (questionnaireId, newRatingData) => {
+    setQuestionnaireRatings(prev => ({
+      ...prev,
+      [questionnaireId]: newRatingData
+    }));
+  };
+
+  const getAuthorDisplayName = (questionnaire) => {
+    if (!questionnaire.author) return 'Auteur anonyme';
     
-    // Si l'auteur est un objet avec des propriétés name ou email
-    if (typeof cas.author === 'object') {
-      return cas.author.name || cas.author.email || 'Auteur anonyme';
+    if (typeof questionnaire.author === 'object') {
+      return questionnaire.author.name || questionnaire.author.email || 'Auteur anonyme';
     }
     
-    // Si l'auteur est juste une chaîne de caractères
-    if (typeof cas.author === 'string') {
-      return cas.author;
+    if (typeof questionnaire.author === 'string') {
+      return questionnaire.author;
     }
     
     return 'Auteur anonyme';
   };
 
-  return (
-    <UnifiedCaseCard to={`/radiology-viewer/${cas._id}`}>
-      <UnifiedCaseImage 
-        src={getImageSrc(cas)}
-        alt={cas.title || 'Cas médical'}
-        loading="lazy"
-        onError={(e) => {
-          e.target.src = '/images/default.jpg';
-        }}
-      />
-      <UnifiedCaseContent>
-        <UnifiedCaseHeader>
-          <UnifiedCaseTitle>
-            {showSpoilers ? (cas.title || 'Cas sans titre') : '?'}
-          </UnifiedCaseTitle>
-          {isPopular && (
-            <UnifiedPopularityBadge>
-              <TrendingUp size={12} />
-              Populaire
-            </UnifiedPopularityBadge>
-          )}
-        </UnifiedCaseHeader>
-        
-        <UnifiedStarRating>
-          {[...Array(5)].map((_, index) => (
-            <Star
-              key={index}
-              size={22}
-              fill={index < (cas.difficulty || 0) ? "gold" : "transparent"}
-              stroke={index < (cas.difficulty || 0) ? "gold" : "#d1d5db"}
-              style={{ 
-                filter: index < (cas.difficulty || 0) ? 'drop-shadow(0 1px 2px rgba(255, 215, 0, 0.3))' : 'none'
-              }}
-            />
-          ))}
-        </UnifiedStarRating>
-
-        <UnifiedAuthorInfo>
-          <User size={14} />
-          Par {getAuthorDisplayName(cas)}
-        </UnifiedAuthorInfo>
-
-        <UnifiedRatingSection>
-          <div onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}>
-            <RatingStars
-              itemId={cas._id}
-              itemType="case"
-              averageRating={caseRating.averageRating}
-              ratingsCount={caseRating.ratingsCount}
-              userRating={caseRating.userRating}
-              onRatingUpdate={(newRatingData) => onRatingUpdate(cas._id, newRatingData)}
-              size={14}
-              compact={true}
-            />
-          </div>
-        </UnifiedRatingSection>
-
-        <UnifiedStatsContainer>
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            <UnifiedStatItem>
-              <Eye size={14} />
-              {Number(cas.views) || 0} vues
-            </UnifiedStatItem>
-            <UnifiedStatItem>
-              <Copy size={14} />
-              {Number(cas.copies) || 0} copies
-            </UnifiedStatItem>
-          </div>
-          
-          <UnifiedActionsContainer>
-            <UnifiedActionButton
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onCopyCase(cas._id);
-              }}
-              title="Copier ce cas dans vos cas personnels"
-            >
-              <Plus size={16} />
-            </UnifiedActionButton>
-          </UnifiedActionsContainer>
-        </UnifiedStatsContainer>
-
-        {cas.tags && cas.tags.length > 0 && (
-          <UnifiedTagsContainer>
-            {cas.tags.map((tag, index) => (
-              <UnifiedTag key={index}>{tag}</UnifiedTag>
-            ))}
-          </UnifiedTagsContainer>
-        )}
-      </UnifiedCaseContent>
-    </UnifiedCaseCard>
-  );
-}
-
-// ==================== COMPOSANT PRINCIPAL ====================
-
-function PublicCasesPage() {
-  // États
-  const [cases, setCases] = useState([]);
-  const [filteredCases, setFilteredCases] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [difficultyFilter, setDifficultyFilter] = useState([1, 2, 3, 4, 5]);
-  const [tagFilter, setTagFilter] = useState([]);
-  const [allTags, setAllTags] = useState([]);
-  const [showSpoilers, setShowSpoilers] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [caseRatings, setCaseRatings] = useState({});
-
-  // 🔧 OPTIMISATION : Augmenter le nombre de cas par page pour remplir l'écran
-  const CASES_PER_PAGE = 24; // Au lieu de 12
-
-  // Récupération des cas publics
-  const fetchCases = useCallback(async (page = 1) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await axios.get(`/cases/public?page=${page}&limit=${CASES_PER_PAGE}`);
-      
-      if (response.data && Array.isArray(response.data.cases)) {
-        const cleanedCases = response.data.cases.map(cas => ({
-          ...cas,
-          averageRating: cas.averageRating ? Number(cas.averageRating) : 0,
-          ratingsCount: cas.ratingsCount ? Number(cas.ratingsCount) : 0,
-          views: Number(cas.views) || 0,
-          copies: Number(cas.copies) || 0
-        }));
-
-        setCases(cleanedCases);
-        setCurrentPage(response.data.currentPage || page);
-        setTotalPages(response.data.totalPages || 1);
-        
-        // Initialisation des ratings
-        const ratings = {};
-        cleanedCases.forEach(cas => {
-          ratings[cas._id] = {
-            averageRating: cas.averageRating || 0,
-            ratingsCount: cas.ratingsCount || 0,
-            userRating: cas.userRating || 0
-          };
-        });
-        setCaseRatings(ratings);
-        
-        // Extraction des tags uniques
-        const uniqueTags = [...new Set(
-          cleanedCases
-            .filter(cas => cas.tags && Array.isArray(cas.tags))
-            .flatMap(cas => cas.tags)
-        )];
-        setAllTags(uniqueTags);
-      } else {
-        setCases([]);
-        setTotalPages(1);
-        setAllTags([]);
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des cas publics:', error);
-      setError('Erreur lors du chargement des cas publics. Veuillez réessayer.');
-      setCases([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [CASES_PER_PAGE]);
-
-  // Effet initial
-  useEffect(() => {
-    fetchCases(currentPage);
-  }, [fetchCases, currentPage]);
-
-  // Filtrage des cas
-  useEffect(() => {
-    let filtered = cases;
-
-    // Filtre par terme de recherche
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(cas => 
-        (cas.title && cas.title.toLowerCase().includes(term)) ||
-        (cas.tags && cas.tags.some(tag => tag.toLowerCase().includes(term))) ||
-        (cas.author && (
-          (typeof cas.author === 'object' && (
-            (cas.author.name && cas.author.name.toLowerCase().includes(term)) ||
-            (cas.author.email && cas.author.email.toLowerCase().includes(term))
-          )) ||
-          (typeof cas.author === 'string' && cas.author.toLowerCase().includes(term))
-        ))
-      );
-    }
-
-    // Filtre par difficulté
-    if (difficultyFilter.length > 0) {
-      filtered = filtered.filter(cas => 
-        difficultyFilter.includes(cas.difficulty || 1)
-      );
-    }
-
-    // Filtre par tags
-    if (tagFilter.length > 0) {
-      filtered = filtered.filter(cas =>
-        cas.tags && cas.tags.some(tag => tagFilter.includes(tag))
-      );
-    }
-
-    setFilteredCases(filtered);
-  }, [cases, searchTerm, difficultyFilter, tagFilter]);
-
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage);
-      fetchCases(newPage);
-    }
-  };
-
-  // Fonctions pour la gestion des cas
-  const handleCopyCase = async (caseId) => {
-    try {
-      await axios.post(`/cases/${caseId}/copy`);
-      alert('Cas copié avec succès dans vos cas personnels !');
-      
-      // Mise à jour du compteur de copies
-      setCases(prevCases => 
-        prevCases.map(cas => 
-          cas._id === caseId 
-            ? { ...cas, copies: (Number(cas.copies) || 0) + 1 }
-            : cas
-        )
-      );
-    } catch (error) {
-      console.error('Erreur lors de la copie du cas:', error);
-      alert('Erreur lors de la copie du cas. Veuillez réessayer.');
-    }
-  };
-
-  const handleRatingUpdate = (caseId, newRatingData) => {
-    setCaseRatings(prev => ({
-      ...prev,
-      [caseId]: newRatingData
-    }));
-  };
-
-  // Configuration des filtres pour UnifiedFilterSystem
+  // Configuration des filtres
   const filtersConfig = [
     {
-      key: 'difficulty',
-      title: 'Difficulté',
-      icon: '⭐',
-      options: ['1 étoile', '2 étoiles', '3 étoiles', '4 étoiles', '5 étoiles'],
-      selectedValues: difficultyFilter.map(d => `${d} étoile${d > 1 ? 's' : ''}`),
-      onChange: (selectedLabels) => {
-        const difficulties = selectedLabels.map(label => {
-          const match = label.match(/(\d+)/);
-          return match ? parseInt(match[1]) : 1;
-        });
-        setDifficultyFilter(difficulties);
-      }
+      key: 'modality',
+      title: 'Modalités',
+      icon: '📊',
+      options: modalityOptions,
+      selectedValues: modalityFilters,
+      onChange: setModalityFilters
+    },
+    {
+      key: 'specialty',
+      title: 'Spécialités',
+      icon: '🏥',
+      options: specialtyOptions,
+      selectedValues: specialtyFilters,
+      onChange: setSpecialtyFilters
+    },
+    {
+      key: 'location',
+      title: 'Localisation',
+      icon: '📍',
+      options: locationOptions,
+      selectedValues: locationFilters,
+      onChange: setLocationFilters
     }
   ];
 
-  // Ajouter le filtre tags seulement s'il y a des tags disponibles
-  if (allTags.length > 0) {
-    filtersConfig.push({
-      key: 'tags',
-      title: 'Tags',
-      icon: '🏷️',
-      options: allTags,
-      selectedValues: tagFilter,
-      onChange: setTagFilter
-    });
-  }
-
-  // Rendu du composant
   return (
-    <UnifiedPageContainer style={{ 
+    <PageContainer style={{ 
       maxWidth: '100%',  // 🔧 OPTIMISATION : Utilise toute la largeur
-      padding: '1rem 2rem'  // 🔧 OPTIMISATION : Padding horizontal pour l'espace
+      padding: '1rem 2rem',  // 🔧 OPTIMISATION : Padding horizontal
+      width: '100vw'
     }}>
-      <PageHeader>
-        <UnifiedPageTitle>Cas Cliniques Publics</UnifiedPageTitle>
-      </PageHeader>
-
-      <SearchAndFiltersSection style={{ 
-        maxWidth: '100%'  // 🔧 OPTIMISATION : Section pleine largeur
+      {/* TITRE CENTRÉ */}
+      <div style={{ 
+        textAlign: 'center', 
+        marginBottom: '2rem' 
       }}>
-        <UnifiedSearchInput
+        <h1 style={{ 
+          fontSize: '2.5rem', 
+          fontWeight: '700',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          marginBottom: '0.5rem'
+        }}>
+          📋 Questionnaires Publics
+        </h1>
+      </div>
+
+      {/* CONTENU PRINCIPAL */}
+      <ListContainer style={{ 
+        maxWidth: '100%',  // 🔧 OPTIMISATION : Conteneur pleine largeur
+        width: '100%',
+        padding: '0'
+      }}>
+        {/* BARRE DE RECHERCHE */}
+        <SearchInput
           type="text"
-          placeholder="Rechercher dans les cas publics (titre, tags, auteur...)"
+          placeholder="🔍 Rechercher un questionnaire..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           style={{ 
-            maxWidth: '800px',  // 🔧 OPTIMISATION : Limite raisonnable pour la barre de recherche
-            margin: '0 auto 2rem'  // 🔧 OPTIMISATION : Centre la barre
+            maxWidth: '800px',  // 🔧 OPTIMISATION : Limite raisonnable
+            margin: '0 auto 2rem',  // 🔧 OPTIMISATION : Centre la barre
+            display: 'block'
           }}
         />
 
-        {/* NOUVEAU SYSTÈME DE FILTRES UNIFIÉ */}
+        {/* SYSTÈME DE FILTRES */}
         <div style={{ 
-          display: 'flex', 
-          justifyContent: 'center',  // 🔧 OPTIMISATION : Centre les filtres
-          marginBottom: '2rem' 
+          marginBottom: '2rem',
+          display: 'flex',
+          justifyContent: 'center'  // 🔧 OPTIMISATION : Centre les filtres
         }}>
           <UnifiedFilterSystem
             filters={filtersConfig}
-            showSpoilerButton={true}
-            spoilerState={showSpoilers}
-            onSpoilerToggle={() => setShowSpoilers(!showSpoilers)}
-            spoilerLabels={{ show: 'Voir titres', hide: 'Masquer titres' }}
+            style={{ justifyContent: 'center' }}
           />
         </div>
-      </SearchAndFiltersSection>
 
-      {/* Contenu principal */}
-      {isLoading ? (
-        <UnifiedLoadingMessage>
-          Chargement des cas publics...
-        </UnifiedLoadingMessage>
-      ) : error ? (
-        <UnifiedErrorMessage>
-          {error}
-        </UnifiedErrorMessage>
-      ) : filteredCases.length === 0 ? (
-        <UnifiedEmptyState>
-          <h3>Aucun cas public trouvé</h3>
-          <p>Essayez de modifier vos critères de recherche ou de filtrage.</p>
-        </UnifiedEmptyState>
-      ) : (
-        <>
-          {/* 🔧 OPTIMISATION : Wrapper pour la grille pleine largeur */}
+        {/* MESSAGES D'ÉTAT */}
+        {isLoading && (
+          <LoadingMessage>Chargement des questionnaires publics...</LoadingMessage>
+        )}
+
+        {error && (
+          <ErrorMessage>{error}</ErrorMessage>
+        )}
+
+        {/* GRILLE DES QUESTIONNAIRES - PLEINE LARGEUR */}
+        {!isLoading && !error && (
           <div style={{ 
-            width: '100%',
+            width: '100%',  // 🔧 OPTIMISATION : Wrapper pleine largeur
             maxWidth: '100%',
             padding: '0'
           }}>
-            <UnifiedCasesList style={{ 
+            <QuestionnairesGrid style={{ 
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',  // 🔧 OPTIMISATION : Plus de cartes par ligne
+              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',  // 🔧 OPTIMISATION : Plus de cartes
               gap: '1.2rem',  // 🔧 OPTIMISATION : Gap réduit
               margin: '0',
               padding: '0',
               width: '100%',
-              maxWidth: '100%'
+              maxWidth: '100%'  // 🔧 OPTIMISATION : Force la pleine largeur
             }}>
-              {filteredCases.map((cas) => (
-                <PublicCaseCardComponent 
-                  key={cas._id} 
-                  cas={cas} 
-                  showSpoilers={showSpoilers}
-                  onCopyCase={handleCopyCase}
-                  caseRating={caseRatings[cas._id] || { averageRating: 0, ratingsCount: 0, userRating: 0 }}
-                  onRatingUpdate={handleRatingUpdate}
-                />
-              ))}
-            </UnifiedCasesList>
-          </div>
+              {questionnaires.map((questionnaire) => (
+                <QuestionnaireCard key={questionnaire._id}>
+                  <CardHeader>
+                    <QuestionnaireTitle>
+                      <QuestionnaireIcon>
+                        {getQuestionnaireIcon(questionnaire.tags)}
+                      </QuestionnaireIcon>
+                      {questionnaire.title}
+                    </QuestionnaireTitle>
+                  </CardHeader>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <UnifiedPaginationContainer style={{ 
-              maxWidth: '600px', 
-              margin: '3rem auto',  // 🔧 OPTIMISATION : Centre la pagination
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: '1rem'
-            }}>
-              <UnifiedPaginationButton 
-                onClick={() => handlePageChange(currentPage - 1)} 
-                disabled={currentPage === 1}
-              >
-                ← Précédent
-              </UnifiedPaginationButton>
-              
-              <UnifiedPaginationInfo>
-                Page {currentPage} sur {totalPages} • {filteredCases.length} cas
-              </UnifiedPaginationInfo>
-              
-              <UnifiedPaginationButton 
-                onClick={() => handlePageChange(currentPage + 1)} 
-                disabled={currentPage === totalPages}
-              >
-                Suivant →
-              </UnifiedPaginationButton>
-            </UnifiedPaginationContainer>
-          )}
-        </>
-      )}
-    </UnifiedPageContainer>
+                  {/* Auteur */}
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '0.5rem',
+                    color: 'var(--color-text-secondary)',
+                    fontSize: '0.85rem',
+                    marginBottom: '0.5rem'
+                  }}>
+                    <User size={14} />
+                    Par {getAuthorDisplayName(questionnaire)}
+                  </div>
+
+                  {/* Tags */}
+                  <TagsContainer>
+                    {questionnaire.tags && questionnaire.tags.map((tag, index) => (
+                      <Tag key={index}>{tag}</Tag>
+                    ))}
+                  </TagsContainer>
+
+                  {/* Rating */}
+                  <div style={{ margin: '0.5rem 0' }}>
+                    <RatingStars
+                      itemId={questionnaire._id}
+                      itemType="questionnaire"
+                      averageRating={questionnaireRatings[questionnaire._id]?.averageRating || 0}
+                      ratingsCount={questionnaireRatings[questionnaire._id]?.ratingsCount || 0}
+                      userRating={questionnaireRatings[questionnaire._id]?.userRating || 0}
+                      onRatingUpdate={(newData) => handleRatingUpdate(questionnaire._id, newData)}
+                      size={14}
+                      compact={true}
+                    />
+                  </div>
+
+                  {/* Métadonnées */}
+                  <CardMeta>
+                    <MetaItem>
+                      <Clock size={14} />
+                      <span>{formatDate(questionnaire.updatedAt || questionnaire.createdAt)}</span>
+                    </MetaItem>
+                    <MetaItem>
+                      <Users size={14} />
+                      <span>{questionnaire.attempts || 0} utilisations</span>
+                    </MetaItem>
+                    <MetaItem>
+                      <FileText size={14} />
+                      <span>{questionnaire.questions?.length || 0} questions</span>
+                    </MetaItem>
+                    <MetaItem>
+                      <Clock size={14} />
+                      <span>{estimateTime(questionnaire)}</span>
+                    </MetaItem>
+                  </CardMeta>
+
+                  {/* Actions */}
+                  <ActionButtons>
+                    <ActionButton to={`/use/${questionnaire._id}`}>
+                      ⭐ Noter ce questionnaire
+                    </ActionButton>
+                    
+                    <ActionButton 
+                      to={`/use/${questionnaire._id}`}
+                      style={{ 
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        color: 'white'
+                      }}
+                    >
+                      📝 Utiliser
+                    </ActionButton>
+                  </ActionButtons>
+                </QuestionnaireCard>
+              ))}
+            </QuestionnairesGrid>
+          </div>
+        )}
+
+        {/* PAGINATION */}
+        {totalPages > 1 && (
+          <PaginationContainer style={{ 
+            maxWidth: '600px',
+            margin: '3rem auto',  // 🔧 OPTIMISATION : Centre la pagination
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '1rem'
+          }}>
+            <PaginationButton 
+              onClick={() => fetchQuestionnaires(currentPage - 1)} 
+              disabled={currentPage === 1}
+            >
+              ← Précédent
+            </PaginationButton>
+            
+            <PaginationInfo>
+              Page {currentPage} sur {totalPages}
+            </PaginationInfo>
+            
+            <PaginationButton 
+              onClick={() => fetchQuestionnaires(currentPage + 1)} 
+              disabled={currentPage === totalPages}
+            >
+              Suivant →
+            </PaginationButton>
+          </PaginationContainer>
+        )}
+      </ListContainer>
+    </PageContainer>
   );
 }
 
-export default PublicCasesPage;
+export default PublicQuestionnairesPage;
