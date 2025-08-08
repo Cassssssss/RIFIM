@@ -350,17 +350,15 @@ export const UnifiedCaseHeader = styled.div`
 `;
 
 export const UnifiedCaseTitle = styled.h3`
-  margin: 0 0 1rem 0;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: ${props => props.theme.text};
+  margin: 0.5rem 0;
   line-height: 1.4;
-
-  /* 🔧 MODIFICATION : Texte plus compact sur mobile */
+  text-align: center;  /* 🔧 AJOUT : Centre le texte, notamment le "?" */
+  
   @media (max-width: 768px) {
-    font-size: 0.9rem;
-    line-height: 1.3;
-    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
   }
 `;
 

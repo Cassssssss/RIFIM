@@ -93,6 +93,12 @@ function RadiologyViewer() {
   const [draggedFolder, setDraggedFolder] = useState(null);
   const [dragOverTarget, setDragOverTarget] = useState(null);
 
+  // 🆕 NOUVEAUX ÉTATS POUR DOUBLE-TAP ET PAN MOBILE
+  const [isDoubleTapPanning, setIsDoubleTapPanning] = useState(false);
+  const [lastTapTime, setLastTapTime] = useState(0);
+  const [panStartPoint, setPanStartPoint] = useState({ x: 0, y: 0 });
+  const [currentPanOffset, setCurrentPanOffset] = useState({ x: 0, y: 0 });
+
   const leftViewerRef = useRef(null);
   const rightViewerRef = useRef(null);
   const singleViewerRef = useRef(null);
@@ -357,6 +363,39 @@ function RadiologyViewer() {
   const handleTouchStart = useCallback((e, side) => {
     if (!isMobile) return;
     
+    const currentTime = Date.now();
+    const tapInterval = currentTime - lastTapTime;
+    
+    // 🆕 DÉTECTION DU DOUBLE-TAP
+    if (tapInterval < 300 && tapInterval > 0 && e.touches.length === 1) {
+      // Double-tap détecté - active le mode pan
+      e.preventDefault();
+      e.stopPropagation();
+      
+      setIsDoubleTapPanning(true);
+      setPanStartPoint({
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY
+      });
+      
+      // Récupère les valeurs actuelles de translation
+      const controls = imageControls[side];
+      setCurrentPanOffset({
+        x: controls.translateX,
+        y: controls.translateY
+      });
+      
+      // Feedback visuel (optionnel - bordure bleue temporaire)
+      const viewerElement = e.currentTarget;
+      viewerElement.style.borderColor = 'rgba(0, 123, 255, 0.5)';
+      viewerElement.style.borderWidth = '3px';
+      
+      return;
+    }
+    
+    setLastTapTime(currentTime);
+    
+    // Gestion normale du pinch-to-zoom (2 doigts)
     if (e.touches.length === 2) {
       e.preventDefault();
       e.stopPropagation();
@@ -372,17 +411,76 @@ function RadiologyViewer() {
         scale: imageControls[side].scale
       });
       setInitialScale(imageControls[side].scale);
-    } else if (e.touches.length === 1) {
+    } else if (e.touches.length === 1 && !isDoubleTapPanning) {
+      // Touch simple pour le scroll
       setLastTouch({
         x: e.touches[0].clientX,
         y: e.touches[0].clientY
       });
     }
-  }, [isMobile, imageControls]);
+  }, [isMobile, imageControls, lastTapTime, isDoubleTapPanning]);
   
   const handleTouchMove = useCallback((e, side) => {
     if (!isMobile) return;
     
+    // 🆕 GESTION DU PAN APRÈS DOUBLE-TAP
+    if (isDoubleTapPanning && e.touches.length === 1) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - panStartPoint.x;
+      const deltaY = touch.clientY - panStartPoint.y;
+      
+      // Applique le déplacement avec une sensibilité ajustée
+      const sensitivity = 1.5; // Ajustez selon vos préférences
+      
+      setImageControls(prev => ({
+        ...prev,
+        [side]: {
+          ...prev[side],
+          translateX: currentPanOffset.x + (deltaX * sensitivity),
+          translateY: currentPanOffset.y + (deltaY * sensitivity)
+        }
+      }));
+      
+      // Applique immédiatement la transformation
+      let imageElement;
+      switch(side) {
+        case 'left':
+          imageElement = leftViewerRef.current;
+          break;
+        case 'right':
+          imageElement = rightViewerRef.current;
+          break;
+        case 'single':
+          imageElement = singleViewerRef.current;
+          break;
+        case 'topLeft':
+          imageElement = topLeftViewerRef.current;
+          break;
+        case 'topRight':
+          imageElement = topRightViewerRef.current;
+          break;
+        case 'bottomLeft':
+          imageElement = bottomLeftViewerRef.current;
+          break;
+        case 'bottomRight':
+          imageElement = bottomRightViewerRef.current;
+          break;
+        default:
+          imageElement = singleViewerRef.current;
+      }
+      
+      if (imageElement) {
+        const controls = imageControls[side];
+        imageElement.style.transform = `scale(${controls.scale}) translate(${currentPanOffset.x + (deltaX * sensitivity)}px, ${currentPanOffset.y + (deltaY * sensitivity)}px)`;
+      }
+      
+      return;
+    }
+    
+    // Gestion du pinch-to-zoom (2 doigts)
     if (e.touches.length === 2) {
       e.preventDefault();
       e.stopPropagation();
@@ -422,27 +520,49 @@ function RadiologyViewer() {
         }
         
         if (imageElement) {
-          const controls = prev[side] || { translateX: 0, translateY: 0 };
+          const controls = imageControls[side];
           imageElement.style.transform = `scale(${newScale}) translate(${controls.translateX}px, ${controls.translateY}px)`;
         }
       }
-    } else if (e.touches.length === 1) {
+    } else if (e.touches.length === 1 && !isDoubleTapPanning) {
+      // Scroll normal (sans double-tap)
       const touch = e.touches[0];
       const deltaY = touch.clientY - lastTouch.y;
       
-    if (Math.abs(deltaY) > 2) {
-  handleScroll(deltaY * 5, false, side);  // 🔧 5 au lieu de 3 = plus rapide sur mobile
-}
+      if (Math.abs(deltaY) > 2) {
+        handleScroll(deltaY * 5, false, side);
+      }
       
       setLastTouch({
         x: touch.clientX,
         y: touch.clientY
       });
     }
-  }, [isMobile, touchStartPoints, initialScale, handleScroll, lastTouch]);
+  }, [isMobile, isDoubleTapPanning, panStartPoint, currentPanOffset, touchStartPoints, 
+      initialScale, handleScroll, lastTouch, imageControls]);
   
-  const handleTouchEnd = useCallback((e) => {
+  const handleTouchEnd = useCallback((e, side) => {
     if (!isMobile) return;
+    
+    // 🆕 FIN DU PAN APRÈS DOUBLE-TAP
+    if (isDoubleTapPanning) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      setIsDoubleTapPanning(false);
+      
+      // Retire le feedback visuel
+      const viewerElement = e.currentTarget;
+      viewerElement.style.borderColor = '';
+      viewerElement.style.borderWidth = '';
+      
+      // Sauvegarde la position finale
+      const controls = imageControls[side];
+      setCurrentPanOffset({
+        x: controls.translateX,
+        y: controls.translateY
+      });
+    }
     
     if (e.changedTouches.length === 2 || touchStartPoints) {
       e.preventDefault();
@@ -450,7 +570,7 @@ function RadiologyViewer() {
     }
     
     setTouchStartPoints(null);
-  }, [isMobile, touchStartPoints]);
+  }, [isMobile, touchStartPoints, isDoubleTapPanning, imageControls]);
 
   // ==================== FONCTION DE CHANGEMENT DE MODE ====================
 
@@ -481,6 +601,19 @@ function RadiologyViewer() {
       }
     });
   }, [isMobile]);
+
+  // 🆕 FONCTION DE RESET DE POSITION (triple-tap optionnel)
+  const resetImagePosition = useCallback((side) => {
+    setImageControls(prev => ({
+      ...prev,
+      [side]: {
+        ...prev[side],
+        translateX: 0,
+        translateY: 0,
+        scale: 1
+      }
+    }));
+  }, []);
 
   // ==================== 🔧 NOUVEAU SYSTÈME DRAG & DROP MOBILE ====================
 
@@ -986,7 +1119,7 @@ function RadiologyViewer() {
         onDrop={(e) => handleDrop(e, side)}
         onTouchStart={(e) => handleTouchStart(e, side)}
         onTouchMove={(e) => handleTouchMove(e, side)}
-        onTouchEnd={handleTouchEnd}
+        onTouchEnd={(e) => handleTouchEnd(e, side)}
       >
         <div className={styles.folderLabel}>
           {folderName} - {currentIndex + 1}/{totalImages}
@@ -1141,6 +1274,7 @@ function RadiologyViewer() {
                 {isMobile ? (
                   <>
                     <li><strong>Tap</strong> Sélectionner séquence</li>
+                    <li><strong>Double-tap + Drag</strong> Déplacer l'image</li>
                     <li><strong>Drag</strong> Glisser dossier vers viewer</li>
                     <li><strong>Glisser ↕</strong> Navigation images</li>
                     <li><strong>Pincer</strong> Zoom</li>
