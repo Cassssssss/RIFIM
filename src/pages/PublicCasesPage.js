@@ -1,4 +1,4 @@
-// PublicCasesPage.js - VERSION AVEC UNIFIED FILTER SYSTEM ROBUSTE
+// PublicCasesPage.js - VERSION OPTIMISÉE PLEINE LARGEUR
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from '../utils/axiosConfig';
 import { Star, TrendingUp, User, Eye, Copy, Plus } from 'lucide-react';
@@ -184,12 +184,15 @@ function PublicCasesPage() {
   const [error, setError] = useState(null);
   const [caseRatings, setCaseRatings] = useState({});
 
+  // 🔧 OPTIMISATION : Augmenter le nombre de cas par page pour remplir l'écran
+  const CASES_PER_PAGE = 24; // Au lieu de 12
+
   // Récupération des cas publics
   const fetchCases = useCallback(async (page = 1) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`/cases/public?page=${page}&limit=12`);
+      const response = await axios.get(`/cases/public?page=${page}&limit=${CASES_PER_PAGE}`);
       
       if (response.data && Array.isArray(response.data.cases)) {
         const cleanedCases = response.data.cases.map(cas => ({
@@ -234,7 +237,7 @@ function PublicCasesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [CASES_PER_PAGE]);
 
   // Effet initial
   useEffect(() => {
@@ -344,27 +347,42 @@ function PublicCasesPage() {
 
   // Rendu du composant
   return (
-    <UnifiedPageContainer>
+    <UnifiedPageContainer style={{ 
+      maxWidth: '100%',  // 🔧 OPTIMISATION : Utilise toute la largeur
+      padding: '1rem 2rem'  // 🔧 OPTIMISATION : Padding horizontal pour l'espace
+    }}>
       <PageHeader>
         <UnifiedPageTitle>Cas Cliniques Publics</UnifiedPageTitle>
       </PageHeader>
 
-      <SearchAndFiltersSection>
+      <SearchAndFiltersSection style={{ 
+        maxWidth: '100%'  // 🔧 OPTIMISATION : Section pleine largeur
+      }}>
         <UnifiedSearchInput
           type="text"
           placeholder="Rechercher dans les cas publics (titre, tags, auteur...)"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ 
+            maxWidth: '800px',  // 🔧 OPTIMISATION : Limite raisonnable pour la barre de recherche
+            margin: '0 auto 2rem'  // 🔧 OPTIMISATION : Centre la barre
+          }}
         />
 
         {/* NOUVEAU SYSTÈME DE FILTRES UNIFIÉ */}
-        <UnifiedFilterSystem
-          filters={filtersConfig}
-          showSpoilerButton={true}
-          spoilerState={showSpoilers}
-          onSpoilerToggle={() => setShowSpoilers(!showSpoilers)}
-          spoilerLabels={{ show: 'Voir titres', hide: 'Masquer titres' }}
-        />
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center',  // 🔧 OPTIMISATION : Centre les filtres
+          marginBottom: '2rem' 
+        }}>
+          <UnifiedFilterSystem
+            filters={filtersConfig}
+            showSpoilerButton={true}
+            spoilerState={showSpoilers}
+            onSpoilerToggle={() => setShowSpoilers(!showSpoilers)}
+            spoilerLabels={{ show: 'Voir titres', hide: 'Masquer titres' }}
+          />
+        </div>
       </SearchAndFiltersSection>
 
       {/* Contenu principal */}
@@ -383,22 +401,44 @@ function PublicCasesPage() {
         </UnifiedEmptyState>
       ) : (
         <>
-          <UnifiedCasesList>
-            {filteredCases.map((cas) => (
-              <PublicCaseCardComponent 
-                key={cas._id} 
-                cas={cas} 
-                showSpoilers={showSpoilers}
-                onCopyCase={handleCopyCase}
-                caseRating={caseRatings[cas._id] || { averageRating: 0, ratingsCount: 0, userRating: 0 }}
-                onRatingUpdate={handleRatingUpdate}
-              />
-            ))}
-          </UnifiedCasesList>
+          {/* 🔧 OPTIMISATION : Wrapper pour la grille pleine largeur */}
+          <div style={{ 
+            width: '100%',
+            maxWidth: '100%',
+            padding: '0'
+          }}>
+            <UnifiedCasesList style={{ 
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',  // 🔧 OPTIMISATION : Plus de cartes par ligne
+              gap: '1.2rem',  // 🔧 OPTIMISATION : Gap réduit
+              margin: '0',
+              padding: '0',
+              width: '100%',
+              maxWidth: '100%'
+            }}>
+              {filteredCases.map((cas) => (
+                <PublicCaseCardComponent 
+                  key={cas._id} 
+                  cas={cas} 
+                  showSpoilers={showSpoilers}
+                  onCopyCase={handleCopyCase}
+                  caseRating={caseRatings[cas._id] || { averageRating: 0, ratingsCount: 0, userRating: 0 }}
+                  onRatingUpdate={handleRatingUpdate}
+                />
+              ))}
+            </UnifiedCasesList>
+          </div>
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <UnifiedPaginationContainer>
+            <UnifiedPaginationContainer style={{ 
+              maxWidth: '600px', 
+              margin: '3rem auto',  // 🔧 OPTIMISATION : Centre la pagination
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '1rem'
+            }}>
               <UnifiedPaginationButton 
                 onClick={() => handlePageChange(currentPage - 1)} 
                 disabled={currentPage === 1}
