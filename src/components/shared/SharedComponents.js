@@ -8,7 +8,10 @@ export const PageContainer = styled.div`
   display: flex;
   background-color: ${props => props.theme.background};
   min-height: calc(100vh - 60px);
-  padding: 2rem;
+  padding: 1rem 2rem; /* 🔧 OPTIMISATION : Padding horizontal pour utiliser plus d'espace */
+  width: 100%; /* 🔧 OPTIMISATION : Pleine largeur */
+  max-width: 100vw; /* 🔧 OPTIMISATION : Utilise toute la largeur viewport */
+  box-sizing: border-box;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -143,10 +146,13 @@ export const FilterIndicator = styled.div`
 
 export const ListContainer = styled.div`
   flex: 1;
-  max-width: calc(100% - 300px);
+  width: 100%; /* 🔧 OPTIMISATION : Utilise toute la largeur disponible */
+  max-width: 100%; /* 🔧 OPTIMISATION : Pas de restriction de largeur */
+  padding: 0 1rem; /* 🔧 OPTIMISATION : Petit padding latéral */
 
   @media (max-width: 768px) {
     max-width: 100%;
+    padding: 0;
   }
 `;
 
@@ -186,17 +192,38 @@ export const SearchInput = styled.input`
   }
 `;
 
-// ==================== GRILLES UNIFIÉES CENTRÉES ====================
+// ==================== GRILLES UNIFIÉES PLEINE LARGEUR ====================
 
 export const QuestionnairesGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-  gap: 1.5rem;
-  margin: 2rem auto; /* 🔧 CENTRAGE : auto pour centrer horizontalement */
-  padding: 0 1rem;
-  width: 100%;
-  max-width: 1400px; /* 🔧 CENTRAGE : limite la largeur maximale */
-  justify-content: center; /* 🔧 CENTRAGE : centre le contenu de la grille */
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* 🔧 OPTIMISATION : Plus de cartes par ligne */
+  gap: 1.2rem; /* 🔧 OPTIMISATION : Gap réduit pour plus de cartes */
+  margin: 2rem 0;
+  padding: 0;
+  width: 100%; /* 🔧 OPTIMISATION : Utilise toute la largeur */
+  max-width: none; /* 🔧 OPTIMISATION : Pas de limite de largeur */
+
+  /* 🔧 Pour les très grands écrans (4K+) */
+  @media (min-width: 2560px) {
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 1.5rem;
+  }
+
+  /* 🔧 Pour les écrans larges (1920px+) */
+  @media (min-width: 1920px) and (max-width: 2559px) {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  }
+
+  /* 🔧 Pour les écrans moyens (1440px+) */
+  @media (min-width: 1440px) and (max-width: 1919px) {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+
+  /* 🔧 Pour les tablettes et petits écrans */
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
 
   /* 🔧 MODIFICATION PRINCIPALE : Optimisation pour mobile avec 2 colonnes compactes */
   @media (max-width: 768px) {
@@ -204,39 +231,39 @@ export const QuestionnairesGrid = styled.div`
     gap: 0.75rem;
     margin-bottom: 1rem;
     padding: 0;
-  }
-  
-  /* 🔧 CENTRAGE : Pour centrer quand il y a peu de cartes sur desktop */
-  @media (min-width: 769px) {
-    /* Si une seule carte */
-    &:has(:nth-child(1):last-child) {
-      grid-template-columns: minmax(380px, 450px);
-      justify-content: center;
-    }
-    
-    /* Si deux cartes */
-    &:has(:nth-child(2):last-child) {
-      grid-template-columns: repeat(2, minmax(380px, 450px));
-      justify-content: center;
-    }
-    
-    /* Si trois cartes */
-    &:has(:nth-child(3):last-child) {
-      grid-template-columns: repeat(3, minmax(380px, 420px));
-      justify-content: center;
-    }
   }
 `;
 
 export const CasesList = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin: 2rem auto; /* 🔧 CENTRAGE : auto pour centrer horizontalement */
-  padding: 0 1rem;
-  width: 100%;
-  max-width: 1400px; /* 🔧 CENTRAGE : limite la largeur maximale */
-  justify-content: center; /* 🔧 CENTRAGE : centre le contenu de la grille */
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* 🔧 OPTIMISATION : Cartes plus petites pour plus par ligne */
+  gap: 1.2rem; /* 🔧 OPTIMISATION : Gap réduit */
+  margin: 2rem 0;
+  padding: 0;
+  width: 100%; /* 🔧 OPTIMISATION : Utilise toute la largeur */
+  max-width: none; /* 🔧 OPTIMISATION : Pas de limite de largeur */
+
+  /* 🔧 Pour les très grands écrans (4K+) */
+  @media (min-width: 2560px) {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  /* 🔧 Pour les écrans larges (1920px+) */
+  @media (min-width: 1920px) and (max-width: 2559px) {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  /* 🔧 Pour les écrans moyens (1440px+) */
+  @media (min-width: 1440px) and (max-width: 1919px) {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+
+  /* 🔧 Pour les tablettes et petits écrans */
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+  }
 
   /* 🔧 MODIFICATION PRINCIPALE : Optimisation pour mobile avec 2 colonnes compactes */
   @media (max-width: 768px) {
@@ -244,27 +271,6 @@ export const CasesList = styled.div`
     gap: 0.75rem;
     margin-bottom: 1rem;
     padding: 0;
-  }
-  
-  /* 🔧 CENTRAGE : Pour centrer quand il y a peu de cartes sur desktop */
-  @media (min-width: 769px) {
-    /* Si une seule carte */
-    &:has(:nth-child(1):last-child) {
-      grid-template-columns: minmax(300px, 400px);
-      justify-content: center;
-    }
-    
-    /* Si deux cartes */
-    &:has(:nth-child(2):last-child) {
-      grid-template-columns: repeat(2, minmax(300px, 400px));
-      justify-content: center;
-    }
-    
-    /* Si trois cartes */
-    &:has(:nth-child(3):last-child) {
-      grid-template-columns: repeat(3, minmax(300px, 380px));
-      justify-content: center;
-    }
   }
 `;
 
