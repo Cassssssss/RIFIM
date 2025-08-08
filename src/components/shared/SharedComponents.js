@@ -186,19 +186,45 @@ export const SearchInput = styled.input`
   }
 `;
 
-// ==================== GRILLES UNIFIÉES ====================
+// ==================== GRILLES UNIFIÉES CENTRÉES ====================
 
 export const QuestionnairesGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: 1.5rem;
-  margin-bottom: 2rem;
+  margin: 2rem auto; /* 🔧 CENTRAGE : auto pour centrer horizontalement */
+  padding: 0 1rem;
+  width: 100%;
+  max-width: 1400px; /* 🔧 CENTRAGE : limite la largeur maximale */
+  justify-content: center; /* 🔧 CENTRAGE : centre le contenu de la grille */
 
   /* 🔧 MODIFICATION PRINCIPALE : Optimisation pour mobile avec 2 colonnes compactes */
   @media (max-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
     margin-bottom: 1rem;
+    padding: 0;
+  }
+  
+  /* 🔧 CENTRAGE : Pour centrer quand il y a peu de cartes sur desktop */
+  @media (min-width: 769px) {
+    /* Si une seule carte */
+    &:has(:nth-child(1):last-child) {
+      grid-template-columns: minmax(380px, 450px);
+      justify-content: center;
+    }
+    
+    /* Si deux cartes */
+    &:has(:nth-child(2):last-child) {
+      grid-template-columns: repeat(2, minmax(380px, 450px));
+      justify-content: center;
+    }
+    
+    /* Si trois cartes */
+    &:has(:nth-child(3):last-child) {
+      grid-template-columns: repeat(3, minmax(380px, 420px));
+      justify-content: center;
+    }
   }
 `;
 
@@ -206,13 +232,39 @@ export const CasesList = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
-  margin-bottom: 2rem;
+  margin: 2rem auto; /* 🔧 CENTRAGE : auto pour centrer horizontalement */
+  padding: 0 1rem;
+  width: 100%;
+  max-width: 1400px; /* 🔧 CENTRAGE : limite la largeur maximale */
+  justify-content: center; /* 🔧 CENTRAGE : centre le contenu de la grille */
 
   /* 🔧 MODIFICATION PRINCIPALE : Optimisation pour mobile avec 2 colonnes compactes */
   @media (max-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
     margin-bottom: 1rem;
+    padding: 0;
+  }
+  
+  /* 🔧 CENTRAGE : Pour centrer quand il y a peu de cartes sur desktop */
+  @media (min-width: 769px) {
+    /* Si une seule carte */
+    &:has(:nth-child(1):last-child) {
+      grid-template-columns: minmax(300px, 400px);
+      justify-content: center;
+    }
+    
+    /* Si deux cartes */
+    &:has(:nth-child(2):last-child) {
+      grid-template-columns: repeat(2, minmax(300px, 400px));
+      justify-content: center;
+    }
+    
+    /* Si trois cartes */
+    &:has(:nth-child(3):last-child) {
+      grid-template-columns: repeat(3, minmax(300px, 380px));
+      justify-content: center;
+    }
   }
 `;
 

@@ -1,4 +1,4 @@
-// pages/QuestionnairePage.js - VERSION AVEC UNIFIED FILTER SYSTEM ROBUSTE
+// pages/QuestionnairePage.js - VERSION AVEC GRILLE CENTRÉE
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
@@ -155,79 +155,107 @@ function QuestionnairePage() {
         />
 
         {/* NOUVEAU SYSTÈME DE FILTRES UNIFIÉ */}
-        <div style={{ marginBottom: '2rem' }}>
+        <div style={{ 
+          marginBottom: '2rem',
+          display: 'flex',
+          justifyContent: 'center'  // 🔧 CENTRAGE : Centre les filtres aussi
+        }}>
           <UnifiedFilterSystem
             filters={filtersConfig}
-            style={{ justifyContent: 'flex-start' }}
+            style={{ justifyContent: 'center' }}  // 🔧 CENTRAGE : Centre le contenu des filtres
           />
         </div>
 
-        {/* GRILLE DES QUESTIONNAIRES */}
-        <QuestionnairesGrid>
-          {questionnaires.map((questionnaire) => (
-            <QuestionnaireCard key={questionnaire._id}>
-              <CardHeader>
-                <QuestionnaireTitle>
-                  <QuestionnaireIcon>
-                    {getQuestionnaireIcon(questionnaire.tags)}
-                  </QuestionnaireIcon>
-                  {questionnaire.title}
-                </QuestionnaireTitle>
-              </CardHeader>
+        {/* CONTENEUR CENTRÉ POUR LA GRILLE */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          width: '100%'
+        }}>
+          {/* GRILLE DES QUESTIONNAIRES (déjà centrée via SharedComponents) */}
+          <QuestionnairesGrid>
+            {questionnaires.map((questionnaire) => (
+              <QuestionnaireCard key={questionnaire._id}>
+                <CardHeader>
+                  <QuestionnaireTitle>
+                    <QuestionnaireIcon>
+                      {getQuestionnaireIcon(questionnaire.tags)}
+                    </QuestionnaireIcon>
+                    {questionnaire.title}
+                  </QuestionnaireTitle>
+                </CardHeader>
 
-              {/* Tags */}
-              <TagsContainer>
-                {questionnaire.tags && questionnaire.tags.map((tag, index) => (
-                  <Tag key={index}>{tag}</Tag>
-                ))}
-              </TagsContainer>
+                {/* Tags */}
+                <TagsContainer>
+                  {questionnaire.tags && questionnaire.tags.map((tag, index) => (
+                    <Tag key={index}>{tag}</Tag>
+                  ))}
+                </TagsContainer>
 
-              {/* Métadonnées */}
-              <CardMeta>
-                <MetaItem>
-                  <Clock />
-                  <span>{formatDate(questionnaire.updatedAt || questionnaire.createdAt)}</span>
-                </MetaItem>
-                <MetaItem>
-                  <Users />
-                  <span>Personnel</span>
-                </MetaItem>
-                <MetaItem>
-                  <FileText />
-                  <span>{questionnaire.public ? 'Public' : 'Privé'}</span>
-                </MetaItem>
-                <MetaItem>
-                  <Clock />
-                  <span>{estimateTime(questionnaire)}</span>
-                </MetaItem>
-              </CardMeta>
+                {/* Métadonnées */}
+                <CardMeta>
+                  <MetaItem>
+                    <Clock size={14} />
+                    <span>{formatDate(questionnaire.updatedAt || questionnaire.createdAt)}</span>
+                  </MetaItem>
+                  <MetaItem>
+                    <Users size={14} />
+                    <span>Personnel</span>
+                  </MetaItem>
+                  <MetaItem>
+                    <FileText size={14} />
+                    <span>{questionnaire.public ? 'Public' : 'Privé'}</span>
+                  </MetaItem>
+                  <MetaItem>
+                    <Clock size={14} />
+                    <span>{estimateTime(questionnaire)}</span>
+                  </MetaItem>
+                </CardMeta>
 
-              {/* Actions */}
-              <ActionButtons>
-                <ActionButton to={`/use/${questionnaire._id}`}>
-                  ▶️ UTILISER
-                </ActionButton>
-                
-                <DeleteButton 
-                  onClick={() => deleteQuestionnaire(questionnaire._id)}
-                  title="Supprimer ce questionnaire"
-                >
-                  <Trash2 />
-                </DeleteButton>
-              </ActionButtons>
-            </QuestionnaireCard>
-          ))}
-        </QuestionnairesGrid>
+                {/* Actions */}
+                <ActionButtons>
+                  <ActionButton to={`/use/${questionnaire._id}`}>
+                    ▶️ UTILISER
+                  </ActionButton>
+                  
+                  <DeleteButton 
+                    onClick={() => deleteQuestionnaire(questionnaire._id)}
+                    title="Supprimer ce questionnaire"
+                  >
+                    <Trash2 size={18} />
+                  </DeleteButton>
+                </ActionButtons>
+              </QuestionnaireCard>
+            ))}
+          </QuestionnairesGrid>
+        </div>
 
-        {/* PAGINATION */}
+        {/* PAGINATION (centrée) */}
         {totalPages > 1 && (
-          <PaginationContainer>
-            <PaginationButton onClick={() => fetchQuestionnaires(currentPage - 1)} disabled={currentPage === 1}>
-              Précédent
+          <PaginationContainer style={{
+            maxWidth: '600px',
+            margin: '3rem auto',  // 🔧 CENTRAGE : Centre la pagination
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '1rem'
+          }}>
+            <PaginationButton 
+              onClick={() => fetchQuestionnaires(currentPage - 1)} 
+              disabled={currentPage === 1}
+            >
+              ← Précédent
             </PaginationButton>
-            <PaginationInfo>Page {currentPage} sur {totalPages}</PaginationInfo>
-            <PaginationButton onClick={() => fetchQuestionnaires(currentPage + 1)} disabled={currentPage === totalPages}>
-              Suivant
+            
+            <PaginationInfo>
+              Page {currentPage} sur {totalPages}
+            </PaginationInfo>
+            
+            <PaginationButton 
+              onClick={() => fetchQuestionnaires(currentPage + 1)} 
+              disabled={currentPage === totalPages}
+            >
+              Suivant →
             </PaginationButton>
           </PaginationContainer>
         )}
