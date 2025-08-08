@@ -433,7 +433,7 @@ function RadiologyViewer() {
       const deltaY = touch.clientY - panStartPoint.y;
       
       // Applique le déplacement avec une sensibilité ajustée
-      const sensitivity = 1.5; // Ajustez selon vos préférences
+      const sensitivity = 0.5; // 🔧 RÉDUIT de 1.5 à 0.5 pour un mouvement plus précis
       
       setImageControls(prev => ({
         ...prev,
