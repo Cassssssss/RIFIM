@@ -33,6 +33,9 @@ const ProtocolsPublicPage = lazy(() => import('./pages/ProtocolsPublicPage'));
 const ProtocolCreatorPage = lazy(() => import('./pages/ProtocolCreatorPage'));
 const ProtocolViewPage = lazy(() => import('./pages/ProtocolViewPage'));
 
+// NOUVELLE PAGE STATISTIQUES
+const StatisticsDashboardPage = lazy(() => import('./pages/StatisticsDashboardPage'));
+
 // NOUVEAU : Composant wrapper pour gérer la navigation dans les routes protégées
 function AppContent() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -158,6 +161,9 @@ function AppContent() {
                   <Route path="protocols/create" element={<ProtocolCreatorPage />} />
                   <Route path="protocols/edit/:id" element={<ProtocolCreatorPage />} />
                   <Route path="protocols/view/:id" element={<ProtocolViewPage />} />
+                  
+                  {/* NOUVELLE ROUTE STATISTIQUES */}
+                  <Route path="statistics" element={<StatisticsDashboardPage />} />
                   
                   {/* Routes utilitaires */}
                   <Route path="test-upload" element={<TestUpload />} />

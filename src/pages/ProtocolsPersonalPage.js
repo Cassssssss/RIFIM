@@ -1,118 +1,113 @@
-// ProtocolsPersonalPage.js - VERSION CORRIGÉE
+// ProtocolsPersonalPage.js - VERSION PLEINE LARGEUR
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
 import styled from 'styled-components';
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Copy, 
-  Eye, 
-  EyeOff, 
-  Search, 
-  Filter,
-  Clock,
-  Star,
-  Users,
-  FileText
-} from 'lucide-react';
-import LoadingSpinner from '../components/LoadingSpinner';
-import ErrorMessage from '../components/ErrorMessage';
+import { Plus, Search, Filter, Edit, Copy, Trash2, Eye, EyeOff, Clock, FileText, Users, Star } from 'lucide-react';
 
-// ==================== STYLED COMPONENTS ====================
+// ==================== STYLED COMPONENTS PLEINE LARGEUR ====================
 
 const PageContainer = styled.div`
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 2rem;
   background-color: ${props => props.theme.background};
-  min-height: 100vh;
+  min-height: calc(100vh - 60px);
+  padding: 2rem;
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (max-width: 1200px) {
+    padding: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 `;
 
 const Header = styled.div`
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
   margin-bottom: 2rem;
-  flex-wrap: wrap;
   gap: 1rem;
+
+  @media (max-width: 768px) {
+    align-items: stretch;
+  }
 `;
 
-const PageTitle = styled.h1`
-  color: ${props => props.theme.text};
+const HeaderActions = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+`;
+
+const Title = styled.h1`
   font-size: 2.5rem;
   font-weight: 700;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
   background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  margin: 0;
+  text-align: center;  /* Toujours centré */
+  width: 100%;  /* Prend toute la largeur */
+
+  @media (max-width: 768px) {
+    font-size: 1.8rem;
+  }
 `;
 
 const CreateButton = styled.button`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  padding: 1rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  transition: all 0.2s ease;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  color: white;
+  border: none;
+  border-radius: 12px;
   font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px ${props => props.theme.primary}40;
 
   &:hover {
-    background-color: ${props => props.theme.primaryHover};
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px ${props => props.theme.shadow};
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px ${props => props.theme.primary}60;
   }
-`;
-
-const FiltersContainer = styled.div`
-  background-color: ${props => props.theme.card};
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 12px ${props => props.theme.shadow};
-  border: 1px solid ${props => props.theme.border};
-`;
-
-const FiltersGrid = styled.div`
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 1rem;
-  align-items: end;
 
   @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1rem;
+    width: 100%;
+    justify-content: center;
   }
 `;
 
-const FilterGroup = styled.div`
+// Section des filtres centrée
+const FiltersSection = styled.div`
+  max-width: 1200px;
+  margin: 0 auto 2rem auto;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1.5rem;
 `;
 
-const FilterLabel = styled.label`
-  color: ${props => props.theme.text};
-  font-weight: 500;
-  font-size: 0.9rem;
+const SearchBar = styled.div`
+  position: relative;
+  width: 100%;
 `;
 
 const SearchInput = styled.input`
-  padding: 0.75rem 1rem;
+  width: 100%;
+  padding: 1rem 1rem 1rem 3rem;
   border: 2px solid ${props => props.theme.border};
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 1rem;
-  background-color: ${props => props.theme.background};
+  background-color: ${props => props.theme.card};
   color: ${props => props.theme.text};
   transition: all 0.2s ease;
 
@@ -127,33 +122,99 @@ const SearchInput = styled.input`
   }
 `;
 
-const Select = styled.select`
-  padding: 0.75rem;
+const SearchIcon = styled(Search)`
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: ${props => props.theme.textSecondary};
+  width: 20px;
+  height: 20px;
+`;
+
+const FilterContainer = styled.div`
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+`;
+
+const FilterSelect = styled.select`
+  padding: 0.75rem 1rem;
   border: 2px solid ${props => props.theme.border};
   border-radius: 8px;
-  font-size: 1rem;
-  background-color: ${props => props.theme.background};
+  background-color: ${props => props.theme.card};
   color: ${props => props.theme.text};
+  font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-width: 200px;
 
   &:focus {
     outline: none;
     border-color: ${props => props.theme.primary};
-    box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
   }
 `;
 
+// Grille personnalisée pleine largeur
 const ProtocolsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  width: 100%;
+  gap: 1rem;
+  margin: 2rem 0;
+  padding: 0;
 
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
+  /* Configuration responsive des colonnes */
+  @media (min-width: 2560px) {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.2rem;
+  }
+
+  @media (min-width: 1920px) and (max-width: 2559px) {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.1rem;
+  }
+
+  @media (min-width: 1600px) and (max-width: 1919px) {
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 1rem;
   }
+
+  @media (min-width: 1400px) and (max-width: 1599px) {
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 1rem;
+  }
+
+  @media (min-width: 1200px) and (max-width: 1399px) {
+    grid-template-columns: repeat(auto-fill, minmax(370px, 1fr));
+    gap: 1rem;
+  }
+
+  @media (min-width: 1024px) and (max-width: 1199px) {
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1rem;
+  }
+
+  @media (min-width: 768px) and (max-width: 1023px) {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 0.9rem;
+  }
+
+  @media (max-width: 767px) {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  /* Fallback général */
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
 `;
 
 const ProtocolCard = styled.div`
@@ -161,7 +222,6 @@ const ProtocolCard = styled.div`
   border: 1px solid ${props => props.theme.border};
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 4px 12px ${props => props.theme.shadow};
   transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
@@ -182,58 +242,96 @@ const ProtocolCard = styled.div`
     box-shadow: 0 8px 25px ${props => props.theme.shadow};
     border-color: ${props => props.theme.primary};
   }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    
+    &:hover {
+      transform: none;
+    }
+  }
 `;
 
 const CardHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
   margin-bottom: 1rem;
 `;
 
 const ProtocolTitle = styled.h3`
-  color: ${props => props.theme.text};
   font-size: 1.2rem;
   font-weight: 600;
-  margin: 0;
-  line-height: 1.3;
-  flex: 1;
+  color: ${props => props.theme.text};
+  margin: 0 0 0.5rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
+const BadgeContainer = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
 `;
 
 const StatusBadge = styled.span`
-  background-color: ${props => {
-    switch(props.status) {
-      case 'Validé': return props.theme.success;
-      case 'En révision': return props.theme.warning;
-      default: return props.theme.textSecondary;
-    }
-  }};
-  color: white;
   padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+  border-radius: 20px;
   font-size: 0.75rem;
-  font-weight: 500;
-  margin-left: 0.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  
+  ${props => {
+    switch (props.status) {
+      case 'Validé':
+        return `
+          background-color: ${props.theme.success};
+          color: white;
+        `;
+      case 'En révision':
+        return `
+          background-color: ${props.theme.warning};
+          color: white;
+        `;
+      default:
+        return `
+          background-color: ${props.theme.textSecondary};
+          color: white;
+        `;
+    }
+  }}
 `;
 
-const VisibilityBadge = styled.div`
+const VisibilityBadge = styled.span`
+  padding: 0.25rem 0.5rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  color: ${props => props.isPublic ? props.theme.success : props.theme.textSecondary};
-  font-size: 0.8rem;
-  margin-top: 0.5rem;
+  background-color: ${props => props.isPublic ? props.theme.primary : props.theme.textSecondary};
+  color: white;
+
+  svg {
+    width: 12px;
+    height: 12px;
+  }
 `;
 
 const CardMeta = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
   margin-bottom: 1rem;
   padding: 1rem;
-  background-color: ${props => props.theme.backgroundSecondary};
+  background-color: ${props => props.theme.backgroundSecondary || props.theme.background};
   border-radius: 8px;
-  border: 1px solid ${props => props.theme.border};
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const MetaItem = styled.div`
@@ -242,21 +340,21 @@ const MetaItem = styled.div`
   gap: 0.5rem;
   color: ${props => props.theme.textSecondary};
   font-size: 0.85rem;
-  font-weight: 500;
 
   svg {
+    width: 16px;
+    height: 16px;
     color: ${props => props.theme.primary};
-    flex-shrink: 0;
   }
 `;
 
 const ProtocolDescription = styled.p`
   color: ${props => props.theme.textSecondary};
   font-size: 0.9rem;
-  line-height: 1.4;
+  line-height: 1.5;
   margin-bottom: 1rem;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 `;
@@ -264,63 +362,58 @@ const ProtocolDescription = styled.p`
 const CardActions = styled.div`
   display: flex;
   gap: 0.5rem;
-  align-items: center;
   justify-content: space-between;
-  margin-top: 1rem;
-  padding-top: 1rem;
   border-top: 1px solid ${props => props.theme.border};
+  padding-top: 1rem;
 `;
 
-const ActionButton = styled.button`
-  background-color: ${props => {
-    switch(props.variant) {
-      case 'primary': return props.theme.primary;
-      case 'secondary': return props.theme.secondary;
-      case 'danger': return props.theme.error;
-      default: return 'transparent';
-    }
-  }};
-  color: ${props => props.variant === 'outline' ? props.theme.text : 'white'};
-  border: ${props => props.variant === 'outline' ? `1px solid ${props.theme.border}` : 'none'};
-  padding: 0.5rem;
-  border-radius: 6px;
-  cursor: pointer;
+const ViewButton = styled.button`
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem;
+  background-color: ${props => props.theme.primary};
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 36px;
-  height: 36px;
+
+  &:hover {
+    background-color: ${props => props.theme.primaryDark || props.theme.secondary};
+  }
+`;
+
+const ActionButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem;
+  background-color: ${props => {
+    if (props.variant === 'danger') return '#ef4444';
+    if (props.variant === 'secondary') return props.theme.backgroundSecondary;
+    return props.theme.card;
+  }};
+  color: ${props => props.variant === 'danger' ? 'white' : props.theme.text};
+  border: 1px solid ${props => props.variant === 'danger' ? 'transparent' : props.theme.border};
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px ${props => props.theme.shadow};
-    opacity: 0.9;
+    background-color: ${props => {
+      if (props.variant === 'danger') return '#dc2626';
+      return props.theme.hover;
+    }};
   }
 
   svg {
     width: 16px;
     height: 16px;
-  }
-`;
-
-const ViewButton = styled.button`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.2s ease;
-  flex: 1;
-
-  &:hover {
-    background-color: ${props => props.theme.primaryHover};
-    transform: translateY(-1px);
   }
 `;
 
@@ -337,17 +430,35 @@ const EmptyState = styled.div`
 
   p {
     font-size: 1.1rem;
-    line-height: 1.6;
     margin-bottom: 2rem;
   }
+`;
+
+const LoadingContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem;
+  color: ${props => props.theme.textSecondary};
+`;
+
+const ErrorContainer = styled.div`
+  text-align: center;
+  padding: 2rem;
+  color: ${props => props.theme.error};
+  background-color: ${props => props.theme.errorLight};
+  border-radius: 8px;
+  border: 1px solid ${props => props.theme.error};
+  max-width: 600px;
+  margin: 2rem auto;
 `;
 
 const PaginationContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 1rem;
-  margin-top: 2rem;
+  gap: 0.5rem;
+  margin-top: 3rem;
 `;
 
 const PaginationButton = styled.button`
@@ -383,12 +494,10 @@ function ProtocolsPersonalPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
-  // ✅ CORRECTION : Options corrigées pour correspondre au schéma MongoDB
   const imagingTypes = ['IRM', 'Scanner', 'Échographie', 'Radiographie', 'Mammographie', 'Médecine Nucléaire', 'Angiographie'];
   
-  // ✅ CORRECTION CRITIQUE : Utiliser exactement les mêmes valeurs que dans Protocol.js
   const anatomicalRegions = [
-    'Céphalée',           // ← AU LIEU DE "Cerveau"
+    'Céphalée',
     'Cervical', 
     'Thorax', 
     'Abdomen', 
@@ -399,7 +508,7 @@ function ProtocolsPersonalPage() {
     'Vaisseaux', 
     'Cœur', 
     'Sein', 
-    'Autre'              // ← AU LIEU DE "Uro, Pédiatrie, ORL"
+    'Autre'
   ];
 
   const fetchProtocols = useCallback(async () => {
@@ -407,7 +516,7 @@ function ProtocolsPersonalPage() {
       setLoading(true);
       const params = new URLSearchParams({
         page: currentPage.toString(),
-        limit: '12',
+        limit: '20', // Augmenté pour afficher plus de protocoles
         search: searchTerm,
         imagingType: filterType,
         anatomicalRegion: filterRegion
@@ -429,112 +538,102 @@ function ProtocolsPersonalPage() {
   }, [fetchProtocols]);
 
   useEffect(() => {
-    setCurrentPage(1); // Reset page when filters change
+    setCurrentPage(1);
   }, [searchTerm, filterType, filterRegion]);
 
-  // NOUVEAU : Gérer le clic sur la carte pour naviguer vers la vue détaillée
   const handleCardClick = (protocolId) => {
     navigate(`/protocols/view/${protocolId}`);
   };
 
   const handleDelete = async (e, protocolId) => {
-    e.stopPropagation(); // Empêcher la navigation quand on clique sur supprimer
+    e.stopPropagation();
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce protocole ?')) {
       try {
         await axios.delete(`/protocols/${protocolId}`);
-        fetchProtocols();
+        setProtocols(prevProtocols => prevProtocols.filter(p => p._id !== protocolId));
       } catch (err) {
         console.error('Erreur lors de la suppression:', err);
-        setError('Erreur lors de la suppression du protocole');
+        alert('Erreur lors de la suppression du protocole');
       }
     }
   };
 
-  const handleCopy = async (e, protocolId) => {
-    e.stopPropagation(); // Empêcher la navigation quand on clique sur copier
-    try {
-      await axios.post(`/protocols/${protocolId}/copy`);
-      alert('Protocole copié avec succès !');
-      fetchProtocols();
-    } catch (err) {
-      console.error('Erreur lors de la copie:', err);
-      setError('Erreur lors de la copie du protocole');
-    }
-  };
-
   const handleEdit = (e, protocolId) => {
-    e.stopPropagation(); // Empêcher la navigation quand on clique sur éditer
+    e.stopPropagation();
     navigate(`/protocols/edit/${protocolId}`);
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
+  const handleCopy = async (e, protocolId) => {
+    e.stopPropagation();
+    try {
+      const response = await axios.post(`/protocols/${protocolId}/copy`);
+      setProtocols(prevProtocols => [response.data, ...prevProtocols]);
+      alert('Protocole dupliqué avec succès !');
+    } catch (err) {
+      console.error('Erreur lors de la duplication:', err);
+      alert('Erreur lors de la duplication du protocole');
+    }
+  };
+
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString('fr-FR', {
       day: 'numeric',
       month: 'short',
       year: 'numeric'
     });
   };
 
-  if (loading) {
-    return <LoadingSpinner />;
-  }
+  if (loading) return <LoadingContainer>Chargement des protocoles...</LoadingContainer>;
+  if (error) return <ErrorContainer>{error}</ErrorContainer>;
 
   return (
     <PageContainer>
       <Header>
-        <PageTitle>
-          📋 Mes Protocoles
-        </PageTitle>
-        <CreateButton onClick={() => navigate('/protocols/create')}>
-          <Plus size={20} />
-          Nouveau Protocole
-        </CreateButton>
+        <Title>📋 Mes Protocoles</Title>
+        <HeaderActions>
+          <CreateButton onClick={() => navigate('/protocols/create')}>
+            <Plus size={20} />
+            Nouveau Protocole
+          </CreateButton>
+        </HeaderActions>
       </Header>
 
-      {error && <ErrorMessage message={error} />}
+      {/* SECTION DE RECHERCHE ET FILTRES CENTRÉE */}
+      <FiltersSection>
+        <SearchBar>
+          <SearchIcon />
+          <SearchInput
+            type="text"
+            placeholder="Rechercher un protocole..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </SearchBar>
 
-      {/* Filtres de recherche */}
-      <FiltersContainer>
-        <FiltersGrid>
-          <FilterGroup>
-            <FilterLabel>🔍 Recherche</FilterLabel>
-            <SearchInput
-              type="text"
-              placeholder="Rechercher un protocole..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </FilterGroup>
-          
-          <FilterGroup>
-            <FilterLabel>📊 Type d'imagerie</FilterLabel>
-            <Select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-            >
-              <option value="">Tous les types</option>
-              {imagingTypes.map(type => (
-                <option key={type} value={type}>{type}</option>
-              ))}
-            </Select>
-          </FilterGroup>
-          
-          <FilterGroup>
-            <FilterLabel>🎯 Région anatomique</FilterLabel>
-            <Select
-              value={filterRegion}
-              onChange={(e) => setFilterRegion(e.target.value)}
-            >
-              <option value="">Toutes les régions</option>
-              {anatomicalRegions.map(region => (
-                <option key={region} value={region}>{region}</option>
-              ))}
-            </Select>
-          </FilterGroup>
-        </FiltersGrid>
-      </FiltersContainer>
+        <FilterContainer>
+          <FilterSelect
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+          >
+            <option value="">📊 Tous les types</option>
+            {imagingTypes.map(type => (
+              <option key={type} value={type}>{type}</option>
+            ))}
+          </FilterSelect>
 
-      {/* Grille des protocoles */}
+          <FilterSelect
+            value={filterRegion}
+            onChange={(e) => setFilterRegion(e.target.value)}
+          >
+            <option value="">🏥 Toutes les régions</option>
+            {anatomicalRegions.map(region => (
+              <option key={region} value={region}>{region}</option>
+            ))}
+          </FilterSelect>
+        </FilterContainer>
+      </FiltersSection>
+
+      {/* CONTENU PRINCIPAL */}
       {protocols.length === 0 ? (
         <EmptyState>
           <h3>Aucun protocole trouvé</h3>
@@ -551,6 +650,7 @@ function ProtocolsPersonalPage() {
         </EmptyState>
       ) : (
         <>
+          {/* GRILLE PLEINE LARGEUR */}
           <ProtocolsGrid>
             {protocols.map((protocol) => (
               <ProtocolCard 
@@ -558,16 +658,16 @@ function ProtocolsPersonalPage() {
                 onClick={() => handleCardClick(protocol._id)}
               >
                 <CardHeader>
-                  <div>
-                    <ProtocolTitle>{protocol.title}</ProtocolTitle>
+                  <ProtocolTitle>{protocol.title}</ProtocolTitle>
+                  <BadgeContainer>
                     <StatusBadge status={protocol.status}>
                       {protocol.status}
                     </StatusBadge>
                     <VisibilityBadge isPublic={protocol.public}>
-                      {protocol.public ? <Eye size={14} /> : <EyeOff size={14} />}
+                      {protocol.public ? <Eye size={12} /> : <EyeOff size={12} />}
                       {protocol.public ? 'Public' : 'Privé'}
                     </VisibilityBadge>
-                  </div>
+                  </BadgeContainer>
                 </CardHeader>
 
                 <CardMeta>
@@ -632,7 +732,7 @@ function ProtocolsPersonalPage() {
             ))}
           </ProtocolsGrid>
 
-          {/* Pagination */}
+          {/* PAGINATION */}
           {totalPages > 1 && (
             <PaginationContainer>
               <PaginationButton
@@ -642,15 +742,28 @@ function ProtocolsPersonalPage() {
                 Précédent
               </PaginationButton>
               
-              {Array.from({ length: totalPages }, (_, i) => (
-                <PaginationButton
-                  key={i + 1}
-                  isActive={currentPage === i + 1}
-                  onClick={() => setCurrentPage(i + 1)}
-                >
-                  {i + 1}
-                </PaginationButton>
-              ))}
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                
+                return (
+                  <PaginationButton
+                    key={pageNum}
+                    isActive={currentPage === pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                  >
+                    {pageNum}
+                  </PaginationButton>
+                );
+              })}
               
               <PaginationButton
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}

@@ -1,4 +1,4 @@
-// pages/QuestionnaireListPage.js - VERSION AVEC UNIFIED FILTER SYSTEM ROBUSTE
+// pages/QuestionnaireListPage.js - VERSION CORRIGÉE SANS RÉORGANISATION
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
@@ -161,25 +161,65 @@ function QuestionnaireListPage() {
     }
   };
 
+  // 🔧 FONCTION CORRIGÉE : Met à jour localement sans recharger
   const toggleVisibility = async (id, isPublic) => {
     try {
-      await axios.patch(`/questionnaires/${id}/togglePublic`);
-      fetchQuestionnaires(currentPage);
+      const response = await axios.patch(`/questionnaires/${id}/togglePublic`);
+      
+      // 🔧 IMPORTANT : Mise à jour locale de l'état au lieu de recharger
+      setQuestionnaires(prevQuestionnaires => 
+        prevQuestionnaires.map(q => 
+          q._id === id 
+            ? { ...q, public: response.data.public } // Met à jour seulement le champ 'public'
+            : q
+        )
+      );
+      
     } catch (error) {
       console.error('Erreur lors de la modification de la visibilité:', error);
       alert('Erreur lors de la modification de la visibilité');
     }
   };
 
+  // 🔧 FONCTION CORRIGÉE : Pour la suppression, on retire localement aussi
   const deleteQuestionnaire = async (id) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce questionnaire ?')) {
       try {
         await axios.delete(`/questionnaires/${id}`);
-        fetchQuestionnaires(currentPage);
+        
+        // 🔧 IMPORTANT : Retrait local de l'élément supprimé
+        setQuestionnaires(prevQuestionnaires => 
+          prevQuestionnaires.filter(q => q._id !== id)
+        );
+        
+        // Si la page devient vide après suppression, on recharge
+        if (questionnaires.length === 1 && currentPage > 1) {
+          fetchQuestionnaires(currentPage - 1);
+        }
+        
       } catch (error) {
         console.error('Erreur lors de la suppression:', error);
         alert('Erreur lors de la suppression du questionnaire');
       }
+    }
+  };
+
+  // 🔧 NOUVELLE FONCTION : Pour dupliquer un questionnaire
+  const duplicateQuestionnaire = async (id) => {
+    try {
+      const response = await axios.post(`/questionnaires/${id}/duplicate`);
+      
+      // 🔧 Ajoute le nouveau questionnaire à la liste actuelle
+      setQuestionnaires(prevQuestionnaires => [
+        response.data, // Le nouveau questionnaire dupliqué
+        ...prevQuestionnaires
+      ]);
+      
+      alert('✅ Questionnaire dupliqué avec succès !');
+      
+    } catch (error) {
+      console.error('Erreur lors de la duplication:', error);
+      alert('Erreur lors de la duplication du questionnaire');
     }
   };
 
@@ -389,7 +429,7 @@ function QuestionnaireListPage() {
                   variant="secondary"
                   onClick={(e) => {
                     e.preventDefault();
-                    console.log('Dupliquer:', questionnaire._id);
+                    duplicateQuestionnaire(questionnaire._id);
                   }}
                 >
                   <Copy />

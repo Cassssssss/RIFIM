@@ -1,4 +1,4 @@
-// PublicQuestionnairesPage.js - VERSION AVEC UNIFIED FILTER SYSTEM ROBUSTE
+// PublicQuestionnairesPage.js - VERSION PLEINE LARGEUR CORRIGÉE
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
@@ -11,7 +11,7 @@ import UnifiedFilterSystem from '../components/shared/UnifiedFilterSystem';
 
 // Import des composants partagés
 import {
-  QuestionnairesGrid,
+  QuestionnairesGridFullWidth,
   QuestionnaireCard,
   CardHeader,
   TagsContainer,
@@ -21,16 +21,17 @@ import {
   ActionButtons
 } from '../components/shared/SharedComponents';
 
-// ==================== STYLES SPÉCIFIQUES À CETTE PAGE ====================
+// ==================== STYLES SPÉCIFIQUES PLEINE LARGEUR ====================
 
 const PageContainer = styled.div`
-  padding: 2rem 3rem;
-  width: 100%;
-  min-height: calc(100vh - 60px);
   background-color: ${props => props.theme.background};
+  min-height: calc(100vh - 60px);
+  padding: 2rem;
+  width: 100%;
+  box-sizing: border-box;
 
   @media (max-width: 1200px) {
-    padding: 2rem;
+    padding: 1.5rem;
   }
 
   @media (max-width: 768px) {
@@ -38,30 +39,25 @@ const PageContainer = styled.div`
   }
 `;
 
-const ContentWrapper = styled.div`
-  width: 100%;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-
-  @media (max-width: 768px) {
-    gap: 1rem;
-  }
-`;
-
 const Title = styled.h1`
   font-size: 2.5rem;
   font-weight: 700;
-  margin-bottom: 0.5rem;
+  margin-bottom: 2rem;
   background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-align: center;
+  
+  @media (max-width: 768px) {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+  }
 `;
 
-const SearchAndFiltersContainer = styled.div`
+const SearchAndFiltersSection = styled.div`
+  max-width: 1200px;
+  margin: 0 auto 2rem auto;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -80,11 +76,73 @@ const SearchBar = styled.input`
   &:focus {
     outline: none;
     border-color: ${props => props.theme.primary};
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
   }
 
   &::placeholder {
     color: ${props => props.theme.textSecondary};
   }
+`;
+
+// Grille personnalisée pleine largeur pour cette page
+const CustomFullWidthGrid = styled.div`
+  display: grid;
+  width: 100%;
+  gap: 1rem;
+  margin: 2rem 0;
+  padding: 0;
+
+  /* Configuration responsive des colonnes */
+  /* Ultra large screens 2560px+ : 8-10 colonnes */
+  @media (min-width: 2560px) {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.2rem;
+  }
+
+  /* Large screens 1920px-2559px : 6-8 colonnes */
+  @media (min-width: 1920px) and (max-width: 2559px) {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.1rem;
+  }
+
+  /* Medium-large screens 1600px-1919px : 5-6 colonnes */
+  @media (min-width: 1600px) and (max-width: 1919px) {
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 1rem;
+  }
+
+  /* Standard screens 1400px-1599px : 4-5 colonnes */
+  @media (min-width: 1400px) and (max-width: 1599px) {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+
+  /* Medium screens 1200px-1399px : 4 colonnes */
+  @media (min-width: 1200px) and (max-width: 1399px) {
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 1rem;
+  }
+
+  /* Small screens 1024px-1199px : 3-4 colonnes */
+  @media (min-width: 1024px) and (max-width: 1199px) {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+
+  /* Tablets landscape 768px-1023px : 3 colonnes */
+  @media (min-width: 768px) and (max-width: 1023px) {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.9rem;
+  }
+
+  /* Mobile : 2 colonnes */
+  @media (max-width: 767px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  /* Fallback général */
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
 `;
 
 const QuestionnaireTitle = styled(Link)`
@@ -218,7 +276,7 @@ const PaginationContainer = styled.div`
   justify-content: center;
   align-items: center;
   gap: 1rem;
-  margin-top: 2rem;
+  margin-top: 3rem;
   padding-top: 2rem;
   border-top: 1px solid ${props => props.theme.borderLight};
 `;
@@ -265,6 +323,8 @@ const ErrorContainer = styled.div`
   background-color: ${props => props.theme.errorLight};
   border-radius: 8px;
   border: 1px solid ${props => props.theme.error};
+  max-width: 600px;
+  margin: 2rem auto;
 `;
 
 const EmptyState = styled.div`
@@ -441,7 +501,7 @@ function PublicQuestionnairesPage() {
       const response = await axios.get('/questionnaires/public', {
         params: {
           page,
-          limit: 12,
+          limit: 20, // Augmenté pour avoir plus de cartes
           search: searchTerm,
           modality: modalityFilters.join(','),
           specialty: specialtyFilters.join(','),
@@ -519,73 +579,76 @@ function PublicQuestionnairesPage() {
     <PageContainer>
       <Title>🗂️ Questionnaires Publics</Title>
 
-      <ContentWrapper>
-        <SearchAndFiltersContainer>
-          {/* BARRE DE RECHERCHE */}
-          <SearchBar
-            type="text"
-            placeholder="🔍 Rechercher un questionnaire..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      {/* SECTION DE RECHERCHE ET FILTRES CENTRÉE */}
+      <SearchAndFiltersSection>
+        <SearchBar
+          type="text"
+          placeholder="🔍 Rechercher un questionnaire..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
 
-          {/* NOUVEAU SYSTÈME DE FILTRES UNIFIÉ */}
+        {/* FILTRES CENTRÉS */}
+        <div style={{ 
+          display: 'flex',
+          justifyContent: 'center'
+        }}>
           <UnifiedFilterSystem
             filters={filtersConfig}
-            style={{ justifyContent: 'flex-start' }}
+            style={{ justifyContent: 'center' }}
           />
-        </SearchAndFiltersContainer>
+        </div>
+      </SearchAndFiltersSection>
 
-        {/* CONTENU CONDITIONNEL */}
-        {isLoading ? (
-          <LoadingContainer>
-            <div>Chargement des questionnaires...</div>
-          </LoadingContainer>
-        ) : error ? (
-          <ErrorContainer>
-            <h3>❌ Erreur</h3>
-            <p>{error}</p>
-          </ErrorContainer>
-        ) : questionnaires.length === 0 ? (
-          <EmptyState>
-            <h3>Aucun questionnaire trouvé</h3>
-            <p>Essayez de modifier vos filtres ou votre recherche.</p>
-          </EmptyState>
-        ) : (
-          <>
-            {/* GRILLE DES QUESTIONNAIRES */}
-            <QuestionnairesGrid>
-              {questionnaires.map((questionnaire) => (
-                <QuestionnaireCardComponent 
-                  key={questionnaire._id} 
-                  questionnaire={questionnaire} 
-                />
-              ))}
-            </QuestionnairesGrid>
+      {/* CONTENU PRINCIPAL */}
+      {isLoading ? (
+        <LoadingContainer>
+          <div>Chargement des questionnaires...</div>
+        </LoadingContainer>
+      ) : error ? (
+        <ErrorContainer>
+          <h3>❌ Erreur</h3>
+          <p>{error}</p>
+        </ErrorContainer>
+      ) : questionnaires.length === 0 ? (
+        <EmptyState>
+          <h3>Aucun questionnaire trouvé</h3>
+          <p>Essayez de modifier vos filtres ou votre recherche.</p>
+        </EmptyState>
+      ) : (
+        <>
+          {/* GRILLE PLEINE LARGEUR */}
+          <CustomFullWidthGrid>
+            {questionnaires.map((questionnaire) => (
+              <QuestionnaireCardComponent 
+                key={questionnaire._id} 
+                questionnaire={questionnaire} 
+              />
+            ))}
+          </CustomFullWidthGrid>
 
-            {/* PAGINATION */}
-            {totalPages > 1 && (
-              <PaginationContainer>
-                <PaginationButton 
-                  onClick={() => handlePageChange(currentPage - 1)} 
-                  disabled={currentPage === 1}
-                >
-                  ← Précédent
-                </PaginationButton>
-                <PaginationInfo>
-                  Page {currentPage} sur {totalPages} • {questionnaires.length} questionnaires
-                </PaginationInfo>
-                <PaginationButton 
-                  onClick={() => handlePageChange(currentPage + 1)} 
-                  disabled={currentPage === totalPages}
-                >
-                  Suivant →
-                </PaginationButton>
+          {/* PAGINATION */}
+          {totalPages > 1 && (
+            <PaginationContainer>
+              <PaginationButton 
+                onClick={() => handlePageChange(currentPage - 1)} 
+                disabled={currentPage === 1}
+              >
+                ← Précédent
+              </PaginationButton>
+              <PaginationInfo>
+                Page {currentPage} sur {totalPages} • {questionnaires.length} questionnaires
+              </PaginationInfo>
+              <PaginationButton 
+                onClick={() => handlePageChange(currentPage + 1)} 
+                disabled={currentPage === totalPages}
+              >
+                Suivant →
+              </PaginationButton>
               </PaginationContainer>
-            )}
-          </>
-        )}
-      </ContentWrapper>
+          )}
+        </>
+      )}
     </PageContainer>
   );
 }
