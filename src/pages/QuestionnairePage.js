@@ -1,6 +1,6 @@
-// pages/QuestionnairePage.js - VERSION AVEC GRILLE CENTRÉE
+// pages/QuestionnairePage.js - VERSION AVEC GRILLE CENTRÉE ET CARTES CLIQUABLES
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
 import { PaginationContainer, PaginationButton, PaginationInfo } from '../pages/CasesPage.styles';
 import { Trash2, Clock, Users, FileText } from 'lucide-react';
@@ -35,6 +35,9 @@ function QuestionnairePage() {
   const [modalityFilters, setModalityFilters] = useState([]);
   const [specialtyFilters, setSpecialtyFilters] = useState([]);
   const [locationFilters, setLocationFilters] = useState([]);
+  
+  // Ajout du hook useNavigate pour la navigation
+  const navigate = useNavigate();
 
   const modalityOptions = ['Rx', 'TDM', 'IRM', 'Echo'];
   const specialtyOptions = ['Cardiovasc', 'Dig', 'Neuro', 'ORL', 'Ostéo', 'Pedia', 'Pelvis', 'Séno', 'Thorax', 'Uro'];
@@ -79,7 +82,10 @@ function QuestionnairePage() {
     }
   }, [fetchQuestionnaires]);
 
-  const deleteQuestionnaire = async (id) => {
+  const deleteQuestionnaire = async (id, event) => {
+    // Empêcher la propagation du clic pour éviter de naviguer
+    event.stopPropagation();
+    
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce questionnaire ?')) {
       try {
         await axios.delete(`/questionnaires/${id}`);
@@ -112,6 +118,11 @@ function QuestionnairePage() {
     const questionCount = questionnaire.questions ? questionnaire.questions.length : 0;
     const estimatedMinutes = Math.max(2, Math.ceil(questionCount * 0.5));
     return `~${estimatedMinutes} min`;
+  };
+
+  // Nouvelle fonction pour gérer le clic sur la carte
+  const handleCardClick = (questionnaireId) => {
+    navigate(`/use/${questionnaireId}`);
   };
 
   // Configuration des filtres pour UnifiedFilterSystem
@@ -175,7 +186,22 @@ function QuestionnairePage() {
           {/* GRILLE DES QUESTIONNAIRES (déjà centrée via SharedComponents) */}
           <QuestionnairesGrid>
             {questionnaires.map((questionnaire) => (
-              <QuestionnaireCard key={questionnaire._id}>
+              <QuestionnaireCard 
+                key={questionnaire._id}
+                onClick={() => handleCardClick(questionnaire._id)}
+                style={{
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '';
+                }}
+              >
                 <CardHeader>
                   <QuestionnaireTitle>
                     <QuestionnaireIcon>
@@ -214,12 +240,15 @@ function QuestionnairePage() {
 
                 {/* Actions */}
                 <ActionButtons>
-                  <ActionButton to={`/use/${questionnaire._id}`}>
+                  <ActionButton 
+                    to={`/use/${questionnaire._id}`}
+                    onClick={(e) => e.stopPropagation()} // Empêcher le double clic
+                  >
                     ▶️ UTILISER
                   </ActionButton>
                   
                   <DeleteButton 
-                    onClick={() => deleteQuestionnaire(questionnaire._id)}
+                    onClick={(e) => deleteQuestionnaire(questionnaire._id, e)}
                     title="Supprimer ce questionnaire"
                   >
                     <Trash2 size={18} />
