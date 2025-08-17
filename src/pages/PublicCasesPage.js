@@ -1,676 +1,427 @@
-// PublicQuestionnairesPage.js - VERSION AVEC CSS OVERRIDE BRUTAL
+// PublicCasesPage.js - VERSION AVEC UNIFIED FILTER SYSTEM ROBUSTE
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import styled from 'styled-components';
-import { Clock, Users, FileText, TrendingUp, User, Eye, Plus } from 'lucide-react';
 import axios from '../utils/axiosConfig';
+import { Star, TrendingUp, User, Eye, Copy, Plus } from 'lucide-react';
 import RatingStars from '../components/RatingStars';
 
 // Import du nouveau système de filtres unifié
 import UnifiedFilterSystem from '../components/shared/UnifiedFilterSystem';
 
-// Import des composants partagés
+// Import des composants partagés unifiés
 import {
-  QuestionnairesGrid,
-  QuestionnaireCard,
-  CardHeader,
-  TagsContainer,
-  Tag,
-  CardMeta,
-  MetaItem,
-  ActionButtons
-} from '../components/shared/SharedComponents';
+  UnifiedPageContainer,
+  PageHeader,
+  UnifiedPageTitle,
+  PageSubtitle,
+  SearchAndFiltersSection,
+  UnifiedSearchInput,
+  UnifiedCasesList,
+  UnifiedCaseCard,
+  UnifiedCaseImage,
+  UnifiedCaseContent,
+  UnifiedCaseHeader,
+  UnifiedCaseTitle,
+  UnifiedStarRating,
+  UnifiedPopularityBadge,
+  UnifiedAuthorInfo,
+  UnifiedStatsContainer,
+  UnifiedStatItem,
+  UnifiedActionsContainer,
+  UnifiedActionButton,
+  UnifiedRatingSection,
+  UnifiedTagsContainer,
+  UnifiedTag,
+  UnifiedPaginationContainer,
+  UnifiedPaginationButton,
+  UnifiedPaginationInfo,
+  UnifiedEmptyState,
+  UnifiedLoadingMessage,
+  UnifiedErrorMessage
+} from '../components/shared/SharedCasesComponents';
 
-// ==================== CSS OVERRIDE BRUTAL ====================
-const forceFullWidthCSS = `
-  /* FORCE ABSOLUE pour PublicQuestionnairesPage */
-  .public-questionnaires * {
-    max-width: none !important;
-  }
-  
-  .public-questionnaires [class*="PageContainer"] {
-    width: 100vw !important;
-    max-width: 100vw !important;
-    margin: 0 !important;
-    padding: 1rem !important;
-    box-sizing: border-box !important;
-  }
-  
-  .public-questionnaires [class*="ContentWrapper"] {
-    width: 100% !important;
-    max-width: none !important;
-    margin: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-  }
-  
-  .public-questionnaires [class*="QuestionnairesGrid"] {
-    display: grid !important;
-    width: 100% !important;
-    max-width: none !important;
-    margin: 2rem 0 !important;
-    padding: 0 !important;
-    gap: 1rem !important;
+// ==================== COMPOSANT CARTE CAS PUBLIC ====================
+
+function PublicCaseCardComponent({ cas, showSpoilers, onCopyCase, caseRating, onRatingUpdate }) {
+  const getImageSrc = (cas) => {
+    if (cas.mainImage) return cas.mainImage;
+    if (cas.folders && cas.folders[0] && cas.folderMainImages && cas.folderMainImages[cas.folders[0]]) {
+      return cas.folderMainImages[cas.folders[0]];
+    }
+    return '/images/default.jpg';
+  };
+
+  const isPopular = cas.views > 100 || cas.copies > 20;
+
+  // Fonction pour obtenir le nom d'affichage de l'auteur
+  const getAuthorDisplayName = (cas) => {
+    if (!cas.author) return 'Auteur anonyme';
     
-    /* Desktop ultra large 2560px+ : 8+ colonnes */
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
-  }
-  
-  @media (min-width: 1920px) and (max-width: 2559px) {
-    .public-questionnaires [class*="QuestionnairesGrid"] {
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
-      gap: 0.9rem !important;
-    }
-  }
-  
-  @media (min-width: 1600px) and (max-width: 1919px) {
-    .public-questionnaires [class*="QuestionnairesGrid"] {
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
-      gap: 1rem !important;
-    }
-  }
-  
-  @media (min-width: 1200px) and (max-width: 1599px) {
-    .public-questionnaires [class*="QuestionnairesGrid"] {
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
-      gap: 1rem !important;
-    }
-  }
-  
-  @media (min-width: 768px) and (max-width: 1199px) {
-    .public-questionnaires [class*="QuestionnairesGrid"] {
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
-    }
-  }
-  
-  @media (max-width: 767px) {
-    .public-questionnaires [class*="QuestionnairesGrid"] {
-      grid-template-columns: repeat(2, 1fr) !important;
-      gap: 0.5rem !important;
+    // Si l'auteur est un objet avec des propriétés name ou email
+    if (typeof cas.author === 'object') {
+      return cas.author.name || cas.author.email || 'Auteur anonyme';
     }
     
-    .public-questionnaires [class*="PageContainer"] {
-      padding: 0.5rem !important;
+    // Si l'auteur est juste une chaîne de caractères
+    if (typeof cas.author === 'string') {
+      return cas.author;
     }
-  }
-  
-  /* Force la largeur de toutes les cartes */
-  .public-questionnaires [class*="QuestionnairesGrid"] > * {
-    width: 100% !important;
-    max-width: none !important;
-  }
-`;
-
-// ==================== STYLES SPÉCIFIQUES À CETTE PAGE ====================
-
-const PageContainer = styled.div`
-  padding: 2rem 3rem;
-  width: 100%;
-  min-height: calc(100vh - 60px);
-  background-color: ${props => props.theme.background};
-
-  @media (max-width: 1200px) {
-    padding: 2rem;
-  }
-
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
-`;
-
-const ContentWrapper = styled.div`
-  width: 100%;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-
-  @media (max-width: 768px) {
-    gap: 1rem;
-  }
-`;
-
-const Title = styled.h1`
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-align: center;
-`;
-
-const SearchAndFiltersContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-`;
-
-const SearchBar = styled.input`
-  width: 100%;
-  padding: 1rem 1.5rem;
-  font-size: 1rem;
-  border: 2px solid ${props => props.theme.border};
-  border-radius: 12px;
-  background-color: ${props => props.theme.card};
-  color: ${props => props.theme.text};
-  transition: border-color 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.primary};
-  }
-
-  &::placeholder {
-    color: ${props => props.theme.textSecondary};
-  }
-`;
-
-const QuestionnaireTitle = styled(Link)`
-  color: ${props => props.theme.text};
-  font-size: 1.1rem;
-  font-weight: 600;
-  text-decoration: none;
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  line-height: 1.3;
-  
-  &:hover {
-    color: ${props => props.theme.primary};
-  }
-`;
-
-const QuestionnaireIcon = styled.span`
-  font-size: 1.2rem;
-  flex-shrink: 0;
-  margin-top: 2px;
-`;
-
-const PopularityBadge = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  background: linear-gradient(45deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  color: white;
-  padding: 0.2rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  margin-left: 0.5rem;
-`;
-
-const AuthorInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.85rem;
-  margin-bottom: 1rem;
-
-  svg {
-    color: ${props => props.theme.primary};
-  }
-`;
-
-const ActionButton = styled(Link)`
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  padding: 0.6rem 0.8rem;
-  background-color: ${props => props.theme.primary};
-  color: white;
-  text-decoration: none;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: ${props => props.theme.primaryHover};
-    transform: translateY(-1px);
-  }
-
-  svg {
-    width: 14px;
-    height: 14px;
-  }
-`;
-
-const CopyButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.6rem;
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-
-  &:hover {
-    background-color: ${props => props.theme.primaryHover};
-    transform: translateY(-1px);
-  }
-
-  &:hover::after {
-    content: "Ajouter à mes questionnaires";
-    position: absolute;
-    bottom: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: ${props => props.theme.text};
-    color: ${props => props.theme.background};
-    padding: 0.5rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    white-space: nowrap;
-    z-index: 1000;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    border: 1px solid ${props => props.theme.border};
-  }
-
-  &:hover::before {
-    content: '';
-    position: absolute;
-    bottom: calc(100% + 2px);
-    left: 50%;
-    transform: translateX(-50%);
-    border: 6px solid transparent;
-    border-top-color: ${props => props.theme.text};
-    z-index: 1001;
-  }
-
-  svg {
-    width: 14px;
-    height: 14px;
-  }
-`;
-
-const PaginationContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 1px solid ${props => props.theme.borderLight};
-`;
-
-const PaginationButton = styled.button`
-  padding: 0.75rem 1.5rem;
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
-
-  &:hover:not(:disabled) {
-    background-color: ${props => props.theme.primaryDark || props.theme.primary};
-    transform: translateY(-2px);
-  }
-
-  &:disabled {
-    background-color: ${props => props.theme.textSecondary};
-    cursor: not-allowed;
-    transform: none;
-  }
-`;
-
-const PaginationInfo = styled.span`
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.9rem;
-`;
-
-const LoadingContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 4rem;
-  color: ${props => props.theme.textSecondary};
-`;
-
-const ErrorContainer = styled.div`
-  text-align: center;
-  padding: 2rem;
-  color: ${props => props.theme.error};
-  background-color: ${props => props.theme.errorLight};
-  border-radius: 8px;
-  border: 1px solid ${props => props.theme.error};
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 4rem 2rem;
-  color: ${props => props.theme.textSecondary};
-  
-  h3 {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    color: ${props => props.theme.text};
-  }
-
-  p {
-    font-size: 1.1rem;
-    line-height: 1.6;
-  }
-`;
-
-// ==================== COMPOSANT CARTE QUESTIONNAIRE ====================
-
-function QuestionnaireCardComponent({ questionnaire }) {
-  const [questionnaireRating, setQuestionnaireRating] = useState({
-    averageRating: questionnaire.averageRating || 0,
-    ratingsCount: questionnaire.ratingsCount || 0,
-    userRating: questionnaire.userRating || null
-  });
-
-  const handleRatingUpdate = (questionnaireId, newRatingData) => {
-    setQuestionnaireRating(newRatingData);
-  };
-
-  const isPopular = (questionnaire) => {
-    const views = Number(questionnaire?.views) || 0;
-    const copies = Number(questionnaire?.copies) || 0;
-    return copies > 10 || views > 100;
-  };
-
-  const addToMyQuestionnaires = async (questionnaireId) => {
-    try {
-      await axios.post(`/questionnaires/${questionnaireId}/copy`);
-      alert('✅ Questionnaire ajouté à votre collection privée avec succès !');
-    } catch (error) {
-      console.error('Erreur lors de l\'ajout du questionnaire:', error);
-      alert('❌ Erreur lors de l\'ajout du questionnaire. Veuillez réessayer.');
-    }
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    });
-  };
-
-  const getQuestionnaireIcon = (tags) => {
-    if (!tags || tags.length === 0) return '📋';
-    if (tags.includes('IRM')) return '🧲';
-    if (tags.includes('TDM')) return '💽';
-    if (tags.includes('Echo')) return '📡';
-    if (tags.includes('Rx')) return '🦴';
-    if (tags.includes('Neuro')) return '🧠';
-    if (tags.includes('Cardiovasc')) return '❤️';
-    if (tags.includes('Thorax')) return '🫁';
-    if (tags.includes('Pelvis')) return '🦴';
-    return '📋';
+    
+    return 'Auteur anonyme';
   };
 
   return (
-    <QuestionnaireCard>
-      <CardHeader>
-        <QuestionnaireTitle to={`/use/${questionnaire._id}`}>
-          <QuestionnaireIcon>
-            {getQuestionnaireIcon(questionnaire.tags)}
-          </QuestionnaireIcon>
-          {questionnaire.title}
-          {isPopular(questionnaire) && (
-            <PopularityBadge>
-              <TrendingUp size={10} />
-              Populaire
-            </PopularityBadge>
-          )}
-        </QuestionnaireTitle>
-      </CardHeader>
-
-      <AuthorInfo>
-        <User size={14} />
-        Par <strong>{questionnaire.user?.username || 'Utilisateur'}</strong>
-      </AuthorInfo>
-
-      {/* Tags */}
-      <TagsContainer>
-        {questionnaire.tags && questionnaire.tags.map((tag, index) => (
-          <Tag key={index}>{tag}</Tag>
-        ))}
-      </TagsContainer>
-
-      {/* Métadonnées */}
-      <CardMeta>
-        <MetaItem>
-          <Clock />
-          <span>{formatDate(questionnaire.updatedAt || questionnaire.createdAt)}</span>
-        </MetaItem>
-        <MetaItem>
-          <Users />
-          <span>Public</span>
-        </MetaItem>
-        <MetaItem>
-          <FileText />
-          <span>{questionnaire.questions ? questionnaire.questions.length : 0} questions</span>
-        </MetaItem>
-        <MetaItem>
-          <Eye />
-          <span>{questionnaire.views || 0} vues</span>
-        </MetaItem>
-      </CardMeta>
-
-      {/* Système de notation */}
-      <RatingStars
-        itemId={questionnaire._id}
-        itemType="questionnaire"
-        averageRating={questionnaireRating.averageRating}
-        ratingsCount={questionnaireRating.ratingsCount}
-        userRating={questionnaireRating.userRating}
-        onRatingUpdate={(id, data) => handleRatingUpdate(id, data)}
-        compact={true}
+    <UnifiedCaseCard to={`/radiology-viewer/${cas._id}`}>
+      <UnifiedCaseImage 
+        src={getImageSrc(cas)}
+        alt={cas.title || 'Cas médical'}
+        loading="lazy"
+        onError={(e) => {
+          e.target.src = '/images/default.jpg';
+        }}
       />
-
-      {/* Actions */}
-      <ActionButtons style={{ paddingBottom: '5px', position: 'relative' }}>
-        <ActionButton to={`/use/${questionnaire._id}`}>
-          <FileText size={14} />
-          Utiliser
-        </ActionButton>
+      <UnifiedCaseContent>
+        <UnifiedCaseHeader>
+          <UnifiedCaseTitle>
+            {showSpoilers ? (cas.title || 'Cas sans titre') : '?'}
+          </UnifiedCaseTitle>
+          {isPopular && (
+            <UnifiedPopularityBadge>
+              <TrendingUp size={12} />
+              Populaire
+            </UnifiedPopularityBadge>
+          )}
+        </UnifiedCaseHeader>
         
-        <CopyButton
-          onClick={(e) => {
+        <UnifiedStarRating>
+          {[...Array(5)].map((_, index) => (
+            <Star
+              key={index}
+              size={22}
+              fill={index < (cas.difficulty || 0) ? "gold" : "transparent"}
+              stroke={index < (cas.difficulty || 0) ? "gold" : "#d1d5db"}
+              style={{ 
+                filter: index < (cas.difficulty || 0) ? 'drop-shadow(0 1px 2px rgba(255, 215, 0, 0.3))' : 'none'
+              }}
+            />
+          ))}
+        </UnifiedStarRating>
+
+        <UnifiedAuthorInfo>
+          <User size={14} />
+          Par {getAuthorDisplayName(cas)}
+        </UnifiedAuthorInfo>
+
+        <UnifiedRatingSection>
+          <div onClick={(e) => {
             e.preventDefault();
-            addToMyQuestionnaires(questionnaire._id);
-          }}
-        >
-          <Plus size={14} />
-        </CopyButton>
-      </ActionButtons>
-    </QuestionnaireCard>
+            e.stopPropagation();
+          }}>
+            <RatingStars
+              itemId={cas._id}
+              itemType="case"
+              averageRating={caseRating.averageRating}
+              ratingsCount={caseRating.ratingsCount}
+              userRating={caseRating.userRating}
+              onRatingUpdate={(newRatingData) => onRatingUpdate(cas._id, newRatingData)}
+              size={14}
+              compact={true}
+            />
+          </div>
+        </UnifiedRatingSection>
+
+        <UnifiedStatsContainer>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <UnifiedStatItem>
+              <Eye size={14} />
+              {Number(cas.views) || 0} vues
+            </UnifiedStatItem>
+            <UnifiedStatItem>
+              <Copy size={14} />
+              {Number(cas.copies) || 0} copies
+            </UnifiedStatItem>
+          </div>
+          
+          <UnifiedActionsContainer>
+            <UnifiedActionButton
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onCopyCase(cas._id);
+              }}
+              title="Copier ce cas dans vos cas personnels"
+            >
+              <Plus size={16} />
+            </UnifiedActionButton>
+          </UnifiedActionsContainer>
+        </UnifiedStatsContainer>
+
+        {cas.tags && cas.tags.length > 0 && (
+          <UnifiedTagsContainer>
+            {cas.tags.map((tag, index) => (
+              <UnifiedTag key={index}>{tag}</UnifiedTag>
+            ))}
+          </UnifiedTagsContainer>
+        )}
+      </UnifiedCaseContent>
+    </UnifiedCaseCard>
   );
 }
 
 // ==================== COMPOSANT PRINCIPAL ====================
 
-function PublicQuestionnairesPage() {
-  const [questionnaires, setQuestionnaires] = useState([]);
+function PublicCasesPage() {
+  // États
+  const [cases, setCases] = useState([]);
+  const [filteredCases, setFilteredCases] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
-  const [modalityFilters, setModalityFilters] = useState([]);
-  const [specialtyFilters, setSpecialtyFilters] = useState([]);
-  const [locationFilters, setLocationFilters] = useState([]);
+  const [difficultyFilter, setDifficultyFilter] = useState([1, 2, 3, 4, 5]);
+  const [tagFilter, setTagFilter] = useState([]);
+  const [allTags, setAllTags] = useState([]);
+  const [showSpoilers, setShowSpoilers] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [caseRatings, setCaseRatings] = useState({});
 
-  const modalityOptions = ['Rx', 'TDM', 'IRM', 'Echo'];
-  const specialtyOptions = ['Cardiovasc', 'Dig', 'Neuro', 'ORL', 'Ostéo','Pedia', 'Pelvis', 'Séno', 'Thorax', 'Uro'];
-  const locationOptions = [
-    "Avant-pied", "Bras", "Bassin", "Cheville", "Coude", "Cuisse", "Doigts", "Epaule", 
-    "Genou", "Hanche", "Jambe", "Parties molles", "Poignet", "Rachis"
-  ];
-
-  const fetchQuestionnaires = useCallback(async (page = 1) => {
+  // Récupération des cas publics
+  const fetchCases = useCallback(async (page = 1) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.get('/questionnaires/public', {
-        params: {
-          page,
-          limit: 12,
-          search: searchTerm,
-          modality: modalityFilters.join(','),
-          specialty: specialtyFilters.join(','),
-          location: locationFilters.join(',')
-        }
-      });
-      if (response.data && response.data.questionnaires) {
-        const cleanedQuestionnaires = response.data.questionnaires.map(questionnaire => ({
-          ...questionnaire,
-          averageRating: questionnaire.averageRating ? Number(questionnaire.averageRating) : 0,
-          ratingsCount: questionnaire.ratingsCount ? Number(questionnaire.ratingsCount) : 0,
-          userRating: questionnaire.userRating || null,
-          views: questionnaire.views || questionnaire.stats?.views || 0,
-          copies: questionnaire.copies || questionnaire.stats?.copies || 0,
+      const response = await axios.get(`/cases/public?page=${page}&limit=12`);
+      
+      if (response.data && Array.isArray(response.data.cases)) {
+        const cleanedCases = response.data.cases.map(cas => ({
+          ...cas,
+          averageRating: cas.averageRating ? Number(cas.averageRating) : 0,
+          ratingsCount: cas.ratingsCount ? Number(cas.ratingsCount) : 0,
+          views: Number(cas.views) || 0,
+          copies: Number(cas.copies) || 0
         }));
+
+        setCases(cleanedCases);
+        setCurrentPage(response.data.currentPage || page);
+        setTotalPages(response.data.totalPages || 1);
         
-        setQuestionnaires(cleanedQuestionnaires);
-        setCurrentPage(response.data.currentPage);
-        setTotalPages(response.data.totalPages);
+        // Initialisation des ratings
+        const ratings = {};
+        cleanedCases.forEach(cas => {
+          ratings[cas._id] = {
+            averageRating: cas.averageRating || 0,
+            ratingsCount: cas.ratingsCount || 0,
+            userRating: cas.userRating || 0
+          };
+        });
+        setCaseRatings(ratings);
+        
+        // Extraction des tags uniques
+        const uniqueTags = [...new Set(
+          cleanedCases
+            .filter(cas => cas.tags && Array.isArray(cas.tags))
+            .flatMap(cas => cas.tags)
+        )];
+        setAllTags(uniqueTags);
       } else {
-        console.error("Format de réponse inattendu:", response.data);
-        setQuestionnaires([]);
+        setCases([]);
+        setTotalPages(1);
+        setAllTags([]);
       }
     } catch (error) {
-      console.error('Erreur lors de la récupération des questionnaires publics:', error);
-      setError("Impossible de charger les questionnaires publics. Veuillez réessayer plus tard.");
-      setQuestionnaires([]);
+      console.error('Erreur lors du chargement des cas publics:', error);
+      setError('Erreur lors du chargement des cas publics. Veuillez réessayer.');
+      setCases([]);
     } finally {
       setIsLoading(false);
     }
-  }, [searchTerm, modalityFilters, specialtyFilters, locationFilters]);
+  }, []);
 
+  // Effet initial
   useEffect(() => {
-    fetchQuestionnaires(currentPage);
-  }, [fetchQuestionnaires, currentPage]);
+    fetchCases(currentPage);
+  }, [fetchCases, currentPage]);
 
+  // Filtrage des cas
   useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, modalityFilters, specialtyFilters, locationFilters]);
+    let filtered = cases;
+
+    // Filtre par terme de recherche
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(cas => 
+        (cas.title && cas.title.toLowerCase().includes(term)) ||
+        (cas.tags && cas.tags.some(tag => tag.toLowerCase().includes(term))) ||
+        (cas.author && (
+          (typeof cas.author === 'object' && (
+            (cas.author.name && cas.author.name.toLowerCase().includes(term)) ||
+            (cas.author.email && cas.author.email.toLowerCase().includes(term))
+          )) ||
+          (typeof cas.author === 'string' && cas.author.toLowerCase().includes(term))
+        ))
+      );
+    }
+
+    // Filtre par difficulté
+    if (difficultyFilter.length > 0) {
+      filtered = filtered.filter(cas => 
+        difficultyFilter.includes(cas.difficulty || 1)
+      );
+    }
+
+    // Filtre par tags
+    if (tagFilter.length > 0) {
+      filtered = filtered.filter(cas =>
+        cas.tags && cas.tags.some(tag => tagFilter.includes(tag))
+      );
+    }
+
+    setFilteredCases(filtered);
+  }, [cases, searchTerm, difficultyFilter, tagFilter]);
 
   const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
-    fetchQuestionnaires(newPage);
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+      fetchCases(newPage);
+    }
+  };
+
+  // Fonctions pour la gestion des cas
+  const handleCopyCase = async (caseId) => {
+    try {
+      await axios.post(`/cases/${caseId}/copy`);
+      alert('Cas copié avec succès dans vos cas personnels !');
+      
+      // Mise à jour du compteur de copies
+      setCases(prevCases => 
+        prevCases.map(cas => 
+          cas._id === caseId 
+            ? { ...cas, copies: (Number(cas.copies) || 0) + 1 }
+            : cas
+        )
+      );
+    } catch (error) {
+      console.error('Erreur lors de la copie du cas:', error);
+      alert('Erreur lors de la copie du cas. Veuillez réessayer.');
+    }
+  };
+
+  const handleRatingUpdate = (caseId, newRatingData) => {
+    setCaseRatings(prev => ({
+      ...prev,
+      [caseId]: newRatingData
+    }));
   };
 
   // Configuration des filtres pour UnifiedFilterSystem
   const filtersConfig = [
     {
-      key: 'modality',
-      title: 'Modalité',
-      icon: '📊',
-      options: modalityOptions,
-      selectedValues: modalityFilters,
-      onChange: setModalityFilters
-    },
-    {
-      key: 'specialty',
-      title: 'Spécialité',
-      icon: '🏥',
-      options: specialtyOptions,
-      selectedValues: specialtyFilters,
-      onChange: setSpecialtyFilters
-    },
-    {
-      key: 'location',
-      title: 'Localisation',
-      icon: '📍',
-      options: locationOptions,
-      selectedValues: locationFilters,
-      onChange: setLocationFilters
+      key: 'difficulty',
+      title: 'Difficulté',
+      icon: '⭐',
+      options: ['1 étoile', '2 étoiles', '3 étoiles', '4 étoiles', '5 étoiles'],
+      selectedValues: difficultyFilter.map(d => `${d} étoile${d > 1 ? 's' : ''}`),
+      onChange: (selectedLabels) => {
+        const difficulties = selectedLabels.map(label => {
+          const match = label.match(/(\d+)/);
+          return match ? parseInt(match[1]) : 1;
+        });
+        setDifficultyFilter(difficulties);
+      }
     }
   ];
 
+  // Ajouter le filtre tags seulement s'il y a des tags disponibles
+  if (allTags.length > 0) {
+    filtersConfig.push({
+      key: 'tags',
+      title: 'Tags',
+      icon: '🏷️',
+      options: allTags,
+      selectedValues: tagFilter,
+      onChange: setTagFilter
+    });
+  }
+
+  // Rendu du composant
   return (
-    <div className="public-questionnaires">
-      <style dangerouslySetInnerHTML={{ __html: forceFullWidthCSS }} />
-      <PageContainer>
-        <Title>🗂️ Questionnaires Publics</Title>
+    <UnifiedPageContainer>
+      <PageHeader>
+        <UnifiedPageTitle>Cas Cliniques Publics</UnifiedPageTitle>
+      </PageHeader>
 
-        <ContentWrapper>
-          <SearchAndFiltersContainer>
-            {/* BARRE DE RECHERCHE */}
-            <SearchBar
-              type="text"
-              placeholder="🔍 Rechercher un questionnaire..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+      <SearchAndFiltersSection>
+        <UnifiedSearchInput
+          type="text"
+          placeholder="Rechercher dans les cas publics (titre, tags, auteur...)"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
 
-            {/* NOUVEAU SYSTÈME DE FILTRES UNIFIÉ */}
-            <UnifiedFilterSystem
-              filters={filtersConfig}
-              style={{ justifyContent: 'flex-start' }}
-            />
-          </SearchAndFiltersContainer>
+        {/* NOUVEAU SYSTÈME DE FILTRES UNIFIÉ */}
+        <UnifiedFilterSystem
+          filters={filtersConfig}
+          showSpoilerButton={true}
+          spoilerState={showSpoilers}
+          onSpoilerToggle={() => setShowSpoilers(!showSpoilers)}
+          spoilerLabels={{ show: 'Voir titres', hide: 'Masquer titres' }}
+        />
+      </SearchAndFiltersSection>
 
-          {/* CONTENU CONDITIONNEL */}
-          {isLoading ? (
-            <LoadingContainer>
-              <div>Chargement des questionnaires...</div>
-            </LoadingContainer>
-          ) : error ? (
-            <ErrorContainer>
-              <h3>❌ Erreur</h3>
-              <p>{error}</p>
-            </ErrorContainer>
-          ) : questionnaires.length === 0 ? (
-            <EmptyState>
-              <h3>Aucun questionnaire trouvé</h3>
-              <p>Essayez de modifier vos filtres ou votre recherche.</p>
-            </EmptyState>
-          ) : (
-            <>
-              {/* GRILLE DES QUESTIONNAIRES */}
-              <QuestionnairesGrid>
-                {questionnaires.map((questionnaire) => (
-                  <QuestionnaireCardComponent 
-                    key={questionnaire._id} 
-                    questionnaire={questionnaire} 
-                  />
-                ))}
-              </QuestionnairesGrid>
+      {/* Contenu principal */}
+      {isLoading ? (
+        <UnifiedLoadingMessage>
+          Chargement des cas publics...
+        </UnifiedLoadingMessage>
+      ) : error ? (
+        <UnifiedErrorMessage>
+          {error}
+        </UnifiedErrorMessage>
+      ) : filteredCases.length === 0 ? (
+        <UnifiedEmptyState>
+          <h3>Aucun cas public trouvé</h3>
+          <p>Essayez de modifier vos critères de recherche ou de filtrage.</p>
+        </UnifiedEmptyState>
+      ) : (
+        <>
+          <UnifiedCasesList>
+            {filteredCases.map((cas) => (
+              <PublicCaseCardComponent 
+                key={cas._id} 
+                cas={cas} 
+                showSpoilers={showSpoilers}
+                onCopyCase={handleCopyCase}
+                caseRating={caseRatings[cas._id] || { averageRating: 0, ratingsCount: 0, userRating: 0 }}
+                onRatingUpdate={handleRatingUpdate}
+              />
+            ))}
+          </UnifiedCasesList>
 
-              {/* PAGINATION */}
-              {totalPages > 1 && (
-                <PaginationContainer>
-                  <PaginationButton 
-                    onClick={() => handlePageChange(currentPage - 1)} 
-                    disabled={currentPage === 1}
-                  >
-                    ← Précédent
-                  </PaginationButton>
-                  <PaginationInfo>
-                    Page {currentPage} sur {totalPages} • {questionnaires.length} questionnaires
-                  </PaginationInfo>
-                  <PaginationButton 
-                    onClick={() => handlePageChange(currentPage + 1)} 
-                    disabled={currentPage === totalPages}
-                  >
-                    Suivant →
-                  </PaginationButton>
-                </PaginationContainer>
-              )}
-            </>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <UnifiedPaginationContainer>
+              <UnifiedPaginationButton 
+                onClick={() => handlePageChange(currentPage - 1)} 
+                disabled={currentPage === 1}
+              >
+                ← Précédent
+              </UnifiedPaginationButton>
+              
+              <UnifiedPaginationInfo>
+                Page {currentPage} sur {totalPages} • {filteredCases.length} cas
+              </UnifiedPaginationInfo>
+              
+              <UnifiedPaginationButton 
+                onClick={() => handlePageChange(currentPage + 1)} 
+                disabled={currentPage === totalPages}
+              >
+                Suivant →
+              </UnifiedPaginationButton>
+            </UnifiedPaginationContainer>
           )}
-        </ContentWrapper>
-      </PageContainer>
-    </div>
+        </>
+      )}
+    </UnifiedPageContainer>
   );
 }
 
-export default PublicQuestionnairesPage;
+export default PublicCasesPage;

@@ -775,7 +775,7 @@ function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = nu
               <MenuItem to="/cases-list" onClick={handleMenuItemClick}>
                 <span>📁</span> Mes Cas
               </MenuItem>
-              <MenuItem to="/public-cases" onClick={handleMenuItemClick}>  {/* ✅ CORRECTION : /public-cases au lieu de /questionnaires */}
+              <MenuItem to="/public-cases" onClick={handleMenuItemClick}>
                 <span>📂</span> Cas Publics
               </MenuItem>
             </MenuSection>
