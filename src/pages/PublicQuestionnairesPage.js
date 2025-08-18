@@ -1,4 +1,4 @@
-// PublicQuestionnairesPage.js - VERSION PLEINE LARGEUR CORRIGÉE
+// PublicQuestionnairesPage.js - VERSION AVEC FILTRES CUMULATIFS (ET)
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
@@ -344,6 +344,42 @@ const EmptyState = styled.div`
   }
 `;
 
+// Nouveau composant pour afficher les filtres actifs
+const ActiveFiltersDisplay = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  background-color: ${props => props.theme.backgroundSecondary};
+  border-radius: 8px;
+  border: 1px solid ${props => props.theme.border};
+  flex-wrap: wrap;
+
+  strong {
+    color: ${props => props.theme.primary};
+    margin-right: 0.5rem;
+  }
+
+  .filter-tag {
+    background-color: ${props => props.theme.primary};
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+  }
+
+  .separator {
+    color: ${props => props.theme.textSecondary};
+    font-weight: bold;
+    margin: 0 0.25rem;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 0.85rem;
+  }
+`;
+
 // ==================== COMPOSANT CARTE QUESTIONNAIRE ====================
 
 function QuestionnaireCardComponent({ questionnaire }) {
@@ -486,6 +522,9 @@ function PublicQuestionnairesPage() {
   const [locationFilters, setLocationFilters] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // État pour afficher les questionnaires filtrés côté client
+  const [filteredQuestionnaires, setFilteredQuestionnaires] = useState([]);
 
   const modalityOptions = ['Rx', 'TDM', 'IRM', 'Echo'];
   const specialtyOptions = ['Cardiovasc', 'Dig', 'Neuro', 'ORL', 'Ostéo','Pedia', 'Pelvis', 'Séno', 'Thorax', 'Uro'];
@@ -494,20 +533,71 @@ function PublicQuestionnairesPage() {
     "Genou", "Hanche", "Jambe", "Parties molles", "Poignet", "Rachis"
   ];
 
+  // 🔧 MODIFICATION PRINCIPALE : Fonction de filtrage côté client avec logique ET
+  const filterQuestionnairesLocally = useCallback((questionnairesToFilter) => {
+    let filtered = [...questionnairesToFilter];
+
+    // Filtre par recherche
+    if (searchTerm) {
+      filtered = filtered.filter(q => 
+        q.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (q.tags && q.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())))
+      );
+    }
+
+    // 🔧 IMPORTANT : Logique ET pour les filtres
+    // Un questionnaire doit avoir TOUS les tags sélectionnés dans chaque catégorie
+    
+    // Filtre par modalité (ET)
+    if (modalityFilters.length > 0) {
+      filtered = filtered.filter(q => {
+        if (!q.tags || q.tags.length === 0) return false;
+        // Le questionnaire doit avoir TOUS les tags de modalité sélectionnés
+        return modalityFilters.every(filter => 
+          q.tags.some(tag => tag.toLowerCase() === filter.toLowerCase())
+        );
+      });
+    }
+
+    // Filtre par spécialité (ET)
+    if (specialtyFilters.length > 0) {
+      filtered = filtered.filter(q => {
+        if (!q.tags || q.tags.length === 0) return false;
+        // Le questionnaire doit avoir TOUS les tags de spécialité sélectionnés
+        return specialtyFilters.every(filter => 
+          q.tags.some(tag => tag.toLowerCase() === filter.toLowerCase())
+        );
+      });
+    }
+
+    // Filtre par localisation (ET)
+    if (locationFilters.length > 0) {
+      filtered = filtered.filter(q => {
+        if (!q.tags || q.tags.length === 0) return false;
+        // Le questionnaire doit avoir TOUS les tags de localisation sélectionnés
+        return locationFilters.every(filter => 
+          q.tags.some(tag => tag.toLowerCase() === filter.toLowerCase())
+        );
+      });
+    }
+
+    return filtered;
+  }, [searchTerm, modalityFilters, specialtyFilters, locationFilters]);
+
   const fetchQuestionnaires = useCallback(async (page = 1) => {
     setIsLoading(true);
     setError(null);
     try {
+      // 🔧 MODIFICATION : On récupère TOUS les questionnaires sans filtres côté serveur
+      // pour pouvoir appliquer la logique ET côté client
       const response = await axios.get('/questionnaires/public', {
         params: {
           page,
-          limit: 20, // Augmenté pour avoir plus de cartes
-          search: searchTerm,
-          modality: modalityFilters.join(','),
-          specialty: specialtyFilters.join(','),
-          location: locationFilters.join(',')
+          limit: 100, // Augmenté pour avoir plus de résultats à filtrer
+          // On n'envoie plus les filtres au serveur
         }
       });
+      
       if (response.data && response.data.questionnaires) {
         const cleanedQuestionnaires = response.data.questionnaires.map(questionnaire => ({
           ...questionnaire,
@@ -532,7 +622,13 @@ function PublicQuestionnairesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [searchTerm, modalityFilters, specialtyFilters, locationFilters]);
+  }, []);
+
+  // 🔧 MODIFICATION : Appliquer les filtres localement quand les questionnaires ou les filtres changent
+  useEffect(() => {
+    const filtered = filterQuestionnairesLocally(questionnaires);
+    setFilteredQuestionnaires(filtered);
+  }, [questionnaires, filterQuestionnairesLocally]);
 
   useEffect(() => {
     fetchQuestionnaires(currentPage);
@@ -575,6 +671,9 @@ function PublicQuestionnairesPage() {
     }
   ];
 
+  // Fonction pour vérifier si des filtres sont actifs
+  const hasActiveFilters = modalityFilters.length > 0 || specialtyFilters.length > 0 || locationFilters.length > 0;
+
   return (
     <PageContainer>
       <Title>🗂️ Questionnaires Publics</Title>
@@ -598,6 +697,45 @@ function PublicQuestionnairesPage() {
             style={{ justifyContent: 'center' }}
           />
         </div>
+
+        {/* 🔧 NOUVEAU : Affichage des filtres actifs avec logique ET */}
+        {hasActiveFilters && (
+          <ActiveFiltersDisplay>
+            <strong>Filtres actifs (cumulatifs) :</strong>
+            {modalityFilters.length > 0 && (
+              <>
+                {modalityFilters.map((filter, index) => (
+                  <React.Fragment key={`mod-${filter}`}>
+                    <span className="filter-tag">{filter}</span>
+                    {index < modalityFilters.length - 1 && <span className="separator">ET</span>}
+                  </React.Fragment>
+                ))}
+              </>
+            )}
+            {modalityFilters.length > 0 && specialtyFilters.length > 0 && <span className="separator">ET</span>}
+            {specialtyFilters.length > 0 && (
+              <>
+                {specialtyFilters.map((filter, index) => (
+                  <React.Fragment key={`spec-${filter}`}>
+                    <span className="filter-tag">{filter}</span>
+                    {index < specialtyFilters.length - 1 && <span className="separator">ET</span>}
+                  </React.Fragment>
+                ))}
+              </>
+            )}
+            {((modalityFilters.length > 0 || specialtyFilters.length > 0) && locationFilters.length > 0) && <span className="separator">ET</span>}
+            {locationFilters.length > 0 && (
+              <>
+                {locationFilters.map((filter, index) => (
+                  <React.Fragment key={`loc-${filter}`}>
+                    <span className="filter-tag">{filter}</span>
+                    {index < locationFilters.length - 1 && <span className="separator">ET</span>}
+                  </React.Fragment>
+                ))}
+              </>
+            )}
+          </ActiveFiltersDisplay>
+        )}
       </SearchAndFiltersSection>
 
       {/* CONTENU PRINCIPAL */}
@@ -610,16 +748,20 @@ function PublicQuestionnairesPage() {
           <h3>❌ Erreur</h3>
           <p>{error}</p>
         </ErrorContainer>
-      ) : questionnaires.length === 0 ? (
+      ) : filteredQuestionnaires.length === 0 ? (
         <EmptyState>
           <h3>Aucun questionnaire trouvé</h3>
-          <p>Essayez de modifier vos filtres ou votre recherche.</p>
+          <p>
+            {hasActiveFilters 
+              ? "Aucun questionnaire ne correspond à TOUS vos critères de filtrage. Essayez de retirer certains filtres."
+              : "Essayez de modifier votre recherche."}
+          </p>
         </EmptyState>
       ) : (
         <>
           {/* GRILLE PLEINE LARGEUR */}
           <CustomFullWidthGrid>
-            {questionnaires.map((questionnaire) => (
+            {filteredQuestionnaires.map((questionnaire) => (
               <QuestionnaireCardComponent 
                 key={questionnaire._id} 
                 questionnaire={questionnaire} 
@@ -627,26 +769,11 @@ function PublicQuestionnairesPage() {
             ))}
           </CustomFullWidthGrid>
 
-          {/* PAGINATION */}
-          {totalPages > 1 && (
-            <PaginationContainer>
-              <PaginationButton 
-                onClick={() => handlePageChange(currentPage - 1)} 
-                disabled={currentPage === 1}
-              >
-                ← Précédent
-              </PaginationButton>
-              <PaginationInfo>
-                Page {currentPage} sur {totalPages} • {questionnaires.length} questionnaires
-              </PaginationInfo>
-              <PaginationButton 
-                onClick={() => handlePageChange(currentPage + 1)} 
-                disabled={currentPage === totalPages}
-              >
-                Suivant →
-              </PaginationButton>
-              </PaginationContainer>
-          )}
+          {/* INFO SUR LE NOMBRE DE RÉSULTATS */}
+          <div style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '2rem' }}>
+            {filteredQuestionnaires.length} questionnaire{filteredQuestionnaires.length > 1 ? 's' : ''} trouvé{filteredQuestionnaires.length > 1 ? 's' : ''}
+            {hasActiveFilters && ' avec les filtres appliqués'}
+          </div>
         </>
       )}
     </PageContainer>

@@ -1,4 +1,4 @@
-// pages/QuestionnaireListPage.js - VERSION CORRIGÉE SANS RÉORGANISATION
+// pages/QuestionnaireListPage.js - VERSION AVEC FILTRES CUMULATIFS (ET)
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
@@ -42,6 +42,62 @@ import {
   ErrorMessage
 } from '../components/shared/SharedComponents';
 
+// Import styled-components pour les nouveaux styles
+import styled from 'styled-components';
+
+// Nouveau composant pour afficher les filtres actifs
+const ActiveFiltersDisplay = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  background-color: ${props => props.theme.backgroundSecondary};
+  border-radius: 8px;
+  border: 1px solid ${props => props.theme.border};
+  flex-wrap: wrap;
+
+  strong {
+    color: ${props => props.theme.primary};
+    margin-right: 0.5rem;
+  }
+
+  .filter-tag {
+    background-color: ${props => props.theme.primary};
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+  }
+
+  .separator {
+    color: ${props => props.theme.textSecondary};
+    font-weight: bold;
+    margin: 0 0.25rem;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 0.85rem;
+  }
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 4rem 2rem;
+  color: ${props => props.theme.textSecondary};
+  
+  h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: ${props => props.theme.text};
+  }
+
+  p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+`;
+
 function QuestionnaireListPage() {
   const [questionnaires, setQuestionnaires] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -52,6 +108,10 @@ function QuestionnaireListPage() {
   const [specialtyFilters, setSpecialtyFilters] = useState([]);
   const [locationFilters, setLocationFilters] = useState([]);
   const [showTutorial, setShowTutorial] = useState(false);
+  
+  // État pour afficher les questionnaires filtrés côté client
+  const [filteredQuestionnaires, setFilteredQuestionnaires] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // États pour la gestion des tags
   const [newTags, setNewTags] = useState({});
@@ -77,15 +137,65 @@ function QuestionnaireListPage() {
     }
   ];
 
+  // 🔧 MODIFICATION PRINCIPALE : Fonction de filtrage côté client avec logique ET
+  const filterQuestionnairesLocally = useCallback((questionnairesToFilter) => {
+    let filtered = [...questionnairesToFilter];
+
+    // Filtre par recherche
+    if (searchTerm) {
+      filtered = filtered.filter(q => 
+        q.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (q.tags && q.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())))
+      );
+    }
+
+    // 🔧 IMPORTANT : Logique ET pour les filtres
+    // Un questionnaire doit avoir TOUS les tags sélectionnés dans chaque catégorie
+    
+    // Filtre par modalité (ET)
+    if (modalityFilters.length > 0) {
+      filtered = filtered.filter(q => {
+        if (!q.tags || q.tags.length === 0) return false;
+        // Le questionnaire doit avoir TOUS les tags de modalité sélectionnés
+        return modalityFilters.every(filter => 
+          q.tags.some(tag => tag.toLowerCase() === filter.toLowerCase())
+        );
+      });
+    }
+
+    // Filtre par spécialité (ET)
+    if (specialtyFilters.length > 0) {
+      filtered = filtered.filter(q => {
+        if (!q.tags || q.tags.length === 0) return false;
+        // Le questionnaire doit avoir TOUS les tags de spécialité sélectionnés
+        return specialtyFilters.every(filter => 
+          q.tags.some(tag => tag.toLowerCase() === filter.toLowerCase())
+        );
+      });
+    }
+
+    // Filtre par localisation (ET)
+    if (locationFilters.length > 0) {
+      filtered = filtered.filter(q => {
+        if (!q.tags || q.tags.length === 0) return false;
+        // Le questionnaire doit avoir TOUS les tags de localisation sélectionnés
+        return locationFilters.every(filter => 
+          q.tags.some(tag => tag.toLowerCase() === filter.toLowerCase())
+        );
+      });
+    }
+
+    return filtered;
+  }, [searchTerm, modalityFilters, specialtyFilters, locationFilters]);
+
   const fetchQuestionnaires = useCallback(async (page = 1) => {
+    setIsLoading(true);
     try {
+      // 🔧 MODIFICATION : On récupère TOUS les questionnaires sans filtres côté serveur
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: '12',
-        search: searchTerm,
-        modality: modalityFilters.join(','),
-        specialty: specialtyFilters.join(','),
-        location: locationFilters.join(',')
+        limit: '100', // Augmenté pour avoir plus de résultats à filtrer
+        // On n'envoie plus les filtres au serveur pour pouvoir appliquer la logique ET côté client
       });
 
       const response = await axios.get(`/questionnaires/my?${params}`);
@@ -104,8 +214,16 @@ function QuestionnaireListPage() {
       setCurrentPage(1);
       setTotalPages(0);
       setTotalQuestionnaires(0);
+    } finally {
+      setIsLoading(false);
     }
-  }, [searchTerm, modalityFilters, specialtyFilters, locationFilters]);
+  }, []);
+
+  // 🔧 MODIFICATION : Appliquer les filtres localement quand les questionnaires ou les filtres changent
+  useEffect(() => {
+    const filtered = filterQuestionnairesLocally(questionnaires);
+    setFilteredQuestionnaires(filtered);
+  }, [questionnaires, filterQuestionnairesLocally]);
 
   useEffect(() => {
     fetchQuestionnaires(1);
@@ -161,16 +279,14 @@ function QuestionnaireListPage() {
     }
   };
 
-  // 🔧 FONCTION CORRIGÉE : Met à jour localement sans recharger
   const toggleVisibility = async (id, isPublic) => {
     try {
       const response = await axios.patch(`/questionnaires/${id}/togglePublic`);
       
-      // 🔧 IMPORTANT : Mise à jour locale de l'état au lieu de recharger
       setQuestionnaires(prevQuestionnaires => 
         prevQuestionnaires.map(q => 
           q._id === id 
-            ? { ...q, public: response.data.public } // Met à jour seulement le champ 'public'
+            ? { ...q, public: response.data.public }
             : q
         )
       );
@@ -181,18 +297,15 @@ function QuestionnaireListPage() {
     }
   };
 
-  // 🔧 FONCTION CORRIGÉE : Pour la suppression, on retire localement aussi
   const deleteQuestionnaire = async (id) => {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer ce questionnaire ?')) {
       try {
         await axios.delete(`/questionnaires/${id}`);
         
-        // 🔧 IMPORTANT : Retrait local de l'élément supprimé
         setQuestionnaires(prevQuestionnaires => 
           prevQuestionnaires.filter(q => q._id !== id)
         );
         
-        // Si la page devient vide après suppression, on recharge
         if (questionnaires.length === 1 && currentPage > 1) {
           fetchQuestionnaires(currentPage - 1);
         }
@@ -204,14 +317,12 @@ function QuestionnaireListPage() {
     }
   };
 
-  // 🔧 NOUVELLE FONCTION : Pour dupliquer un questionnaire
   const duplicateQuestionnaire = async (id) => {
     try {
       const response = await axios.post(`/questionnaires/${id}/duplicate`);
       
-      // 🔧 Ajoute le nouveau questionnaire à la liste actuelle
       setQuestionnaires(prevQuestionnaires => [
-        response.data, // Le nouveau questionnaire dupliqué
+        response.data,
         ...prevQuestionnaires
       ]);
       
@@ -226,7 +337,7 @@ function QuestionnaireListPage() {
   const getQuestionnaireIcon = (tags) => {
     if (!tags || tags.length === 0) return '📋';
     if (tags.includes('IRM') || tags.includes('irm')) return '🧲';
-    if (tags.includes('TDM') || tags.includes('tdm')) return '🔍';
+    if (tags.includes('TDM') || tags.includes('tdm')) return '📍';
     if (tags.includes('Rx') || tags.includes('rx')) return '🩻';
     if (tags.includes('Echo') || tags.includes('echo')) return '📡';
     return '📋';
@@ -274,6 +385,9 @@ function QuestionnaireListPage() {
     }
   ];
 
+  // Fonction pour vérifier si des filtres sont actifs
+  const hasActiveFilters = modalityFilters.length > 0 || specialtyFilters.length > 0 || locationFilters.length > 0;
+
   return (
     <PageContainer>
       {/* BOUTONS D'ACTIONS PRINCIPAUX */}
@@ -311,172 +425,214 @@ function QuestionnaireListPage() {
           />
         </div>
 
-        {/* GRILLE DES QUESTIONNAIRES */}
-        <QuestionnairesGrid>
-          {questionnaires.map((questionnaire) => (
-            <QuestionnaireCard key={questionnaire._id} className="questionnaire-card">
-              <CardHeader>
-                <QuestionnaireTitle>
-                  <QuestionnaireIcon>
-                    {getQuestionnaireIcon(questionnaire.tags)}
-                  </QuestionnaireIcon>
-                  {questionnaire.title}
-                </QuestionnaireTitle>
-              </CardHeader>
+        {/* 🔧 NOUVEAU : Affichage des filtres actifs avec logique ET */}
+        {hasActiveFilters && (
+          <ActiveFiltersDisplay>
+            <strong>Filtres actifs (cumulatifs) :</strong>
+            {modalityFilters.length > 0 && (
+              <>
+                {modalityFilters.map((filter, index) => (
+                  <React.Fragment key={`mod-${filter}`}>
+                    <span className="filter-tag">{filter}</span>
+                    {index < modalityFilters.length - 1 && <span className="separator">ET</span>}
+                  </React.Fragment>
+                ))}
+              </>
+            )}
+            {modalityFilters.length > 0 && specialtyFilters.length > 0 && <span className="separator">ET</span>}
+            {specialtyFilters.length > 0 && (
+              <>
+                {specialtyFilters.map((filter, index) => (
+                  <React.Fragment key={`spec-${filter}`}>
+                    <span className="filter-tag">{filter}</span>
+                    {index < specialtyFilters.length - 1 && <span className="separator">ET</span>}
+                  </React.Fragment>
+                ))}
+              </>
+            )}
+            {((modalityFilters.length > 0 || specialtyFilters.length > 0) && locationFilters.length > 0) && <span className="separator">ET</span>}
+            {locationFilters.length > 0 && (
+              <>
+                {locationFilters.map((filter, index) => (
+                  <React.Fragment key={`loc-${filter}`}>
+                    <span className="filter-tag">{filter}</span>
+                    {index < locationFilters.length - 1 && <span className="separator">ET</span>}
+                  </React.Fragment>
+                ))}
+              </>
+            )}
+          </ActiveFiltersDisplay>
+        )}
 
-              {/* Section Tags avec gestion */}
-              <TagsSection>
-                <TagsContainer>
-                  {questionnaire.tags && questionnaire.tags.map((tag, index) => (
-                    <Tag key={index}>
-                      {tag}
-                      <RemoveTagButton 
-                        onClick={() => handleRemoveTag(questionnaire._id, tag)}
-                        title="Supprimer ce tag"
-                      >
-                        <X size={12} />
-                      </RemoveTagButton>
-                    </Tag>
-                  ))}
-                </TagsContainer>
-                
-                <AddTagSection>
-                  {isAddingTag[questionnaire._id] ? (
-                    <TagForm onSubmit={(e) => handleTagSubmit(e, questionnaire._id)}>
-                      <TagInput
-                        type="text"
-                        value={newTags[questionnaire._id] || ''}
-                        onChange={(e) => setNewTags(prev => ({ 
-                          ...prev, 
-                          [questionnaire._id]: e.target.value 
-                        }))}
-                        placeholder="Nouveau tag"
-                        autoFocus
-                      />
-                      <SubmitTagButton type="submit" title="Ajouter le tag">
-                        <Plus size={12} />
-                      </SubmitTagButton>
-                      <CancelTagButton 
-                        type="button"
-                        onClick={() => {
-                          setIsAddingTag(prev => ({ ...prev, [questionnaire._id]: false }));
-                          setNewTags(prev => ({ ...prev, [questionnaire._id]: '' }));
-                        }}
-                        title="Annuler"
-                      >
-                        <X size={12} />
-                      </CancelTagButton>
-                    </TagForm>
-                  ) : (
-                    <AddTagButton 
-                      onClick={() => setIsAddingTag(prev => ({ ...prev, [questionnaire._id]: true }))}
-                      title="Ajouter un tag"
+        {/* ÉTAT DE CHARGEMENT */}
+        {isLoading ? (
+          <LoadingMessage>Chargement des questionnaires...</LoadingMessage>
+        ) : filteredQuestionnaires.length === 0 ? (
+          <EmptyState>
+            <h3>Aucun questionnaire trouvé</h3>
+            <p>
+              {hasActiveFilters 
+                ? "Aucun questionnaire ne correspond à TOUS vos critères de filtrage. Essayez de retirer certains filtres."
+                : searchTerm 
+                  ? "Aucun questionnaire ne correspond à votre recherche."
+                  : "Vous n'avez pas encore créé de questionnaire."}
+            </p>
+          </EmptyState>
+        ) : (
+          <>
+            {/* GRILLE DES QUESTIONNAIRES */}
+            <QuestionnairesGrid>
+              {filteredQuestionnaires.map((questionnaire) => (
+                <QuestionnaireCard key={questionnaire._id} className="questionnaire-card">
+                  <CardHeader>
+                    <QuestionnaireTitle>
+                      <QuestionnaireIcon>
+                        {getQuestionnaireIcon(questionnaire.tags)}
+                      </QuestionnaireIcon>
+                      {questionnaire.title}
+                    </QuestionnaireTitle>
+                  </CardHeader>
+
+                  {/* Section Tags avec gestion */}
+                  <TagsSection>
+                    <TagsContainer>
+                      {questionnaire.tags && questionnaire.tags.map((tag, index) => (
+                        <Tag key={index}>
+                          {tag}
+                          <RemoveTagButton 
+                            onClick={() => handleRemoveTag(questionnaire._id, tag)}
+                            title="Supprimer ce tag"
+                          >
+                            <X size={12} />
+                          </RemoveTagButton>
+                        </Tag>
+                      ))}
+                    </TagsContainer>
+                    
+                    <AddTagSection>
+                      {isAddingTag[questionnaire._id] ? (
+                        <TagForm onSubmit={(e) => handleTagSubmit(e, questionnaire._id)}>
+                          <TagInput
+                            type="text"
+                            value={newTags[questionnaire._id] || ''}
+                            onChange={(e) => setNewTags(prev => ({ 
+                              ...prev, 
+                              [questionnaire._id]: e.target.value 
+                            }))}
+                            placeholder="Nouveau tag"
+                            autoFocus
+                          />
+                          <SubmitTagButton type="submit" title="Ajouter le tag">
+                            <Plus size={12} />
+                          </SubmitTagButton>
+                          <CancelTagButton 
+                            type="button"
+                            onClick={() => {
+                              setIsAddingTag(prev => ({ ...prev, [questionnaire._id]: false }));
+                              setNewTags(prev => ({ ...prev, [questionnaire._id]: '' }));
+                            }}
+                            title="Annuler"
+                          >
+                            <X size={12} />
+                          </CancelTagButton>
+                        </TagForm>
+                      ) : (
+                        <AddTagButton 
+                          onClick={() => setIsAddingTag(prev => ({ ...prev, [questionnaire._id]: true }))}
+                          title="Ajouter un tag"
+                        >
+                          <Plus size={12} />
+                          Ajouter tag
+                        </AddTagButton>
+                      )}
+                    </AddTagSection>
+                  </TagsSection>
+
+                  {/* Métadonnées */}
+                  <CardMeta>
+                    <MetaItem>
+                      <Clock />
+                      <span>{formatDate(questionnaire.updatedAt || questionnaire.createdAt)}</span>
+                    </MetaItem>
+                    <MetaItem>
+                      <Users />
+                      <span>Personnel</span>
+                    </MetaItem>
+                    <MetaItem>
+                      <FileText />
+                      <span>{questionnaire.public ? 'Public' : 'Privé'}</span>
+                    </MetaItem>
+                    <MetaItem>
+                      <Clock />
+                      <span>{estimateTime(questionnaire)}</span>
+                    </MetaItem>
+                  </CardMeta>
+
+                  {/* Actions */}
+                  <ActionButtons>
+                    <ActionButton 
+                      to={`/use/${questionnaire._id}`}
+                      variant="primary" 
+                      size="large"
                     >
-                      <Plus size={12} />
-                      Ajouter tag
-                    </AddTagButton>
-                  )}
-                </AddTagSection>
-              </TagsSection>
+                      ▶️ UTILISER
+                    </ActionButton>
+                    
+                    <ActionButton 
+                      to={`/edit/${questionnaire._id}`}
+                      variant="secondary"
+                    >
+                      <Edit />
+                      MODIFIER
+                    </ActionButton>
+                    
+                    <ActionButton 
+                      to={`/cr/${questionnaire._id}`}
+                      variant="secondary"
+                    >
+                      <FileText />
+                      CR
+                    </ActionButton>
+                    
+                    <Button 
+                      variant="secondary"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        duplicateQuestionnaire(questionnaire._id);
+                      }}
+                    >
+                      <Copy />
+                      DUPLIQUER
+                    </Button>
+                    
+                    <Button 
+                      variant="secondary"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleVisibility(questionnaire._id, questionnaire.public);
+                      }}
+                    >
+                      {questionnaire.public ? <EyeOff /> : <Eye />}
+                      {questionnaire.public ? 'Rendre privé' : 'Rendre public'}
+                    </Button>
+                    
+                    <DeleteButton 
+                      onClick={() => deleteQuestionnaire(questionnaire._id)}
+                      title="Supprimer ce questionnaire"
+                    >
+                      <Trash2 />
+                    </DeleteButton>
+                  </ActionButtons>
+                </QuestionnaireCard>
+              ))}
+            </QuestionnairesGrid>
 
-              {/* Métadonnées */}
-              <CardMeta>
-                <MetaItem>
-                  <Clock />
-                  <span>{formatDate(questionnaire.updatedAt || questionnaire.createdAt)}</span>
-                </MetaItem>
-                <MetaItem>
-                  <Users />
-                  <span>Personnel</span>
-                </MetaItem>
-                <MetaItem>
-                  <FileText />
-                  <span>{questionnaire.public ? 'Public' : 'Privé'}</span>
-                </MetaItem>
-                <MetaItem>
-                  <Clock />
-                  <span>{estimateTime(questionnaire)}</span>
-                </MetaItem>
-              </CardMeta>
-
-              {/* Actions */}
-              <ActionButtons>
-                <ActionButton 
-                  to={`/use/${questionnaire._id}`}
-                  variant="primary" 
-                  size="large"
-                >
-                  ▶️ UTILISER
-                </ActionButton>
-                
-                <ActionButton 
-                  to={`/edit/${questionnaire._id}`}
-                  variant="secondary"
-                >
-                  <Edit />
-                  MODIFIER
-                </ActionButton>
-                
-                <ActionButton 
-                  to={`/cr/${questionnaire._id}`}
-                  variant="secondary"
-                >
-                  <FileText />
-                  CR
-                </ActionButton>
-                
-                <Button 
-                  variant="secondary"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    duplicateQuestionnaire(questionnaire._id);
-                  }}
-                >
-                  <Copy />
-                  DUPLIQUER
-                </Button>
-                
-                <Button 
-                  variant="secondary"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    toggleVisibility(questionnaire._id, questionnaire.public);
-                  }}
-                >
-                  {questionnaire.public ? <EyeOff /> : <Eye />}
-                  {questionnaire.public ? 'Rendre privé' : 'Rendre public'}
-                </Button>
-                
-                <DeleteButton 
-                  onClick={() => deleteQuestionnaire(questionnaire._id)}
-                  title="Supprimer ce questionnaire"
-                >
-                  <Trash2 />
-                </DeleteButton>
-              </ActionButtons>
-            </QuestionnaireCard>
-          ))}
-        </QuestionnairesGrid>
-
-        {/* PAGINATION */}
-        {totalPages > 1 && (
-          <PaginationContainer>
-            <PaginationButton
-              onClick={() => fetchQuestionnaires(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              Précédent
-            </PaginationButton>
-            <PaginationInfo>
-              Page {currentPage} sur {totalPages}
-            </PaginationInfo>
-            <PaginationButton
-              onClick={() => fetchQuestionnaires(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              Suivant
-            </PaginationButton>
-          </PaginationContainer>
+            {/* INFO SUR LE NOMBRE DE RÉSULTATS */}
+            <div style={{ textAlign: 'center', color: 'var(--text-secondary)', marginTop: '2rem' }}>
+              {filteredQuestionnaires.length} questionnaire{filteredQuestionnaires.length > 1 ? 's' : ''} trouvé{filteredQuestionnaires.length > 1 ? 's' : ''}
+              {hasActiveFilters && ' avec les filtres appliqués'}
+            </div>
+          </>
         )}
 
         {/* TUTORIEL OVERLAY */}
