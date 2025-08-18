@@ -30,7 +30,11 @@ import {
   Target,
   Zap,
   Download,
-  Upload
+  Upload,
+  Play,
+  Grid,
+  List,
+  Layers
 } from 'lucide-react';
 
 // CONTENEUR PRINCIPAL
@@ -42,6 +46,50 @@ const HomeContainer = styled.div`
   );
   padding: 2rem;
   position: relative;
+  overflow-x: hidden;
+
+  /* Fond animé style médical */
+  &::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(240, 147, 251, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 40% 20%, rgba(79, 172, 254, 0.03) 0%, transparent 50%);
+    z-index: 0;
+    animation: floatBackground 30s ease-in-out infinite;
+  }
+
+  /* Grille médicale en fond */
+  &::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      linear-gradient(rgba(102, 126, 234, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(102, 126, 234, 0.02) 1px, transparent 1px);
+    background-size: 50px 50px;
+    z-index: 0;
+    animation: slideGrid 60s linear infinite;
+  }
+
+  @keyframes floatBackground {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    33% { transform: scale(1.1) rotate(1deg); }
+    66% { transform: scale(0.95) rotate(-1deg); }
+  }
+
+  @keyframes slideGrid {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(50px, 50px); }
+  }
 
   @media (max-width: 768px) {
     padding: 1rem;
@@ -755,6 +803,322 @@ const QuickLinkDesc = styled.div`
   color: ${props => props.theme.textSecondary};
 `;
 
+// Section Cas du Jour
+const CaseOfDaySection = styled.div`
+  margin: 3rem 0;
+  padding: 2rem;
+  background: ${props => props.theme.card};
+  border-radius: 20px;
+  border: 2px solid ${props => props.theme.border};
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '🏆';
+    position: absolute;
+    top: -20px;
+    right: 20px;
+    font-size: 4rem;
+    opacity: 0.1;
+    transform: rotate(15deg);
+  }
+
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+    margin: 2rem 0;
+  }
+`;
+
+const CaseOfDayHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+`;
+
+const CaseOfDayTitle = styled.h2`
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: ${props => props.theme.text};
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  @media (max-width: 768px) {
+    font-size: 1.4rem;
+  }
+`;
+
+const CaseOfDayContent = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+`;
+
+const CaseImageContainer = styled.div`
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000;
+  aspect-ratio: 16/9;
+  cursor: pointer;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  
+  &:hover .overlay {
+    opacity: 1;
+  }
+
+  &:hover .play-button {
+    transform: scale(1.1);
+  }
+`;
+
+const CaseImage = styled.div`
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 5rem;
+  position: relative;
+`;
+
+const CaseImageOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+`;
+
+const PlayButton = styled.div`
+  width: 80px;
+  height: 80px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease;
+
+  svg {
+    width: 30px;
+    height: 30px;
+    color: #667eea;
+    margin-left: 5px;
+  }
+`;
+
+const CaseInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const CaseTag = styled.span`
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  width: fit-content;
+`;
+
+const CaseMainTitle = styled.h3`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: ${props => props.theme.text};
+  margin-bottom: 0.5rem;
+
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+  }
+`;
+
+const CaseDescription = styled.p`
+  font-size: 1rem;
+  color: ${props => props.theme.textSecondary};
+  line-height: 1.6;
+  margin-bottom: 1rem;
+`;
+
+const CaseButton = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  width: fit-content;
+
+  &:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+`;
+
+// Bouton mode d'affichage
+const ViewModeToggle = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.25rem;
+  background: ${props => props.theme.backgroundSecondary};
+  border-radius: 12px;
+  position: fixed;
+  top: 100px;
+  right: 2rem;
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+const ViewModeButton = styled.button`
+  padding: 0.5rem 1rem;
+  background: ${props => props.active ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'transparent'};
+  color: ${props => props.active ? 'white' : props.theme.text};
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: ${props => props.active ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : props.theme.background};
+  }
+`;
+
+// Mini Quiz Section
+const QuizSection = styled.div`
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, 
+    ${props => props.theme.card} 0%, 
+    ${props => props.theme.background} 100%
+  );
+  border-radius: 16px;
+  border: 1px solid ${props => props.theme.border};
+  text-align: center;
+`;
+
+const QuizTitle = styled.h3`
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: ${props => props.theme.text};
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+`;
+
+const QuizImages = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const QuizImage = styled.div`
+  aspect-ratio: 1;
+  background: ${props => props.selected 
+    ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+    : props.theme.background};
+  border: 2px solid ${props => props.selected ? '#667eea' : props.theme.border};
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 3rem;
+  position: relative;
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  ${props => props.correct && `
+    &::after {
+      content: '✅';
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      font-size: 1.5rem;
+      animation: bounce 0.5s ease;
+    }
+  `}
+
+  ${props => props.wrong && `
+    &::after {
+      content: '❌';
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      font-size: 1.5rem;
+      animation: shake 0.5s ease;
+    }
+  `}
+
+  @keyframes bounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+`;
+
+const QuizLabel = styled.div`
+  font-size: 0.75rem;
+  color: ${props => props.theme.textSecondary};
+  margin-top: 0.5rem;
+  font-weight: 600;
+`;
+
+const QuizQuestion = styled.p`
+  font-size: 1rem;
+  color: ${props => props.theme.text};
+  margin-bottom: 1rem;
+  font-weight: 500;
+`;
+
 // BOUTON FLOTTANT
 const FloatingButton = styled.button`
   position: fixed;
@@ -834,6 +1198,9 @@ function Home() {
     monthly: 45,
     quality: 92
   });
+  const [viewMode, setViewMode] = useState('standard'); // compact, standard, complet
+  const [quizAnswer, setQuizAnswer] = useState(null);
+  const [selectedQuizImage, setSelectedQuizImage] = useState(null);
 
   const tips = [
     {
@@ -912,18 +1279,77 @@ function Home() {
     const fetchStats = async () => {
       try {
         // Récupérer les vraies données depuis l'API
-        const [questionnairesRes, casesRes] = await Promise.all([
-          axios.get('/questionnaires/my', { params: { limit: 100 } }).catch(() => ({ data: { questionnaires: [] } })),
-          axios.get('/cases/my', { params: { limit: 100 } }).catch(() => ({ data: { cases: [] } }))
-        ]);
+        const questionnairesRes = await axios.get('/questionnaires/my', { params: { limit: 100 } })
+          .catch(() => ({ data: { questionnaires: [] } }));
+        
+        const casesRes = await axios.get('/cases/my', { params: { limit: 100 } })
+          .catch(() => ({ data: { cases: [] } }));
+        
+        // Pour les protocoles, essayer différents endpoints
+        let protocolsCount = 0;
+        
+        // Essayer l'endpoint /protocols/list ou /protocols avec des paramètres
+        const possibleEndpoints = [
+          { url: '/protocols/list', params: {} },
+          { url: '/protocols', params: { personal: true } },
+          { url: '/protocols', params: { type: 'personal' } },
+          { url: '/protocols/my', params: {} },
+          { url: '/protocols', params: {} }
+        ];
+
+        for (const endpoint of possibleEndpoints) {
+          try {
+            console.log(`Tentative avec: ${endpoint.url}`, endpoint.params);
+            const protocolsRes = await axios.get(endpoint.url, { params: endpoint.params });
+            console.log(`Succès avec ${endpoint.url}:`, protocolsRes.data);
+            
+            // Compter les protocoles selon la structure de la réponse
+            if (protocolsRes.data) {
+              if (Array.isArray(protocolsRes.data)) {
+                protocolsCount = protocolsRes.data.length;
+              } else if (protocolsRes.data.protocols && Array.isArray(protocolsRes.data.protocols)) {
+                protocolsCount = protocolsRes.data.protocols.length;
+              } else if (protocolsRes.data.data && Array.isArray(protocolsRes.data.data)) {
+                protocolsCount = protocolsRes.data.data.length;
+              } else if (protocolsRes.data.items && Array.isArray(protocolsRes.data.items)) {
+                protocolsCount = protocolsRes.data.items.length;
+              } else if (protocolsRes.data.results && Array.isArray(protocolsRes.data.results)) {
+                protocolsCount = protocolsRes.data.results.length;
+              } else if (typeof protocolsRes.data.total === 'number') {
+                protocolsCount = protocolsRes.data.total;
+              } else if (typeof protocolsRes.data.count === 'number') {
+                protocolsCount = protocolsRes.data.count;
+              }
+            }
+            
+            if (protocolsCount > 0) {
+              console.log(`Protocoles trouvés: ${protocolsCount}`);
+              break; // On a trouvé des protocoles, on arrête
+            }
+          } catch (error) {
+            console.log(`Échec avec ${endpoint.url}:`, error.response?.data || error.message);
+          }
+        }
+
+        // Si toujours 0, mettre une valeur temporaire pour tester
+        if (protocolsCount === 0) {
+          console.warn('Aucun protocole trouvé via l\'API. Utilisation d\'une valeur par défaut.');
+          // Vous pouvez mettre ici le nombre réel si vous le connaissez
+          // protocolsCount = 5; // Par exemple
+        }
 
         setStats({
           questionnaires: questionnairesRes.data?.questionnaires?.length || 0,
           cases: casesRes.data?.cases?.length || 0,
-          protocols: 0 // À implémenter quand l'API sera prête
+          protocols: protocolsCount
         });
       } catch (error) {
-        console.error('Erreur lors du chargement des stats:', error);
+        console.error('Erreur générale lors du chargement des stats:', error);
+        setStats({
+          questionnaires: 0,
+          cases: 0,
+          protocols: 0
+        });
       }
     };
 
@@ -1145,6 +1571,31 @@ function Home() {
   return (
     <HomeContainer>
       <ContentWrapper>
+        {/* BOUTONS MODE D'AFFICHAGE */}
+        <ViewModeToggle>
+          <ViewModeButton 
+            active={viewMode === 'compact'} 
+            onClick={() => setViewMode('compact')}
+          >
+            <Grid size={16} style={{ marginRight: '0.25rem' }} />
+            Compact
+          </ViewModeButton>
+          <ViewModeButton 
+            active={viewMode === 'standard'} 
+            onClick={() => setViewMode('standard')}
+          >
+            <List size={16} style={{ marginRight: '0.25rem' }} />
+            Standard
+          </ViewModeButton>
+          <ViewModeButton 
+            active={viewMode === 'complet'} 
+            onClick={() => setViewMode('complet')}
+          >
+            <Layers size={16} style={{ marginRight: '0.25rem' }} />
+            Complet
+          </ViewModeButton>
+        </ViewModeToggle>
+
         {/* HERO SECTION */}
         <HeroSection>
           <LogoContainer>
@@ -1190,8 +1641,9 @@ function Home() {
           </div>
         </AnnouncementBanner>
 
-        {/* CONTENU PRINCIPAL */}
-        <MainContent>
+        {/* CONTENU PRINCIPAL - Affiché selon le mode */}
+        {viewMode !== 'compact' && (
+          <MainContent>
           <LeftSection>
             {/* SECTION QUESTIONNAIRES */}
             <CategorySection>
@@ -1494,6 +1946,134 @@ function Home() {
             </Widget>
           </RightSection>
         </MainContent>
+        )}
+
+        {/* CAS DU JOUR - Affiché en mode standard et complet */}
+        {(viewMode === 'standard' || viewMode === 'complet') && (
+          <CaseOfDaySection>
+            <CaseOfDayHeader>
+              <CaseOfDayTitle>
+                <Star size={32} style={{ color: '#f59e0b' }} />
+                Cas du jour
+              </CaseOfDayTitle>
+              <CaseTag>IRM Cérébrale</CaseTag>
+            </CaseOfDayHeader>
+            <CaseOfDayContent>
+              <CaseImageContainer onClick={() => navigate('/public-cases')}>
+                <CaseImage>
+                  🧠
+                </CaseImage>
+                <CaseImageOverlay className="overlay">
+                  <PlayButton className="play-button">
+                    <Play />
+                  </PlayButton>
+                </CaseImageOverlay>
+              </CaseImageContainer>
+              <CaseInfo>
+                <CaseMainTitle>Glioblastome multiforme temporal gauche</CaseMainTitle>
+                <CaseDescription>
+                  Cas exceptionnel d'un patient de 45 ans présentant une lésion temporale gauche 
+                  hétérogène avec prise de contraste périphérique en couronne et nécrose centrale. 
+                  Séquences T1, T2, FLAIR et diffusion disponibles.
+                </CaseDescription>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+                  <span style={{ 
+                    padding: '0.25rem 0.75rem', 
+                    background: 'rgba(102, 126, 234, 0.1)', 
+                    borderRadius: '20px',
+                    fontSize: '0.85rem',
+                    color: '#667eea'
+                  }}>
+                    15 séquences
+                  </span>
+                  <span style={{ 
+                    padding: '0.25rem 0.75rem', 
+                    background: 'rgba(240, 147, 251, 0.1)', 
+                    borderRadius: '20px',
+                    fontSize: '0.85rem',
+                    color: '#f093fb'
+                  }}>
+                    Contraste: Gadolinium
+                  </span>
+                  <span style={{ 
+                    padding: '0.25rem 0.75rem', 
+                    background: 'rgba(34, 197, 94, 0.1)', 
+                    borderRadius: '20px',
+                    fontSize: '0.85rem',
+                    color: '#22c55e'
+                  }}>
+                    Difficulté: Expert
+                  </span>
+                </div>
+                <CaseButton to="/public-cases">
+                  Analyser ce cas
+                  <ChevronRight />
+                </CaseButton>
+              </CaseInfo>
+            </CaseOfDayContent>
+          </CaseOfDaySection>
+        )}
+
+        {/* MINI QUIZ - Affiché uniquement en mode complet */}
+        {viewMode === 'complet' && (
+          <QuizSection>
+            <QuizTitle>
+              🎯 Quiz rapide : Identifiez la modalité
+            </QuizTitle>
+            <QuizQuestion>
+              Quelle modalité d'imagerie est la plus adaptée pour visualiser un AVC ischémique en phase aiguë ?
+            </QuizQuestion>
+            <QuizImages>
+              <div>
+                <QuizImage 
+                  selected={selectedQuizImage === 1}
+                  correct={quizAnswer === 'correct' && selectedQuizImage === 1}
+                  wrong={quizAnswer === 'wrong' && selectedQuizImage === 1}
+                  onClick={() => {
+                    setSelectedQuizImage(1);
+                    setQuizAnswer('wrong');
+                    setTimeout(() => setQuizAnswer(null), 2000);
+                  }}
+                >
+                  🩻
+                </QuizImage>
+                <QuizLabel>Radiographie</QuizLabel>
+              </div>
+              <div>
+                <QuizImage 
+                  selected={selectedQuizImage === 2}
+                  correct={quizAnswer === 'correct' && selectedQuizImage === 2}
+                  wrong={quizAnswer === 'wrong' && selectedQuizImage === 2}
+                  onClick={() => {
+                    setSelectedQuizImage(2);
+                    setQuizAnswer('correct');
+                    setTimeout(() => {
+                      alert('Bravo ! L\'IRM avec séquence de diffusion est effectivement la modalité de choix pour détecter un AVC ischémique en phase aiguë.');
+                    }, 500);
+                  }}
+                >
+                  🧲
+                </QuizImage>
+                <QuizLabel>IRM Diffusion</QuizLabel>
+              </div>
+              <div>
+                <QuizImage 
+                  selected={selectedQuizImage === 3}
+                  correct={quizAnswer === 'correct' && selectedQuizImage === 3}
+                  wrong={quizAnswer === 'wrong' && selectedQuizImage === 3}
+                  onClick={() => {
+                    setSelectedQuizImage(3);
+                    setQuizAnswer('wrong');
+                    setTimeout(() => setQuizAnswer(null), 2000);
+                  }}
+                >
+                  📡
+                </QuizImage>
+                <QuizLabel>Échographie</QuizLabel>
+              </div>
+            </QuizImages>
+          </QuizSection>
+        )}
 
         {/* SECTION PROGRESSION */}
         <ProgressSection>
