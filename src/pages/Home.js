@@ -62,6 +62,7 @@ const HeroSection = styled.div`
   text-align: center;
   margin-bottom: 3rem;
   animation: slideDown 0.8s ease-out;
+  position: relative;
 
   @keyframes slideDown {
     from {
@@ -76,6 +77,121 @@ const HeroSection = styled.div`
 
   @media (max-width: 768px) {
     margin-bottom: 2rem;
+  }
+`;
+
+// Bannière d'images médicales
+const MedicalImagesBanner = styled.div`
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1rem;
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: ${props => props.theme.card};
+  border-radius: 16px;
+  border: 1px solid ${props => props.theme.border};
+  overflow: hidden;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+      transparent, 
+      rgba(102, 126, 234, 0.1), 
+      transparent
+    );
+    animation: scan 8s linear infinite;
+  }
+
+  @keyframes scan {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+`;
+
+const MedicalImageCard = styled.div`
+  aspect-ratio: 1;
+  background: ${props => props.gradient};
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: scale(1.05);
+    z-index: 10;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.3) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &:hover::after {
+    opacity: 1;
+  }
+`;
+
+const MedicalIcon = styled.div`
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+  animation: ${props => props.animation || 'pulse'} 2s infinite;
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+
+  @keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @media (max-width: 768px) {
+    font-size: 1.8rem;
+  }
+`;
+
+const MedicalLabel = styled.div`
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+
+  @media (max-width: 768px) {
+    font-size: 0.65rem;
   }
 `;
 
@@ -361,6 +477,225 @@ const RecentMeta = styled.div`
   gap: 0.5rem;
 `;
 
+// SECTION PROGRESSION
+const ProgressSection = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: ${props => props.theme.card};
+  border-radius: 16px;
+  border: 1px solid ${props => props.theme.border};
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+`;
+
+const ProgressCard = styled.div`
+  text-align: center;
+  padding: 1rem;
+`;
+
+const ProgressRing = styled.div`
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 1rem;
+  position: relative;
+
+  svg {
+    transform: rotate(-90deg);
+  }
+
+  @media (max-width: 768px) {
+    width: 80px;
+    height: 80px;
+  }
+`;
+
+const ProgressText = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: ${props => props.color};
+`;
+
+const ProgressLabel = styled.div`
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: ${props => props.theme.text};
+  margin-bottom: 0.25rem;
+`;
+
+const ProgressSubtext = styled.div`
+  font-size: 0.75rem;
+  color: ${props => props.theme.textSecondary};
+`;
+
+// SECTION FEATURES VISUELLES
+const VisualFeaturesSection = styled.div`
+  margin: 3rem 0;
+  padding: 2rem;
+  background: linear-gradient(135deg, 
+    ${props => props.theme.card} 0%, 
+    ${props => props.theme.background} 100%
+  );
+  border-radius: 20px;
+  border: 1px solid ${props => props.theme.border};
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(102, 126, 234, 0.05) 0%, transparent 70%);
+    animation: rotate 20s linear infinite;
+  }
+
+  @keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+    margin: 2rem 0;
+  }
+`;
+
+const FeatureTitle = styled.h3`
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: ${props => props.theme.text};
+  margin-bottom: 2rem;
+  position: relative;
+  z-index: 1;
+
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+`;
+
+const FeaturesGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  position: relative;
+  z-index: 1;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+`;
+
+const FeatureCard = styled.div`
+  background: ${props => props.theme.card};
+  border-radius: 16px;
+  padding: 1.5rem;
+  text-align: center;
+  border: 1px solid ${props => props.theme.border};
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: ${props => props.gradient};
+  }
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+const FeatureIconLarge = styled.div`
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: ${props => props.gradient};
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    border-radius: 50%;
+    background: ${props => props.gradient};
+    opacity: 0.2;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.2; }
+    50% { transform: scale(1.1); opacity: 0.3; }
+  }
+
+  svg {
+    width: 40px;
+    height: 40px;
+    color: white;
+  }
+
+  @media (max-width: 768px) {
+    width: 60px;
+    height: 60px;
+
+    svg {
+      width: 30px;
+      height: 30px;
+    }
+  }
+`;
+
+const FeatureStat = styled.div`
+  font-size: 2rem;
+  font-weight: bold;
+  color: ${props => props.color};
+  margin-bottom: 0.5rem;
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
+`;
+
+const FeatureLabel = styled.div`
+  font-size: 1rem;
+  font-weight: 600;
+  color: ${props => props.theme.text};
+  margin-bottom: 0.5rem;
+`;
+
+const FeatureDesc = styled.div`
+  font-size: 0.85rem;
+  color: ${props => props.theme.textSecondary};
+  line-height: 1.4;
+`;
+
 // SECTION LIENS UTILES
 const QuickLinksSection = styled.div`
   display: grid;
@@ -473,6 +808,12 @@ const AnnouncementBanner = styled.div`
     flex-shrink: 0;
   }
 
+  a {
+    color: white;
+    margin-left: 0.5rem;
+    text-decoration: underline;
+  }
+
   @media (max-width: 768px) {
     padding: 1rem;
     font-size: 0.9rem;
@@ -488,6 +829,11 @@ function Home() {
   });
   const [recentActivities, setRecentActivities] = useState([]);
   const [currentTip, setCurrentTip] = useState(0);
+  const [progress, setProgress] = useState({
+    weekly: 75,
+    monthly: 45,
+    quality: 92
+  });
 
   const tips = [
     {
@@ -514,6 +860,42 @@ function Home() {
       icon: '⚡',
       title: 'Raccourcis',
       content: 'Utilisez les flèches du clavier pour naviguer rapidement entre les images DICOM.'
+    }
+  ];
+
+  const medicalImages = [
+    { icon: '🧠', label: 'IRM Cérébrale', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', animation: 'pulse' },
+    { icon: '🫁', label: 'TDM Thorax', gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', animation: 'bounce' },
+    { icon: '🦴', label: 'Rx Osseux', gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', animation: 'pulse' },
+    { icon: '❤️', label: 'Echo Cardiaque', gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', animation: 'bounce' },
+    { icon: '🩸', label: 'Angio', gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', animation: 'pulse' },
+    { icon: '👁️', label: 'IRM Orbite', gradient: 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)', animation: 'bounce' }
+  ];
+
+  const featuresData = [
+    {
+      icon: <Target />,
+      stat: '99.8%',
+      label: 'Précision diagnostic',
+      desc: 'Taux de fiabilité de nos outils',
+      gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      color: '#667eea'
+    },
+    {
+      icon: <Zap />,
+      stat: '<2s',
+      label: 'Temps de chargement',
+      desc: 'Performance optimisée',
+      gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      color: '#f093fb'
+    },
+    {
+      icon: <Award />,
+      stat: '24/7',
+      label: 'Disponibilité',
+      desc: 'Accès continu à vos données',
+      gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      color: '#4facfe'
     }
   ];
 
@@ -623,6 +1005,17 @@ function Home() {
     if (diff < 2592000) return `Il y a ${Math.floor(diff / 86400)} j`;
     return past.toLocaleDateString('fr-FR');
   };
+
+  // Animation des progressions au chargement
+  useEffect(() => {
+    setTimeout(() => {
+      setProgress({
+        weekly: Math.floor(Math.random() * 40) + 60, // Entre 60 et 100
+        monthly: Math.floor(Math.random() * 50) + 30, // Entre 30 et 80
+        quality: Math.floor(Math.random() * 20) + 80  // Entre 80 et 100
+      });
+    }, 1000);
+  }, []);
 
   const questionnairesItems = [
     {
@@ -766,6 +1159,23 @@ function Home() {
             Formation et Innovation Médicale - Plateforme collaborative pour la gestion 
             de questionnaires, cas cliniques et protocoles d'imagerie
           </Subtitle>
+
+          {/* BANNIÈRE D'IMAGES MÉDICALES */}
+          <MedicalImagesBanner>
+            {medicalImages.map((image, index) => (
+              <MedicalImageCard 
+                key={index} 
+                gradient={image.gradient}
+                onClick={() => navigate('/cases')}
+                title={`Accéder aux cas de ${image.label}`}
+              >
+                <MedicalIcon animation={image.animation}>
+                  {image.icon}
+                </MedicalIcon>
+                <MedicalLabel>{image.label}</MedicalLabel>
+              </MedicalImageCard>
+            ))}
+          </MedicalImagesBanner>
         </HeroSection>
 
         {/* ANNONCE */}
@@ -774,7 +1184,7 @@ function Home() {
           <div>
             <strong>🎉 Nouvelle mise à jour !</strong> Le visualiseur DICOM supporte maintenant 
             les reconstructions 3D et l'export en format NIfTI. 
-            <Link to="/cases" style={{ color: 'white', marginLeft: '0.5rem', textDecoration: 'underline' }}>
+            <Link to="/cases">
               Essayer maintenant →
             </Link>
           </div>
@@ -1084,6 +1494,113 @@ function Home() {
             </Widget>
           </RightSection>
         </MainContent>
+
+        {/* SECTION PROGRESSION */}
+        <ProgressSection>
+          <ProgressCard>
+            <ProgressRing>
+              <svg width="100" height="100">
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  stroke="#e5e7eb"
+                  strokeWidth="8"
+                  fill="none"
+                />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  stroke="#667eea"
+                  strokeWidth="8"
+                  fill="none"
+                  strokeDasharray={`${progress.weekly * 2.51} 251`}
+                  strokeLinecap="round"
+                  style={{ transition: 'stroke-dasharray 1s ease' }}
+                />
+              </svg>
+              <ProgressText color="#667eea">{progress.weekly}%</ProgressText>
+            </ProgressRing>
+            <ProgressLabel>Activité hebdomadaire</ProgressLabel>
+            <ProgressSubtext>vs semaine dernière</ProgressSubtext>
+          </ProgressCard>
+
+          <ProgressCard>
+            <ProgressRing>
+              <svg width="100" height="100">
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  stroke="#e5e7eb"
+                  strokeWidth="8"
+                  fill="none"
+                />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  stroke="#f093fb"
+                  strokeWidth="8"
+                  fill="none"
+                  strokeDasharray={`${progress.monthly * 2.51} 251`}
+                  strokeLinecap="round"
+                  style={{ transition: 'stroke-dasharray 1s ease' }}
+                />
+              </svg>
+              <ProgressText color="#f093fb">{progress.monthly}%</ProgressText>
+            </ProgressRing>
+            <ProgressLabel>Objectif mensuel</ProgressLabel>
+            <ProgressSubtext>Cas traités</ProgressSubtext>
+          </ProgressCard>
+
+          <ProgressCard>
+            <ProgressRing>
+              <svg width="100" height="100">
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  stroke="#e5e7eb"
+                  strokeWidth="8"
+                  fill="none"
+                />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  stroke="#22c55e"
+                  strokeWidth="8"
+                  fill="none"
+                  strokeDasharray={`${progress.quality * 2.51} 251`}
+                  strokeLinecap="round"
+                  style={{ transition: 'stroke-dasharray 1s ease' }}
+                />
+              </svg>
+              <ProgressText color="#22c55e">{progress.quality}%</ProgressText>
+            </ProgressRing>
+            <ProgressLabel>Score qualité</ProgressLabel>
+            <ProgressSubtext>Moyenne globale</ProgressSubtext>
+          </ProgressCard>
+        </ProgressSection>
+
+        {/* SECTION FEATURES VISUELLES */}
+        <VisualFeaturesSection>
+          <FeatureTitle>🚀 Performance & Fiabilité</FeatureTitle>
+          <FeaturesGrid>
+            {featuresData.map((feature, index) => (
+              <FeatureCard key={index} gradient={feature.gradient}>
+                <FeatureIconLarge gradient={feature.gradient}>
+                  {feature.icon}
+                </FeatureIconLarge>
+                <FeatureStat color={feature.color}>{feature.stat}</FeatureStat>
+                <FeatureLabel>{feature.label}</FeatureLabel>
+                <FeatureDesc>{feature.desc}</FeatureDesc>
+              </FeatureCard>
+            ))}
+          </FeaturesGrid>
+        </VisualFeaturesSection>
 
         {/* LIENS RAPIDES */}
         <QuickLinksSection>
