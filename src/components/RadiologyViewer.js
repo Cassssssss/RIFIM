@@ -1,8 +1,72 @@
-import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
+import React, { useState, useEffect, useCallback, useRef, memo, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ChevronDown, ChevronUp, X, ChevronLeft, ChevronRight, Eye, EyeOff, FileText } from 'lucide-react';
 import axios from '../utils/axiosConfig';
 import styles from './RadiologyViewer.module.css';
+
+// 🚀 NOUVEAU : Cache d'images en mémoire
+const imageCache = new Map();
+const MAX_CACHE_SIZE = 100; // Limite du cache
+
+// 🚀 NOUVEAU : Préchargeur d'images avec priorités
+class ImagePreloader {
+  constructor() {
+    this.queue = [];
+    this.loading = new Set();
+    this.maxConcurrent = 3;
+  }
+
+  preload(url, priority = 0) {
+    if (imageCache.has(url) || this.loading.has(url)) {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve, reject) => {
+      const task = { url, priority, resolve, reject };
+      this.queue.push(task);
+      this.queue.sort((a, b) => b.priority - a.priority);
+      this.processQueue();
+    });
+  }
+
+  processQueue() {
+    while (this.loading.size < this.maxConcurrent && this.queue.length > 0) {
+      const task = this.queue.shift();
+      this.loadImage(task);
+    }
+  }
+
+  loadImage(task) {
+    this.loading.add(task.url);
+    
+    const img = new Image();
+    img.decoding = 'async'; // 🚀 Décodage asynchrone
+    img.loading = 'eager';
+    
+    img.onload = () => {
+      // Gestion du cache avec limite de taille
+      if (imageCache.size >= MAX_CACHE_SIZE) {
+        const firstKey = imageCache.keys().next().value;
+        imageCache.delete(firstKey);
+      }
+      imageCache.set(task.url, img);
+      
+      this.loading.delete(task.url);
+      task.resolve(img);
+      this.processQueue();
+    };
+    
+    img.onerror = () => {
+      this.loading.delete(task.url);
+      task.reject(new Error(`Failed to load ${task.url}`));
+      this.processQueue();
+    };
+    
+    img.src = task.url;
+  }
+}
+
+const imagePreloader = new ImagePreloader();
 
 const CollapsibleImageGallery = memo(({ folder, images, onImageClick, onDeleteImage }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -54,6 +118,17 @@ function RadiologyViewer() {
   const [currentFolderBottomLeft, setCurrentFolderBottomLeft] = useState('');
   const [currentFolderBottomRight, setCurrentFolderBottomRight] = useState('');
   
+  // 🚀 NOUVEAU : États de chargement
+  const [loadingStates, setLoadingStates] = useState({
+    left: false,
+    right: false,
+    single: false,
+    topLeft: false,
+    topRight: false,
+    bottomLeft: false,
+    bottomRight: false
+  });
+  
   // Détection mobile simple
   const [isMobile] = useState(() => {
     if (typeof window === 'undefined') return false;
@@ -88,7 +163,7 @@ function RadiologyViewer() {
   const [accumulatedDelta, setAccumulatedDelta] = useState(0);
   const [isShortcutGuideVisible, setIsShortcutGuideVisible] = useState(false);
 
-  // 🔧 NOUVEAUX ÉTATS POUR DRAG & DROP MOBILE
+  // 📧 NOUVEAUX ÉTATS POUR DRAG & DROP MOBILE
   const [isDraggingFolder, setIsDraggingFolder] = useState(false);
   const [draggedFolder, setDraggedFolder] = useState(null);
   const [dragOverTarget, setDragOverTarget] = useState(null);
@@ -113,68 +188,128 @@ function RadiologyViewer() {
 
   const [theme] = useState(document.documentElement.getAttribute('data-theme') || 'light');
 
-  // ==================== FONCTION loadImage ==================== 
-  
-  const loadImage = useCallback((folder, index, side) => {
-    if (currentCase && currentCase.images && currentCase.images[folder]) {
-      const imagePath = currentCase.images[folder][index];
-      if (imagePath) {
-        const imageUrl = imagePath.startsWith('http') ? imagePath : `${process.env.REACT_APP_SPACES_URL}/${imagePath}`;
-        
-        let imageElement;
-        switch(side) {
-          case 'left':
-            imageElement = leftViewerRef.current;
-            break;
-          case 'right':
-            imageElement = rightViewerRef.current;
-            break;
-          case 'single':
-            imageElement = singleViewerRef.current;
-            break;
-          case 'topLeft':
-            imageElement = topLeftViewerRef.current;
-            break;
-          case 'topRight':
-            imageElement = topRightViewerRef.current;
-            break;
-          case 'bottomLeft':
-            imageElement = bottomLeftViewerRef.current;
-            break;
-          case 'bottomRight':
-            imageElement = bottomRightViewerRef.current;
-            break;
-          default:
-            imageElement = singleViewerRef.current;
+  // 🚀 NOUVEAU : Fonction pour obtenir l'URL d'une image
+  const getImageUrl = useCallback((imagePath) => {
+    if (!imagePath) return null;
+    return imagePath.startsWith('http') ? imagePath : `${process.env.REACT_APP_SPACES_URL}/${imagePath}`;
+  }, []);
+
+  // 🚀 NOUVEAU : Fonction de préchargement intelligent
+  const preloadAdjacentImages = useCallback((folder, currentIndex, side) => {
+    if (!currentCase?.images?.[folder]) return;
+    
+    const images = currentCase.images[folder];
+    const preloadRange = isMobile ? 2 : 3; // Moins d'images en préchargement sur mobile
+    
+    // Précharger les images adjacentes avec des priorités
+    for (let i = 1; i <= preloadRange; i++) {
+      // Images suivantes (priorité haute)
+      if (currentIndex + i < images.length) {
+        const nextUrl = getImageUrl(images[currentIndex + i]);
+        if (nextUrl) {
+          imagePreloader.preload(nextUrl, 10 - i);
         }
-        
-        if (imageElement) {
-          imageElement.src = imageUrl;
-          switch(side) {
-            case 'left':
-            case 'single':
-              setCurrentIndexLeft(index);
-              break;
-            case 'right':
-              setCurrentIndexRight(index);
-              break;
-            case 'topLeft':
-              setCurrentIndexTopLeft(index);
-              break;
-            case 'topRight':
-              setCurrentIndexTopRight(index);
-              break;
-            case 'bottomLeft':
-              setCurrentIndexBottomLeft(index);
-              break;
-            case 'bottomRight':
-              setCurrentIndexBottomRight(index);
-              break;
-          }
+      }
+      
+      // Images précédentes (priorité moyenne)
+      if (currentIndex - i >= 0) {
+        const prevUrl = getImageUrl(images[currentIndex - i]);
+        if (prevUrl) {
+          imagePreloader.preload(prevUrl, 5 - i);
         }
       }
     }
-  }, [currentCase]);
+  }, [currentCase, getImageUrl, isMobile]);
+
+  // ==================== FONCTION loadImage OPTIMISÉE ==================== 
+  
+  const loadImage = useCallback(async (folder, index, side) => {
+    if (!currentCase?.images?.[folder]) return;
+    
+    const imagePath = currentCase.images[folder][index];
+    if (!imagePath) return;
+    
+    const imageUrl = getImageUrl(imagePath);
+    if (!imageUrl) return;
+    
+    // Définir l'état de chargement
+    setLoadingStates(prev => ({ ...prev, [side]: true }));
+    
+    let imageElement;
+    switch(side) {
+      case 'left':
+        imageElement = leftViewerRef.current;
+        break;
+      case 'right':
+        imageElement = rightViewerRef.current;
+        break;
+      case 'single':
+        imageElement = singleViewerRef.current;
+        break;
+      case 'topLeft':
+        imageElement = topLeftViewerRef.current;
+        break;
+      case 'topRight':
+        imageElement = topRightViewerRef.current;
+        break;
+      case 'bottomLeft':
+        imageElement = bottomLeftViewerRef.current;
+        break;
+      case 'bottomRight':
+        imageElement = bottomRightViewerRef.current;
+        break;
+      default:
+        imageElement = singleViewerRef.current;
+    }
+    
+    if (imageElement) {
+      // 🚀 Vérifier le cache d'abord
+      const cachedImage = imageCache.get(imageUrl);
+      
+      if (cachedImage) {
+        // Image déjà en cache, chargement instantané
+        imageElement.src = imageUrl;
+        setLoadingStates(prev => ({ ...prev, [side]: false }));
+      } else {
+        // Charger l'image avec le préchargeur
+        try {
+          await imagePreloader.preload(imageUrl, 100); // Priorité maximale pour l'image actuelle
+          imageElement.src = imageUrl;
+        } catch (error) {
+          console.error('Erreur de chargement image:', error);
+          // Fallback : charger directement
+          imageElement.src = imageUrl;
+        }
+        setLoadingStates(prev => ({ ...prev, [side]: false }));
+      }
+      
+      // Mettre à jour l'index
+      switch(side) {
+        case 'left':
+        case 'single':
+          setCurrentIndexLeft(index);
+          break;
+        case 'right':
+          setCurrentIndexRight(index);
+          break;
+        case 'topLeft':
+          setCurrentIndexTopLeft(index);
+          break;
+        case 'topRight':
+          setCurrentIndexTopRight(index);
+          break;
+        case 'bottomLeft':
+          setCurrentIndexBottomLeft(index);
+          break;
+        case 'bottomRight':
+          setCurrentIndexBottomRight(index);
+          break;
+      }
+      
+      // 🚀 Précharger les images adjacentes
+      preloadAdjacentImages(folder, index, side);
+    }
+  }, [currentCase, getImageUrl, preloadAdjacentImages]);
 
   // ==================== FONCTION handleScroll ==================== 
   
@@ -433,7 +568,7 @@ function RadiologyViewer() {
       const deltaY = touch.clientY - panStartPoint.y;
       
       // Applique le déplacement avec une sensibilité ajustée
-      const sensitivity = 0.5; // 🔧 RÉDUIT de 1.5 à 0.5 pour un mouvement plus précis
+      const sensitivity = 0.5; // 📧 RÉDUIT de 1.5 à 0.5 pour un mouvement plus précis
       
       setImageControls(prev => ({
         ...prev,
@@ -615,7 +750,7 @@ function RadiologyViewer() {
     }));
   }, []);
 
-  // ==================== 🔧 NOUVEAU SYSTÈME DRAG & DROP MOBILE ====================
+  // ==================== 📧 NOUVEAU SYSTÈME DRAG & DROP MOBILE ====================
 
   // Fonction de gestion du début de drag (mobile uniquement pour dossiers)
   const handleMobileDragStart = useCallback((event, folder) => {
@@ -861,7 +996,7 @@ function RadiologyViewer() {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // 🔧 CORRECTION : Force le no-scroll sur mobile avec classe CSS
+  // 📧 CORRECTION : Force le no-scroll sur mobile avec classe CSS
   useEffect(() => {
     // Ajoute la classe pour identifier la page RadiologyViewer
     document.body.classList.add('radiology-viewer-page');
@@ -949,7 +1084,7 @@ function RadiologyViewer() {
     };
   }, [handleScroll, viewMode, isMobile]);
 
-  // Effect pour charger le cas
+  // 🚀 NOUVEAU : Effect pour charger le cas avec préchargement initial
   useEffect(() => {
     const fetchCase = async () => {
       try {
@@ -972,6 +1107,16 @@ function RadiologyViewer() {
           setCurrentIndexTopRight(0);
           setCurrentIndexBottomLeft(0);
           setCurrentIndexBottomRight(0);
+          
+          // 🚀 Précharger les premières images de chaque dossier
+          folders.forEach((folder, index) => {
+            if (caseData.images?.[folder]?.[0]) {
+              const imageUrl = caseData.images[folder][0];
+              const url = imageUrl.startsWith('http') ? 
+                imageUrl : `${process.env.REACT_APP_SPACES_URL}/${imageUrl}`;
+              imagePreloader.preload(url, 50 - index * 10);
+            }
+          });
         }
       } catch (error) {
         console.error('Erreur lors de la récupération du cas:', error);
@@ -1079,6 +1224,7 @@ function RadiologyViewer() {
     const folderName = getFolderName(side);
     const currentIndex = getCurrentIndex(side);
     const totalImages = currentCase?.images?.[folderName]?.length || 0;
+    const isLoading = loadingStates[side];
     
     let viewerRef;
     switch(side) {
@@ -1109,7 +1255,7 @@ function RadiologyViewer() {
 
     return (
       <div 
-        className={`${styles.viewer} ${className} ${styles[side]}`}
+        className={`${styles.viewer} ${className} ${styles[side]} ${isLoading ? styles.loading : ''}`}
         data-viewer-side={side}
         onMouseDown={(e) => handleMouseDown(e, side)}
         onMouseMove={(e) => handleMouseMove(e, side)}
@@ -1128,49 +1274,66 @@ function RadiologyViewer() {
           ref={viewerRef}
           className={styles.image} 
           alt={`Image médicale ${side}`}
+          decoding="async"
+          loading="eager"
         />
+        {isLoading && (
+          <div className={styles.loadingOverlay}>
+            <div className={styles.spinner}></div>
+          </div>
+        )}
       </div>
     );
   }, [handleMouseDown, handleMouseMove, handleMouseUp, handleDrop, 
-      handleTouchStart, handleTouchMove, handleTouchEnd, getFolderName, getCurrentIndex, currentCase]);
+      handleTouchStart, handleTouchMove, handleTouchEnd, getFolderName, getCurrentIndex, 
+      currentCase, loadingStates]);
 
-  // ==================== FONCTION DE RENDU DES THUMBNAILS ====================
-
+  // 🚀 NOUVEAU : Fonction de rendu optimisée pour les thumbnails
   const renderFolderThumbnails = useCallback(() => {
     if (!currentCase || !currentCase.folders) return null;
 
     return (
       <div id="folder-thumbnails" className={styles.folderGrid}>
-        {currentCase.folders.map(folder => (
-          <div 
-            key={folder} 
-            className={styles.folderThumbnail}
-            draggable={!isMobile}
-            onDragStart={(e) => !isMobile && handleDragStart(e, folder)}
-            onTouchStart={(e) => isMobile && handleMobileDragStart(e, folder)}
-            onTouchMove={(e) => isMobile && handleMobileDragMove(e)}
-            onTouchEnd={(e) => isMobile && handleMobileDragEnd(e)}
-            onClick={() => {
-              if (isMobile && !isDraggingFolder) {
-                loadImage(folder, 0, viewMode === 1 ? 'single' : 'left');
-                setCurrentFolderLeft(folder);
-                setCurrentIndexLeft(0);
-              }
-            }}
-          >
-            <img 
-              src={currentCase.folderMainImages?.[folder] || `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`}
-              alt={`${folder} thumbnail`} 
-              className={styles.folderThumbnailImage}
-              onError={(e) => {
-                if (e.target.src !== `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`) {
-                  e.target.src = `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`;
+        {currentCase.folders.map(folder => {
+          // 🚀 Précharger l'image principale du dossier
+          const mainImageUrl = currentCase.folderMainImages?.[folder];
+          if (mainImageUrl && !imageCache.has(mainImageUrl)) {
+            imagePreloader.preload(mainImageUrl, 1);
+          }
+          
+          return (
+            <div 
+              key={folder} 
+              className={styles.folderThumbnail}
+              draggable={!isMobile}
+              onDragStart={(e) => !isMobile && handleDragStart(e, folder)}
+              onTouchStart={(e) => isMobile && handleMobileDragStart(e, folder)}
+              onTouchMove={(e) => isMobile && handleMobileDragMove(e)}
+              onTouchEnd={(e) => isMobile && handleMobileDragEnd(e)}
+              onClick={() => {
+                if (isMobile && !isDraggingFolder) {
+                  loadImage(folder, 0, viewMode === 1 ? 'single' : 'left');
+                  setCurrentFolderLeft(folder);
+                  setCurrentIndexLeft(0);
                 }
               }}
-            />
-            <div className={styles.folderThumbnailLabel}>{folder}</div>
-          </div>
-        ))}
+            >
+              <img 
+                src={mainImageUrl || `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`}
+                alt={`${folder} thumbnail`} 
+                className={styles.folderThumbnailImage}
+                loading="lazy"
+                decoding="async"
+                onError={(e) => {
+                  if (e.target.src !== `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`) {
+                    e.target.src = `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`;
+                  }
+                }}
+              />
+              <div className={styles.folderThumbnailLabel}>{folder}</div>
+            </div>
+          );
+        })}
       </div>
     );
   }, [currentCase, isMobile, handleDragStart, handleMobileDragStart, handleMobileDragMove, 
