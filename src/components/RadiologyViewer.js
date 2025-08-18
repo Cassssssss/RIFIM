@@ -18,7 +18,7 @@ class ImagePreloader {
 
   preload(url, priority = 0) {
     if (imageCache.has(url) || this.loading.has(url)) {
-      return Promise.resolve();
+      return Promise.resolve(imageCache.get(url));
     }
 
     return new Promise((resolve, reject) => {
@@ -41,7 +41,6 @@ class ImagePreloader {
     
     const img = new Image();
     img.decoding = 'async'; // 🚀 Décodage asynchrone
-    img.loading = 'eager';
     
     img.onload = () => {
       // Gestion du cache avec limite de taille
@@ -188,6 +187,9 @@ function RadiologyViewer() {
 
   const [theme] = useState(document.documentElement.getAttribute('data-theme') || 'light');
 
+  // 🔧 CORRECTION : Ajout d'une référence pour tracker le side actuel du drag
+  const currentDragSideRef = useRef(null);
+
   // 🚀 NOUVEAU : Fonction pour obtenir l'URL d'une image
   const getImageUrl = useCallback((imagePath) => {
     if (!imagePath) return null;
@@ -263,24 +265,42 @@ function RadiologyViewer() {
     }
     
     if (imageElement) {
-      // 🚀 Vérifier le cache d'abord
+      // 🔧 CORRECTION : Ajouter une transition smooth et éviter le grésillement
       const cachedImage = imageCache.get(imageUrl);
       
       if (cachedImage) {
         // Image déjà en cache, chargement instantané
-        imageElement.src = imageUrl;
-        setLoadingStates(prev => ({ ...prev, [side]: false }));
+        requestAnimationFrame(() => {
+          if (imageElement) {
+            imageElement.style.opacity = '0';
+            setTimeout(() => {
+              imageElement.src = imageUrl;
+              imageElement.style.opacity = '1';
+              setLoadingStates(prev => ({ ...prev, [side]: false }));
+            }, 50);
+          }
+        });
       } else {
         // Charger l'image avec le préchargeur
         try {
-          await imagePreloader.preload(imageUrl, 100); // Priorité maximale pour l'image actuelle
-          imageElement.src = imageUrl;
+          const img = await imagePreloader.preload(imageUrl, 100); // Priorité maximale pour l'image actuelle
+          
+          requestAnimationFrame(() => {
+            if (imageElement) {
+              imageElement.style.opacity = '0';
+              setTimeout(() => {
+                imageElement.src = imageUrl;
+                imageElement.style.opacity = '1';
+                setLoadingStates(prev => ({ ...prev, [side]: false }));
+              }, 50);
+            }
+          });
         } catch (error) {
           console.error('Erreur de chargement image:', error);
           // Fallback : charger directement
           imageElement.src = imageUrl;
+          setLoadingStates(prev => ({ ...prev, [side]: false }));
         }
-        setLoadingStates(prev => ({ ...prev, [side]: false }));
       }
       
       // Mettre à jour l'index
@@ -910,6 +930,9 @@ function RadiologyViewer() {
   const handleMouseDown = useCallback((e, side) => {
     if (isMobile) return;
     
+    // 🔧 CORRECTION : Stocker le side actuel
+    currentDragSideRef.current = side;
+    
     if (e.button === 0 && e.shiftKey) {
       setIsPanning(true);
     } else if (e.button === 2 && e.shiftKey) {
@@ -927,17 +950,20 @@ function RadiologyViewer() {
   const handleMouseMove = useCallback((e, side) => {
     if (isMobile) return;
     
+    // 🔧 CORRECTION : Utiliser le side stocké au mousedown
+    const activeSide = currentDragSideRef.current || side;
+    
     const deltaX = e.clientX - startX;
     const deltaY = e.clientY - startY;
 
     if (isPanning) {
-      handlePan(side, deltaX, deltaY);
+      handlePan(activeSide, deltaX, deltaY);
     } else if (isZooming) {
-      handleZoom(side, -deltaY);
+      handleZoom(activeSide, -deltaY);
     } else if (isAdjustingContrast) {
-      handleContrast(side, deltaX);
+      handleContrast(activeSide, deltaX);
     } else if (isDragging) {
-      handleScroll(deltaY, true, side);
+      handleScroll(deltaY, true, activeSide);
     }
 
     setStartX(e.clientX);
@@ -950,6 +976,36 @@ function RadiologyViewer() {
     setIsPanning(false);
     setIsZooming(false);
     setIsAdjustingContrast(false);
+    // 🔧 CORRECTION : Reset le side stocké
+    currentDragSideRef.current = null;
+  }, [isMobile]);
+
+  // 🔧 CORRECTION : Ajouter un handler global pour mouseup
+  useEffect(() => {
+    if (isMobile) return;
+    
+    const handleGlobalMouseUp = () => {
+      setIsDragging(false);
+      setIsPanning(false);
+      setIsZooming(false);
+      setIsAdjustingContrast(false);
+      currentDragSideRef.current = null;
+    };
+
+    const handleGlobalMouseLeave = (e) => {
+      // Ne reset que si on quitte vraiment la fenêtre
+      if (!e.relatedTarget || e.relatedTarget.nodeName === 'HTML') {
+        handleGlobalMouseUp();
+      }
+    };
+
+    document.addEventListener('mouseup', handleGlobalMouseUp);
+    document.addEventListener('mouseleave', handleGlobalMouseLeave);
+
+    return () => {
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+      document.removeEventListener('mouseleave', handleGlobalMouseLeave);
+    };
   }, [isMobile]);
 
   // ==================== GESTION WHEEL (DESKTOP SEULEMENT) ==================== 
@@ -1275,13 +1331,7 @@ function RadiologyViewer() {
           className={styles.image} 
           alt={`Image médicale ${side}`}
           decoding="async"
-          loading="eager"
         />
-        {isLoading && (
-          <div className={styles.loadingOverlay}>
-            <div className={styles.spinner}></div>
-          </div>
-        )}
       </div>
     );
   }, [handleMouseDown, handleMouseMove, handleMouseUp, handleDrop, 
