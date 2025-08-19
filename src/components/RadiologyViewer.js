@@ -4,69 +4,7 @@ import { ChevronDown, ChevronUp, X, ChevronLeft, ChevronRight, Eye, EyeOff, File
 import axios from '../utils/axiosConfig';
 import styles from './RadiologyViewer.module.css';
 
-// 🚀 NOUVEAU : Cache d'images en mémoire
-const imageCache = new Map();
-const MAX_CACHE_SIZE = 100; // Limite du cache
-
-// 🚀 NOUVEAU : Préchargeur d'images avec priorités
-class ImagePreloader {
-  constructor() {
-    this.queue = [];
-    this.loading = new Set();
-    this.maxConcurrent = 3;
-  }
-
-  preload(url, priority = 0) {
-    if (imageCache.has(url) || this.loading.has(url)) {
-      return Promise.resolve(imageCache.get(url));
-    }
-
-    return new Promise((resolve, reject) => {
-      const task = { url, priority, resolve, reject };
-      this.queue.push(task);
-      this.queue.sort((a, b) => b.priority - a.priority);
-      this.processQueue();
-    });
-  }
-
-  processQueue() {
-    while (this.loading.size < this.maxConcurrent && this.queue.length > 0) {
-      const task = this.queue.shift();
-      this.loadImage(task);
-    }
-  }
-
-  loadImage(task) {
-    this.loading.add(task.url);
-    
-    const img = new Image();
-    img.decoding = 'async'; // 🚀 Décodage asynchrone
-    
-    img.onload = () => {
-      // Gestion du cache avec limite de taille
-      if (imageCache.size >= MAX_CACHE_SIZE) {
-        const firstKey = imageCache.keys().next().value;
-        imageCache.delete(firstKey);
-      }
-      imageCache.set(task.url, img);
-      
-      this.loading.delete(task.url);
-      task.resolve(img);
-      this.processQueue();
-    };
-    
-    img.onerror = () => {
-      this.loading.delete(task.url);
-      task.reject(new Error(`Failed to load ${task.url}`));
-      this.processQueue();
-    };
-    
-    img.src = task.url;
-  }
-}
-
-const imagePreloader = new ImagePreloader();
-
+// Composant simple sans cache complexe
 const CollapsibleImageGallery = memo(({ folder, images, onImageClick, onDeleteImage }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -196,46 +134,47 @@ function RadiologyViewer() {
     return imagePath.startsWith('http') ? imagePath : `${process.env.REACT_APP_SPACES_URL}/${imagePath}`;
   }, []);
 
-  // 🚀 NOUVEAU : Fonction de préchargement intelligent
+  // 🚀 NOUVEAU : Fonction de préchargement intelligent SIMPLIFIÉE
   const preloadAdjacentImages = useCallback((folder, currentIndex, side) => {
     if (!currentCase?.images?.[folder]) return;
     
     const images = currentCase.images[folder];
-    const preloadRange = isMobile ? 2 : 3; // Moins d'images en préchargement sur mobile
+    const preloadRange = 5; // Toujours précharger 5 images avant/après
     
-    // Précharger les images adjacentes avec des priorités
+    // Créer les images en mémoire pour les précharger
     for (let i = 1; i <= preloadRange; i++) {
-      // Images suivantes (priorité haute)
+      // Images suivantes
       if (currentIndex + i < images.length) {
         const nextUrl = getImageUrl(images[currentIndex + i]);
-        if (nextUrl) {
-          imagePreloader.preload(nextUrl, 10 - i);
+        if (nextUrl && !imageCache.has(nextUrl)) {
+          const img = new Image();
+          img.src = nextUrl;
+          imageCache.set(nextUrl, true);
         }
       }
       
-      // Images précédentes (priorité moyenne)
+      // Images précédentes
       if (currentIndex - i >= 0) {
         const prevUrl = getImageUrl(images[currentIndex - i]);
-        if (prevUrl) {
-          imagePreloader.preload(prevUrl, 5 - i);
+        if (prevUrl && !imageCache.has(prevUrl)) {
+          const img = new Image();
+          img.src = prevUrl;
+          imageCache.set(prevUrl, true);
         }
       }
     }
-  }, [currentCase, getImageUrl, isMobile]);
+  }, [currentCase, getImageUrl]);
 
-  // ==================== FONCTION loadImage OPTIMISÉE ==================== 
+  // ==================== FONCTION loadImage SIMPLIFIÉE ==================== 
   
-  const loadImage = useCallback(async (folder, index, side) => {
+  const loadImage = useCallback((folder, index, side) => {
     if (!currentCase?.images?.[folder]) return;
     
     const imagePath = currentCase.images[folder][index];
     if (!imagePath) return;
     
-    const imageUrl = getImageUrl(imagePath);
-    if (!imageUrl) return;
-    
-    // Définir l'état de chargement
-    setLoadingStates(prev => ({ ...prev, [side]: true }));
+    const imageUrl = imagePath.startsWith('http') ? 
+      imagePath : `${process.env.REACT_APP_SPACES_URL}/${imagePath}`;
     
     let imageElement;
     switch(side) {
@@ -265,43 +204,8 @@ function RadiologyViewer() {
     }
     
     if (imageElement) {
-      // 🔧 CORRECTION : Ajouter une transition smooth et éviter le grésillement
-      const cachedImage = imageCache.get(imageUrl);
-      
-      if (cachedImage) {
-        // Image déjà en cache, chargement instantané
-        requestAnimationFrame(() => {
-          if (imageElement) {
-            imageElement.style.opacity = '0';
-            setTimeout(() => {
-              imageElement.src = imageUrl;
-              imageElement.style.opacity = '1';
-              setLoadingStates(prev => ({ ...prev, [side]: false }));
-            }, 50);
-          }
-        });
-      } else {
-        // Charger l'image avec le préchargeur
-        try {
-          const img = await imagePreloader.preload(imageUrl, 100); // Priorité maximale pour l'image actuelle
-          
-          requestAnimationFrame(() => {
-            if (imageElement) {
-              imageElement.style.opacity = '0';
-              setTimeout(() => {
-                imageElement.src = imageUrl;
-                imageElement.style.opacity = '1';
-                setLoadingStates(prev => ({ ...prev, [side]: false }));
-              }, 50);
-            }
-          });
-        } catch (error) {
-          console.error('Erreur de chargement image:', error);
-          // Fallback : charger directement
-          imageElement.src = imageUrl;
-          setLoadingStates(prev => ({ ...prev, [side]: false }));
-        }
-      }
+      // Changer l'image directement
+      imageElement.src = imageUrl;
       
       // Mettre à jour l'index
       switch(side) {
@@ -326,10 +230,32 @@ function RadiologyViewer() {
           break;
       }
       
-      // 🚀 Précharger les images adjacentes
-      preloadAdjacentImages(folder, index, side);
+      // Précharger les images suivantes et précédentes
+      const images = currentCase.images[folder];
+      if (images) {
+        // Précharger les 3 suivantes
+        for (let i = 1; i <= 3; i++) {
+          if (index + i < images.length) {
+            const nextPath = images[index + i];
+            const nextUrl = nextPath.startsWith('http') ? 
+              nextPath : `${process.env.REACT_APP_SPACES_URL}/${nextPath}`;
+            const img = new Image();
+            img.src = nextUrl;
+          }
+        }
+        // Précharger les 3 précédentes
+        for (let i = 1; i <= 3; i++) {
+          if (index - i >= 0) {
+            const prevPath = images[index - i];
+            const prevUrl = prevPath.startsWith('http') ? 
+              prevPath : `${process.env.REACT_APP_SPACES_URL}/${prevPath}`;
+            const img = new Image();
+            img.src = prevUrl;
+          }
+        }
+      }
     }
-  }, [currentCase, getImageUrl, preloadAdjacentImages]);
+  }, [currentCase]);
 
   // ==================== FONCTION handleScroll ==================== 
   
@@ -950,6 +876,11 @@ function RadiologyViewer() {
   const handleMouseMove = useCallback((e, side) => {
     if (isMobile) return;
     
+    // 🔧 CORRECTION : Ne traiter que si on est vraiment en train de faire une action
+    if (!isPanning && !isZooming && !isAdjustingContrast && !isDragging) {
+      return; // Ne rien faire si aucune action n'est en cours
+    }
+    
     // 🔧 CORRECTION : Utiliser le side stocké au mousedown
     const activeSide = currentDragSideRef.current || side;
     
@@ -1140,7 +1071,7 @@ function RadiologyViewer() {
     };
   }, [handleScroll, viewMode, isMobile]);
 
-  // 🚀 NOUVEAU : Effect pour charger le cas avec préchargement initial
+  // Effect pour charger le cas
   useEffect(() => {
     const fetchCase = async () => {
       try {
@@ -1163,16 +1094,6 @@ function RadiologyViewer() {
           setCurrentIndexTopRight(0);
           setCurrentIndexBottomLeft(0);
           setCurrentIndexBottomRight(0);
-          
-          // 🚀 Précharger les premières images de chaque dossier
-          folders.forEach((folder, index) => {
-            if (caseData.images?.[folder]?.[0]) {
-              const imageUrl = caseData.images[folder][0];
-              const url = imageUrl.startsWith('http') ? 
-                imageUrl : `${process.env.REACT_APP_SPACES_URL}/${imageUrl}`;
-              imagePreloader.preload(url, 50 - index * 10);
-            }
-          });
         }
       } catch (error) {
         console.error('Erreur lors de la récupération du cas:', error);
@@ -1330,7 +1251,6 @@ function RadiologyViewer() {
           ref={viewerRef}
           className={styles.image} 
           alt={`Image médicale ${side}`}
-          decoding="async"
         />
       </div>
     );
@@ -1344,13 +1264,7 @@ function RadiologyViewer() {
 
     return (
       <div id="folder-thumbnails" className={styles.folderGrid}>
-        {currentCase.folders.map(folder => {
-          // 🚀 Précharger l'image principale du dossier
-          const mainImageUrl = currentCase.folderMainImages?.[folder];
-          if (mainImageUrl && !imageCache.has(mainImageUrl)) {
-            imagePreloader.preload(mainImageUrl, 1);
-          }
-          
+        {currentCase.folders.map(folder => {          
           return (
             <div 
               key={folder} 
@@ -1369,11 +1283,10 @@ function RadiologyViewer() {
               }}
             >
               <img 
-                src={mainImageUrl || `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`}
+                src={currentCase.folderMainImages?.[folder] || `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`}
                 alt={`${folder} thumbnail`} 
                 className={styles.folderThumbnailImage}
                 loading="lazy"
-                decoding="async"
                 onError={(e) => {
                   if (e.target.src !== `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`) {
                     e.target.src = `${process.env.REACT_APP_SPACES_URL}/images/default.jpg`;
