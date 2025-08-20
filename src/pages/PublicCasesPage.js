@@ -1,7 +1,7 @@
-// PublicCasesPage.js - VERSION AVEC UNIFIED FILTER SYSTEM ROBUSTE
+// PublicCasesPage.js - VERSION AVEC UNIFIED FILTER SYSTEM ROBUSTE ET ICÔNES CERVEAUX
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from '../utils/axiosConfig';
-import { Star, TrendingUp, User, Eye, Copy, Plus } from 'lucide-react';
+import { TrendingUp, User, Eye, Copy, Plus } from 'lucide-react';
 import RatingStars from '../components/RatingStars';
 
 // Import du nouveau système de filtres unifié
@@ -81,7 +81,7 @@ function PublicCaseCardComponent({ cas, showSpoilers, onCopyCase, caseRating, on
       />
       <UnifiedCaseContent>
         <UnifiedCaseHeader>
-          <UnifiedCaseTitle>
+          <UnifiedCaseTitle style={{ textAlign: 'center', width: '100%' }}>
             {showSpoilers ? (cas.title || 'Cas sans titre') : '?'}
           </UnifiedCaseTitle>
           {isPopular && (
@@ -94,15 +94,16 @@ function PublicCaseCardComponent({ cas, showSpoilers, onCopyCase, caseRating, on
         
         <UnifiedStarRating>
           {[...Array(5)].map((_, index) => (
-            <Star
+            <span
               key={index}
-              size={22}
-              fill={index < (cas.difficulty || 0) ? "gold" : "transparent"}
-              stroke={index < (cas.difficulty || 0) ? "gold" : "#d1d5db"}
               style={{ 
-                filter: index < (cas.difficulty || 0) ? 'drop-shadow(0 1px 2px rgba(255, 215, 0, 0.3))' : 'none'
+                fontSize: '22px',
+                opacity: index < (cas.difficulty || 0) ? 1 : 0.3,
+                filter: index < (cas.difficulty || 0) ? 'drop-shadow(0 1px 2px rgba(245, 158, 11, 0.3))' : 'none'
               }}
-            />
+            >
+              🧠
+            </span>
           ))}
         </UnifiedStarRating>
 
@@ -317,9 +318,9 @@ function PublicCasesPage() {
     {
       key: 'difficulty',
       title: 'Difficulté',
-      icon: '⭐',
-      options: ['1 étoile', '2 étoiles', '3 étoiles', '4 étoiles', '5 étoiles'],
-      selectedValues: difficultyFilter.map(d => `${d} étoile${d > 1 ? 's' : ''}`),
+      icon: '🧠',
+      options: ['1 cerveau', '2 cerveaux', '3 cerveaux', '4 cerveaux', '5 cerveaux'],
+      selectedValues: difficultyFilter.map(d => `${d} cerveau${d > 1 ? 'x' : ''}`),
       onChange: (selectedLabels) => {
         const difficulties = selectedLabels.map(label => {
           const match = label.match(/(\d+)/);
@@ -349,22 +350,25 @@ function PublicCasesPage() {
         <UnifiedPageTitle>Cas Cliniques Publics</UnifiedPageTitle>
       </PageHeader>
 
-      <SearchAndFiltersSection>
+      <SearchAndFiltersSection style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <UnifiedSearchInput
           type="text"
           placeholder="Rechercher dans les cas publics (titre, tags, auteur...)"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ maxWidth: '600px', width: '100%' }}
         />
 
         {/* NOUVEAU SYSTÈME DE FILTRES UNIFIÉ */}
-        <UnifiedFilterSystem
-          filters={filtersConfig}
-          showSpoilerButton={true}
-          spoilerState={showSpoilers}
-          onSpoilerToggle={() => setShowSpoilers(!showSpoilers)}
-          spoilerLabels={{ show: 'Voir titres', hide: 'Masquer titres' }}
-        />
+        <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+          <UnifiedFilterSystem
+            filters={filtersConfig}
+            showSpoilerButton={true}
+            spoilerState={showSpoilers}
+            onSpoilerToggle={() => setShowSpoilers(!showSpoilers)}
+            spoilerLabels={{ show: 'Voir titres', hide: 'Masquer titres' }}
+          />
+        </div>
       </SearchAndFiltersSection>
 
       {/* Contenu principal */}

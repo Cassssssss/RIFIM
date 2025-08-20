@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
-import { Star, StarHalf, Edit, Save, Upload, X, Folder, Image as ImageIcon, File, ArrowUp, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Trash2, Plus, FileText } from 'lucide-react';
+import { StarHalf, Edit, Save, Upload, X, Folder, Image as ImageIcon, File, ArrowUp, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Trash2, Plus, FileText } from 'lucide-react';
 import ImageViewer from '../components/ImageViewer';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
@@ -778,19 +778,19 @@ const CaseCard = memo(({ cas, onUpdateDifficulty, onUpdateAnswer, onUpdateClinic
 const StarRating = memo(({ rating, onRatingChange }) => {
   return (
     <S.StarRatingContainer>
-      {[1, 2, 3, 4, 5].map((star) => (
+      {[1, 2, 3, 4, 5].map((brain) => (
         <S.Star
-          key={star}
-          onClick={() => onRatingChange(star)}
-          filled={rating >= star}
+          key={brain}
+          onClick={() => onRatingChange(brain)}
+          filled={rating >= brain}
+          style={{ cursor: 'pointer' }}
         >
-          {rating >= star ? (
-            <Star fill="gold" color="gold" />
-          ) : rating >= star - 0.5 ? (
-            <StarHalf fill="gold" color="gold" />
-          ) : (
-            <Star color="gray" />
-          )}
+          <span style={{ 
+            fontSize: '24px',
+            opacity: rating >= brain ? 1 : 0.3
+          }}>
+            🧠
+          </span>
         </S.Star>
       ))}
     </S.StarRatingContainer>
