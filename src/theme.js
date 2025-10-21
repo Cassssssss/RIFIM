@@ -1,18 +1,18 @@
 // src/theme.js - THÈME HARMONISÉ AVEC LA COULEUR HEADER
 
 export const lightTheme = {
-  // ==================== COULEURS HEADER (BLEU ARDOISE SOBRE) ====================
-  headerBackground: 'rgba(51, 65, 85, 0.72)',  // Bleu ardoise avec transparence (effet glassmorphism)
-  headerBackgroundSolid: '#334155',              // Version solide pour fallback (slate-700)
+  // ==================== COULEURS HEADER (BLEU APPLE SIGNATURE) ====================
+  headerBackground: 'rgba(0, 113, 227, 0.72)',  // Bleu Apple signature avec transparence (effet glassmorphism)
+  headerBackgroundSolid: '#0071E3',              // Version solide pour fallback
   headerText: '#ffffff',                         // Texte header
 
-  // ==================== COULEURS PRINCIPALES (BLEU ARDOISE #334155) ====================
-  primary: '#334155',              // Bleu ardoise sobre et élégant (slate-700)
-  primaryHover: '#1e293b',         // Version plus foncée au survol (slate-800)
-  primaryLight: '#e2e8f0',         // Version très claire pour backgrounds (slate-200)
+  // ==================== COULEURS PRINCIPALES (BLEU APPLE #0071E3) ====================
+  primary: '#0071E3',              // Bleu Apple signature (iPhone/Mac)
+  primaryHover: '#0077ED',         // Version légèrement plus claire au survol
+  primaryLight: '#E5F2FF',         // Version très claire pour backgrounds
   secondary: '#10b981',            // Vert médical (gardé)
   secondaryHover: '#059669',       // Vert foncé au survol
-  accent: '#f59e0b',               // Orange pour les badges/alertes
+  accent: '#FF9500',               // Orange Apple pour les badges/alertes
   
   // ==================== BACKGROUNDS ====================
   background: '#f5f5f7',           // Background principal (gris Apple)
@@ -32,23 +32,23 @@ export const lightTheme = {
   // ==================== BORDURES ====================
   border: '#d2d2d7',               // Bordures principales (gris Apple)
   borderLight: '#e5e5e7',          // Bordures discrètes
-  borderFocus: '#334155',          // Bordures focus (bleu ardoise)
+  borderFocus: '#0071E3',          // Bordures focus (bleu Apple)
   
   // ==================== ÉTATS ====================
   success: '#10b981',              // Succès (vert)
   successLight: '#d1f4e0',         // Background succès
-  warning: '#f59e0b',              // Avertissement (orange)
+  warning: '#FF9500',              // Avertissement (orange Apple)
   warningLight: '#fff4e5',         // Background avertissement
-  error: '#ef4444',                // Erreur (rouge)
+  error: '#FF3B30',                // Erreur (rouge Apple)
   errorLight: '#fee2e2',           // Background erreur
-  info: '#334155',                 // Information (bleu ardoise)
-  infoLight: '#e2e8f0',            // Background information
+  info: '#0071E3',                 // Information (bleu Apple)
+  infoLight: '#E5F2FF',            // Background information
   
   // ==================== INTERACTIONS ====================
   hover: '#fafafa',                // Survol général
-  active: '#e2e8f0',               // État actif (ardoise clair)
-  focus: 'rgba(51, 65, 85, 0.1)',  // Focus avec transparence bleu ardoise
-  disabled: '#94a3b8',             // Éléments désactivés (slate-400)
+  active: '#E5F2FF',               // État actif (bleu clair)
+  focus: 'rgba(0, 113, 227, 0.1)', // Focus avec transparence bleu Apple
+  disabled: '#8e8e93',             // Éléments désactivés
   
   // ==================== BOUTONS (APPLE STYLE) ====================
   buttonText: '#ffffff',           // Texte des boutons
@@ -62,9 +62,9 @@ export const lightTheme = {
   shadowMedium: 'rgba(0, 0, 0, 0.15)', // Ombre moyenne
   shadowStrong: 'rgba(0, 0, 0, 0.25)', // Ombre forte
   
-  // ==================== TAGS ET BADGES (BLEU ARDOISE) ====================
-  tagBackground: '#e2e8f0',        // Background des tags (ardoise clair)
-  tagText: '#1e293b',              // Texte des tags (ardoise foncé)
+  // ==================== TAGS ET BADGES (BLEU APPLE) ====================
+  tagBackground: '#E5F2FF',        // Background des tags (bleu Apple clair)
+  tagText: '#0051B8',              // Texte des tags (bleu Apple foncé)
   
   // ==================== STATUTS SPÉCIFIQUES ====================
   statusPublic: '#dcfce7',         // Background statut public
@@ -104,17 +104,17 @@ export const lightTheme = {
 
 export const darkTheme = {
   // ==================== COULEURS HEADER (SOMBRE GLASSMORPHISM) ====================
-  headerBackground: 'rgba(15, 23, 42, 0.72)',  // Fond sombre ardoise avec transparence
-  headerBackgroundSolid: '#0f172a',             // Version solide pour fallback (slate-900)
+  headerBackground: 'rgba(28, 28, 30, 0.72)',  // Fond sombre Apple avec transparence
+  headerBackgroundSolid: '#1c1c1e',             // Version solide pour fallback
   headerText: '#ffffff',                        // Texte header
 
-  // ==================== COULEURS PRINCIPALES (BLEU ARDOISE DARK MODE) ====================
-  primary: '#64748b',              // Ardoise moyen adapté au mode sombre (slate-500)
-  primaryHover: '#94a3b8',         // Version plus claire au survol (slate-400)
-  primaryLight: '#1e293b',         // Version sombre pour backgrounds (slate-800)
-  secondary: '#10b981',            // Vert mode sombre
-  secondaryHover: '#34d399',       // Vert plus vif au survol
-  accent: '#f59e0b',               // Orange mode sombre              
+  // ==================== COULEURS PRINCIPALES (BLEU APPLE DARK MODE) ====================
+  primary: '#0A84FF',              // Bleu Apple adapté au mode sombre
+  primaryHover: '#409CFF',         // Version plus claire au survol
+  primaryLight: '#1A3A52',         // Version sombre pour backgrounds
+  secondary: '#30D158',            // Vert Apple mode sombre
+  secondaryHover: '#32D74B',       // Vert plus vif au survol
+  accent: '#FF9F0A',               // Orange Apple mode sombre              
   
   // ==================== BACKGROUNDS SOMBRES (APPLE DARK MODE) ====================
   background: '#000000',           // Background principal noir Apple
@@ -131,42 +131,42 @@ export const darkTheme = {
   textLight: '#8e8e93',            // Texte discret
   textInverse: '#000000',          // Texte inversé          
   
-  // ==================== BORDURES SOMBRES (ARDOISE) ====================
-  border: '#334155',               // Bordures sombres ardoise
-  borderLight: '#1e293b',          // Bordures discrètes
-  borderFocus: '#64748b',          // Focus ardoise mode sombre
+  // ==================== BORDURES SOMBRES (APPLE) ====================
+  border: '#38383a',               // Bordures sombres Apple
+  borderLight: '#2c2c2e',          // Bordures discrètes
+  borderFocus: '#0A84FF',          // Focus bleu Apple mode sombre
   
-  // ==================== ÉTATS SOMBRES (ARDOISE) ====================
-  success: '#10b981',              // Vert mode sombre
-  successLight: '#064e3b',         // Background succès sombre
-  warning: '#f59e0b',              // Orange mode sombre
-  warningLight: '#451a03',         // Background avertissement sombre
-  error: '#ef4444',                // Rouge mode sombre
-  errorLight: '#7f1d1d',           // Background erreur sombre
-  info: '#64748b',                 // Ardoise mode sombre
-  infoLight: '#1e293b',            // Background info sombre            
+  // ==================== ÉTATS SOMBRES (APPLE) ====================
+  success: '#30D158',              // Vert Apple mode sombre
+  successLight: '#1a3a26',         // Background succès sombre
+  warning: '#FF9F0A',              // Orange Apple mode sombre
+  warningLight: '#3a2a0a',         // Background avertissement sombre
+  error: '#FF453A',                // Rouge Apple mode sombre
+  errorLight: '#3a1a1a',           // Background erreur sombre
+  info: '#0A84FF',                 // Bleu Apple mode sombre
+  infoLight: '#1A3A52',            // Background info sombre            
   
-  // ==================== INTERACTIONS SOMBRES (ARDOISE) ====================
-  hover: '#1e293b',                // Survol ardoise sombre
-  active: '#334155',               // État actif
-  focus: 'rgba(100, 116, 139, 0.2)', // Focus ardoise transparent
-  disabled: '#475569',             // Désactivé ardoise             
+  // ==================== INTERACTIONS SOMBRES (APPLE) ====================
+  hover: '#2c2c2e',                // Survol gris sombre Apple
+  active: '#3a3a3c',               // État actif
+  focus: 'rgba(10, 132, 255, 0.2)', // Focus bleu Apple transparent
+  disabled: '#636366',             // Désactivé gris Apple             
   
-  // ==================== BOUTONS SOMBRES (ARDOISE) ====================
+  // ==================== BOUTONS SOMBRES (APPLE) ====================
   buttonText: '#ffffff',           // Texte boutons blanc
-  buttonSecondary: '#1e293b',      // Boutons secondaires ardoise sombre
+  buttonSecondary: '#2c2c2e',      // Boutons secondaires gris sombre
   buttonSecondaryText: '#ffffff',  // Texte boutons secondaires blanc
-  buttonDanger: '#ef4444',         // Boutons danger rouge
-  buttonDangerHover: '#dc2626',    // Boutons danger au survol    
+  buttonDanger: '#FF453A',         // Boutons danger rouge Apple
+  buttonDangerHover: '#FF6961',    // Boutons danger au survol    
   
   // ==================== OMBRES SOMBRES ====================
   shadow: 'rgba(0, 0, 0, 0.3)',    
   shadowMedium: 'rgba(0, 0, 0, 0.4)', 
   shadowStrong: 'rgba(0, 0, 0, 0.6)', 
   
-  // ==================== TAGS ET BADGES SOMBRES (ARDOISE) ====================
-  tagBackground: '#1e293b',        // Background tag ardoise sombre
-  tagText: '#cbd5e1',              // Texte tag ardoise clair
+  // ==================== TAGS ET BADGES SOMBRES (APPLE) ====================
+  tagBackground: '#1A3A52',        // Background tag bleu sombre
+  tagText: '#64B5F6',              // Texte tag bleu clair
   
   // ==================== STATUTS SOMBRES ====================
   statusPublic: '#064e3b',         
