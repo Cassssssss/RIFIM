@@ -617,7 +617,7 @@ export const FilterButton = styled.button`
 `;
 
 export const SpoilerButton = styled.button`
-  background-color: ${props => props.active ? '#10b981' : '#6b7280'};
+  background-color: ${props => props.active ? props.theme.secondary : props.theme.disabled};
   color: white;
   border: none;
   padding: 0.5rem 1rem;
@@ -630,7 +630,7 @@ export const SpoilerButton = styled.button`
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: ${props => props.active ? '#059669' : '#4b5563'};
+    background-color: ${props => props.active ? props.theme.secondaryHover : props.theme.textSecondary};
   }
 
   svg {
@@ -879,7 +879,7 @@ export const SubmitTagButton = styled.button`
 `;
 
 export const CancelTagButton = styled.button`
-  background-color: #6b7280;
+  background-color: ${props => props.theme.disabled};
   color: white;
   border: none;
   border-radius: 4px;
@@ -887,9 +887,9 @@ export const CancelTagButton = styled.button`
   cursor: pointer;
   display: flex;
   align-items: center;
-  
+
   &:hover {
-    background-color: #4b5563;
+    background-color: ${props => props.theme.textSecondary};
   }
 
   /* 🔧 MODIFICATION : Bouton cancel tag plus compact sur mobile */
@@ -1044,7 +1044,7 @@ export const Button = styled.button`
 `;
 
 export const DeleteButton = styled.button`
-  background-color: #ef4444;
+  background-color: ${props => props.theme.buttonDanger};
   color: white;
   padding: 0.5rem;
   border: none;
@@ -1058,9 +1058,9 @@ export const DeleteButton = styled.button`
   height: 40px;
 
   &:hover {
-    background-color: #dc2626;
+    background-color: ${props => props.theme.buttonDangerHover};
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    box-shadow: 0 4px 12px ${props => props.theme.shadowMedium};
   }
 
   svg {
@@ -1088,7 +1088,7 @@ export const DeleteButton = styled.button`
 `;
 
 export const TutorialButton = styled.button`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: ${props => props.theme.primary};
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -1097,12 +1097,13 @@ export const TutorialButton = styled.button`
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 2px 8px ${props => props.theme.shadowMedium};
   text-align: center;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+    background: ${props => props.theme.primaryHover};
+    box-shadow: 0 4px 16px ${props => props.theme.shadowMedium};
   }
 
   /* 🔧 MODIFICATION : Bouton tutoriel plus compact sur mobile */
@@ -1110,10 +1111,10 @@ export const TutorialButton = styled.button`
     padding: 0.5rem 1rem;
     font-size: 0.8rem;
     border-radius: 8px;
-    
+
     &:hover {
       transform: none;
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 2px 8px ${props => props.theme.shadowMedium};
     }
   }
 `;
@@ -1184,10 +1185,10 @@ export const LoadingMessage = styled.div`
 export const ErrorMessage = styled.div`
   text-align: center;
   padding: 2rem;
-  color: #ef4444;
+  color: ${props => props.theme.error};
   font-size: 1.1rem;
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
+  background-color: ${props => props.theme.errorLight};
+  border: 1px solid ${props => props.theme.error};
   border-radius: 8px;
   margin: 1rem 0;
 

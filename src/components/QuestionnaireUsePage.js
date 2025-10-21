@@ -124,6 +124,64 @@ const ButtonGroup = styled.div`
   flex-wrap: wrap;
 `;
 
+const SecondaryButton = styled.button`
+  background-color: ${props => props.theme.buttonSecondary};
+  color: ${props => props.theme.buttonSecondaryText};
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: ${props => props.theme.hover};
+  }
+`;
+
+const SaveButton = styled.button`
+  background-color: ${props => props.theme.secondary};
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: ${props => props.theme.secondaryHover};
+  }
+`;
+
+const RemoveImageButton = styled.button`
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: ${props => props.theme.error};
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: ${props => props.theme.buttonDangerHover};
+  }
+`;
+
+const SuccessMessage = styled.span`
+  color: ${props => props.theme.secondary};
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+`;
+
 const ProgressContainer = styled.div`
   width: 100%;
   margin: 1.5rem 0;
@@ -133,7 +191,7 @@ const ProgressContainer = styled.div`
 const ProgressBar = styled.div`
   width: 100%;
   height: 8px;
-  background-color: #e5e7eb;
+  background-color: ${props => props.theme.borderLight};
   border-radius: 4px;
   overflow: hidden;
   margin: 0.5rem 0;
@@ -141,7 +199,7 @@ const ProgressBar = styled.div`
 
 const ProgressFill = styled.div`
   height: 100%;
-  background: linear-gradient(90deg, ${props => props.theme.primary || '#3b82f6'}, ${props => props.theme.secondary || '#8b5cf6'});
+  background: ${props => props.theme.primary};
   transition: width 0.3s ease;
   width: ${props => props.percentage}%;
 `;
@@ -149,7 +207,7 @@ const ProgressFill = styled.div`
 const ProgressText = styled.div`
   font-size: 0.9rem;
   font-weight: 600;
-  color: ${props => props.theme.text || '#374151'};
+  color: ${props => props.theme.text};
   margin-bottom: 0.5rem;
 `;
 
@@ -629,69 +687,24 @@ const QuestionnaireUsePage = () => {
                           borderRadius: '4px'
                         }}
                       />
-                      <button
-                        onClick={() => handleImageRemove(index)}
-                        style={{
-                          position: 'absolute',
-                          top: '4px',
-                          right: '4px',
-                          background: '#ef4444',
-                          color: 'white',
-                          borderRadius: '50%',
-                          width: '24px',
-                          height: '24px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          border: 'none',
-                          cursor: 'pointer'
-                        }}
-                      >
+                      <RemoveImageButton onClick={() => handleImageRemove(index)}>
                         <X size={12} />
-                      </button>
+                      </RemoveImageButton>
                     </div>
                   ))}
                 </div>
               )}
               <ButtonGroup>
-                <button
-                  onClick={copyToClipboard}
-                  style={{
-                    backgroundColor: '#334155',
-                    color: 'white',
-                    padding: '0.5rem 1rem',
-                    borderRadius: '6px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontWeight: '500',
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseOver={(e) => e.target.style.backgroundColor = '#1e293b'}
-                  onMouseOut={(e) => e.target.style.backgroundColor = '#334155'}
-                >
+                <SecondaryButton onClick={copyToClipboard}>
                   Copier le CR
-                </button>
-                <button
-                  onClick={handleSave}
-                  style={{
-                    backgroundColor: '#10b981',
-                    color: 'white',
-                    padding: '0.5rem 1rem',
-                    borderRadius: '6px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontWeight: '500',
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseOver={(e) => e.target.style.backgroundColor = '#059669'}
-                  onMouseOut={(e) => e.target.style.backgroundColor = '#10b981'}
-                >
+                </SecondaryButton>
+                <SaveButton onClick={handleSave}>
                   Sauvegarder
-                </button>
+                </SaveButton>
                 {copySuccess && (
-                  <span style={{ color: '#10b981', display: 'flex', alignItems: 'center', fontWeight: '500' }}>
+                  <SuccessMessage>
                     {copySuccess}
-                  </span>
+                  </SuccessMessage>
                 )}
               </ButtonGroup>
           </PreviewCard>

@@ -468,8 +468,8 @@
   width: 100vw;
   height: var(--bottom-bar-height);
   
-  background: var(--header-background, #4f5b93);
-  color: var(--header-text, #ffffff);
+  background: var(--header-background, rgba(255, 255, 255, 0.72));
+  color: var(--header-text, #1D1D1F);
   
   display: flex;
   align-items: center;
