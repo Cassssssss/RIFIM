@@ -1,24 +1,26 @@
 // src/theme.js - THÈME HARMONISÉ AVEC LA COULEUR HEADER
 
 export const lightTheme = {
-  // ==================== COULEURS HEADER (CONSERVÉES) ====================
-  headerBackground: '#4f5b93',     // Couleur header originale
-  headerText: '#ffffff',           // Texte header original
-  
-  // ==================== COULEURS PRINCIPALES (HARMONISÉES AVEC HEADER) ====================
-  primary: '#4f5b93',              // MÊME COULEUR QUE LE HEADER !
-  primaryHover: '#3d4873',         // Version plus foncée du header
+  // ==================== COULEURS HEADER (BLEU APPLE MODERNE) ====================
+  headerBackground: 'rgba(0, 122, 255, 0.72)',  // Bleu Apple avec transparence (effet glassmorphism)
+  headerBackgroundSolid: '#007AFF',              // Version solide pour fallback
+  headerText: '#ffffff',                         // Texte header
+
+  // ==================== COULEURS PRINCIPALES (BLEU APPLE #007AFF) ====================
+  primary: '#007AFF',              // Bleu Apple moderne et dynamique
+  primaryHover: '#0051D5',         // Version plus foncée au survol
+  primaryLight: '#E5F2FF',         // Version très claire pour backgrounds
   secondary: '#10b981',            // Vert médical (gardé)
   secondaryHover: '#059669',       // Vert foncé au survol
-  accent: '#f59e0b',              // Orange pour les badges/alertes
+  accent: '#FF9500',               // Orange Apple pour les badges/alertes
   
   // ==================== BACKGROUNDS ====================
-  background: '#f8fafc',           // Background principal
-  backgroundSolid: '#f8fafc',      // Background solide
-  backgroundSecondary: '#f1f5f9',  // Background secondaire (pour SectionTitle) - PLUS CONTRASTÉ
+  background: '#f5f5f7',           // Background principal (gris Apple)
+  backgroundSolid: '#f5f5f7',      // Background solide
+  backgroundSecondary: '#E8F4FF',  // Background secondaire bleuté
   card: '#ffffff',                 // Cartes/conteneurs
-  cardSecondary: '#f9fafb',        // Cartes secondaires
-  cardHover: '#f3f4f6',            // Survol des cartes
+  cardSecondary: '#fafafa',        // Cartes secondaires
+  cardHover: '#E5F2FF',            // Survol des cartes (bleu très clair)
   surface: '#ffffff',              // Surface (pour compatibilité)
   
   // ==================== TEXTES ====================
@@ -28,41 +30,41 @@ export const lightTheme = {
   textInverse: '#ffffff',          // Texte sur fond coloré
   
   // ==================== BORDURES ====================
-  border: '#e5e7eb',               // Bordures principales
-  borderLight: '#f3f4f6',          // Bordures discrètes
-  borderFocus: '#4f5b93',          // Bordures focus (même couleur)
+  border: '#d2d2d7',               // Bordures principales (gris Apple)
+  borderLight: '#e5e5e7',          // Bordures discrètes
+  borderFocus: '#007AFF',          // Bordures focus (bleu Apple)
   
   // ==================== ÉTATS ====================
-  success: '#10b981',              // Succès
-  successLight: '#dcfce7',         // Background succès
-  warning: '#f59e0b',              // Avertissement
-  warningLight: '#fef3c7',         // Background avertissement
-  error: '#ef4444',                // Erreur
-  errorLight: '#fef2f2',           // Background erreur
-  info: '#4f5b93',                 // Information (même couleur)
-  infoLight: '#e0e7ff',            // Background information
+  success: '#34C759',              // Succès (vert Apple)
+  successLight: '#d1f4e0',         // Background succès
+  warning: '#FF9500',              // Avertissement (orange Apple)
+  warningLight: '#fff4e5',         // Background avertissement
+  error: '#FF3B30',                // Erreur (rouge Apple)
+  errorLight: '#ffe5e5',           // Background erreur
+  info: '#007AFF',                 // Information (bleu Apple)
+  infoLight: '#E5F2FF',            // Background information
   
   // ==================== INTERACTIONS ====================
-  hover: '#f9fafb',                // Survol général
-  active: '#f3f4f6',               // État actif
-  focus: 'rgba(79, 91, 147, 0.1)', // Focus avec transparence du header
-  disabled: '#9ca3af',             // Éléments désactivés
+  hover: '#fafafa',                // Survol général
+  active: '#E5F2FF',               // État actif (bleu clair)
+  focus: 'rgba(0, 122, 255, 0.1)', // Focus avec transparence bleu Apple
+  disabled: '#8e8e93',             // Éléments désactivés (gris Apple)
   
-  // ==================== BOUTONS (HARMONISÉS) ====================
+  // ==================== BOUTONS (APPLE STYLE) ====================
   buttonText: '#ffffff',           // Texte des boutons
-  buttonSecondary: '#f3f4f6',      // Boutons secondaires
-  buttonSecondaryText: '#374151',  // Texte boutons secondaires
-  buttonDanger: '#ef4444',         // Boutons de suppression
-  buttonDangerHover: '#dc2626',    // Boutons de suppression au survol
+  buttonSecondary: '#f5f5f7',      // Boutons secondaires (gris Apple)
+  buttonSecondaryText: '#1d1d1f',  // Texte boutons secondaires
+  buttonDanger: '#FF3B30',         // Boutons de suppression (rouge Apple)
+  buttonDangerHover: '#D70015',    // Boutons de suppression au survol
   
   // ==================== OMBRES ====================
   shadow: 'rgba(0, 0, 0, 0.1)',    // Ombre légère
   shadowMedium: 'rgba(0, 0, 0, 0.15)', // Ombre moyenne
   shadowStrong: 'rgba(0, 0, 0, 0.25)', // Ombre forte
   
-  // ==================== TAGS ET BADGES (HARMONISÉS) ====================
-  tagBackground: '#e0e7ff',        // Background des tags (bleu clair)
-  tagText: '#3d4873',              // Texte des tags (bleu foncé)
+  // ==================== TAGS ET BADGES (BLEU APPLE) ====================
+  tagBackground: '#E5F2FF',        // Background des tags (bleu Apple clair)
+  tagText: '#0051D5',              // Texte des tags (bleu Apple foncé)
   
   // ==================== STATUTS SPÉCIFIQUES ====================
   statusPublic: '#dcfce7',         // Background statut public
@@ -101,68 +103,70 @@ export const lightTheme = {
 };
 
 export const darkTheme = {
-  // ==================== COULEURS HEADER (SOMBRES HARMONISÉES) ====================
-  headerBackground: '#2d3748',     // Header sombre harmonisé
-  headerText: '#ffffff',           // Texte header
+  // ==================== COULEURS HEADER (SOMBRE GLASSMORPHISM) ====================
+  headerBackground: 'rgba(28, 28, 30, 0.72)',  // Fond sombre Apple avec transparence
+  headerBackgroundSolid: '#1c1c1e',             // Version solide pour fallback
+  headerText: '#ffffff',                        // Texte header
+
+  // ==================== COULEURS PRINCIPALES (BLEU APPLE DARK MODE) ====================
+  primary: '#0A84FF',              // Bleu Apple adapté au mode sombre
+  primaryHover: '#409CFF',         // Version plus claire au survol (inversé)
+  primaryLight: '#1A3A52',         // Version sombre pour backgrounds
+  secondary: '#30D158',            // Vert Apple mode sombre
+  secondaryHover: '#32D74B',       // Vert plus vif au survol
+  accent: '#FF9F0A',               // Orange Apple mode sombre              
   
-  // ==================== COULEURS PRINCIPALES (HARMONISÉES) ====================
-  primary: '#4f5b93',              // Même couleur primaire en mode sombre
-  primaryHover: '#3d4873',         
-  secondary: '#34d399',            // Vert plus vif
-  secondaryHover: '#10b981',       
-  accent: '#fbbf24',              
+  // ==================== BACKGROUNDS SOMBRES (APPLE DARK MODE) ====================
+  background: '#000000',           // Background principal noir Apple
+  backgroundSolid: '#000000',      // Background solide noir
+  backgroundSecondary: '#1c1c1e',  // Background secondaire gris très sombre
+  card: '#1c1c1e',                 // Cartes sombres Apple
+  cardSecondary: '#2c2c2e',        // Cartes secondaires
+  cardHover: '#3a3a3c',            // Survol des cartes
+  surface: '#1c1c1e',              // Surface sombre
   
-  // ==================== BACKGROUNDS SOMBRES ====================
-  background: '#1a202c',           // Background principal sombre
-  backgroundSolid: '#1a202c',      // Background solide sombre
-  backgroundSecondary: '#2d3748',  // Background secondaire pour SectionTitle - PLUS CONTRASTÉ
-  card: '#2d3748',                 // Cartes sombres
-  cardSecondary: '#4a5568',        // Cartes secondaires sombres
-  cardHover: '#718096',            // Survol des cartes sombres
-  surface: '#2d3748',              // Surface sombre
+  // ==================== TEXTES SOMBRES (APPLE) ====================
+  text: '#ffffff',                 // Texte principal blanc
+  textSecondary: '#aeaeb2',        // Texte secondaire gris Apple
+  textLight: '#8e8e93',            // Texte discret
+  textInverse: '#000000',          // Texte inversé          
   
-  // ==================== TEXTES SOMBRES ====================
-  text: '#f7fafc',                 
-  textSecondary: '#cbd5e0',        
-  textLight: '#a0aec0',            
-  textInverse: '#1a202c',          
+  // ==================== BORDURES SOMBRES (APPLE) ====================
+  border: '#38383a',               // Bordures sombres Apple
+  borderLight: '#2c2c2e',          // Bordures discrètes
+  borderFocus: '#0A84FF',          // Focus bleu Apple mode sombre
   
-  // ==================== BORDURES SOMBRES ====================
-  border: '#4a5568',               
-  borderLight: '#2d3748',          
-  borderFocus: '#4f5b93',          // Même couleur focus
+  // ==================== ÉTATS SOMBRES (APPLE) ====================
+  success: '#30D158',              // Vert Apple mode sombre
+  successLight: '#1a3a26',         // Background succès sombre
+  warning: '#FF9F0A',              // Orange Apple mode sombre
+  warningLight: '#3a2a0a',         // Background avertissement sombre
+  error: '#FF453A',                // Rouge Apple mode sombre
+  errorLight: '#3a1a1a',           // Background erreur sombre
+  info: '#0A84FF',                 // Bleu Apple mode sombre
+  infoLight: '#1A3A52',            // Background info sombre            
   
-  // ==================== ÉTATS SOMBRES ====================
-  success: '#34d399',              
-  successLight: '#064e3b',         
-  warning: '#fbbf24',              
-  warningLight: '#451a03',         
-  error: '#f87171',                
-  errorLight: '#7f1d1d',           
-  info: '#4f5b93',                 // Même couleur info
-  infoLight: '#2a4365',            
+  // ==================== INTERACTIONS SOMBRES (APPLE) ====================
+  hover: '#2c2c2e',                // Survol gris sombre Apple
+  active: '#3a3a3c',               // État actif
+  focus: 'rgba(10, 132, 255, 0.2)', // Focus bleu Apple transparent
+  disabled: '#636366',             // Désactivé gris Apple             
   
-  // ==================== INTERACTIONS SOMBRES ====================
-  hover: '#4a5568',                
-  active: '#718096',               
-  focus: 'rgba(79, 91, 147, 0.3)', // Focus harmonisé
-  disabled: '#718096',             
-  
-  // ==================== BOUTONS SOMBRES ====================
-  buttonText: '#ffffff',           
-  buttonSecondary: '#4a5568',      
-  buttonSecondaryText: '#f7fafc',  
-  buttonDanger: '#f87171',         
-  buttonDangerHover: '#ef4444',    
+  // ==================== BOUTONS SOMBRES (APPLE) ====================
+  buttonText: '#ffffff',           // Texte boutons blanc
+  buttonSecondary: '#2c2c2e',      // Boutons secondaires gris sombre
+  buttonSecondaryText: '#ffffff',  // Texte boutons secondaires blanc
+  buttonDanger: '#FF453A',         // Boutons danger rouge Apple
+  buttonDangerHover: '#FF6961',    // Boutons danger au survol    
   
   // ==================== OMBRES SOMBRES ====================
   shadow: 'rgba(0, 0, 0, 0.3)',    
   shadowMedium: 'rgba(0, 0, 0, 0.4)', 
   shadowStrong: 'rgba(0, 0, 0, 0.6)', 
   
-  // ==================== TAGS ET BADGES SOMBRES (HARMONISÉS) ====================
-  tagBackground: '#2a4365',        // Bleu sombre
-  tagText: '#90cdf4',              // Bleu clair
+  // ==================== TAGS ET BADGES SOMBRES (APPLE) ====================
+  tagBackground: '#1A3A52',        // Background tag bleu sombre
+  tagText: '#64B5F6',              // Texte tag bleu clair
   
   // ==================== STATUTS SOMBRES ====================
   statusPublic: '#064e3b',         

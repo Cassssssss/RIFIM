@@ -4,15 +4,30 @@ import styled from 'styled-components';
 import { Moon, Sun, Menu, X, User, LogOut, ChevronDown, ChevronRight, FileText, FolderOpen, Stethoscope, Activity, BarChart3 } from 'lucide-react';
 
 const HeaderWrapper = styled.header`
+  /* ✨ GLASSMORPHISM EFFECT APPLE STYLE ✨ */
   background-color: ${props => props.theme.headerBackground};
   color: ${props => props.theme.headerText};
   padding: 1rem 0;
   width: 100%;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease, backdrop-filter 0.3s ease;
   z-index: 999998;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(8px);
-  
+
+  /* Effet glassmorphism Apple avec flou prononcé */
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+
+  /* Bordure inférieure subtile pour séparer le header du contenu */
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+
+  /* Ombre douce pour donner de la profondeur */
+  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.05),
+              0 1px 3px 0 rgba(0, 0, 0, 0.05);
+
+  /* Support pour les navigateurs qui ne supportent pas backdrop-filter */
+  @supports not (backdrop-filter: blur(20px)) {
+    background-color: ${props => props.theme.headerBackgroundSolid || props.theme.headerBackground};
+  }
+
   /* 🔧 LOGIQUE CONDITIONNELLE : Position selon la page */
   ${props => props.$isRadiologyViewer ? `
     /* Pour RadiologyViewer : position fixed normale */
@@ -26,7 +41,7 @@ const HeaderWrapper = styled.header`
     top: 0;
     left: 0;
     right: 0;
-    
+
     @media (max-width: 768px) {
       position: sticky !important;
       top: 0 !important;
@@ -220,14 +235,15 @@ const ThemeToggleButton = styled.button`
   transition: all 0.2s ease;
   font-weight: 500;
   touch-action: manipulation;
-  
+
   &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.15);
     transform: translateY(-1px);
   }
 
   &:active {
     transform: translateY(0);
+    background-color: rgba(255, 255, 255, 0.2);
   }
   
   @media (max-width: 768px) {
@@ -278,14 +294,15 @@ const MenuButton = styled.button`
   font-weight: 500;
   gap: 0.5rem;
   touch-action: manipulation;
-  
+
   &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.15);
     transform: translateY(-1px);
   }
 
   &:active {
     transform: translateY(0);
+    background-color: rgba(255, 255, 255, 0.2);
   }
   
   @media (max-width: 768px) {
@@ -340,12 +357,17 @@ const DropdownMenu = styled.div`
   background-color: ${props => props.theme.card || '#ffffff'};
   border: 1px solid ${props => props.theme.border || '#e0e6ed'};
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15),
+              0 0 1px rgba(0, 0, 0, 0.1);
   padding: 0.75rem 0;
   display: ${props => props.$isOpen ? 'block' : 'none'};
   z-index: 99999;
   min-width: 280px;
-  backdrop-filter: blur(8px);
+
+  /* Effet glassmorphism pour le menu déroulant aussi */
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+
   animation: ${props => props.$isOpen ? 'dropdownSlideIn' : 'dropdownSlideOut'} 0.2s ease;
   max-height: 80vh;
   overflow-y: auto;
