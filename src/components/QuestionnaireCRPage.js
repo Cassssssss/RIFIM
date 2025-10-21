@@ -46,6 +46,94 @@ const ModernTitle = styled.h1`
   text-shadow: 0 2px 4px ${props => props.theme.shadow};
 `;
 
+const ContentWrapper = styled.div`
+  display: flex;
+  gap: 2rem;
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+`;
+
+const QuestionnaireSection = styled.div`
+  flex: 3;
+  min-width: 0;
+`;
+
+const PreviewSection = styled.div`
+  flex: 2;
+  min-width: 0;
+
+  @media (min-width: 1024px) {
+    position: sticky;
+    top: 80px;
+    align-self: flex-start;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+  }
+`;
+
+const PreviewCard = styled.div`
+  background-color: ${props => props.theme.card};
+  border: 2px solid ${props => props.theme.border};
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px ${props => props.theme.shadow};
+`;
+
+const PreviewTitle = styled.h3`
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: ${props => props.theme.primary};
+  margin-bottom: 1rem;
+  border-bottom: 2px solid ${props => props.theme.primary};
+  padding-bottom: 0.5rem;
+`;
+
+const PreviewContent = styled.div`
+  background-color: ${props => props.theme.background};
+  border: 1px solid ${props => props.theme.borderLight};
+  border-radius: 8px;
+  padding: 1rem;
+  min-height: 300px;
+  max-height: 500px;
+  overflow-y: auto;
+  font-family: 'Calibri', sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+
+  &:focus {
+    outline: 2px solid ${props => props.theme.primary};
+    outline-offset: 2px;
+  }
+`;
+
+const SaveButton = styled.button`
+  width: 100%;
+  margin-top: 1rem;
+  background-color: ${props => props.theme.primary};
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: ${props => props.theme.primaryHover};
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px ${props => props.theme.shadow};
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
 
 
 const QuestionnaireCRPage = () => {
@@ -260,49 +348,43 @@ const QuestionnaireCRPage = () => {
   <ModernPageContainer>
     <ModernCard>
       <ModernTitle>{questionnaire?.title || "Compte rendu"}</ModernTitle>
-      <div className="flex flex-col lg:flex-row gap-6">
-        <div className="w-full lg:w-8/12">
-          <div>
+      <ContentWrapper>
+        <QuestionnaireSection>
+          <QuestionnairePreview
+            title=""
+            questions={questionnaire.questions}
+            selectedOptions={selectedOptions}
+            setSelectedOptions={handleOptionChange}
+            crTexts={crTexts}
+            setCRTexts={setCRTexts}
+            freeTexts={freeTexts}
+            onFreeTextChange={handleFreeTextChange}
+            showCRFields={true}
+            hiddenQuestions={hiddenQuestions}
+            toggleQuestionVisibility={toggleQuestionVisibility}
+            showAddButton={false}
+            questionnaireLinks={questionnaire.links}
+            questionnaireId={id}
+            onOptionUpdate={handleOptionUpdate}
+            onCRTextChange={handleCRTextChange}
+          />
+        </QuestionnaireSection>
 
-<QuestionnairePreview 
-  title=""
-  questions={questionnaire.questions}
-  selectedOptions={selectedOptions}
-  setSelectedOptions={handleOptionChange}
-  crTexts={crTexts}
-  setCRTexts={setCRTexts}
-  freeTexts={freeTexts}
-  onFreeTextChange={handleFreeTextChange}
-  showCRFields={true}
-  hiddenQuestions={hiddenQuestions}
-  toggleQuestionVisibility={toggleQuestionVisibility}
-  showAddButton={false}
-  questionnaireLinks={questionnaire.links}
-  questionnaireId={id}
-  onOptionUpdate={handleOptionUpdate}
-  onCRTextChange={handleCRTextChange}
-/>
-       
-          </div>
-        </div>
-        <div className="w-full lg:w-4/12">
-          <div>
-            <h3 className="text-xl font-semibold mb-4">Aperçu du CR</h3>
-            <div 
-              className="bg-gray-100 p-4 rounded-md whitespace-pre-wrap font-calibri text-base"
+        <PreviewSection>
+          <PreviewCard>
+            <PreviewTitle>📋 Aperçu du Compte-Rendu</PreviewTitle>
+            <PreviewContent
+              ref={crRef}
               contentEditable={true}
               onBlur={(e) => setEditableCR(e.target.innerHTML)}
               dangerouslySetInnerHTML={{ __html: editableCR }}
             />
-          </div>
-          <button 
-            onClick={handleSave}
-            className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-          >
-            Enregistrer
-          </button>
-        </div>
-      </div>
+            <SaveButton onClick={handleSave}>
+              💾 Enregistrer
+            </SaveButton>
+          </PreviewCard>
+        </PreviewSection>
+      </ContentWrapper>
     </ModernCard>
   </ModernPageContainer>
 );
