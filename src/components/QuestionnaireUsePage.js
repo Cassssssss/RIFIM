@@ -13,24 +13,29 @@ const ModernPageContainer = styled.div`
   background: ${props => props.theme.background};
   color: ${props => props.theme.text};
   min-height: calc(100vh - 60px);
+  max-width: 1600px;
+  margin: 0 auto;
+
   @media (max-width: 768px) {
     padding: 1rem;
   }
 `;
 
+const PageHeader = styled.div`
+  text-align: center;
+  margin-bottom: 2rem;
+`;
+
 const ModernCard = styled.div`
   background-color: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.border};
-  border-radius: 18px;
-  box-shadow: 0 6px 32px ${props => props.theme.shadow};
-  margin: 0 auto;
-  padding: 2.5rem 2.5rem 2rem 2.5rem;
-  max-width: 1400px;   // <--- augmente la largeur ici
-  width: 95%;
-  margin-top: 2rem;
-  @media (max-width: 1200px) {
-    padding: 1rem;
-    max-width: 99vw;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px ${props => props.theme.shadow};
+  padding: 2rem;
+
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+    border-radius: 12px;
   }
 `;
 
@@ -47,18 +52,20 @@ const ModernTitle = styled.h1`
 `;
 
 const ContentWrapper = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 450px;
   gap: 2rem;
+  align-items: start;
 
-  @media (max-width: 1024px) {
-    flex-direction: column;
+  @media (max-width: 1200px) {
+    grid-template-columns: 1fr 400px;
     gap: 1.5rem;
   }
-`;
 
-const QuestionnaireSection = styled.div`
-  flex: 3;
-  min-width: 0;
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
 `;
 
 const PreviewSection = styled.div`
@@ -566,19 +573,19 @@ const QuestionnaireUsePage = () => {
 
   return (
     <ModernPageContainer>
-      <ModernCard>
+      <PageHeader>
         <ModernTitle>{questionnaire?.title || "Questionnaire"}</ModernTitle>
-        
         <ProgressContainer>
           <ProgressText>Progression : {progressPercentage}%</ProgressText>
           <ProgressBar>
             <ProgressFill percentage={progressPercentage} />
           </ProgressBar>
         </ProgressContainer>
-        
-        <ContentWrapper>
-          <QuestionnaireSection>
-            <QuestionnairePreview
+      </PageHeader>
+
+      <ContentWrapper>
+        <ModernCard>
+          <QuestionnairePreview
               questions={questionnaire.questions}
               selectedOptions={selectedOptions}
               setSelectedOptions={handleOptionChange}
@@ -596,11 +603,11 @@ const QuestionnaireUsePage = () => {
               questionnaire={questionnaire}
               handleOpenLinkEditor={() => {}}
             />
-          </QuestionnaireSection>
+        </ModernCard>
 
-          <PreviewSection>
-            <PreviewCard>
-              <PreviewTitle>📋 Aperçu du Compte-Rendu</PreviewTitle>
+        <PreviewSection>
+          <PreviewCard>
+            <PreviewTitle>📋 Aperçu du Compte-Rendu</PreviewTitle>
               <PreviewContent
                 ref={crRef}
                 contentEditable={true}
@@ -687,10 +694,9 @@ const QuestionnaireUsePage = () => {
                   </span>
                 )}
               </ButtonGroup>
-            </PreviewCard>
-          </PreviewSection>
-        </ContentWrapper>
-      </ModernCard>
+          </PreviewCard>
+        </PreviewSection>
+      </ContentWrapper>
     </ModernPageContainer>
   );
 };
