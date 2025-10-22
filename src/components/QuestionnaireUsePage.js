@@ -125,7 +125,7 @@ const ButtonGroup = styled.div`
 `;
 
 const SecondaryButton = styled.button`
-  background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+  background: linear-gradient(135deg, #6B7FA0 0%, #596A8C 100%);
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 6px;
@@ -133,17 +133,17 @@ const SecondaryButton = styled.button`
   cursor: pointer;
   font-weight: 500;
   transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(100, 116, 139, 0.3);
+  box-shadow: 0 2px 8px rgba(107, 127, 160, 0.25);
 
   &:hover {
-    background: linear-gradient(135deg, #475569 0%, #334155 100%);
+    background: linear-gradient(135deg, #7A8FB2 0%, #6B7FA0 100%);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(100, 116, 139, 0.4);
+    box-shadow: 0 3px 10px rgba(107, 127, 160, 0.3);
   }
 `;
 
 const SaveButton = styled.button`
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #52B788 0%, #40916C 100%);
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 6px;
@@ -151,12 +151,12 @@ const SaveButton = styled.button`
   cursor: pointer;
   font-weight: 500;
   transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 2px 8px rgba(82, 183, 136, 0.25);
 
   &:hover {
-    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    background: linear-gradient(135deg, #63C599 0%, #52B788 100%);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    box-shadow: 0 3px 10px rgba(82, 183, 136, 0.3);
   }
 `;
 
@@ -164,7 +164,7 @@ const RemoveImageButton = styled.button`
   position: absolute;
   top: 4px;
   right: 4px;
-  background: ${props => props.theme.error};
+  background: linear-gradient(135deg, #E57373 0%, #D85858 100%);
   color: white;
   border-radius: 50%;
   width: 24px;
@@ -175,9 +175,11 @@ const RemoveImageButton = styled.button`
   border: none;
   cursor: pointer;
   transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(229, 115, 115, 0.25);
 
   &:hover {
-    background: ${props => props.theme.buttonDangerHover};
+    background: linear-gradient(135deg, #F48383 0%, #E57373 100%);
+    box-shadow: 0 3px 8px rgba(229, 115, 115, 0.3);
   }
 `;
 
@@ -205,7 +207,7 @@ const ProgressBar = styled.div`
 
 const ProgressFill = styled.div`
   height: 100%;
-  background: ${props => props.theme.primary};
+  background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
   transition: width 0.3s ease;
   width: ${props => props.percentage}%;
 `;

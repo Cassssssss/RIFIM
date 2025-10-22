@@ -103,78 +103,78 @@ export const lightTheme = {
 };
 
 export const darkTheme = {
-  // ==================== COULEURS HEADER (SOMBRE GLASSMORPHISM) ====================
-  headerBackground: 'rgba(28, 28, 30, 0.72)',  // Fond sombre Apple avec transparence
-  headerBackgroundSolid: '#1c1c1e',             // Version solide pour fallback
-  headerText: '#ffffff',                        // Texte header
+  // ==================== COULEURS HEADER (SOMBRES HARMONISÉES) ====================
+  headerBackground: '#2d3748',     // Header sombre harmonisé
+  headerBackgroundSolid: '#2d3748',
+  headerText: '#ffffff',           // Texte header
 
-  // ==================== COULEURS PRINCIPALES (BLEU APPLE DARK MODE) ====================
-  primary: '#0A84FF',              // Bleu Apple adapté au mode sombre
-  primaryHover: '#409CFF',         // Version plus claire au survol
-  primaryLight: '#1A3A52',         // Version sombre pour backgrounds
-  secondary: '#30D158',            // Vert Apple mode sombre
-  secondaryHover: '#32D74B',       // Vert plus vif au survol
-  accent: '#FF9F0A',               // Orange Apple mode sombre
+  // ==================== COULEURS PRINCIPALES (HARMONISÉES) ====================
+  primary: '#4f5b93',              // Même couleur primaire en mode sombre
+  primaryHover: '#3d4873',
+  primaryLight: '#1e293b',
+  secondary: '#34d399',            // Vert plus vif
+  secondaryHover: '#10b981',
+  accent: '#fbbf24',
 
-  // ==================== BACKGROUNDS SOMBRES (APPLE DARK MODE) ====================
-  background: '#000000',           // Background principal noir Apple
-  backgroundSolid: '#000000',      // Background solide noir
-  backgroundSecondary: '#1c1c1e',  // Background secondaire gris très sombre
-  card: '#1c1c1e',                 // Cartes sombres Apple
-  cardSecondary: '#2c2c2e',        // Cartes secondaires
-  cardHover: '#3a3a3c',            // Survol des cartes
-  surface: '#1c1c1e',              // Surface sombre
+  // ==================== BACKGROUNDS SOMBRES ====================
+  background: '#1a202c',           // Background principal sombre
+  backgroundSolid: '#1a202c',      // Background solide sombre
+  backgroundSecondary: '#2d3748',  // Background secondaire pour SectionTitle
+  card: '#2d3748',                 // Cartes sombres
+  cardSecondary: '#4a5568',        // Cartes secondaires sombres
+  cardHover: '#718096',            // Survol des cartes sombres
+  surface: '#2d3748',              // Surface sombre
 
-  // ==================== TEXTES SOMBRES (APPLE) ====================
-  text: '#ffffff',                 // Texte principal blanc
-  textSecondary: '#aeaeb2',        // Texte secondaire gris Apple
-  textLight: '#8e8e93',            // Texte discret
-  textInverse: '#000000',          // Texte inversé
+  // ==================== TEXTES SOMBRES ====================
+  text: '#f7fafc',
+  textSecondary: '#cbd5e0',
+  textLight: '#a0aec0',
+  textInverse: '#1a202c',
 
-  // ==================== BORDURES SOMBRES (APPLE) ====================
-  border: '#38383a',               // Bordures sombres Apple
-  borderLight: '#2c2c2e',          // Bordures discrètes
-  borderFocus: '#0A84FF',          // Focus bleu Apple mode sombre
+  // ==================== BORDURES SOMBRES ====================
+  border: '#4a5568',
+  borderLight: '#2d3748',
+  borderFocus: '#4f5b93',          // Même couleur focus
 
-  // ==================== ÉTATS SOMBRES (APPLE) ====================
-  success: '#30D158',              // Vert Apple mode sombre
-  successLight: '#1a3a26',         // Background succès sombre
-  warning: '#FF9F0A',              // Orange Apple mode sombre
-  warningLight: '#3a2a0a',         // Background avertissement sombre
-  error: '#FF453A',                // Rouge Apple mode sombre
-  errorLight: '#3a1a1a',           // Background erreur sombre
-  info: '#0A84FF',                 // Bleu Apple mode sombre
-  infoLight: '#1A3A52',            // Background info sombre
+  // ==================== ÉTATS SOMBRES ====================
+  success: '#34d399',
+  successLight: '#1a3a26',
+  warning: '#fbbf24',
+  warningLight: '#3a2a0a',
+  error: '#f87171',
+  errorLight: '#3a1a1a',
+  info: '#60a5fa',
+  infoLight: '#1A3A52',
 
-  // ==================== INTERACTIONS SOMBRES (APPLE) ====================
-  hover: '#2c2c2e',                // Survol gris sombre Apple
-  active: '#3a3a3c',               // État actif
-  focus: 'rgba(10, 132, 255, 0.2)', // Focus bleu Apple transparent
-  disabled: '#636366',             // Désactivé gris Apple
+  // ==================== INTERACTIONS SOMBRES ====================
+  hover: '#2c2c2e',
+  active: '#3a3a3c',
+  focus: 'rgba(79, 91, 147, 0.2)',
+  disabled: '#636366',
 
-  // ==================== BOUTONS SOMBRES (APPLE) ====================
-  buttonText: '#ffffff',           // Texte boutons blanc
-  buttonSecondary: '#2c2c2e',      // Boutons secondaires gris sombre
-  buttonSecondaryText: '#ffffff',  // Texte boutons secondaires blanc
-  buttonDanger: '#FF453A',         // Boutons danger rouge Apple
-  buttonDangerHover: '#FF6961',    // Boutons danger au survol
+  // ==================== BOUTONS SOMBRES ====================
+  buttonText: '#ffffff',
+  buttonSecondary: '#2c2c2e',
+  buttonSecondaryText: '#ffffff',
+  buttonDanger: '#f87171',
+  buttonDangerHover: '#ef4444',
 
   // ==================== OMBRES SOMBRES ====================
   shadow: 'rgba(0, 0, 0, 0.3)',
   shadowMedium: 'rgba(0, 0, 0, 0.4)',
   shadowStrong: 'rgba(0, 0, 0, 0.6)',
 
-  // ==================== TAGS ET BADGES SOMBRES (APPLE) ====================
-  tagBackground: '#1A3A52',        // Background tag bleu sombre
-  tagText: '#64B5F6',              // Texte tag bleu clair
+  // ==================== TAGS ET BADGES SOMBRES ====================
+  tagBackground: '#1A3A52',
+  tagText: '#64B5F6',
 
   // ==================== STATUTS SOMBRES ====================
   statusPublic: '#064e3b',
   statusPublicText: '#6ee7b7',
   statusPrivate: '#451a03',
   statusPrivateText: '#fcd34d',
-  statusDraft: '#4a5568',          // Background statut brouillon (mode sombre) - PLUS CONTRASTÉ
-  statusDraftText: '#f7fafc',      // Texte statut brouillon (mode sombre) - PLUS CONTRASTÉ
+  statusDraft: '#4a5568',
+  statusDraftText: '#f7fafc',
 
   // ==================== INPUTS SOMBRES ====================
   inputBackground: '#4a5568',
