@@ -1,9 +1,9 @@
 // src/theme.js - THÈME HARMONISÉ AVEC LA COULEUR HEADER
 
 export const lightTheme = {
-  // ==================== COULEURS HEADER (MINIMALISTE APPLE - BLANC GLASSMORPHISM) ====================
-  headerBackground: 'rgba(255, 255, 255, 0.72)',  // Blanc translucide (effet glassmorphism Apple)
-  headerBackgroundSolid: '#ffffff',                // Version solide pour fallback
+  // ==================== COULEURS HEADER (MINIMALISTE APPLE - GRIS GLASSMORPHISM) ====================
+  headerBackground: 'rgba(232, 232, 237, 0.72)',  // Gris stylé translucide (effet glassmorphism Apple)
+  headerBackgroundSolid: '#e8e8ed',                // Version solide pour fallback
   headerText: '#1D1D1F',                           // Texte header noir Shark
 
   // ==================== COULEURS PRINCIPALES (MINIMALISME APPLE) ====================
@@ -103,39 +103,39 @@ export const lightTheme = {
 };
 
 export const darkTheme = {
-  // ==================== COULEURS HEADER (SOMBRE GLASSMORPHISM APPLE) ====================
-  headerBackground: 'rgba(0, 113, 227, 0.72)',  // Bleu Apple signature avec transparence
-  headerBackgroundSolid: '#0071E3',              // Version solide pour fallback
-  headerText: '#ffffff',                         // Texte header blanc
+  // ==================== COULEURS HEADER (SOMBRE GLASSMORPHISM) ====================
+  headerBackground: 'rgba(28, 28, 30, 0.72)',  // Fond sombre Apple avec transparence
+  headerBackgroundSolid: '#1c1c1e',             // Version solide pour fallback
+  headerText: '#ffffff',                        // Texte header
 
-  // ==================== COULEURS PRINCIPALES (BLEU APPLE #0071E3 DARK) ====================
-  primary: '#0071E3',              // Bleu Apple signature (même qu'en mode clair)
-  primaryHover: '#0077ED',         // Version légèrement plus claire au survol
+  // ==================== COULEURS PRINCIPALES (BLEU APPLE DARK MODE) ====================
+  primary: '#0A84FF',              // Bleu Apple adapté au mode sombre
+  primaryHover: '#409CFF',         // Version plus claire au survol
   primaryLight: '#1A3A52',         // Version sombre pour backgrounds
   secondary: '#30D158',            // Vert Apple mode sombre
   secondaryHover: '#32D74B',       // Vert plus vif au survol
   accent: '#FF9F0A',               // Orange Apple mode sombre
 
   // ==================== BACKGROUNDS SOMBRES (APPLE DARK MODE) ====================
-  background: '#000000',           // Background principal noir pur Apple
+  background: '#000000',           // Background principal noir Apple
   backgroundSolid: '#000000',      // Background solide noir
-  backgroundSecondary: '#1c1c1e',  // Background secondaire gris très sombre Apple
+  backgroundSecondary: '#1c1c1e',  // Background secondaire gris très sombre
   card: '#1c1c1e',                 // Cartes sombres Apple
   cardSecondary: '#2c2c2e',        // Cartes secondaires
-  cardHover: '#2c2c2e',            // Survol des cartes (gris, pas bleu)
+  cardHover: '#3a3a3c',            // Survol des cartes
   surface: '#1c1c1e',              // Surface sombre
 
   // ==================== TEXTES SOMBRES (APPLE) ====================
-  text: '#f5f5f7',                 // Texte principal blanc cassé Apple
+  text: '#ffffff',                 // Texte principal blanc
   textSecondary: '#aeaeb2',        // Texte secondaire gris Apple
-  textLight: '#86868b',            // Texte discret gris Apple
-  textInverse: '#1D1D1F',          // Texte inversé (Shark)
+  textLight: '#8e8e93',            // Texte discret
+  textInverse: '#000000',          // Texte inversé
 
   // ==================== BORDURES SOMBRES (APPLE) ====================
   border: '#38383a',               // Bordures sombres Apple
   borderLight: '#2c2c2e',          // Bordures discrètes
   borderFocus: '#0A84FF',          // Focus bleu Apple mode sombre
-  
+
   // ==================== ÉTATS SOMBRES (APPLE) ====================
   success: '#30D158',              // Vert Apple mode sombre
   successLight: '#1a3a26',         // Background succès sombre
@@ -143,19 +143,19 @@ export const darkTheme = {
   warningLight: '#3a2a0a',         // Background avertissement sombre
   error: '#FF453A',                // Rouge Apple mode sombre
   errorLight: '#3a1a1a',           // Background erreur sombre
-  info: '#0071E3',                 // Bleu Apple signature mode sombre
+  info: '#0A84FF',                 // Bleu Apple mode sombre
   infoLight: '#1A3A52',            // Background info sombre
 
   // ==================== INTERACTIONS SOMBRES (APPLE) ====================
   hover: '#2c2c2e',                // Survol gris sombre Apple
-  active: '#2c2c2e',               // État actif (gris, pas bleu)
+  active: '#3a3a3c',               // État actif
   focus: 'rgba(10, 132, 255, 0.2)', // Focus bleu Apple transparent
   disabled: '#636366',             // Désactivé gris Apple
 
   // ==================== BOUTONS SOMBRES (APPLE) ====================
   buttonText: '#ffffff',           // Texte boutons blanc
   buttonSecondary: '#2c2c2e',      // Boutons secondaires gris sombre
-  buttonSecondaryText: '#f5f5f7',  // Texte boutons secondaires blanc cassé
+  buttonSecondaryText: '#ffffff',  // Texte boutons secondaires blanc
   buttonDanger: '#FF453A',         // Boutons danger rouge Apple
   buttonDangerHover: '#FF6961',    // Boutons danger au survol
 
@@ -166,22 +166,22 @@ export const darkTheme = {
 
   // ==================== TAGS ET BADGES SOMBRES (APPLE) ====================
   tagBackground: '#1A3A52',        // Background tag bleu sombre
-  tagText: '#409CFF',              // Texte tag bleu clair Apple
-  
+  tagText: '#64B5F6',              // Texte tag bleu clair
+
   // ==================== STATUTS SOMBRES ====================
-  statusPublic: '#064e3b',         
-  statusPublicText: '#6ee7b7',     
-  statusPrivate: '#451a03',        
-  statusPrivateText: '#fcd34d',    
+  statusPublic: '#064e3b',
+  statusPublicText: '#6ee7b7',
+  statusPrivate: '#451a03',
+  statusPrivateText: '#fcd34d',
   statusDraft: '#4a5568',          // Background statut brouillon (mode sombre) - PLUS CONTRASTÉ
   statusDraftText: '#f7fafc',      // Texte statut brouillon (mode sombre) - PLUS CONTRASTÉ
-  
+
   // ==================== INPUTS SOMBRES ====================
-  inputBackground: '#4a5568',      
-  inputText: '#f7fafc',            
-  
+  inputBackground: '#4a5568',
+  inputText: '#f7fafc',
+
   // ==================== QUESTIONS SOMBRES ====================
-  questionBackground: '#4a5568',   
+  questionBackground: '#4a5568',
   questionBackgroundAlt: '#718096', 
   
   // ==================== ESPACEMENT (IDENTIQUE) ====================

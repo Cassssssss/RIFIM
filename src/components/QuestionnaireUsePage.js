@@ -53,12 +53,12 @@ const ModernTitle = styled.h1`
 
 const ContentWrapper = styled.div`
   display: grid;
-  grid-template-columns: 1fr 450px;
+  grid-template-columns: 1fr 550px;
   gap: 2rem;
   align-items: start;
 
   @media (max-width: 1200px) {
-    grid-template-columns: 1fr 400px;
+    grid-template-columns: 1fr 450px;
     gap: 1.5rem;
   }
 
@@ -125,22 +125,7 @@ const ButtonGroup = styled.div`
 `;
 
 const SecondaryButton = styled.button`
-  background-color: ${props => props.theme.buttonSecondary};
-  color: ${props => props.theme.buttonSecondaryText};
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
-
-  &:hover {
-    background-color: ${props => props.theme.hover};
-  }
-`;
-
-const SaveButton = styled.button`
-  background-color: ${props => props.theme.secondary};
+  background: linear-gradient(135deg, #64748b 0%, #475569 100%);
   color: white;
   padding: 0.5rem 1rem;
   border-radius: 6px;
@@ -148,9 +133,30 @@ const SaveButton = styled.button`
   cursor: pointer;
   font-weight: 500;
   transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(100, 116, 139, 0.3);
 
   &:hover {
-    background-color: ${props => props.theme.secondaryHover};
+    background: linear-gradient(135deg, #475569 0%, #334155 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(100, 116, 139, 0.4);
+  }
+`;
+
+const SaveButton = styled.button`
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+
+  &:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
   }
 `;
 

@@ -1088,7 +1088,7 @@ export const DeleteButton = styled.button`
 `;
 
 export const TutorialButton = styled.button`
-  background: ${props => props.theme.primary};
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -1097,13 +1097,12 @@ export const TutorialButton = styled.button`
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px ${props => props.theme.shadowMedium};
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
   text-align: center;
 
   &:hover {
     transform: translateY(-2px);
-    background: ${props => props.theme.primaryHover};
-    box-shadow: 0 4px 16px ${props => props.theme.shadowMedium};
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
   }
 
   /* 🔧 MODIFICATION : Bouton tutoriel plus compact sur mobile */
