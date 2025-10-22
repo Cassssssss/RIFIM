@@ -47,8 +47,8 @@ const DrawingModeSelect = styled.div`
 const Button = styled.button`
  padding: 5px 10px;
  margin-right: 10px;
- background-color: ${props => props.active ? '#007bff' : '#f8f9fa'};
- color: ${props => props.active ? 'white' : '#333'};
+ background-color: ${props => props.active ? props.theme.primary : '#f8f9fa'};
+ color: ${props => props.active ? 'white' : props.theme.text};
  border: 1px solid #ddd;
  border-radius: 4px;
  cursor: pointer;
@@ -335,8 +335,8 @@ const ImageMapEditor = ({ image, areas = [], onAreasChange }) => {
     {isDrawing && points.length > 0 && (
         <path
   d={createPathFromPoints(points)}
-  fill="rgba(0, 123, 255, 0.3)"
-  stroke="rgba(0, 123, 255, 0.5)"
+  fill="rgba(0, 102, 204, 0.3)"
+  stroke="rgba(0, 102, 204, 0.5)"
   strokeWidth="0.1" // Change 0.5 à 0.2 ici aussi
   pointerEvents="none"
 />

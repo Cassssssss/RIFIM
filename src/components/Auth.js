@@ -80,9 +80,9 @@ const Input = styled.input`
   
   &:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: ${props => props.theme.primary};
     background-color: white;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 3px ${props => props.theme.focus};
   }
   
   &::placeholder {
@@ -93,7 +93,7 @@ const Input = styled.input`
 const SubmitButton = styled.button`
   width: 100%;
   padding: 0.75rem 1rem;
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  background: ${props => props.theme.primary};
   color: white;
   border: none;
   border-radius: 8px;
@@ -101,11 +101,11 @@ const SubmitButton = styled.button`
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  
+
   &:hover:not(:disabled) {
-    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    background: ${props => props.theme.primaryHover};
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 8px 20px ${props => props.theme.shadowMedium};
   }
   
   &:disabled {

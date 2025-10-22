@@ -104,13 +104,13 @@ export const lightTheme = {
 
 export const darkTheme = {
   // ==================== COULEURS HEADER (SOMBRE GLASSMORPHISM APPLE) ====================
-  headerBackground: 'rgba(28, 28, 30, 0.72)',  // Fond sombre Apple avec transparence
-  headerBackgroundSolid: '#1c1c1e',             // Version solide pour fallback
-  headerText: '#f5f5f7',                        // Texte header blanc cassé
+  headerBackground: 'rgba(0, 113, 227, 0.72)',  // Bleu Apple signature avec transparence
+  headerBackgroundSolid: '#0071E3',              // Version solide pour fallback
+  headerText: '#ffffff',                         // Texte header blanc
 
-  // ==================== COULEURS PRINCIPALES (MINIMALISME APPLE DARK) ====================
-  primary: '#0A84FF',              // Bleu vif Apple adapté au mode sombre
-  primaryHover: '#409CFF',         // Version plus claire au survol
+  // ==================== COULEURS PRINCIPALES (BLEU APPLE #0071E3 DARK) ====================
+  primary: '#0071E3',              // Bleu Apple signature (même qu'en mode clair)
+  primaryHover: '#0077ED',         // Version légèrement plus claire au survol
   primaryLight: '#1A3A52',         // Version sombre pour backgrounds
   secondary: '#30D158',            // Vert Apple mode sombre
   secondaryHover: '#32D74B',       // Vert plus vif au survol
@@ -143,7 +143,7 @@ export const darkTheme = {
   warningLight: '#3a2a0a',         // Background avertissement sombre
   error: '#FF453A',                // Rouge Apple mode sombre
   errorLight: '#3a1a1a',           // Background erreur sombre
-  info: '#0A84FF',                 // Bleu Apple mode sombre
+  info: '#0071E3',                 // Bleu Apple signature mode sombre
   infoLight: '#1A3A52',            // Background info sombre
 
   // ==================== INTERACTIONS SOMBRES (APPLE) ====================
