@@ -52,12 +52,12 @@ const ModernTitle = styled.h1`
 
 const ContentWrapper = styled.div`
   display: grid;
-  grid-template-columns: 1fr 450px;
+  grid-template-columns: 1fr 550px;
   gap: 2rem;
   align-items: start;
 
   @media (max-width: 1200px) {
-    grid-template-columns: 1fr 400px;
+    grid-template-columns: 1fr 450px;
     gap: 1.5rem;
   }
 
