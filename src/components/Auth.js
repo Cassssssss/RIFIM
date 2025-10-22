@@ -93,7 +93,7 @@ const Input = styled.input`
 const SubmitButton = styled.button`
   width: 100%;
   padding: 0.75rem 1rem;
-  background: linear-gradient(135deg, #0066CC 0%, #0052A3 100%);
+  background: linear-gradient(135deg, #5B7FBE 0%, #4A6BA8 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -103,9 +103,9 @@ const SubmitButton = styled.button`
   transition: all 0.3s ease;
 
   &:hover:not(:disabled) {
-    background: linear-gradient(135deg, #0077ED 0%, #0066CC 100%);
+    background: linear-gradient(135deg, #6A8DCF 0%, #5B7FBE 100%);
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 102, 204, 0.3);
+    box-shadow: 0 4px 12px rgba(91, 127, 190, 0.3);
   }
   
   &:disabled {

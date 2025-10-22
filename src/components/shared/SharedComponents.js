@@ -747,11 +747,13 @@ export const TagsContainer = styled.div`
 `;
 
 export const Tag = styled.span`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 9999px;
+  background: linear-gradient(135deg, ${props => props.theme.primary}20, ${props => props.theme.secondary}20);
+  color: ${props => props.theme.primary};
+  border: 1px solid ${props => props.theme.primary}30;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
   font-size: 0.75rem;
+  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 0.25rem;
@@ -759,7 +761,8 @@ export const Tag = styled.span`
   /* 🔧 MODIFICATION : Tag plus petit sur mobile */
   @media (max-width: 768px) {
     font-size: 0.65rem;
-    padding: 0.2rem 0.4rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 8px;
     
     svg {
       width: 10px !important;
@@ -1044,7 +1047,7 @@ export const Button = styled.button`
 `;
 
 export const DeleteButton = styled.button`
-  background-color: ${props => props.theme.buttonDanger};
+  background: linear-gradient(135deg, #E57373 0%, #D85858 100%);
   color: white;
   padding: 0.5rem;
   border: none;
@@ -1056,11 +1059,12 @@ export const DeleteButton = styled.button`
   transition: all 0.2s ease;
   width: 40px;
   height: 40px;
+  box-shadow: 0 2px 6px rgba(229, 115, 115, 0.25);
 
   &:hover {
-    background-color: ${props => props.theme.buttonDangerHover};
+    background: linear-gradient(135deg, #F48383 0%, #E57373 100%);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px ${props => props.theme.shadowMedium};
+    box-shadow: 0 3px 10px rgba(229, 115, 115, 0.3);
   }
 
   svg {
