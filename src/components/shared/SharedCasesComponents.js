@@ -94,7 +94,7 @@ export const UnifiedFilterContainer = styled.div`
 
 export const UnifiedFilterSection = styled.div`
   position: relative;
-  /* CORRECTION CRITIQUE : Assurer que le dropdown soit au-dessus des autres éléments */
+  /* CORRECTION CRITIQUE : Assurer que le dropdown soit au-dessus des autres Ã©lÃ©ments */
   z-index: ${props => props.isOpen ? '1000' : 'auto'};
 `;
 
@@ -190,13 +190,13 @@ export const UnifiedDropdownContent = styled.div`
   background-color: ${props => props.theme.card};
   border: 2px solid ${props => props.theme.border};
   border-radius: 12px;
-  /* CORRECTION MAJEURE : Z-index élevé pour être au-dessus de tout */
+  /* CORRECTION MAJEURE : Z-index Ã©levÃ© pour Ãªtre au-dessus de tout */
   z-index: 9999;
   box-shadow: 0 8px 25px ${props => props.theme.shadow};
-  /* CORRECTION : Fond solide pour éviter la transparence */
+  /* CORRECTION : Fond solide pour Ã©viter la transparence */
   backdrop-filter: blur(10px);
   
-  /* Style personnalisé pour les scrollbars */
+  /* Style personnalisÃ© pour les scrollbars */
   &::-webkit-scrollbar {
     width: 6px;
   }
@@ -216,7 +216,7 @@ export const UnifiedDropdownContent = styled.div`
   }
 `;
 
-// CORRECTION MAJEURE : UnifiedDropdownItem avec meilleure gestion des événements
+// CORRECTION MAJEURE : UnifiedDropdownItem avec meilleure gestion des Ã©vÃ©nements
 export const UnifiedDropdownItem = styled.div`
   display: flex;
   align-items: center;
@@ -226,7 +226,7 @@ export const UnifiedDropdownItem = styled.div`
   transition: background-color 0.2s ease;
   font-weight: 500;
   user-select: none;
-  /* CORRECTION : Empêcher la propagation d'événements */
+  /* CORRECTION : EmpÃªcher la propagation d'Ã©vÃ©nements */
   
   &:hover {
     background-color: ${props => props.theme.hover};
@@ -244,13 +244,13 @@ export const UnifiedDropdownItem = styled.div`
     border-radius: 12px;
   }
 
-  /* CORRECTION : Gérer les clics sur les checkbox correctement */
+  /* CORRECTION : GÃ©rer les clics sur les checkbox correctement */
   input[type="checkbox"] {
     pointer-events: auto;
   }
 `;
 
-// CORRECTION MAJEURE : UnifiedDropdownCheckbox avec gestion d'événements améliorée
+// CORRECTION MAJEURE : UnifiedDropdownCheckbox avec gestion d'Ã©vÃ©nements amÃ©liorÃ©e
 export const UnifiedDropdownCheckbox = styled.input`
   width: 18px;
   height: 18px;
@@ -258,7 +258,7 @@ export const UnifiedDropdownCheckbox = styled.input`
   cursor: pointer;
   flex-shrink: 0;
   margin: 0;
-  /* CORRECTION : Assurer que les événements de checkbox fonctionnent */
+  /* CORRECTION : Assurer que les Ã©vÃ©nements de checkbox fonctionnent */
   pointer-events: auto;
 `;
 
@@ -270,7 +270,7 @@ export const UnifiedCasesList = styled.div`
   gap: 2rem;
   margin-bottom: 2rem;
 
-  /* 🔧 MODIFICATION PRINCIPALE : Optimisation pour mobile avec 2 colonnes compactes */
+  /* ðŸ”§ MODIFICATION PRINCIPALE : Optimisation pour mobile avec 2 colonnes compactes */
   @media (max-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
@@ -296,11 +296,11 @@ export const UnifiedCaseCard = styled(Link)`
     transform: translateY(-5px);
     box-shadow: 0 8px 30px ${props => props.theme.shadow};
     border-color: ${props => props.theme.primary}50;
-    /* CORRECTION : Élever légèrement au hover mais rester sous les dropdowns */
+    /* CORRECTION : Ã‰lever lÃ©gÃ¨rement au hover mais rester sous les dropdowns */
     z-index: 2;
   }
 
-  /* 🔧 MODIFICATION : Optimisation mobile compacte */
+  /* ðŸ”§ MODIFICATION : Optimisation mobile compacte */
   @media (max-width: 768px) {
     border-radius: 12px;
     box-shadow: 0 2px 8px ${props => props.theme.shadow};
@@ -320,7 +320,7 @@ export const UnifiedCaseImage = styled.img`
   object-fit: cover;
   border-bottom: 1px solid ${props => props.theme.border};
 
-  /* 🔧 MODIFICATION : Image plus compacte sur mobile */
+  /* ðŸ”§ MODIFICATION : Image plus compacte sur mobile */
   @media (max-width: 768px) {
     height: 120px;
   }
@@ -329,7 +329,7 @@ export const UnifiedCaseImage = styled.img`
 export const UnifiedCaseContent = styled.div`
   padding: 1.5rem;
 
-  /* 🔧 MODIFICATION : Padding réduit sur mobile */
+  /* ðŸ”§ MODIFICATION : Padding rÃ©duit sur mobile */
   @media (max-width: 768px) {
     padding: 0.75rem;
   }
@@ -341,7 +341,7 @@ export const UnifiedCaseHeader = styled.div`
   align-items: flex-start;
   margin-bottom: 1rem;
 
-  /* 🔧 MODIFICATION : Espacement réduit sur mobile */
+  /* ðŸ”§ MODIFICATION : Espacement rÃ©duit sur mobile */
   @media (max-width: 768px) {
     margin-bottom: 0.5rem;
     flex-direction: column;
@@ -355,7 +355,7 @@ export const UnifiedCaseTitle = styled.h3`
   color: ${props => props.theme.text};
   margin: 0.5rem 0;
   line-height: 1.4;
-  text-align: center;  /* 🔧 AJOUT : Centre le texte, notamment le "?" */
+  text-align: center;  /* ðŸ”§ AJOUT : Centre le texte, notamment le "?" */
   
   @media (max-width: 768px) {
     font-size: 1rem;
@@ -368,7 +368,7 @@ export const UnifiedStarRating = styled.div`
   margin-bottom: 1rem;
   align-items: center;
 
-  /* 🔧 MODIFICATION : Étoiles plus petites sur mobile */
+  /* ðŸ”§ MODIFICATION : Ã‰toiles plus petites sur mobile */
   @media (max-width: 768px) {
     gap: 1px;
     margin-bottom: 0.5rem;
@@ -393,7 +393,7 @@ export const UnifiedPopularityBadge = styled.div`
   gap: 0.25rem;
   box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3);
 
-  /* 🔧 MODIFICATION : Badge plus petit sur mobile */
+  /* ðŸ”§ MODIFICATION : Badge plus petit sur mobile */
   @media (max-width: 768px) {
     font-size: 0.6rem;
     padding: 0.2rem 0.4rem;
@@ -414,7 +414,7 @@ export const UnifiedAuthorInfo = styled.div`
   font-size: 0.9rem;
   margin-bottom: 1rem;
 
-  /* 🔧 MODIFICATION : Texte plus compact sur mobile */
+  /* ðŸ”§ MODIFICATION : Texte plus compact sur mobile */
   @media (max-width: 768px) {
     font-size: 0.75rem;
     margin-bottom: 0.5rem;
@@ -434,7 +434,7 @@ export const UnifiedStatsContainer = styled.div`
   padding-top: 1rem;
   border-top: 1px solid ${props => props.theme.border};
 
-  /* 🔧 MODIFICATION : Layout plus compact sur mobile */
+  /* ðŸ”§ MODIFICATION : Layout plus compact sur mobile */
   @media (max-width: 768px) {
     margin-top: 0.5rem;
     padding-top: 0.5rem;
@@ -451,7 +451,7 @@ export const UnifiedStatItem = styled.div`
   font-size: 0.8rem;
   color: ${props => props.theme.textSecondary};
 
-  /* 🔧 MODIFICATION : Statistiques plus compactes sur mobile */
+  /* ðŸ”§ MODIFICATION : Statistiques plus compactes sur mobile */
   @media (max-width: 768px) {
     font-size: 0.7rem;
     
@@ -469,7 +469,7 @@ export const UnifiedActionsContainer = styled.div`
   position: relative;
   z-index: 3;
 
-  /* 🔧 MODIFICATION : Actions centrées sur mobile */
+  /* ðŸ”§ MODIFICATION : Actions centrÃ©es sur mobile */
   @media (max-width: 768px) {
     justify-content: center;
     gap: 0.25rem;
@@ -477,26 +477,28 @@ export const UnifiedActionsContainer = styled.div`
 `;
 
 export const UnifiedActionButton = styled.button`
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  color: white;
-  border: none;
+  /* ⭐ BOUTON D'ACTION SOBRE ET ÉLÉGANT (bouton Plus pour copier le cas) */
+  background-color: ${props => props.theme.actionButtonBackground};
+  color: ${props => props.theme.actionButtonText};
+  border: 1px solid ${props => props.theme.actionButtonBorder};
   border-radius: 8px;
   padding: 0.5rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px ${props => props.theme.shadow};
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px ${props => props.theme.shadow};
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px ${props => props.theme.shadow};
+    background-color: ${props => props.theme.actionButtonHover};
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px ${props => props.theme.shadow};
   }
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 3px ${props => props.theme.primary}30;
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
   }
 
   /* 🔧 MODIFICATION : Bouton plus compact sur mobile */
@@ -506,7 +508,7 @@ export const UnifiedActionButton = styled.button`
     
     &:hover {
       transform: none;
-      box-shadow: 0 2px 4px ${props => props.theme.shadow};
+      box-shadow: 0 1px 3px ${props => props.theme.shadow};
     }
     
     svg {
@@ -515,11 +517,10 @@ export const UnifiedActionButton = styled.button`
     }
   }
 `;
-
 export const UnifiedRatingSection = styled.div`
   margin: 1rem 0;
 
-  /* 🔧 MODIFICATION : Section rating plus compacte sur mobile */
+  /* ðŸ”§ MODIFICATION : Section rating plus compacte sur mobile */
   @media (max-width: 768px) {
     margin: 0.5rem 0;
   }
@@ -531,7 +532,7 @@ export const UnifiedTagsContainer = styled.div`
   gap: 0.5rem;
   margin-top: 1rem;
 
-  /* 🔧 MODIFICATION : Tags plus compacts sur mobile */
+  /* ðŸ”§ MODIFICATION : Tags plus compacts sur mobile */
   @media (max-width: 768px) {
     gap: 0.25rem;
     margin-top: 0.5rem;
@@ -540,24 +541,27 @@ export const UnifiedTagsContainer = styled.div`
 `;
 
 export const UnifiedTag = styled.span`
-  background: linear-gradient(135deg, ${props => props.theme.primary}20, ${props => props.theme.secondary}20);
-  color: ${props => props.theme.primary};
-  border: 1px solid ${props => props.theme.primary}30;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
+  /* ⭐ TAGS HARMONISÉS : Sobres et élégants comme dans SharedComponents */
+  background-color: ${props => props.theme.tagBackground};
+  color: ${props => props.theme.tagText};
+  border: 1px solid ${props => props.theme.tagBorder};
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
   font-size: 0.75rem;
   font-weight: 500;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: ${props => props.theme.tagBorder};
+  }
 
   /* 🔧 MODIFICATION : Tags plus petits sur mobile */
   @media (max-width: 768px) {
     font-size: 0.65rem;
-    padding: 0.2rem 0.5rem;
-    border-radius: 8px;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
   }
 `;
-
-// ==================== PAGINATION ====================
-
 export const UnifiedPaginationContainer = styled.div`
   display: flex;
   justify-content: center;
@@ -618,7 +622,7 @@ export const UnifiedPaginationInfo = styled.div`
   text-align: center;
 `;
 
-// ==================== ÉTATS SPÉCIAUX ====================
+// ==================== Ã‰TATS SPÃ‰CIAUX ====================
 
 export const UnifiedEmptyState = styled.div`
   text-align: center;
@@ -642,7 +646,7 @@ export const UnifiedEmptyState = styled.div`
     margin: 0;
   }
 
-  /* 🔧 MODIFICATION : État vide plus compact sur mobile */
+  /* ðŸ”§ MODIFICATION : Ã‰tat vide plus compact sur mobile */
   @media (max-width: 768px) {
     padding: 2rem 1rem;
     
@@ -666,7 +670,7 @@ export const UnifiedLoadingMessage = styled.div`
   box-shadow: 0 4px 15px ${props => props.theme.shadow};
   margin: 2rem 0;
 
-  /* 🔧 MODIFICATION : Message de chargement plus compact sur mobile */
+  /* ðŸ”§ MODIFICATION : Message de chargement plus compact sur mobile */
   @media (max-width: 768px) {
     padding: 2rem 1rem;
     font-size: 1rem;
@@ -683,7 +687,7 @@ export const UnifiedErrorMessage = styled.div`
   margin: 2rem 0;
   font-weight: 500;
 
-  /* 🔧 MODIFICATION : Message d'erreur plus compact sur mobile */
+  /* ðŸ”§ MODIFICATION : Message d'erreur plus compact sur mobile */
   @media (max-width: 768px) {
     padding: 1rem;
     font-size: 0.9rem;

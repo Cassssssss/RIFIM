@@ -8,9 +8,9 @@ export const PageContainer = styled.div`
   display: flex;
   background-color: ${props => props.theme.background};
   min-height: calc(100vh - 60px);
-  padding: 1rem 2rem; /* 🔧 OPTIMISATION : Padding horizontal pour utiliser plus d'espace */
-  width: 100%; /* 🔧 OPTIMISATION : Pleine largeur */
-  max-width: 100vw; /* 🔧 OPTIMISATION : Utilise toute la largeur viewport */
+  padding: 1rem 2rem;
+  width: 100%;
+  max-width: 100vw;
   box-sizing: border-box;
 
   @media (max-width: 768px) {
@@ -146,9 +146,9 @@ export const FilterIndicator = styled.div`
 
 export const ListContainer = styled.div`
   flex: 1;
-  width: 100%; /* 🔧 OPTIMISATION : Utilise toute la largeur disponible */
-  max-width: 100%; /* 🔧 OPTIMISATION : Pas de restriction de largeur */
-  padding: 0 1rem; /* 🔧 OPTIMISATION : Petit padding latéral */
+  width: 100%;
+  max-width: 100%;
+  padding: 0 1rem;
 
   @media (max-width: 768px) {
     max-width: 100%;
@@ -196,36 +196,31 @@ export const SearchInput = styled.input`
 
 export const QuestionnairesGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* 🔧 OPTIMISATION : Plus de cartes par ligne */
-  gap: 1.2rem; /* 🔧 OPTIMISATION : Gap réduit pour plus de cartes */
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.2rem;
   margin: 2rem 0;
   padding: 0;
-  width: 100%; /* 🔧 OPTIMISATION : Utilise toute la largeur */
-  max-width: none; /* 🔧 OPTIMISATION : Pas de limite de largeur */
+  width: 100%;
+  max-width: none;
 
-  /* 🔧 Pour les très grands écrans (4K+) */
   @media (min-width: 2560px) {
     grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
     gap: 1.5rem;
   }
 
-  /* 🔧 Pour les écrans larges (1920px+) */
   @media (min-width: 1920px) and (max-width: 2559px) {
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   }
 
-  /* 🔧 Pour les écrans moyens (1440px+) */
   @media (min-width: 1440px) and (max-width: 1919px) {
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   }
 
-  /* 🔧 Pour les tablettes et petits écrans */
   @media (max-width: 1024px) {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1rem;
   }
 
-  /* 🔧 MODIFICATION PRINCIPALE : Optimisation pour mobile avec 2 colonnes compactes */
   @media (max-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
@@ -236,36 +231,31 @@ export const QuestionnairesGrid = styled.div`
 
 export const CasesList = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* 🔧 OPTIMISATION : Cartes plus petites pour plus par ligne */
-  gap: 1.2rem; /* 🔧 OPTIMISATION : Gap réduit */
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.2rem;
   margin: 2rem 0;
   padding: 0;
-  width: 100%; /* 🔧 OPTIMISATION : Utilise toute la largeur */
-  max-width: none; /* 🔧 OPTIMISATION : Pas de limite de largeur */
+  width: 100%;
+  max-width: none;
 
-  /* 🔧 Pour les très grands écrans (4K+) */
   @media (min-width: 2560px) {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1.5rem;
   }
 
-  /* 🔧 Pour les écrans larges (1920px+) */
   @media (min-width: 1920px) and (max-width: 2559px) {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   }
 
-  /* 🔧 Pour les écrans moyens (1440px+) */
   @media (min-width: 1440px) and (max-width: 1919px) {
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   }
 
-  /* 🔧 Pour les tablettes et petits écrans */
   @media (max-width: 1024px) {
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 1rem;
   }
 
-  /* 🔧 MODIFICATION PRINCIPALE : Optimisation pour mobile avec 2 colonnes compactes */
   @media (max-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
@@ -302,7 +292,6 @@ export const QuestionnaireCard = styled.div`
     border-color: ${props => props.theme.primary};
   }
 
-  /* 🔧 MODIFICATION : Optimisation mobile compacte */
   @media (max-width: 768px) {
     padding: 0.75rem;
     border-radius: 8px;
@@ -339,7 +328,6 @@ export const CaseCard = styled(Link)`
     border-color: ${props => props.theme.primary};
   }
 
-  /* 🔧 MODIFICATION : Optimisation mobile compacte */
   @media (max-width: 768px) {
     border-radius: 8px;
     box-shadow: 0 2px 8px ${props => props.theme.shadow};
@@ -358,7 +346,6 @@ export const CaseImage = styled.img`
   object-fit: cover;
   display: block;
 
-  /* 🔧 MODIFICATION : Image plus compacte sur mobile */
   @media (max-width: 768px) {
     height: 120px;
   }
@@ -367,7 +354,6 @@ export const CaseImage = styled.img`
 export const CaseContent = styled.div`
   padding: 1.5rem;
 
-  /* 🔧 MODIFICATION : Padding réduit sur mobile */
   @media (max-width: 768px) {
     padding: 0.75rem;
   }
@@ -379,7 +365,6 @@ export const CaseHeader = styled.div`
   align-items: flex-start;
   margin-bottom: 1rem;
 
-  /* 🔧 MODIFICATION : Layout adapté pour mobile */
   @media (max-width: 768px) {
     margin-bottom: 0.5rem;
     flex-direction: column;
@@ -395,54 +380,101 @@ export const CaseTitle = styled.h2`
   text-align: center;
   line-height: 1.4;
 
-  /* 🔧 MODIFICATION : Texte plus compact sur mobile */
   @media (max-width: 768px) {
     font-size: 0.9rem;
-    line-height: 1.3;
     margin: 0 0 0.5rem 0;
   }
 `;
 
-export const StarRating = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 0.25rem;
-  margin: 1rem 0;
-
-  /* 🔧 MODIFICATION : Étoiles plus compactes sur mobile */
-  @media (max-width: 768px) {
-    gap: 0.1rem;
-    margin: 0.5rem 0;
-    
-    svg {
-      width: 16px !important;
-      height: 16px !important;
-    }
-  }
-`;
-
-export const PopularityBadge = styled.span`
-  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+export const PopularityBadge = styled.div`
+  background: linear-gradient(135deg, #f59e0b, #d97706);
   color: white;
   padding: 0.25rem 0.5rem;
-  border-radius: 12px;
+  border-radius: 6px;
   font-size: 0.7rem;
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 
-  /* 🔧 MODIFICATION : Badge plus petit sur mobile */
   @media (max-width: 768px) {
-    font-size: 0.6rem;
+    font-size: 0.65rem;
     padding: 0.2rem 0.4rem;
-    border-radius: 8px;
+  }
+`;
+
+// ==================== COMPOSANTS CARTE QUESTIONNAIRE ====================
+
+export const CardHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  gap: 0.5rem;
+
+  @media (max-width: 768px) {
+    margin-bottom: 0.5rem;
+    flex-direction: column;
+  }
+`;
+
+export const QuestionnaireTitle = styled.h3`
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: ${props => props.theme.text};
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    gap: 0.375rem;
+  }
+`;
+
+export const QuestionnaireIcon = styled.span`
+  font-size: 1.5rem;
+
+  @media (max-width: 768px) {
+    font-size: 1.2rem;
+  }
+`;
+
+export const CardMeta = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  color: ${props => props.theme.textSecondary};
+  font-size: 0.85rem;
+
+  @media (max-width: 768px) {
+    gap: 0.5rem;
+    margin: 0.5rem 0;
+    font-size: 0.75rem;
+    justify-content: center;
+  }
+`;
+
+export const MetaItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    opacity: 0.7;
+  }
+
+  @media (max-width: 768px) {
+    gap: 0.25rem;
     
     svg {
-      width: 10px !important;
-      height: 10px !important;
+      width: 14px;
+      height: 14px;
     }
   }
 `;
@@ -453,280 +485,91 @@ export const AuthorInfo = styled.div`
   gap: 0.5rem;
   color: ${props => props.theme.textSecondary};
   font-size: 0.85rem;
-  margin-bottom: 1rem;
-  justify-content: center;
-
-  svg {
-    color: ${props => props.theme.primary};
-  }
-
-  /* 🔧 MODIFICATION : Texte plus compact sur mobile */
-  @media (max-width: 768px) {
-    font-size: 0.75rem;
-    margin-bottom: 0.5rem;
-    
-    svg {
-      width: 12px !important;
-      height: 12px !important;
-    }
-  }
-`;
-
-export const StatsContainer = styled.div`
-  display: flex;
-  justify-content: space-around;
-  margin: 1rem 0;
-  padding: 1rem;
-  background-color: ${props => props.theme.backgroundSecondary || props.theme.background};
-  border-radius: 8px;
-  border: 1px solid ${props => props.theme.border};
-
-  /* 🔧 MODIFICATION : Layout plus compact sur mobile */
-  @media (max-width: 768px) {
-    margin: 0.5rem 0;
-    padding: 0.5rem;
-    border-radius: 6px;
-  }
-`;
-
-export const StatItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.8rem;
-
-  svg {
-    color: ${props => props.theme.primary};
-  }
-
-  span {
-    font-weight: 600;
-    color: ${props => props.theme.text};
-  }
-
-  /* 🔧 MODIFICATION : Statistiques plus compactes sur mobile */
-  @media (max-width: 768px) {
-    font-size: 0.7rem;
-    gap: 0.1rem;
-    
-    svg {
-      width: 12px !important;
-      height: 12px !important;
-    }
-  }
-`;
-
-export const ActionsContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
-
-  /* 🔧 MODIFICATION : Actions adaptées pour mobile */
-  @media (max-width: 768px) {
-    gap: 0.25rem;
-    margin-top: 0.5rem;
-  }
-`;
-
-export const CopyActionButton = styled.button`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.8rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: ${props => props.theme.primaryDark || props.theme.secondary};
-    transform: translateY(-1px);
-  }
+  margin: 0.5rem 0;
 
   svg {
     width: 14px;
     height: 14px;
   }
 
-  /* 🔧 MODIFICATION : Bouton plus compact sur mobile */
   @media (max-width: 768px) {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.7rem;
-    border-radius: 4px;
-    
-    &:hover {
-      transform: none;
-    }
+    font-size: 0.75rem;
+    gap: 0.375rem;
+    justify-content: center;
     
     svg {
-      width: 12px !important;
-      height: 12px !important;
+      width: 12px;
+      height: 12px;
     }
+  }
+`;
+
+export const StatsContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid ${props => props.theme.border};
+  gap: 0.5rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+  }
+`;
+
+export const StatItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: ${props => props.theme.textSecondary};
+  font-size: 0.85rem;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 0.75rem;
+    gap: 0.25rem;
+    
+    svg {
+      width: 12px;
+      height: 12px;
+    }
+  }
+`;
+
+export const ActionsContainer = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    gap: 0.25rem;
+    justify-content: center;
   }
 `;
 
 export const RatingSection = styled.div`
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid ${props => props.theme.border};
-
-  /* 🔧 MODIFICATION : Section rating plus compacte sur mobile */
-  @media (max-width: 768px) {
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
-  }
-`;
-
-// ==================== FILTRES ====================
-
-export const FilterContainer = styled.div`
+  margin: 1rem 0;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  gap: 1rem;
-  flex-wrap: wrap;
+  justify-content: center;
 
   @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: stretch;
+    margin: 0.5rem 0;
   }
 `;
 
-export const FilterButton = styled.button`
-  background-color: ${props => props.active ? props.theme.primary : props.theme.backgroundSecondary || props.theme.background};
-  color: ${props => props.active ? 'white' : props.theme.text};
-  border: 1px solid ${props => props.active ? props.theme.primary : props.theme.border};
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: ${props => props.theme.primary};
-    color: white;
-  }
-`;
-
-export const SpoilerButton = styled.button`
-  background-color: ${props => props.active ? '#10b981' : '#6b7280'};
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: ${props => props.active ? '#059669' : '#4b5563'};
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-`;
-
-export const CardHeader = styled.div`
-  margin-bottom: 1rem;
-
-  /* 🔧 MODIFICATION : Header plus compact sur mobile */
-  @media (max-width: 768px) {
-    margin-bottom: 0.5rem;
-  }
-`;
-
-export const QuestionnaireTitle = styled.h3`
-  color: ${props => props.theme.text};
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  line-height: 1.4;
-
-  /* 🔧 MODIFICATION : Titre plus compact sur mobile */
-  @media (max-width: 768px) {
-    font-size: 0.9rem;
-    line-height: 1.3;
-    gap: 0.5rem;
-  }
-`;
-
-export const QuestionnaireIcon = styled.span`
-  font-size: 1.5rem;
-  flex-shrink: 0;
-
-  /* 🔧 MODIFICATION : Icône plus petite sur mobile */
-  @media (max-width: 768px) {
-    font-size: 1.2rem;
-  }
-`;
-
-export const CardMeta = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background-color: ${props => props.theme.backgroundSecondary};
-  border-radius: 8px;
-  border: 1px solid ${props => props.theme.border};
-
-  /* 🔧 MODIFICATION : Meta plus compact sur mobile */
-  @media (max-width: 768px) {
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-    padding: 0.5rem;
-    border-radius: 6px;
-    flex-direction: column;
-  }
-`;
-
-export const MetaItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: ${props => props.theme.textSecondary};
-  font-size: 0.85rem;
-  font-weight: 500;
-
-  svg {
-    color: ${props => props.theme.primary};
-    flex-shrink: 0;
-  }
-
-  /* 🔧 MODIFICATION : Meta item plus compact sur mobile */
-  @media (max-width: 768px) {
-    font-size: 0.75rem;
-    gap: 0.375rem;
-    
-    svg {
-      width: 12px !important;
-      height: 12px !important;
-    }
-  }
-`;
-
-// ==================== TAGS UNIFIÉS ====================
+// ==================== TAGS ====================
 
 export const TagsSection = styled.div`
   margin: 1rem 0;
 
-  /* 🔧 MODIFICATION : Section tags plus compacte sur mobile */
   @media (max-width: 768px) {
     margin: 0.5rem 0;
   }
@@ -736,30 +579,36 @@ export const TagsContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
-  justify-content: center;
+  align-items: center;
 
-  /* 🔧 MODIFICATION : Tags plus compacts sur mobile */
   @media (max-width: 768px) {
-    gap: 0.25rem;
-    margin-bottom: 0.375rem;
+    gap: 0.375rem;
+    justify-content: center;
   }
 `;
 
 export const Tag = styled.span`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 9999px;
+  /* ⭐ TAGS HARMONISÉS : Sobres et élégants */
+  background-color: ${props => props.theme.tagBackground};
+  color: ${props => props.theme.tagText};
+  border: 1px solid ${props => props.theme.tagBorder};
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
   font-size: 0.75rem;
+  font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.35rem;
+  transition: all 0.2s ease;
 
-  /* 🔧 MODIFICATION : Tag plus petit sur mobile */
+  &:hover {
+    background-color: ${props => props.theme.tagBorder};
+  }
+
   @media (max-width: 768px) {
     font-size: 0.65rem;
-    padding: 0.2rem 0.4rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
     
     svg {
       width: 10px !important;
@@ -771,14 +620,16 @@ export const Tag = styled.span`
 export const RemoveTagButton = styled.button`
   background: none;
   border: none;
-  color: white;
+  color: ${props => props.theme.tagText};
   cursor: pointer;
   padding: 0;
   display: flex;
   align-items: center;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
   
   &:hover {
-    opacity: 0.7;
+    opacity: 1;
   }
 `;
 
@@ -788,7 +639,6 @@ export const AddTagSection = styled.div`
   gap: 0.5rem;
   margin-top: 0.5rem;
 
-  /* 🔧 MODIFICATION : Section ajout tag plus compacte sur mobile */
   @media (max-width: 768px) {
     gap: 0.25rem;
     margin-top: 0.375rem;
@@ -797,9 +647,9 @@ export const AddTagSection = styled.div`
 `;
 
 export const AddTagButton = styled.button`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
+  background-color: ${props => props.theme.tagBackground};
+  color: ${props => props.theme.tagText};
+  border: 1px solid ${props => props.theme.tagBorder};
   border-radius: 4px;
   padding: 0.25rem 0.5rem;
   cursor: pointer;
@@ -807,12 +657,12 @@ export const AddTagButton = styled.button`
   align-items: center;
   gap: 0.25rem;
   font-size: 0.75rem;
+  transition: all 0.2s ease;
   
   &:hover {
-    background-color: ${props => props.theme.secondary};
+    background-color: ${props => props.theme.tagBorder};
   }
 
-  /* 🔧 MODIFICATION : Bouton ajout tag plus compact sur mobile */
   @media (max-width: 768px) {
     font-size: 0.65rem;
     padding: 0.2rem 0.4rem;
@@ -831,8 +681,9 @@ export const TagInput = styled.input`
   border-radius: 4px;
   font-size: 0.75rem;
   width: 120px;
+  background-color: ${props => props.theme.card};
+  color: ${props => props.theme.text};
 
-  /* 🔧 MODIFICATION : Input tag plus compact sur mobile */
   @media (max-width: 768px) {
     font-size: 0.65rem;
     padding: 0.2rem 0.4rem;
@@ -846,27 +697,26 @@ export const TagForm = styled.form`
   align-items: center;
   gap: 0.25rem;
 
-  /* 🔧 MODIFICATION : Form tag plus compact sur mobile */
   @media (max-width: 768px) {
     gap: 0.2rem;
   }
 `;
 
 export const SubmitTagButton = styled.button`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
+  background-color: ${props => props.theme.tagBackground};
+  color: ${props => props.theme.tagText};
+  border: 1px solid ${props => props.theme.tagBorder};
   border-radius: 4px;
   padding: 0.25rem;
   cursor: pointer;
   display: flex;
   align-items: center;
+  transition: all 0.2s ease;
   
   &:hover {
-    background-color: ${props => props.theme.secondary};
+    background-color: ${props => props.theme.tagBorder};
   }
 
-  /* 🔧 MODIFICATION : Bouton submit tag plus compact sur mobile */
   @media (max-width: 768px) {
     padding: 0.2rem;
     border-radius: 3px;
@@ -892,7 +742,6 @@ export const CancelTagButton = styled.button`
     background-color: #4b5563;
   }
 
-  /* 🔧 MODIFICATION : Bouton cancel tag plus compact sur mobile */
   @media (max-width: 768px) {
     padding: 0.2rem;
     border-radius: 3px;
@@ -912,7 +761,6 @@ export const ActionButtons = styled.div`
   gap: 0.75rem;
   margin-top: 1rem;
 
-  /* 🔧 MODIFICATION : Boutons d'action plus compacts sur mobile */
   @media (max-width: 768px) {
     gap: 0.5rem;
     margin-top: 0.5rem;
@@ -921,25 +769,30 @@ export const ActionButtons = styled.div`
 `;
 
 export const ActionButton = styled(Link)`
+  /* ⭐ BOUTONS D'ACTION SOBRES ET ÉLÉGANTS */
   background-color: ${props => {
     switch(props.variant) {
-      case 'primary': return props.theme.primary;
-      case 'secondary': return props.theme.backgroundSecondary;
-      case 'danger': return '#ef4444';
-      default: return props.theme.primary;
+      case 'primary': return props.theme.actionButtonBackground;
+      case 'secondary': return props.theme.actionButtonBackground;
+      case 'danger': return props.theme.deleteButtonBackground;
+      default: return props.theme.actionButtonBackground;
     }
   }};
   color: ${props => {
     switch(props.variant) {
-      case 'secondary': return props.theme.text;
-      default: return 'white';
+      case 'primary': return props.theme.actionButtonText;
+      case 'secondary': return props.theme.actionButtonText;
+      case 'danger': return props.theme.deleteButtonText;
+      default: return props.theme.actionButtonText;
     }
   }};
   padding: ${props => props.size === 'large' ? '0.75rem 1.5rem' : '0.5rem 1rem'};
   border: 1px solid ${props => {
     switch(props.variant) {
-      case 'secondary': return props.theme.border;
-      default: return 'transparent';
+      case 'primary': return props.theme.actionButtonBorder;
+      case 'secondary': return props.theme.actionButtonBorder;
+      case 'danger': return props.theme.deleteButtonBorder;
+      default: return props.theme.actionButtonBorder;
     }
   }};
   border-radius: 8px;
@@ -953,9 +806,16 @@ export const ActionButton = styled(Link)`
   transition: all 0.2s ease;
 
   &:hover {
+    background-color: ${props => {
+      switch(props.variant) {
+        case 'primary': return props.theme.actionButtonHover;
+        case 'secondary': return props.theme.actionButtonHover;
+        case 'danger': return props.theme.deleteButtonHover;
+        default: return props.theme.actionButtonHover;
+      }
+    }};
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px ${props => props.theme.shadow};
-    opacity: 0.9;
+    box-shadow: 0 2px 8px ${props => props.theme.shadow};
   }
 
   svg {
@@ -963,7 +823,6 @@ export const ActionButton = styled(Link)`
     height: 16px;
   }
 
-  /* 🔧 MODIFICATION : Boutons action plus compacts sur mobile */
   @media (max-width: 768px) {
     padding: ${props => props.size === 'large' ? '0.5rem 1rem' : '0.375rem 0.75rem'};
     font-size: ${props => props.size === 'large' ? '0.8rem' : '0.7rem'};
@@ -983,25 +842,30 @@ export const ActionButton = styled(Link)`
 `;
 
 export const Button = styled.button`
+  /* ⭐ BOUTONS STANDARDS SOBRES ET ÉLÉGANTS */
   background-color: ${props => {
     switch(props.variant) {
-      case 'primary': return props.theme.primary;
-      case 'secondary': return props.theme.backgroundSecondary;
-      case 'danger': return '#ef4444';
-      default: return props.theme.primary;
+      case 'primary': return props.theme.actionButtonBackground;
+      case 'secondary': return props.theme.actionButtonBackground;
+      case 'danger': return props.theme.deleteButtonBackground;
+      default: return props.theme.actionButtonBackground;
     }
   }};
   color: ${props => {
     switch(props.variant) {
-      case 'secondary': return props.theme.text;
-      default: return 'white';
+      case 'primary': return props.theme.actionButtonText;
+      case 'secondary': return props.theme.actionButtonText;
+      case 'danger': return props.theme.deleteButtonText;
+      default: return props.theme.actionButtonText;
     }
   }};
   padding: ${props => props.variant === 'danger' ? '0.25rem 0.5rem' : '0.5rem 1rem'};
   border: 1px solid ${props => {
     switch(props.variant) {
-      case 'secondary': return props.theme.border;
-      default: return 'transparent';
+      case 'primary': return props.theme.actionButtonBorder;
+      case 'secondary': return props.theme.actionButtonBorder;
+      case 'danger': return props.theme.deleteButtonBorder;
+      default: return props.theme.actionButtonBorder;
     }
   }};
   border-radius: 8px;
@@ -1014,9 +878,16 @@ export const Button = styled.button`
   transition: all 0.2s ease;
 
   &:hover {
+    background-color: ${props => {
+      switch(props.variant) {
+        case 'primary': return props.theme.actionButtonHover;
+        case 'secondary': return props.theme.actionButtonHover;
+        case 'danger': return props.theme.deleteButtonHover;
+        default: return props.theme.actionButtonHover;
+      }
+    }};
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px ${props => props.theme.shadow};
-    opacity: 0.9;
+    box-shadow: 0 2px 8px ${props => props.theme.shadow};
   }
 
   svg {
@@ -1024,7 +895,6 @@ export const Button = styled.button`
     height: ${props => props.variant === 'danger' ? '12px' : '16px'};
   }
 
-  /* 🔧 MODIFICATION : Boutons plus compacts sur mobile */
   @media (max-width: 768px) {
     padding: ${props => props.variant === 'danger' ? '0.2rem 0.4rem' : '0.375rem 0.75rem'};
     font-size: ${props => props.variant === 'danger' ? '0.65rem' : '0.7rem'};
@@ -1044,10 +914,11 @@ export const Button = styled.button`
 `;
 
 export const DeleteButton = styled.button`
-  background-color: #ef4444;
-  color: white;
+  /* ⭐ BOUTON POUBELLE SOBRE ET ÉLÉGANT */
+  background-color: ${props => props.theme.deleteButtonBackground};
+  color: ${props => props.theme.deleteButtonText};
+  border: 1px solid ${props => props.theme.deleteButtonBorder};
   padding: 0.5rem;
-  border: none;
   border-radius: 8px;
   cursor: pointer;
   display: flex;
@@ -1058,9 +929,9 @@ export const DeleteButton = styled.button`
   height: 40px;
 
   &:hover {
-    background-color: #dc2626;
+    background-color: ${props => props.theme.deleteButtonHover};
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    box-shadow: 0 2px 8px rgba(153, 27, 27, 0.2);
   }
 
   svg {
@@ -1068,7 +939,6 @@ export const DeleteButton = styled.button`
     height: 18px;
   }
 
-  /* 🔧 MODIFICATION : Bouton supprimer plus compact sur mobile */
   @media (max-width: 768px) {
     width: 32px;
     height: 32px;
@@ -1105,7 +975,6 @@ export const TutorialButton = styled.button`
     box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
   }
 
-  /* 🔧 MODIFICATION : Bouton tutoriel plus compact sur mobile */
   @media (max-width: 768px) {
     padding: 0.5rem 1rem;
     font-size: 0.8rem;
@@ -1149,7 +1018,6 @@ export const VideoContainer = styled.div`
     }
   }
 
-  /* 🔧 MODIFICATION : Container vidéo plus compact sur mobile */
   @media (max-width: 768px) {
     margin-top: 1rem;
     padding: 1rem;
@@ -1174,7 +1042,6 @@ export const LoadingMessage = styled.div`
   color: ${props => props.theme.textSecondary};
   font-size: 1.1rem;
 
-  /* 🔧 MODIFICATION : Message de chargement plus compact sur mobile */
   @media (max-width: 768px) {
     padding: 1rem;
     font-size: 1rem;
@@ -1191,7 +1058,6 @@ export const ErrorMessage = styled.div`
   border-radius: 8px;
   margin: 1rem 0;
 
-  /* 🔧 MODIFICATION : Message d'erreur plus compact sur mobile */
   @media (max-width: 768px) {
     padding: 1rem;
     font-size: 1rem;
