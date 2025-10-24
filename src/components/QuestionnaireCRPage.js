@@ -12,25 +12,29 @@ const ModernPageContainer = styled.div`
   background: ${props => props.theme.background};
   color: ${props => props.theme.text};
   min-height: calc(100vh - 60px);
+  max-width: 1600px;
+  margin: 0 auto;
 
   @media (max-width: 768px) {
     padding: 1rem;
   }
 `;
 
+const PageHeader = styled.div`
+  text-align: center;
+  margin-bottom: 2rem;
+`;
+
 const ModernCard = styled.div`
   background-color: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.border};
-  border-radius: 18px;
-  box-shadow: 0 6px 32px ${props => props.theme.shadow};
-  margin: 0 auto;
-  padding: 2.5rem 2.5rem 2rem 2.5rem;
-  max-width: 1400px;   // <--- augmente la largeur ici
-  width: 95%;
-  margin-top: 2rem;
-  @media (max-width: 1200px) {
-    padding: 1rem;
-    max-width: 99vw;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px ${props => props.theme.shadow};
+  padding: 2rem;
+
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+    border-radius: 12px;
   }
 `;
 
@@ -44,6 +48,96 @@ const ModernTitle = styled.h1`
   text-align: center;
   font-weight: 700;
   text-shadow: 0 2px 4px ${props => props.theme.shadow};
+`;
+
+const ContentWrapper = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 550px;
+  gap: 2rem;
+  align-items: start;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: 1fr 450px;
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+`;
+
+const PreviewSection = styled.div`
+  flex: 2;
+  min-width: 0;
+
+  @media (min-width: 1024px) {
+    position: sticky;
+    top: 80px;
+    align-self: flex-start;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+  }
+`;
+
+const PreviewCard = styled.div`
+  background-color: ${props => props.theme.card};
+  border: 2px solid ${props => props.theme.border};
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px ${props => props.theme.shadow};
+`;
+
+const PreviewTitle = styled.h3`
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: ${props => props.theme.primary};
+  margin-bottom: 1rem;
+  border-bottom: 2px solid ${props => props.theme.primary};
+  padding-bottom: 0.5rem;
+`;
+
+const PreviewContent = styled.div`
+  background-color: ${props => props.theme.background};
+  border: 1px solid ${props => props.theme.borderLight};
+  border-radius: 8px;
+  padding: 1rem;
+  min-height: 300px;
+  max-height: 500px;
+  overflow-y: auto;
+  font-family: 'Calibri', sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+
+  &:focus {
+    outline: 2px solid ${props => props.theme.primary};
+    outline-offset: 2px;
+  }
+`;
+
+const SaveButton = styled.button`
+  width: 100%;
+  margin-top: 1rem;
+  background-color: ${props => props.theme.primary};
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: ${props => props.theme.primaryHover};
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px ${props => props.theme.shadow};
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
 `;
 
 
@@ -258,52 +352,47 @@ const QuestionnaireCRPage = () => {
 
  return (
   <ModernPageContainer>
-    <ModernCard>
+    <PageHeader>
       <ModernTitle>{questionnaire?.title || "Compte rendu"}</ModernTitle>
-      <div className="flex flex-col lg:flex-row gap-6">
-        <div className="w-full lg:w-8/12">
-          <div>
+    </PageHeader>
 
-<QuestionnairePreview 
-  title=""
-  questions={questionnaire.questions}
-  selectedOptions={selectedOptions}
-  setSelectedOptions={handleOptionChange}
-  crTexts={crTexts}
-  setCRTexts={setCRTexts}
-  freeTexts={freeTexts}
-  onFreeTextChange={handleFreeTextChange}
-  showCRFields={true}
-  hiddenQuestions={hiddenQuestions}
-  toggleQuestionVisibility={toggleQuestionVisibility}
-  showAddButton={false}
-  questionnaireLinks={questionnaire.links}
-  questionnaireId={id}
-  onOptionUpdate={handleOptionUpdate}
-  onCRTextChange={handleCRTextChange}
-/>
-       
-          </div>
-        </div>
-        <div className="w-full lg:w-4/12">
-          <div>
-            <h3 className="text-xl font-semibold mb-4">Aperçu du CR</h3>
-            <div 
-              className="bg-gray-100 p-4 rounded-md whitespace-pre-wrap font-calibri text-base"
-              contentEditable={true}
-              onBlur={(e) => setEditableCR(e.target.innerHTML)}
-              dangerouslySetInnerHTML={{ __html: editableCR }}
-            />
-          </div>
-          <button 
-            onClick={handleSave}
-            className="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-          >
-            Enregistrer
-          </button>
-        </div>
-      </div>
-    </ModernCard>
+    <ContentWrapper>
+      <ModernCard>
+        <QuestionnairePreview
+          title=""
+          questions={questionnaire.questions}
+          selectedOptions={selectedOptions}
+          setSelectedOptions={handleOptionChange}
+          crTexts={crTexts}
+          setCRTexts={setCRTexts}
+          freeTexts={freeTexts}
+          onFreeTextChange={handleFreeTextChange}
+          showCRFields={true}
+          hiddenQuestions={hiddenQuestions}
+          toggleQuestionVisibility={toggleQuestionVisibility}
+          showAddButton={false}
+          questionnaireLinks={questionnaire.links}
+          questionnaireId={id}
+          onOptionUpdate={handleOptionUpdate}
+          onCRTextChange={handleCRTextChange}
+        />
+      </ModernCard>
+
+      <PreviewSection>
+        <PreviewCard>
+          <PreviewTitle>📋 Aperçu du Compte-Rendu</PreviewTitle>
+          <PreviewContent
+            ref={crRef}
+            contentEditable={true}
+            onBlur={(e) => setEditableCR(e.target.innerHTML)}
+            dangerouslySetInnerHTML={{ __html: editableCR }}
+          />
+          <SaveButton onClick={handleSave}>
+            💾 Enregistrer
+          </SaveButton>
+        </PreviewCard>
+      </PreviewSection>
+    </ContentWrapper>
   </ModernPageContainer>
 );
 };

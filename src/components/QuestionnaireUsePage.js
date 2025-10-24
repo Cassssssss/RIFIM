@@ -13,24 +13,29 @@ const ModernPageContainer = styled.div`
   background: ${props => props.theme.background};
   color: ${props => props.theme.text};
   min-height: calc(100vh - 60px);
+  max-width: 1600px;
+  margin: 0 auto;
+
   @media (max-width: 768px) {
     padding: 1rem;
   }
 `;
 
+const PageHeader = styled.div`
+  text-align: center;
+  margin-bottom: 2rem;
+`;
+
 const ModernCard = styled.div`
   background-color: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.border};
-  border-radius: 18px;
-  box-shadow: 0 6px 32px ${props => props.theme.shadow};
-  margin: 0 auto;
-  padding: 2.5rem 2.5rem 2rem 2.5rem;
-  max-width: 1400px;   // <--- augmente la largeur ici
-  width: 95%;
-  margin-top: 2rem;
-  @media (max-width: 1200px) {
-    padding: 1rem;
-    max-width: 99vw;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px ${props => props.theme.shadow};
+  padding: 2rem;
+
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+    border-radius: 12px;
   }
 `;
 
@@ -46,6 +51,145 @@ const ModernTitle = styled.h1`
   text-shadow: 0 2px 4px ${props => props.theme.shadow};
 `;
 
+const ContentWrapper = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 550px;
+  gap: 2rem;
+  align-items: start;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: 1fr 450px;
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+`;
+
+const PreviewSection = styled.div`
+  flex: 2;
+  min-width: 0;
+
+  @media (min-width: 1024px) {
+    position: sticky;
+    top: 80px;
+    align-self: flex-start;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+  }
+`;
+
+const PreviewCard = styled.div`
+  background-color: ${props => props.theme.card};
+  border: 2px solid ${props => props.theme.border};
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px ${props => props.theme.shadow};
+`;
+
+const PreviewTitle = styled.h3`
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: ${props => props.theme.primary};
+  margin-bottom: 1rem;
+  border-bottom: 2px solid ${props => props.theme.primary};
+  padding-bottom: 0.5rem;
+`;
+
+const PreviewContent = styled.div`
+  background-color: ${props => props.theme.background};
+  border: 1px solid ${props => props.theme.borderLight};
+  border-radius: 8px;
+  padding: 1rem;
+  min-height: 300px;
+  max-height: 500px;
+  overflow-y: auto;
+  font-family: 'Calibri', sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+
+  &:focus {
+    outline: 2px solid ${props => props.theme.primary};
+    outline-offset: 2px;
+  }
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+`;
+
+const SecondaryButton = styled.button`
+  background: linear-gradient(135deg, #6B7FA0 0%, #596A8C 100%);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(107, 127, 160, 0.25);
+
+  &:hover {
+    background: linear-gradient(135deg, #7A8FB2 0%, #6B7FA0 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(107, 127, 160, 0.3);
+  }
+`;
+
+const SaveButton = styled.button`
+  background: linear-gradient(135deg, #52B788 0%, #40916C 100%);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(82, 183, 136, 0.25);
+
+  &:hover {
+    background: linear-gradient(135deg, #63C599 0%, #52B788 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(82, 183, 136, 0.3);
+  }
+`;
+
+const RemoveImageButton = styled.button`
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: linear-gradient(135deg, #E57373 0%, #D85858 100%);
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(229, 115, 115, 0.25);
+
+  &:hover {
+    background: linear-gradient(135deg, #F48383 0%, #E57373 100%);
+    box-shadow: 0 3px 8px rgba(229, 115, 115, 0.3);
+  }
+`;
+
+const SuccessMessage = styled.span`
+  color: ${props => props.theme.secondary};
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+`;
+
 const ProgressContainer = styled.div`
   width: 100%;
   margin: 1.5rem 0;
@@ -55,7 +199,7 @@ const ProgressContainer = styled.div`
 const ProgressBar = styled.div`
   width: 100%;
   height: 8px;
-  background-color: #e5e7eb;
+  background-color: ${props => props.theme.borderLight};
   border-radius: 4px;
   overflow: hidden;
   margin: 0.5rem 0;
@@ -63,7 +207,7 @@ const ProgressBar = styled.div`
 
 const ProgressFill = styled.div`
   height: 100%;
-  background: linear-gradient(90deg, ${props => props.theme.primary || '#3b82f6'}, ${props => props.theme.secondary || '#8b5cf6'});
+  background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
   transition: width 0.3s ease;
   width: ${props => props.percentage}%;
 `;
@@ -71,7 +215,7 @@ const ProgressFill = styled.div`
 const ProgressText = styled.div`
   font-size: 0.9rem;
   font-weight: 600;
-  color: ${props => props.theme.text || '#374151'};
+  color: ${props => props.theme.text};
   margin-bottom: 0.5rem;
 `;
 
@@ -495,19 +639,19 @@ const QuestionnaireUsePage = () => {
 
   return (
     <ModernPageContainer>
-      <ModernCard>
+      <PageHeader>
         <ModernTitle>{questionnaire?.title || "Questionnaire"}</ModernTitle>
-        
         <ProgressContainer>
           <ProgressText>Progression : {progressPercentage}%</ProgressText>
           <ProgressBar>
             <ProgressFill percentage={progressPercentage} />
           </ProgressBar>
         </ProgressContainer>
-        
-        <div className="flex flex-col lg:flex-row gap-8">
-          <div className="lg:w-3/5">
-            <QuestionnairePreview 
+      </PageHeader>
+
+      <ContentWrapper>
+        <ModernCard>
+          <QuestionnairePreview
               questions={questionnaire.questions}
               selectedOptions={selectedOptions}
               setSelectedOptions={handleOptionChange}
@@ -525,63 +669,55 @@ const QuestionnaireUsePage = () => {
               questionnaire={questionnaire}
               handleOpenLinkEditor={() => {}}
             />
-          </div>
-          <div className="lg:w-2/5">
-            <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-md whitespace-pre-wrap font-calibri text-base">
-              <div
+        </ModernCard>
+
+        <PreviewSection>
+          <PreviewCard>
+            <PreviewTitle>📋 Aperçu du Compte-Rendu</PreviewTitle>
+              <PreviewContent
                 ref={crRef}
                 contentEditable={true}
                 onBlur={(e) => setEditableCR(e.target.innerHTML)}
                 dangerouslySetInnerHTML={{ __html: editableCR }}
-                className="focus:outline-none"
               />
-              {insertedImages.length > 0 && <br />}
-              <div className="flex flex-wrap">
-                {insertedImages.map((src, index) => (
-                  <div key={index} className="relative" style={{maxWidth: '200px', maxHeight: '200px', margin: '0 10px 10px 0'}}>
-                    <img 
-                      src={src} 
-                      alt={`Image insérée ${index + 1}`} 
-                      style={{
-                        maxWidth: '100%', 
-                        maxHeight: '100%', 
-                        objectFit: 'contain',
-                        border: '1px solid #ddd',
-                        borderRadius: '4px'
-                      }}
-                    />
-                    <button
-                      onClick={() => handleImageRemove(index)}
-                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
-                    >
-                      <X size={12} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={copyToClipboard}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors"
-              >
-                Copier le CR
-              </button>
-              <button
-                onClick={handleSave}
-                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition-colors"
-              >
-                Sauvegarder
-              </button>
-              {copySuccess && (
-                <span className="text-green-500 flex items-center">
-                  {copySuccess}
-                </span>
+              {insertedImages.length > 0 && (
+                <div style={{ marginTop: '1rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  {insertedImages.map((src, index) => (
+                    <div key={index} style={{ position: 'relative', maxWidth: '150px', maxHeight: '150px' }}>
+                      <img
+                        src={src}
+                        alt={`Image insérée ${index + 1}`}
+                        style={{
+                          maxWidth: '100%',
+                          maxHeight: '100%',
+                          objectFit: 'contain',
+                          border: '1px solid #ddd',
+                          borderRadius: '4px'
+                        }}
+                      />
+                      <RemoveImageButton onClick={() => handleImageRemove(index)}>
+                        <X size={12} />
+                      </RemoveImageButton>
+                    </div>
+                  ))}
+                </div>
               )}
-            </div>
-          </div>
-        </div>
-      </ModernCard>
+              <ButtonGroup>
+                <SecondaryButton onClick={copyToClipboard}>
+                  Copier le CR
+                </SecondaryButton>
+                <SaveButton onClick={handleSave}>
+                  Sauvegarder
+                </SaveButton>
+                {copySuccess && (
+                  <SuccessMessage>
+                    {copySuccess}
+                  </SuccessMessage>
+                )}
+              </ButtonGroup>
+          </PreviewCard>
+        </PreviewSection>
+      </ContentWrapper>
     </ModernPageContainer>
   );
 };

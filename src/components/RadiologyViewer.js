@@ -468,7 +468,7 @@ function RadiologyViewer() {
       
       // Feedback visuel (optionnel - bordure bleue temporaire)
       const viewerElement = e.currentTarget;
-      viewerElement.style.borderColor = 'rgba(0, 123, 255, 0.5)';
+      viewerElement.style.borderColor = 'rgba(0, 102, 204, 0.5)';
       viewerElement.style.borderWidth = '3px';
       
       return;
@@ -726,8 +726,8 @@ function RadiologyViewer() {
     if (viewer) {
       const side = viewer.getAttribute('data-viewer-side');
       setDragOverTarget(side);
-      viewer.style.borderColor = '#007bff';
-      viewer.style.backgroundColor = 'rgba(0, 123, 255, 0.1)';
+      viewer.style.borderColor = '#0066CC';
+      viewer.style.backgroundColor = 'rgba(0, 102, 204, 0.1)';
     } else {
       setDragOverTarget(null);
       // Nettoyer les styles des viewers

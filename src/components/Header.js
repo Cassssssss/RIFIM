@@ -1,27 +1,96 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
-import { Moon, Sun, Menu, X, User, LogOut, ChevronDown, FileText, FolderOpen, Stethoscope, BookOpen, Users, BarChart3 } from 'lucide-react';
+import { Moon, Sun, Menu, X, User, LogOut, ChevronDown, ChevronRight, FileText, FolderOpen, Stethoscope, Activity, BarChart3 } from 'lucide-react';
 
 const HeaderWrapper = styled.header`
-  /* ✨ DÉGRADÉ BLEU-VERT ÉLÉGANT AVEC TRANSPARENCE */
-  background: linear-gradient(135deg, rgba(74, 95, 127, 0.70) 0%, rgba(61, 122, 138, 0.40) 50%, rgba(52, 168, 143, 0.70) 100%);
-  backdrop-filter: ${props => props.theme.headerBlur};
-  -webkit-backdrop-filter: ${props => props.theme.headerBlur};
+  /* ✨ GLASSMORPHISM EFFECT APPLE STYLE ✨ */
+  background-color: ${props => props.theme.headerBackground};
   color: ${props => props.theme.headerText};
+  padding: 1rem 0;
   width: 100%;
-  transition: none; /* ✨ Suppression du délai de transition */
+  transition: background-color 0.3s ease, color 0.3s ease, backdrop-filter 0.3s ease;
   z-index: 999998;
-  border-bottom: none;
-  box-shadow: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+
+  /* Effet glassmorphism Apple avec flou prononcé */
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+
+  /* Bordure inférieure subtile pour séparer le header du contenu */
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+
+  /* Ombre douce pour donner de la profondeur */
+  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.05),
+              0 1px 3px 0 rgba(0, 0, 0, 0.05);
+
+  /* Support pour les navigateurs qui ne supportent pas backdrop-filter */
+  @supports not (backdrop-filter: blur(20px)) {
+    background-color: ${props => props.theme.headerBackgroundSolid || props.theme.headerBackground};
+  }
+
+  /* 🔧 LOGIQUE CONDITIONNELLE : Position selon la page */
+  ${props => props.$isRadiologyViewer ? `
+    /* Pour RadiologyViewer : position fixed normale */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+  ` : `
+    /* Pour toutes les autres pages : position sticky sur mobile, fixed sur desktop */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    @media (max-width: 768px) {
+      position: sticky !important;
+      top: 0 !important;
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+      will-change: transform;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  `}
   
+  /* Mobile optimizations communes */
   @media (max-width: 768px) {
+    padding: 0.5rem 0;
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+    height: 60px;
+    min-height: 60px;
+    max-height: 60px;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    padding: 0.25rem 0;
+    min-height: 50px;
+    height: 50px;
+    
+    @media (max-width: 768px) {
+      ${props => !props.$isRadiologyViewer && `
+        position: sticky !important;
+        top: 0 !important;
+      `}
+    }
+    
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-top: calc(0.25rem + env(safe-area-inset-top));
+  }
+  
+  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
+    padding: 0.25rem 0;
+    min-height: 45px;
+    height: 45px;
+    
+    @media (max-width: 768px) {
+      ${props => !props.$isRadiologyViewer && `
+        position: sticky !important;
+        top: 0 !important;
+      `}
+    }
   }
 `;
 
@@ -33,700 +102,746 @@ const HeaderContent = styled.div`
   width: 100%;
   margin: 0 auto;
   padding: 0 2rem;
-  height: 48px;
+  height: 100%;
   
   @media (max-width: 768px) {
     padding: 0 1rem;
     gap: 0.5rem;
-    height: 60px;
+    height: 100%;
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    padding: 0 0.75rem;
+    gap: 0.25rem;
+    height: 100%;
+  }
+  
+  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
+    padding: 0 0.5rem;
+    gap: 0.15rem;
+    height: 100%;
   }
 `;
 
 const Logo = styled(Link)`
-  font-size: 1.3rem;
-  font-weight: 600;
+  font-size: 1.5rem;
+  font-weight: bold;
   color: ${props => props.theme.headerText};
   text-decoration: none;
-  transition: color 0.2s ease;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 0;
-
+  
   &:hover {
-    color: ${props => props.theme.primary};
+    opacity: 0.8;
   }
-
-  svg {
-    width: 24px;
-    height: 24px;
-  }
-
+  
   @media (max-width: 768px) {
-    font-size: 1.2rem;
+    font-size: 1.25rem;
+    gap: 0.25rem;
+    
+    span {
+      @media (max-width: 480px) {
+        display: none;
+      }
+    }
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    font-size: 1rem;
+    gap: 0.2rem;
+    
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+    
+    span {
+      font-size: 0.9rem;
+    }
+  }
+  
+  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
+    font-size: 0.9rem;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+    
+    span {
+      font-size: 0.8rem;
+    }
   }
 `;
 
-// ==================== MENU DESKTOP STYLE APPLE ====================
-
-const DesktopNav = styled.nav`
+const CenterTitle = styled.h2`
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: ${props => props.theme.headerText};
+  margin: 0;
   display: flex;
   align-items: center;
-  gap: 0;
-  height: 48px;
-
+  gap: 0.5rem;
+  
   @media (max-width: 768px) {
+    font-size: 1rem;
+    gap: 0.25rem;
+    
+    @media (max-width: 480px) {
+      display: none;
+    }
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    font-size: 0.9rem;
+    gap: 0.2rem;
+  }
+  
+  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
     display: none;
   }
 `;
 
-const NavItem = styled.div`
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0 1rem;
-  height: 48px;
-  cursor: pointer;
-  color: ${props => props.theme.headerText};
-  font-weight: 400;
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
-  opacity: 0.9;
-
-  &:hover {
-    opacity: 1;
-  }
-
-  &:hover + div {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-`;
-
-const MegaMenuOverlay = styled.div`
-  position: fixed;
-  top: 48px;
-  left: 0;
-  right: 0;
-  background-color: ${props => props.theme.headerBackground};
-  backdrop-filter: ${props => props.theme.headerBlur};
-  -webkit-backdrop-filter: ${props => props.theme.headerBlur};
-  border-bottom: none;
-  box-shadow: 0 4px 20px ${props => props.theme.shadow};
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: all 0.3s ease;
-  z-index: 999997;
-
-  &:hover {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-  }
-`;
-
-const MegaMenuContent = styled.div`
-  max-width: 2500px;
-  margin: 0 auto;
-  padding: 2rem 2rem 3rem 2rem;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
-`;
-
-const MegaMenuItem = styled(Link)`
-  display: flex;
-  flex-direction: column;
-  padding: 1rem;
-  color: ${props => props.theme.text};
-  text-decoration: none;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-  background-color: ${props => props.theme.card};
-
-  &:hover {
-    background-color: ${props => props.theme.hover};
-    transform: translateY(-2px);
-  }
-`;
-
-const MegaMenuItemIcon = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  font-size: 1rem;
-  color: ${props => props.theme.text};
-
-  svg {
-    width: 20px;
-    height: 20px;
-    color: ${props => props.theme.primary};
-  }
-`;
-
-const MegaMenuItemDesc = styled.p`
-  font-size: 0.85rem;
-  color: ${props => props.theme.textSecondary};
-  margin: 0;
-  line-height: 1.4;
-`;
-
-const UserSection = styled.div`
+const RightSection = styled.div`
   display: flex;
   align-items: center;
   gap: 1rem;
-  height: 48px;
-
+  position: relative;
+  
   @media (max-width: 768px) {
     gap: 0.5rem;
   }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    gap: 0.25rem;
+  }
+  
+  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
+    gap: 0.15rem;
+  }
 `;
 
-const UserNavItem = styled.div`
-  position: relative;
+const ThemeToggleButton = styled.button`
+  background: none;
+  border: none;
+  color: ${props => props.theme.headerText};
+  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0 1rem;
-  height: 48px;
-  cursor: pointer;
-  color: ${props => props.theme.headerText};
-  font-weight: 400;
-  font-size: 0.875rem;
+  justify-content: center;
+  padding: 0.75rem;
+  border-radius: 8px;
   transition: all 0.2s ease;
-  opacity: 0.9;
+  font-weight: 500;
+  touch-action: manipulation;
 
   &:hover {
-    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
   }
 
-  &:hover + div {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
+  &:active {
+    transform: translateY(0);
+    background-color: rgba(255, 255, 255, 0.2);
   }
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
-
+  
   @media (max-width: 768px) {
-    display: none;
+    padding: 0.5rem;
+    min-height: 44px;
+    min-width: 44px;
+    
+    &:hover {
+      transform: none;
+    }
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    padding: 0.3rem;
+    min-height: 32px;
+    min-width: 32px;
+    border-radius: 6px;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+  
+  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
+    padding: 0.25rem;
+    min-height: 28px;
+    min-width: 28px;
+    
+    svg {
+      width: 14px;
+      height: 14px;
+    }
   }
 `;
 
-const UserMegaMenu = styled.div`
-  position: fixed;
-  top: 48px;
-  right: 2rem;
-  background-color: ${props => props.theme.headerBackground};
-  backdrop-filter: ${props => props.theme.headerBlur};
-  -webkit-backdrop-filter: ${props => props.theme.headerBlur};
-  border-bottom: none;
-  box-shadow: 0 4px 20px ${props => props.theme.shadow};
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition: all 0.3s ease;
-  z-index: 999997;
-  border-radius: 12px;
-  min-width: 250px;
-
-  &:hover {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-  }
-`;
-
-const UserMegaMenuContent = styled.div`
-  padding: 1rem;
+const MenuButton = styled.button`
+  background: none;
+  border: none;
+  color: ${props => props.theme.headerText};
+  cursor: pointer;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-weight: 500;
   gap: 0.5rem;
-`;
-
-const UserMegaMenuItem = styled(Link)`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  color: ${props => props.theme.text};
-  text-decoration: none;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-  background-color: ${props => props.theme.card};
-  font-size: 0.95rem;
+  touch-action: manipulation;
 
   &:hover {
-    background-color: ${props => props.theme.hover};
-    transform: translateY(-2px);
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
   }
 
-  svg {
-    width: 20px;
-    height: 20px;
-    color: ${props => props.theme.primary};
+  &:active {
+    transform: translateY(0);
+    background-color: rgba(255, 255, 255, 0.2);
   }
-`;
-
-const UserMegaMenuButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  width: 100%;
-  border: none;
-  background-color: ${props => props.theme.card};
-  color: ${props => props.theme.text};
-  text-decoration: none;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  text-align: left;
-  font-size: 0.95rem;
-
-  &:hover {
-    background-color: ${props => props.theme.hover};
-    transform: translateY(-2px);
-  }
-
-  svg {
-    width: 20px;
-    height: 20px;
-    color: ${props => props.theme.primary};
-  }
-`;
-
-const ThemeToggle = styled.button`
-  background: none;
-  border: none;
-  color: ${props => props.theme.headerText};
-  cursor: pointer;
-  padding: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  border-radius: 50%;
-  opacity: 0.9;
-
-  &:hover {
-    opacity: 1;
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
-
+  
   @media (max-width: 768px) {
-    display: none;
+    padding: 0.5rem;
+    gap: 0.25rem;
+    min-height: 44px;
+    
+    &:hover {
+      transform: none;
+    }
+    
+    span {
+      @media (max-width: 480px) {
+        display: none;
+      }
+    }
+  }
+
+  @media (max-width: 1024px) and (orientation: landscape) {
+    padding: 0.3rem;
+    gap: 0.2rem;
+    min-height: 32px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+  
+  @media (max-width: 896px) and (orientation: landscape) and (max-height: 414px) {
+    padding: 0.25rem;
+    min-height: 28px;
+    font-size: 0.75rem;
+    
+    span {
+      display: none;
+    }
+    
+    svg {
+      width: 12px;
+      height: 12px;
+    }
   }
 `;
 
-const MobileMenuButton = styled.button`
-  background: none;
-  border: none;
-  color: ${props => props.theme.headerText};
-  cursor: pointer;
-  padding: 0.5rem;
-  display: none;
-  align-items: center;
-  justify-content: center;
+const DropdownMenu = styled.div`
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background-color: ${props => props.theme.card || '#ffffff'};
+  border: 1px solid ${props => props.theme.border || '#e0e6ed'};
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15),
+              0 0 1px rgba(0, 0, 0, 0.1);
+  padding: 0.75rem 0;
+  display: ${props => props.$isOpen ? 'block' : 'none'};
+  z-index: 99999;
+  min-width: 280px;
 
-  svg {
-    width: 24px;
-    height: 24px;
+  /* Effet glassmorphism pour le menu déroulant aussi */
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+
+  animation: ${props => props.$isOpen ? 'dropdownSlideIn' : 'dropdownSlideOut'} 0.2s ease;
+  max-height: 80vh;
+  overflow-y: auto;
+
+  @keyframes dropdownSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
+  @keyframes dropdownSlideOut {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    /* 🔧 NOUVELLE MÉTHODE : Menu modal compact centré */
+    position: fixed;
+    top: 800%;
+    left: -70%;
+    transform: translate(-50%, -50%);
+    width: 90vw;
+    max-width: 350px;
+    max-height: 70vh;
+    min-width: unset;
+    border-radius: 16px;
+    padding: 1.5rem;
+    
+    /* Style modal avec overlay sombre */
+    background-color: ${props => props.theme.card};
+    backdrop-filter: blur(16px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    border: 2px solid ${props => props.theme.border};
+    
+    /* Scroll fluide */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    
+    /* Z-index très élevé pour passer au-dessus de tout */
+    z-index: 1000000;
+    
+    animation: ${props => props.$isOpen ? 'mobileModalIn' : 'mobileModalOut'} 0.3s ease;
+  }
+  
+  @keyframes mobileModalIn {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
+  @keyframes mobileModalOut {
+    from {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.9);
+    }
+  }
+`;
+
+const MobileOverlay = styled.div`
+  display: none;
+  
+  @media (max-width: 768px) {
+    display: ${props => props.$isOpen ? 'block' : 'none'};
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999999;
+    backdrop-filter: blur(4px);
+    animation: ${props => props.$isOpen ? 'overlayFadeIn' : 'overlayFadeOut'} 0.3s ease;
+  }
+  
+  @keyframes overlayFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes overlayFadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+`;
+
+const MobileMenuHeader = styled.div`
+  display: none;
+  
   @media (max-width: 768px) {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid ${props => props.theme.border};
   }
 `;
 
-const MobileMenu = styled.div`
-  position: fixed;
-  top: 60px;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: ${props => props.theme.background};
-  padding: 1rem;
-  overflow-y: auto;
-  z-index: 999997;
-  transform: ${props => props.$isOpen ? 'translateX(0)' : 'translateX(-100%)'};
-  transition: transform 0.3s ease;
-  display: none;
-
-  @media (max-width: 768px) {
-    display: block;
-    padding-bottom: calc(env(safe-area-inset-bottom) + 1rem);
-  }
-`;
-
-const MobileNavSection = styled.div`
-  margin-bottom: 1.5rem;
-`;
-
-const MobileSectionTitle = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 0.5rem;
+const MobileMenuTitle = styled.h3`
+  margin: 0;
+  font-size: 1.25rem;
   font-weight: 600;
   color: ${props => props.theme.text};
-  font-size: 1rem;
+`;
+
+const MobileCloseButton = styled.button`
+  background: none;
+  border: none;
+  color: ${props => props.theme.text};
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation;
+  
+  &:hover {
+    background-color: ${props => props.theme.backgroundSecondary};
+  }
+`;
+
+const MenuSection = styled.div`
+  margin-bottom: 0.5rem;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+  
+  @media (max-width: 768px) {
+    margin-bottom: 0.75rem;
+  }
+`;
+
+const SectionTitle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: ${props => props.theme.primary || '#3b82f6'};
+  background-color: ${props => props.theme.backgroundSecondary || '#f8fafc'};
+  margin: 0 0.5rem;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+    margin: 0;
+    font-size: 0.875rem;
+    border-radius: 8px;
+  }
+`;
+
+const MenuDivider = styled.div`
+  height: 1px;
+  background-color: ${props => props.theme.border || '#e0e6ed'};
+  margin: 0.5rem 0;
+  
+  @media (max-width: 768px) {
+    margin: 0.75rem 0;
+  }
+`;
+
+const MenuItem = styled(Link)`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: ${props => props.theme.text || '#374151'};
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  margin: 0 0.5rem;
+  border-radius: 8px;
+  touch-action: manipulation;
+  
+  &:hover {
+    background-color: ${props => props.theme.backgroundSecondary || '#f1f5f9'};
+    color: ${props => props.theme.primary || '#3b82f6'};
+    transform: translateX(4px);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+    opacity: 0.7;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+    margin: 0 0 0.25rem 0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    min-height: 48px;
+    
+    &:hover {
+      transform: none;
+    }
+    
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+`;
+
+const LogoutItem = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  width: 100%;
+  text-align: left;
+  margin: 0 0.5rem;
+  border-radius: 8px;
+  touch-action: manipulation;
+  
+  &:hover {
+    background-color: #fef2f2;
+    transform: translateX(4px);
+  }
 
   svg {
     width: 18px;
     height: 18px;
   }
+  
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+    margin: 0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    min-height: 48px;
+    
+    &:hover {
+      transform: none;
+    }
+    
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
 `;
 
-const MobileNavItem = styled(Link)`
+const UserInfo = styled.div`
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  margin: 0.25rem 0;
+  color: ${props => props.theme.text || '#374151'};
+  font-weight: 500;
+  margin: 0 0.5rem;
   border-radius: 8px;
-  text-decoration: none;
-  color: ${props => props.theme.text};
-  background-color: ${props => props.theme.card};
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: ${props => props.theme.hover};
-    color: ${props => props.theme.primary};
-  }
+  background-color: ${props => props.theme.backgroundSecondary || '#f8fafc'};
 
   svg {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
+    opacity: 0.7;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 0.75rem;
+    margin: 0 0 1rem 0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    
+    svg {
+      width: 20px;
+      height: 20px;
+    }
   }
 `;
 
-const MobileUserSection = styled.div`
-  border-top: 1px solid ${props => props.theme.border};
-  padding-top: 1rem;
-  margin-top: 1rem;
-`;
-
-const MobileUserButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  width: 100%;
-  margin: 0.25rem 0;
-  border: none;
-  background-color: ${props => props.theme.card};
-  color: ${props => props.theme.text};
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  text-align: left;
-
-  &:hover {
-    background-color: ${props => props.theme.hover};
-    color: ${props => props.theme.primary};
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-`;
-
-function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeMenu, setActiveMenu] = useState(null);
+function Header({ isDarkMode, toggleDarkMode, onLogout, userName, pageTitle = null }) {
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef(null);
   const location = useLocation();
 
+  // 🔧 AJOUT : Détecte si on est sur la page RadiologyViewer
+  const isRadiologyViewer = location.pathname.includes('/radiology-viewer');
+
+  const handleMenuToggle = () => {
+    setShowMenu(!showMenu);
+    
+    if (!showMenu) {
+      document.body.classList.add('menu-open');
+    } else {
+      document.body.classList.remove('menu-open');
+    }
+  };
+
+  const handleMenuItemClick = () => {
+    setShowMenu(false);
+    document.body.classList.remove('menu-open');
+  };
+
   useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [location]);
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+        document.body.classList.remove('menu-open');
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.body.classList.remove('menu-open');
+    };
+  }, [showMenu]);
+
+  useEffect(() => {
+    setShowMenu(false);
+    document.body.classList.remove('menu-open');
+  }, [location.pathname]);
 
   return (
-    <>
-      <HeaderWrapper>
-        <HeaderContent>
-          <Logo to="/">
-            <Stethoscope />
-            RIFIM
-          </Logo>
+    <HeaderWrapper $isRadiologyViewer={isRadiologyViewer}>
+      <HeaderContent>
+        <Logo to="/">
+          <Stethoscope size={24} />
+          <span>RIFIM</span>
+        </Logo>
+        
+        {pageTitle && (
+          <CenterTitle>{pageTitle}</CenterTitle>
+        )}
+        
+        <RightSection ref={menuRef}>
+          <ThemeToggleButton onClick={toggleDarkMode} title={isDarkMode ? 'Passer en mode clair' : 'Passer en mode sombre'}>
+            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+          </ThemeToggleButton>
 
-          {/* MENU DESKTOP */}
-          <DesktopNav>
-            <NavItem onMouseEnter={() => setActiveMenu('questionnaires')}>
-              <FileText />
-              Compte-rendu
-            </NavItem>
-            <NavItem onMouseEnter={() => setActiveMenu('cases')}>
-              <FolderOpen />
-              Cas
-            </NavItem>
-            <NavItem onMouseEnter={() => setActiveMenu('protocols')}>
-              <BookOpen />
-              Protocoles
-            </NavItem>
-          </DesktopNav>
+          <MenuButton onClick={handleMenuToggle}>
+            <span>{userName}</span>
+            <ChevronDown 
+              size={16} 
+              style={{ 
+                transform: showMenu ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.2s ease'
+              }} 
+            />
+          </MenuButton>
 
-          {/* SECTION DROITE */}
-          <UserSection>
-            {/* ✨ CORRECTION DES ICÔNES : Moon en mode clair, Sun en mode sombre */}
-            <ThemeToggle onClick={toggleDarkMode} aria-label="Toggle dark mode">
-              {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-            </ThemeToggle>
+          <MobileOverlay $isOpen={showMenu} onClick={handleMenuItemClick} />
 
-            <UserNavItem onMouseEnter={() => setActiveMenu('user')}>
-              <User />
-              {user?.username}
-            </UserNavItem>
+          <DropdownMenu $isOpen={showMenu}>
+            <MobileMenuHeader>
+              <MobileMenuTitle>Menu</MobileMenuTitle>
+              <MobileCloseButton onClick={handleMenuItemClick}>
+                <X size={24} />
+              </MobileCloseButton>
+            </MobileMenuHeader>
 
-            <MobileMenuButton onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-              {mobileMenuOpen ? <X /> : <Menu />}
-            </MobileMenuButton>
-          </UserSection>
-        </HeaderContent>
-      </HeaderWrapper>
+            {userName && (
+              <>
+                <UserInfo>
+                  <User size={18} />
+                  Connecté en tant que <strong>{userName}</strong>
+                </UserInfo>
+                <MenuDivider />
+              </>
+            )}
 
-      {/* MEGA MENUS AVEC LES BONS LIENS */}
-      
-      {/* QUESTIONNAIRES */}
-      <MegaMenuOverlay 
-        style={{ 
-          opacity: activeMenu === 'questionnaires' ? 1 : 0,
-          visibility: activeMenu === 'questionnaires' ? 'visible' : 'hidden',
-          pointerEvents: activeMenu === 'questionnaires' ? 'auto' : 'none'
-        }}
-        onMouseLeave={() => setActiveMenu(null)}
-      >
-        <MegaMenuContent>
-          <MegaMenuItem to="/questionnaires">
-            <MegaMenuItemIcon>
-              <FileText />
-              Gérer les questionnaires
-            </MegaMenuItemIcon>
-            <MegaMenuItemDesc>
-              Créez et gérez vos questionnaires personnalisés
-            </MegaMenuItemDesc>
-          </MegaMenuItem>
-          <MegaMenuItem to="/questionnaires-list">
-            <MegaMenuItemIcon>
-              <FileText />
-              Mes Questionnaires
-            </MegaMenuItemIcon>
-            <MegaMenuItemDesc>
-              Accédez à tous vos questionnaires personnels
-            </MegaMenuItemDesc>
-          </MegaMenuItem>
-          <MegaMenuItem to="/public-questionnaires">
-            <MegaMenuItemIcon>
-              <Users />
-              Questionnaires Publics
-            </MegaMenuItemIcon>
-            <MegaMenuItemDesc>
-              Explorez les questionnaires partagés par la communauté
-            </MegaMenuItemDesc>
-          </MegaMenuItem>
-        </MegaMenuContent>
-      </MegaMenuOverlay>
+            <MenuSection>
+              <SectionTitle>
+                <FileText size={18} />
+                Questionnaires
+              </SectionTitle>
+              <MenuItem to="/questionnaires" onClick={handleMenuItemClick}>
+                <span>➕</span> Gérer les questionnaires
+              </MenuItem>
+              <MenuItem to="/questionnaires-list" onClick={handleMenuItemClick}>
+                <span>📋</span> Mes Questionnaires
+              </MenuItem>
+              <MenuItem to="/public-questionnaires" onClick={handleMenuItemClick}>
+                <span>📖</span> Questionnaires Publics
+              </MenuItem>
+            </MenuSection>
 
-      {/* CAS */}
-      <MegaMenuOverlay 
-        style={{ 
-          opacity: activeMenu === 'cases' ? 1 : 0,
-          visibility: activeMenu === 'cases' ? 'visible' : 'hidden',
-          pointerEvents: activeMenu === 'cases' ? 'auto' : 'none'
-        }}
-        onMouseLeave={() => setActiveMenu(null)}
-      >
-        <MegaMenuContent>
-          <MegaMenuItem to="/cases">
-            <MegaMenuItemIcon>
-              <FolderOpen />
-              Gérer les Cas
-            </MegaMenuItemIcon>
-            <MegaMenuItemDesc>
-              Organisez et administrez vos cas cliniques
-            </MegaMenuItemDesc>
-          </MegaMenuItem>
-          <MegaMenuItem to="/cases-list">
-            <MegaMenuItemIcon>
-              <FolderOpen />
-              Mes Cas
-            </MegaMenuItemIcon>
-            <MegaMenuItemDesc>
-              Gérez votre collection de cas cliniques personnels
-            </MegaMenuItemDesc>
-          </MegaMenuItem>
-          <MegaMenuItem to="/public-cases">
-            <MegaMenuItemIcon>
-              <Users />
-              Cas Publics
-            </MegaMenuItemIcon>
-            <MegaMenuItemDesc>
-              Découvrez les cas partagés par la communauté
-            </MegaMenuItemDesc>
-          </MegaMenuItem>
-        </MegaMenuContent>
-      </MegaMenuOverlay>
+            <MenuDivider />
 
-      {/* PROTOCOLES */}
-      <MegaMenuOverlay 
-        style={{ 
-          opacity: activeMenu === 'protocols' ? 1 : 0,
-          visibility: activeMenu === 'protocols' ? 'visible' : 'hidden',
-          pointerEvents: activeMenu === 'protocols' ? 'auto' : 'none'
-        }}
-        onMouseLeave={() => setActiveMenu(null)}
-      >
-        <MegaMenuContent>
-          <MegaMenuItem to="/protocols/create">
-            <MegaMenuItemIcon>
-              <BookOpen />
-              Créer un Protocole
-            </MegaMenuItemIcon>
-            <MegaMenuItemDesc>
-              Créez un nouveau protocole médical personnalisé
-            </MegaMenuItemDesc>
-          </MegaMenuItem>
-          <MegaMenuItem to="/protocols/personal">
-            <MegaMenuItemIcon>
-              <BookOpen />
-              Mes Protocoles
-            </MegaMenuItemIcon>
-            <MegaMenuItemDesc>
-              Accédez à vos protocoles personnels
-            </MegaMenuItemDesc>
-          </MegaMenuItem>
-          <MegaMenuItem to="/protocols/public">
-            <MegaMenuItemIcon>
-              <Users />
-              Protocoles Publics
-            </MegaMenuItemIcon>
-            <MegaMenuItemDesc>
-              Explorez les protocoles de la communauté
-            </MegaMenuItemDesc>
-          </MegaMenuItem>
-        </MegaMenuContent>
-      </MegaMenuOverlay>
+            <MenuSection>
+              <SectionTitle>
+                <FolderOpen size={18} />
+                Cas Cliniques
+              </SectionTitle>
+              <MenuItem to="/cases" onClick={handleMenuItemClick}>
+                <span>➕</span> Gérer les Cas
+              </MenuItem>
+              <MenuItem to="/cases-list" onClick={handleMenuItemClick}>
+                <span>📁</span> Mes Cas
+              </MenuItem>
+              <MenuItem to="/public-cases" onClick={handleMenuItemClick}>
+                <span>📂</span> Cas Publics
+              </MenuItem>
+            </MenuSection>
 
-      {/* MENU UTILISATEUR */}
-      <UserMegaMenu
-        style={{ 
-          opacity: activeMenu === 'user' ? 1 : 0,
-          visibility: activeMenu === 'user' ? 'visible' : 'hidden',
-          pointerEvents: activeMenu === 'user' ? 'auto' : 'none'
-        }}
-        onMouseLeave={() => setActiveMenu(null)}
-      >
-        <UserMegaMenuContent>
-          <UserMegaMenuItem to="/statistics">
-            <BarChart3 />
-            Statistiques
-          </UserMegaMenuItem>
-          <UserMegaMenuButton onClick={onLogout}>
-            <LogOut />
-            Déconnexion
-          </UserMegaMenuButton>
-        </UserMegaMenuContent>
-      </UserMegaMenu>
+            <MenuDivider />
 
-      {/* MENU MOBILE */}
-      <MobileMenu $isOpen={mobileMenuOpen}>
-        <MobileNavSection>
-          <MobileSectionTitle>
-            <FileText />
-            Compte-rendu
-          </MobileSectionTitle>
-          <MobileNavItem to="/questionnaires">
-            <FileText />
-            Gérer les questionnaires
-          </MobileNavItem>
-          <MobileNavItem to="/questionnaires-list">
-            <FileText />
-            Mes Questionnaires
-          </MobileNavItem>
-          <MobileNavItem to="/public-questionnaires">
-            <Users />
-            Questionnaires Publics
-          </MobileNavItem>
-        </MobileNavSection>
+            <MenuSection>
+              <SectionTitle>
+                <Activity size={18} />
+                Protocoles
+              </SectionTitle>
+              <MenuItem to="/protocols/create" onClick={handleMenuItemClick}>
+                <span>➕</span> Créer un protocole
+              </MenuItem>
+              <MenuItem to="/protocols/personal" onClick={handleMenuItemClick}>
+                <span>📋</span> Mes Protocoles
+              </MenuItem>
+              <MenuItem to="/protocols/public" onClick={handleMenuItemClick}>
+                <span>📖</span> Protocoles Publics
+              </MenuItem>
+            </MenuSection>
 
-        <MobileNavSection>
-          <MobileSectionTitle>
-            <FolderOpen />
-            Cas
-          </MobileSectionTitle>
-          <MobileNavItem to="/cases">
-            <FolderOpen />
-            Gérer les Cas
-          </MobileNavItem>
-          <MobileNavItem to="/cases-list">
-            <FolderOpen />
-            Mes Cas
-          </MobileNavItem>
-          <MobileNavItem to="/public-cases">
-            <Users />
-            Cas Publics
-          </MobileNavItem>
-        </MobileNavSection>
+            <MenuDivider />
 
-        <MobileNavSection>
-          <MobileSectionTitle>
-            <BookOpen />
-            Protocoles
-          </MobileSectionTitle>
-          <MobileNavItem to="/protocols/create">
-            <BookOpen />
-            Créer un Protocole
-          </MobileNavItem>
-          <MobileNavItem to="/protocols/personal">
-            <BookOpen />
-            Mes Protocoles
-          </MobileNavItem>
-          <MobileNavItem to="/protocols/public">
-            <Users />
-            Protocoles Publics
-          </MobileNavItem>
-        </MobileNavSection>
+            {/* NOUVELLE SECTION STATISTIQUES */}
+            <MenuSection>
+              <MenuItem to="/statistics" onClick={handleMenuItemClick}>
+                <BarChart3 size={18} />
+                Statistiques
+              </MenuItem>
+            </MenuSection>
 
-        <MobileUserSection>
-          <MobileSectionTitle>
-            <User />
-            {user?.username}
-          </MobileSectionTitle>
-          <MobileUserButton as={Link} to="/statistics">
-            <BarChart3 />
-            Statistiques
-          </MobileUserButton>
-          <MobileUserButton onClick={() => { onLogout(); setMobileMenuOpen(false); }}>
-            <LogOut />
-            Déconnexion
-          </MobileUserButton>
-          <MobileUserButton onClick={toggleDarkMode}>
-            {/* ✨ CORRECTION DES ICÔNES DANS LE MENU MOBILE AUSSI */}
-            {isDarkMode ? <Sun /> : <Moon />}
-            {isDarkMode ? 'Mode Clair' : 'Mode Sombre'}
-          </MobileUserButton>
-        </MobileUserSection>
-      </MobileMenu>
-    </>
+            <MenuDivider />
+
+            <MenuSection>
+              <LogoutItem onClick={() => { handleMenuItemClick(); onLogout(); }}>
+                <LogOut size={18} />
+                Se déconnecter
+              </LogoutItem>
+            </MenuSection>
+          </DropdownMenu>
+        </RightSection>
+      </HeaderContent>
+    </HeaderWrapper>
   );
 }
 
