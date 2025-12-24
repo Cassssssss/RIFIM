@@ -1266,19 +1266,44 @@ function RadiologyViewer() {
       <div id="folder-thumbnails" className={styles.folderGrid}>
         {currentCase.folders.map(folder => {          
           return (
-            <div 
-              key={folder} 
+            <div
+              key={folder}
               className={styles.folderThumbnail}
               draggable={!isMobile}
-              onDragStart={(e) => !isMobile && handleDragStart(e, folder)}
-              onTouchStart={(e) => isMobile && handleMobileDragStart(e, folder)}
-              onTouchMove={(e) => isMobile && handleMobileDragMove(e)}
-              onTouchEnd={(e) => isMobile && handleMobileDragEnd(e)}
-              onClick={() => {
-                if (isMobile && !isDraggingFolder) {
+              onDragStart={(e) => {
+                if (!isMobile) {
+                  handleDragStart(e, folder);
+                }
+              }}
+              onClick={(e) => {
+                if (!isMobile) {
+                  // Click desktop : charge l'image
                   loadImage(folder, 0, viewMode === 1 ? 'single' : 'left');
                   setCurrentFolderLeft(folder);
                   setCurrentIndexLeft(0);
+                }
+              }}
+              onTouchStart={(e) => {
+                if (isMobile) {
+                  // Stocke le temps et la position du touch start
+                  e.currentTarget.touchStartTime = Date.now();
+                  e.currentTarget.touchStartY = e.touches[0].clientY;
+                }
+              }}
+              onTouchEnd={(e) => {
+                if (isMobile) {
+                  const touchDuration = Date.now() - (e.currentTarget.touchStartTime || 0);
+                  const touchStartY = e.currentTarget.touchStartY || 0;
+                  const currentY = e.changedTouches[0].clientY;
+                  const touchMoved = Math.abs(currentY - touchStartY);
+
+                  // Si c'est un tap rapide (< 200ms) et sans mouvement (< 10px), c'est un click
+                  if (touchDuration < 200 && touchMoved < 10) {
+                    e.preventDefault();
+                    loadImage(folder, 0, viewMode === 1 ? 'single' : 'left');
+                    setCurrentFolderLeft(folder);
+                    setCurrentIndexLeft(0);
+                  }
                 }
               }}
             >

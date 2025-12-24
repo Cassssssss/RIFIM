@@ -1,12 +1,15 @@
 /* ==================== VARIABLES CSS PRÉCISES ==================== */
 :root {
-  --header-height: 60px;
+  /* 🔧 CORRECTION : Hauteurs différentes pour desktop et mobile */
+  --header-height-desktop: 60px;
+  --header-height-mobile: 64px;
   --bottom-bar-height: 60px;
+
   --safe-area-top: env(safe-area-inset-top, 0px);
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
   --safe-area-left: env(safe-area-inset-left, 0px);
   --safe-area-right: env(safe-area-inset-right, 0px);
-  
+
   /* 🔧 CORRECTION : Espaces exacts pour éviter le rognage */
   --content-padding-top: 8px;
   --content-padding-bottom: 8px;
@@ -16,28 +19,28 @@
 
 /* ==================== CONTAINER PRINCIPAL - FIXE ET STABLE ==================== */
 .container {
-  position: fixed;
-  top: 10px;
-  left: 0;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
   width: 100vw;
   height: 100vh;
-  
+
   display: flex;
   flex-direction: column;
-  
+
   background: linear-gradient(135deg, rgb(var(--color-background)) 0%, rgb(var(--color-surface)) 100%);
   color: rgb(var(--color-text));
   z-index: 100;
   overflow: hidden;
-  margin: 0;
-  padding: 0;
-  
+  margin: 0 !important;
+  padding: 0 !important;
+
   /* 🔧 AJOUT : Empêche le scroll sur mobile */
   touch-action: none;
-  
+
   @media (max-width: 768px) {
-    /* 🔧 MODIFICATION : Valeur spécifique pour mobile uniquement */
-    top: -0px;  /* Ici vous pouvez modifier uniquement pour mobile */
     height: 100vh;
     height: 100dvh;
     /* Force le no-scroll absolu sur mobile */
@@ -46,32 +49,26 @@
   }
 }
 
-/* ==================== CONTENT - DIMENSIONS RÉDUITES MOBILE ==================== */
+/* ==================== CONTENT - DIMENSIONS EXACTES AVEC VALEURS FIXES ==================== */
 .content {
-  /* 🔧 CORRECTION : Espace exact entre header et bottom bar avec padding */
-  flex: 1;
+  position: fixed !important;
+  top: 68px !important;
+  bottom: 68px !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 99 !important;
+
   display: flex;
   flex-direction: column;
-  
-  /* Position après le header avec padding pour éviter le rognage */
-  margin-top: calc(var(--header-height) + var(--content-padding-top));
-  
-  /* Espace pour la bottom bar avec padding */
-  margin-bottom: calc(var(--bottom-bar-height) + var(--content-padding-bottom));
-  
+
   background-color: rgb(var(--color-background));
   overflow: hidden;
   padding: 0;
-  
+
   @media (max-width: 768px) {
-    /* 🔧 CORRECTION MOBILE : Réduit la marge top et augmente la hauteur */
-    margin-top: calc(var(--header-height) - 35px); /* 🔧 +0px au lieu de +2px - supprime l'espace vide */
-    margin-bottom: calc(var(--bottom-bar-height) + 14px);
-    
-    /* Force les dimensions exactes sur mobile */
-    height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 55px); /* 🔧 +25px au lieu de +20px - augmente le container */
-    max-height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 55px);
-    flex-shrink: 0;
+    /* 🔧 MOBILE : header 64px + bottom bar 60px */
+    top: 72px !important;
+    bottom: 68px !important;
   }
 }
 
@@ -81,15 +78,16 @@
   display: flex;
   height: 100%;
   margin: 0;
-  padding: var(--desktop-gap);
-  gap: var(--desktop-gap);
   overflow: hidden;
-  
+
+  /* 🔧 DESKTOP : padding équilibré par défaut */
+  padding: 8px;
+  gap: 8px;
+
   @media (max-width: 768px) {
-    padding: var(--mobile-gap);
-    gap: var(--mobile-gap);
-    
-    /* 🔧 FORCE les dimensions exactes sur mobile */
+    /* 🔧 MOBILE : padding plus grand en haut et bas pour créer l'espace visible */
+    padding: 8px 4px;
+    gap: 4px;
     height: 100%;
     max-height: 100%;
   }
@@ -105,44 +103,44 @@
   padding: 6px;
   overflow-y: auto;
   overflow-x: hidden;
-  
+
   background-color: rgb(var(--color-surface));
   border: 1px solid rgb(var(--color-border));
   border-radius: 12px;
   flex-shrink: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  
+
   scrollbar-width: thin;
   scrollbar-color: rgb(var(--color-primary)) rgb(var(--color-surface));
-  
+
   &::-webkit-scrollbar {
     width: 6px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: rgb(var(--color-surface));
     border-radius: 3px;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: rgb(var(--color-primary));
     border-radius: 3px;
   }
-  
+
   @media (max-width: 768px) {
     /* 🔧 RÉDUIT encore plus sur mobile */
     width: 65px;
     padding: 3px;
     gap: 3px;
     border-radius: 8px;
-    
+
     scrollbar-width: none;
     -ms-overflow-style: none;
-    
+
     &::-webkit-scrollbar {
       display: none;
     }
-    
+
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
@@ -159,19 +157,19 @@
   position: relative;
   margin-bottom: 4px;
   flex-shrink: 0;
-  
+
   background-color: rgb(var(--color-background));
-  cursor: move;
+  cursor: pointer;
   transition: all 0.3s ease;
   border: 2px solid rgb(var(--color-border));
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  
+
   &:hover {
     transform: scale(1.05);
     border-color: rgb(var(--color-primary));
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
-  
+
   @media (max-width: 768px) {
     /* 🔧 ULTRA COMPACT mobile */
     min-height: 55px;
@@ -180,13 +178,13 @@
     margin-bottom: 2px;
     cursor: pointer;
     border-width: 1px;
-    
+
     &:hover {
       transform: none;
       border-color: rgb(var(--color-border));
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
-    
+
     &:active {
       transform: scale(0.95);
       opacity: 0.8;
@@ -459,7 +457,7 @@
   }
 }
 
-/* ==================== BOTTOM BAR - POSITION PLUS HAUTE SUR MOBILE ==================== */
+/* ==================== BOTTOM BAR - STYLE IDENTIQUE AU HEADER ==================== */
 .bottomBar {
   position: fixed;
   bottom: 0;
@@ -467,70 +465,78 @@
   right: 0;
   width: 100vw;
   height: var(--bottom-bar-height);
-  
-  background: var(--header-background, rgba(255, 255, 255, 0.72));
+
+  /* 🔧 CORRECTION : Même style que le header */
+  background: linear-gradient(135deg, rgba(190, 216, 255, 0.15) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   color: var(--header-text, #1D1D1F);
-  
+
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  
+
   z-index: 1001;
   box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  
+  border-top: none;
+
   /* Safe areas pour iPhone */
   padding-bottom: var(--safe-area-bottom);
   padding-left: calc(24px + var(--safe-area-left));
   padding-right: calc(24px + var(--safe-area-right));
-  
+
   & > div:last-child {
     display: flex;
     align-items: center;
     gap: 8px;
     height: 100%;
   }
-  
+
   @media (max-width: 768px) {
-    /* 🔧 REMONTE ENCORE PLUS LA BOTTOM BAR pour qu'elle soit visible */
+    /* 🔧 CORRECTION : Bottom bar vraiment en bas (bottom: 0) */
     position: fixed;
-    bottom: 31.5px;
-    left: 0; /* 🔧 Supprime les marges latérales comme le header */
+    bottom: 0;
+    left: 0;
     right: 0;
-    width: 100vw; /* 🔧 Pleine largeur comme le header */
-    
-    /* 🔧 HAUTEUR ET STYLE COMME LE HEADER */
-    height: calc(var(--bottom-bar-height) - 15px);
-    min-height: 45px;
-    border-radius: 0; /* 🔧 Supprime les bords ronds - forme comme le header */
-    
+    width: 100vw;
+
+    height: var(--bottom-bar-height);
+    min-height: 60px;
+    border-radius: 0;
+
     padding: 6px 10px;
-    padding-bottom: 6px;
-    padding-left: 10px;
-    padding-right: 10px;
-    
+    padding-bottom: calc(6px + var(--safe-area-bottom));
+    padding-left: calc(10px + var(--safe-area-left));
+    padding-right: calc(10px + var(--safe-area-right));
+
     z-index: 1002;
-    
-    /* 🔧 Ombre plus subtile comme le header */
+
     box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15);
-    
+
     & > div:last-child {
       gap: 4px;
     }
   }
 }
 
-/* ==================== BUTTONS COMPACTS ==================== */
+/* 🔧 NOUVEAU : Style dark mode pour bottom bar */
+:global(.dark) .bottomBar {
+  background: rgb(var(--color-surface));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* ==================== BUTTONS SOBRES ET COHÉRENTS ==================== */
 .responseButton, .sheetLink {
-  background: rgba(255, 255, 255, 0.12);
-  color: white;
+  /* 🔧 CORRECTION : Boutons sobres et cohérents avec le design général */
+  background: rgba(31, 41, 55, 0.1);
+  color: rgb(31, 41, 55);
   padding: 10px 18px;
   border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(31, 41, 55, 0.2);
   cursor: pointer;
   text-decoration: none;
   display: inline-flex;
@@ -541,32 +547,58 @@
   margin-left: 8px;
   height: 40px;
   white-space: nowrap;
-  
+
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  
+
   &:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(31, 41, 55, 0.15);
+    border-color: rgba(31, 41, 55, 0.3);
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
-  
+
   @media (max-width: 768px) {
     /* 🔧 ENCORE PLUS COMPACT sur mobile */
     padding: 6px 10px;
     font-size: 11px;
     margin-left: 3px;
     height: 32px;
-    
+
     &:hover {
-      background: rgba(255, 255, 255, 0.12);
+      background: rgba(31, 41, 55, 0.1);
       transform: none;
       box-shadow: none;
     }
-    
+
     &:active {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(31, 41, 55, 0.2);
       transform: scale(0.98);
+    }
+  }
+}
+
+/* 🔧 NOUVEAU : Style dark mode pour les boutons */
+:global(.dark) .responseButton,
+:global(.dark) .sheetLink {
+  background: rgba(243, 244, 246, 0.1);
+  color: rgb(243, 244, 246);
+  border-color: rgba(243, 244, 246, 0.2);
+
+  &:hover {
+    background: rgba(243, 244, 246, 0.15);
+    border-color: rgba(243, 244, 246, 0.3);
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+  }
+
+  @media (max-width: 768px) {
+    &:hover {
+      background: rgba(243, 244, 246, 0.1);
+      box-shadow: none;
+    }
+
+    &:active {
+      background: rgba(243, 244, 246, 0.2);
     }
   }
 }
@@ -922,22 +954,20 @@
 /* 🌟 NOUVELLE SECTION : MOBILE PAYSAGE (HORIZONTAL) OPTIMISÉ 🌟 */
 /* ======================================================================================== */
 
-@media (max-width: 1024px) and (orientation: landscape) {
+@media (max-width: 768px) and (orientation: landscape) {
   .container {
     /* 🔧 AJUSTE pour le mode paysage mobile */
     top: 0px;
     height: 100vh;
     height: 100dvh;
   }
-  
+
   .content {
-    /* 🔧 RÉDUIT les marges en paysage */
-    margin-top: calc(var(--header-height) - 10px);
-    margin-bottom: calc(var(--bottom-bar-height) + 5px);
-    height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 15px);
-    max-height: calc(100vh - var(--header-height) - var(--bottom-bar-height) + 15px);
+    /* 🔧 RÉDUIT les marges en paysage - utilise la hauteur mobile 64px */
+    top: 54px;
+    bottom: 65px;
   }
-  
+
   .layout {
     /* 🔧 RÉDUIT le padding en paysage */
     padding: 2px;
