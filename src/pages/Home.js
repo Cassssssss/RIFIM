@@ -18,7 +18,10 @@ import {
 // CONTENEUR PRINCIPAL
 const HomeContainer = styled.div`
   min-height: calc(100vh - 80px);
-  background: ${props => props.theme.background};
+  background: linear-gradient(135deg,
+    ${props => props.theme.background} 0%,
+    ${props => props.theme.backgroundSecondary || props.theme.background} 100%
+  );
   padding: 3rem 2rem;
 
   @media (max-width: 768px) {
