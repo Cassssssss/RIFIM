@@ -423,18 +423,20 @@ function RadiologyViewer() {
     });
   }, []);
 
-  const handleContrast = useCallback((side, deltaX) => {
+  const handleContrast = useCallback((side, deltaX, deltaY = 0) => {
     const contrastSensitivity = 2;
-    
+    const brightnessSensitivity = 2;
+
     setImageControls(prevControls => {
       const newControls = {
         ...prevControls,
         [side]: {
           ...prevControls[side],
-          contrast: Math.max(0, Math.min(300, prevControls[side].contrast + (deltaX * contrastSensitivity)))
+          contrast: Math.max(0, Math.min(300, prevControls[side].contrast + (deltaX * contrastSensitivity))),
+          brightness: Math.max(0, Math.min(300, prevControls[side].brightness + (deltaY * brightnessSensitivity)))
         }
       };
-      
+
       return newControls;
     });
   }, []);
@@ -892,7 +894,7 @@ function RadiologyViewer() {
     } else if (isZooming) {
       handleZoom(activeSide, -deltaY);
     } else if (isAdjustingContrast) {
-      handleContrast(activeSide, deltaX);
+      handleContrast(activeSide, deltaX, -deltaY);
     } else if (isDragging) {
       handleScroll(deltaY, true, activeSide);
     }
@@ -1440,7 +1442,7 @@ function RadiologyViewer() {
                     <li><strong>↑ ↓</strong> Navigation synchronisée</li>
                     <li><strong>Shift + clic gauche</strong> Déplacer</li>
                     <li><strong>Clic droit</strong> Zoom</li>
-                    <li><strong>Shift + clic droit</strong> Contraste</li>
+                    <li><strong>Shift + clic droit</strong> Contraste (↔) et Luminosité (↕)</li>
                   </>
                 )}
               </ul>
