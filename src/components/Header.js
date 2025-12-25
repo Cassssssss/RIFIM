@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
-import { Moon, Sun, Menu, X, User, LogOut, ChevronDown, FileText, FolderOpen, Stethoscope, BookOpen, Users, BarChart3 } from 'lucide-react';
+import { Moon, Sun, Menu, X, User, LogOut, ChevronDown, FileText, FolderOpen, Brain, BookOpen, Users, BarChart3 } from 'lucide-react';
 
 const HeaderWrapper = styled.header`
   /* ✨ DÉGRADÉ en mode clair, couleur unie en mode sombre */
@@ -458,31 +458,105 @@ function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
   const location = useLocation();
+  const hoverTimeoutRef = useRef(null);
+  const closeTimeoutRef = useRef(null);
 
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location]);
 
+  const handleMouseEnter = (menuName) => {
+    // Clear any existing timeouts
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+    }
+
+    // Set a new timeout to activate the menu after 200ms
+    hoverTimeoutRef.current = setTimeout(() => {
+      setActiveMenu(menuName);
+    }, 200);
+  };
+
+  const handleMouseLeave = () => {
+    // Clear the timeout if mouse leaves before 200ms
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+  };
+
+  const handleHeaderLeave = () => {
+    // Clear any pending hover timeout
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    // Start a timeout to close the menu after leaving the header
+    closeTimeoutRef.current = setTimeout(() => {
+      setActiveMenu(null);
+    }, 300);
+  };
+
+  const handleMenuEnter = () => {
+    // Cancel the close timeout if entering the menu
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+    }
+  };
+
+  const handleMenuClose = () => {
+    setActiveMenu(null);
+    // Clear any pending timeouts
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+    }
+  };
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
     <>
-      <HeaderWrapper $isDarkMode={isDarkMode}>
+      <HeaderWrapper $isDarkMode={isDarkMode} onMouseLeave={handleHeaderLeave}>
         <HeaderContent>
           <Logo to="/">
-            <Stethoscope />
+            <Brain />
             RIFIM
           </Logo>
 
           {/* MENU DESKTOP */}
           <DesktopNav>
-            <NavItem onMouseEnter={() => setActiveMenu('questionnaires')}>
+            <NavItem
+              onMouseEnter={() => handleMouseEnter('questionnaires')}
+              onMouseLeave={handleMouseLeave}
+            >
               <FileText />
               Compte-rendu
             </NavItem>
-            <NavItem onMouseEnter={() => setActiveMenu('cases')}>
+            <NavItem
+              onMouseEnter={() => handleMouseEnter('cases')}
+              onMouseLeave={handleMouseLeave}
+            >
               <FolderOpen />
               Cas
             </NavItem>
-            <NavItem onMouseEnter={() => setActiveMenu('protocols')}>
+            <NavItem
+              onMouseEnter={() => handleMouseEnter('protocols')}
+              onMouseLeave={handleMouseLeave}
+            >
               <BookOpen />
               Protocoles
             </NavItem>
@@ -494,7 +568,10 @@ function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
               {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
             </ThemeToggle>
 
-            <UserNavItem onMouseEnter={() => setActiveMenu('user')}>
+            <UserNavItem
+              onMouseEnter={() => handleMouseEnter('user')}
+              onMouseLeave={handleMouseLeave}
+            >
               <User />
               {user?.username}
             </UserNavItem>
@@ -509,13 +586,14 @@ function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
       {/* MEGA MENUS AVEC LES BONS LIENS */}
       
       {/* QUESTIONNAIRES */}
-      <MegaMenuOverlay 
-        style={{ 
+      <MegaMenuOverlay
+        style={{
           opacity: activeMenu === 'questionnaires' ? 1 : 0,
           visibility: activeMenu === 'questionnaires' ? 'visible' : 'hidden',
           pointerEvents: activeMenu === 'questionnaires' ? 'auto' : 'none'
         }}
-        onMouseLeave={() => setActiveMenu(null)}
+        onMouseEnter={handleMenuEnter}
+        onMouseLeave={handleMenuClose}
       >
         <MegaMenuContent>
           <MegaMenuItem to="/questionnaires">
@@ -549,13 +627,14 @@ function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
       </MegaMenuOverlay>
 
       {/* CAS */}
-      <MegaMenuOverlay 
-        style={{ 
+      <MegaMenuOverlay
+        style={{
           opacity: activeMenu === 'cases' ? 1 : 0,
           visibility: activeMenu === 'cases' ? 'visible' : 'hidden',
           pointerEvents: activeMenu === 'cases' ? 'auto' : 'none'
         }}
-        onMouseLeave={() => setActiveMenu(null)}
+        onMouseEnter={handleMenuEnter}
+        onMouseLeave={handleMenuClose}
       >
         <MegaMenuContent>
           <MegaMenuItem to="/cases">
@@ -589,13 +668,14 @@ function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
       </MegaMenuOverlay>
 
       {/* PROTOCOLES */}
-      <MegaMenuOverlay 
-        style={{ 
+      <MegaMenuOverlay
+        style={{
           opacity: activeMenu === 'protocols' ? 1 : 0,
           visibility: activeMenu === 'protocols' ? 'visible' : 'hidden',
           pointerEvents: activeMenu === 'protocols' ? 'auto' : 'none'
         }}
-        onMouseLeave={() => setActiveMenu(null)}
+        onMouseEnter={handleMenuEnter}
+        onMouseLeave={handleMenuClose}
       >
         <MegaMenuContent>
           <MegaMenuItem to="/protocols/create">
@@ -630,12 +710,13 @@ function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
 
       {/* MENU UTILISATEUR */}
       <UserMegaMenu
-        style={{ 
+        style={{
           opacity: activeMenu === 'user' ? 1 : 0,
           visibility: activeMenu === 'user' ? 'visible' : 'hidden',
           pointerEvents: activeMenu === 'user' ? 'auto' : 'none'
         }}
-        onMouseLeave={() => setActiveMenu(null)}
+        onMouseEnter={handleMenuEnter}
+        onMouseLeave={handleMenuClose}
       >
         <UserMegaMenuContent>
           <UserMegaMenuItem to="/statistics">

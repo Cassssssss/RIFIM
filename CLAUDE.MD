@@ -112,12 +112,24 @@ CreationQ is a full-stack medical education platform designed for radiology trai
 - Session management
 - User login/logout flow in App.js
 
+### Navigation & Header
+- Apple-style mega menu navigation system
+- Desktop: Hover-activated dropdown menus with delays
+- Mobile: Slide-out menu with organized sections
+- Three main sections: Compte-rendu (Questionnaires), Cas (Cases), Protocoles (Protocols)
+- User menu with statistics and logout
+- Icons from lucide-react library
+- Fixed header with backdrop blur effect
+- Header height: 60px desktop, 64px mobile
+- Safe area insets for mobile devices
+
 ### Theme System
-- Light and dark mode support
-- Theme toggle in header
+- Light and dark mode support with theme toggle in header
 - Persistent theme preference in localStorage
 - CSS variables for dynamic theming
 - Styled-components ThemeProvider
+- Light mode: Gradient background on header
+- Dark mode: Solid color background on header (no gradient)
 
 ### Image Handling
 - AWS S3/DigitalOcean Spaces integration
@@ -129,18 +141,22 @@ CreationQ is a full-stack medical education platform designed for radiology trai
 ### Routing Structure
 **Protected Routes** (require authentication):
 - `/` - Home
-- `/questionnaires` - Questionnaire list
+- `/questionnaires` - Manage questionnaires
+- `/questionnaires-list` - User's personal questionnaires
 - `/create`, `/edit/:id` - Questionnaire creator
-- `/cases`, `/cases-list` - Cases management
+- `/cases` - Manage cases
+- `/cases-list` - User's personal cases
 - `/radiology-viewer/:caseId` - Image viewer
 - `/sheet/:caseId`, `/sheet-editor/:caseId` - Medical sheets
-- `/protocols/personal`, `/protocols/create`, `/protocols/edit/:id`
+- `/protocols/personal` - User's personal protocols
+- `/protocols/create` - Create new protocol
+- `/protocols/edit/:id` - Edit protocol
 - `/statistics` - Analytics dashboard
 
 **Public Routes**:
-- `/public-questionnaires`
-- `/public-cases`
-- `/protocols/public`
+- `/public-questionnaires` - Community questionnaires
+- `/public-cases` - Community cases
+- `/protocols/public` - Community protocols
 
 ## Development
 
@@ -266,12 +282,14 @@ npm start           # Production server
 - styled-components for component-level styling
 - Custom medical-themed button components
 - Responsive design throughout
+- Mobile-first approach with breakpoint at 768px
 
 ### Dark Mode
-- Toggle in header
+- Toggle in header (desktop: icon button, mobile: menu option)
 - Persisted in localStorage
 - CSS class-based (`dark` class on root)
 - Theme provider integration
+- Different header styling between modes
 
 ## Special Features
 
@@ -365,6 +383,18 @@ npm start           # Production server
 - Build optimization (GENERATE_SOURCEMAP=false)
 - Static file serving in production
 - MongoDB indexing on key fields
+
+## Recent Updates
+
+### UI/UX Improvements (Dec 2025)
+- Redesigned header with Apple-style mega menus
+- Increased header thickness (60px desktop, 64px mobile)
+- Added hover delays for better UX on mega menus
+- Removed gradient in dark mode for cleaner look
+- Improved mobile navigation with slide-out menu
+- Added lucide-react icons throughout navigation
+- Homepage redesigned with clean, professional UI
+- Fixed dark mode icon visibility
 
 ## Known Issues & TODOs
 
