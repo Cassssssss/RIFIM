@@ -36,6 +36,9 @@ const ProtocolViewPage = lazy(() => import('./pages/ProtocolViewPage'));
 // NOUVELLE PAGE STATISTIQUES
 const StatisticsDashboardPage = lazy(() => import('./pages/StatisticsDashboardPage'));
 
+// PAGE TEMPORAIRE POUR CHOISIR LE LOGO
+const LogoShowcasePage = lazy(() => import('./pages/LogoShowcasePage'));
+
 // NOUVEAU : Composant wrapper pour gérer la navigation dans les routes protégées
 function AppContent() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -164,7 +167,10 @@ function AppContent() {
                   
                   {/* NOUVELLE ROUTE STATISTIQUES */}
                   <Route path="statistics" element={<StatisticsDashboardPage />} />
-                  
+
+                  {/* ROUTE TEMPORAIRE POUR CHOISIR LE LOGO */}
+                  <Route path="logos" element={<LogoShowcasePage />} />
+
                   {/* Routes utilitaires */}
                   <Route path="test-upload" element={<TestUpload />} />
                   <Route path="link/:id" element={<LinkView />} />
