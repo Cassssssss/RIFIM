@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
-import { Moon, Sun, Menu, X, User, LogOut, ChevronDown, FileText, FolderOpen, Brain, BookOpen, Users, BarChart3 } from 'lucide-react';
+import { Moon, Sun, Menu, X, User, LogOut, ChevronDown, FileText, FolderOpen, BookOpen, Users, BarChart3 } from 'lucide-react';
+import RifimLogo from './shared/Logo';
 
 const HeaderWrapper = styled.header`
   /* ✨ DÉGRADÉ en mode clair, couleur unie en mode sombre */
@@ -53,20 +54,16 @@ const Logo = styled(Link)`
   transition: color 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   padding: 0.5rem 0;
 
   &:hover {
     color: ${props => props.theme.primary};
   }
 
-  svg {
-    width: 24px;
-    height: 24px;
-  }
-
   @media (max-width: 768px) {
     font-size: 1.2rem;
+    gap: 0.5rem;
   }
 `;
 
@@ -376,6 +373,8 @@ const MobileMenu = styled.div`
 
   @media (max-width: 768px) {
     display: block;
+    padding-left: calc(env(safe-area-inset-left) + 1rem);
+    padding-right: calc(env(safe-area-inset-right) + 1rem);
     padding-bottom: calc(env(safe-area-inset-bottom) + 1rem);
   }
 `;
@@ -533,7 +532,7 @@ function Header({ isDarkMode, toggleDarkMode, user, onLogout }) {
       <HeaderWrapper $isDarkMode={isDarkMode} onMouseLeave={handleHeaderLeave}>
         <HeaderContent>
           <Logo to="/">
-            <Brain />
+            <RifimLogo />
             RIFIM
           </Logo>
 

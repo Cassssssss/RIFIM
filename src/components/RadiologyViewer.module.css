@@ -607,10 +607,13 @@
 .sheetLink {
   @media (max-width: 768px) {
     font-size: 0; /* Cache le texte original */
-    
+    padding: 6px 8px; /* Réduit le padding */
+    min-width: auto; /* Permet au bouton de rétrécir */
+    flex-shrink: 0; /* Empêche le bouton de se compresser */
+
     &::before {
-      content: '📋 Fiche';
-      font-size: 11px;
+      content: '📋';
+      font-size: 14px;
     }
   }
 }
