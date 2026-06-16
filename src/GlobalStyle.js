@@ -14,9 +14,9 @@ const GlobalStyle = createGlobalStyle`
     padding: 0;
     background-color: ${props => props.theme.background};
     color: ${props => props.theme.text};
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-      sans-serif;
+    font-family: ${props => props.theme.fonts.body};
+    font-size: calc(1rem * var(--app-font-scale, 1));
+    line-height: var(--app-line-height, 1.6);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transition: background-color 0.3s ease, color 0.3s ease;
@@ -59,9 +59,60 @@ const GlobalStyle = createGlobalStyle`
     --touch-target: 44px;
   }
 
+  /* ============ AGENCEMENT PILOTÉ PAR LE STYLE ============ */
+  /* Largeur de contenu + densité horizontale (centré étroit vs pleine largeur). */
+  .container {
+    max-width: var(--app-container-max, 1100px);
+    margin-left: auto;
+    margin-right: auto;
+
+    @media (min-width: 769px) {
+      padding-left: var(--app-content-pad, 1rem);
+      padding-right: var(--app-content-pad, 1rem);
+    }
+  }
+
+  /* Grilles de cartes : suivent la densité demandée par le style. */
+  .grid-responsive {
+    gap: var(--app-content-pad, 1.5rem);
+  }
+
+  /* ---- Touches spécifiques par style (purement décoratives) ---- */
+  /* Croquis : bordures pointillées « cahier ». */
+  [data-style="sketch"] .card,
+  [data-style="sketch"] .questionnaire-card,
+  [data-style="sketch"] .question-card {
+    border-style: dashed;
+  }
+
+  /* Luxe : titres en petites capitales. */
+  [data-style="luxe"] h1,
+  [data-style="luxe"] h2,
+  [data-style="luxe"] h3 {
+    font-variant: small-caps;
+  }
+
+  /* Cyberpunk : léger halo néon sur les grands titres. */
+  [data-style="cyberpunk"] h1,
+  [data-style="cyberpunk"] h2 {
+    text-shadow: 0 0 10px ${props => props.theme.shadow};
+  }
+
+  /* Glass : effet givré translucide sur les cartes. */
+  [data-style="glass"] .card,
+  [data-style="glass"] .questionnaire-card,
+  [data-style="glass"] .question-card {
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
   /* ============ TYPOGRAPHY ============ */
   h1, h2, h3, h4, h5, h6 {
     color: ${props => props.theme.text};
+    font-family: ${props => props.theme.fonts.heading};
+    letter-spacing: var(--app-heading-spacing, normal);
+    text-transform: var(--app-heading-transform, none);
+    font-weight: var(--app-heading-weight, 700);
     margin-bottom: 0.5rem;
     
     @media (max-width: 768px) {
@@ -118,14 +169,14 @@ const GlobalStyle = createGlobalStyle`
   .card {
     background-color: ${props => props.theme.card};
     border: 1px solid ${props => props.theme.border};
-    border-radius: 8px;
-    box-shadow: 0 2px 4px ${props => props.theme.shadow};
+    border-radius: ${props => props.theme.radii.card};
+    box-shadow: ${props => props.theme.shadows.card};
     transition: all 0.3s ease;
-    
+
     @media (max-width: 768px) {
-      border-radius: 12px;
+      border-radius: ${props => props.theme.radii.card};
       margin-bottom: 1rem;
-      box-shadow: 0 1px 3px ${props => props.theme.shadow};
+      box-shadow: ${props => props.theme.shadows.card};
     }
   }
 
@@ -134,7 +185,7 @@ const GlobalStyle = createGlobalStyle`
     background-color: ${props => props.theme.card};
     color: ${props => props.theme.text};
     border: 1px solid ${props => props.theme.border};
-    border-radius: 4px;
+    border-radius: ${props => props.theme.radii.md};
     padding: 0.5rem;
     transition: all 0.2s ease;
     font-family: inherit;
@@ -161,7 +212,7 @@ const GlobalStyle = createGlobalStyle`
     cursor: pointer;
     transition: all 0.2s ease;
     border: none;
-    border-radius: 4px;
+    border-radius: ${props => props.theme.radii.button};
 
     &:disabled {
       opacity: 0.6;
@@ -184,14 +235,14 @@ const GlobalStyle = createGlobalStyle`
     border: 1.5px solid ${props => props.theme.border};
     padding: 0.65rem 1.25rem;
     font-weight: 500;
-    box-shadow: 0 1px 3px ${props => props.theme.shadow};
+    box-shadow: ${props => props.theme.shadows.button};
 
     &:hover:not(:disabled) {
       background-color: ${props => props.theme.primary};
       color: white;
       border-color: ${props => props.theme.primary};
       transform: translateY(-1px);
-      box-shadow: 0 2px 6px ${props => props.theme.shadow};
+      box-shadow: ${props => props.theme.shadows.cardHover};
     }
     
     @media (max-width: 768px) {
@@ -310,15 +361,15 @@ const GlobalStyle = createGlobalStyle`
     transition: all 0.3s ease;
 
     &:hover {
-      box-shadow: 0 4px 12px ${props => props.theme.shadowMedium};
+      box-shadow: ${props => props.theme.shadows.cardHover};
       border-color: ${props => props.theme.primary};
     }
-    
+
     @media (max-width: 768px) {
       margin-bottom: 1rem;
-      
+
       &:hover {
-        box-shadow: 0 2px 4px ${props => props.theme.shadow};
+        box-shadow: ${props => props.theme.shadows.card};
         border-color: ${props => props.theme.border};
       }
     }

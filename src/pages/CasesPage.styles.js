@@ -205,7 +205,11 @@ export const CasesGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1.5rem;
-  
+
+  @media (min-width: 769px) {
+    ${props => props.$columns ? `grid-template-columns: repeat(${props.$columns}, 1fr);` : ''}
+  }
+
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
     gap: 1rem;

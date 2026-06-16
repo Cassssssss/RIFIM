@@ -270,6 +270,11 @@ export const UnifiedCasesList = styled.div`
   gap: 2rem;
   margin-bottom: 2rem;
 
+  /* Nombre de colonnes choisi par l'utilisateur (desktop uniquement). */
+  @media (min-width: 769px) {
+    ${props => props.$columns ? `grid-template-columns: repeat(${props.$columns}, 1fr);` : ''}
+  }
+
   /* ðŸ”§ MODIFICATION PRINCIPALE : Optimisation pour mobile avec 2 colonnes compactes */
   @media (max-width: 768px) {
     grid-template-columns: repeat(2, 1fr);

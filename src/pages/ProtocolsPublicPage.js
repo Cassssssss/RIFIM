@@ -169,6 +169,10 @@ const ProtocolsGrid = styled.div`
   gap: 2rem;
   margin-bottom: 2rem;
 
+  @media (min-width: 769px) {
+    ${props => props.$columns ? `grid-template-columns: repeat(${props.$columns}, 1fr);` : ''}
+  }
+
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
     gap: 1.5rem;
@@ -405,6 +409,8 @@ function ProtocolsPublicPage() {
   const [sortBy, setSortBy] = useState('popular');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(24);
+  const [columns, setColumns] = useState(4);
   const [stats, setStats] = useState({ total: 0, authors: 0 });
 
   const navigate = useNavigate();
@@ -433,7 +439,7 @@ function ProtocolsPublicPage() {
       const response = await axios.get('/protocols/public', {
         params: {
           page,
-          limit: 12,
+          limit: itemsPerPage,
           search: searchTerm,
           modality: modalityFilter,
           specialty: specialtyFilter,
@@ -454,7 +460,7 @@ function ProtocolsPublicPage() {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, modalityFilter, specialtyFilter, sortBy]);
+  }, [searchTerm, modalityFilter, specialtyFilter, sortBy, itemsPerPage]);
 
   // Effet pour charger les protocoles
   useEffect(() => {
@@ -557,6 +563,15 @@ function ProtocolsPublicPage() {
           <option value="Gastroentérologie">Gastroentérologie</option>
         </FilterSelect>
 
+        <FilterSelect
+          value={columns}
+          onChange={(e) => setColumns(Number(e.target.value))}
+        >
+          {[2, 3, 4, 5, 6].map((n) => (
+            <option key={n} value={n}>{n} colonnes</option>
+          ))}
+        </FilterSelect>
+
         <SortContainer>
           <SortButton
             isActive={sortBy === 'popular'}
@@ -595,7 +610,7 @@ function ProtocolsPublicPage() {
         </EmptyState>
       ) : (
         <>
-          <ProtocolsGrid>
+          <ProtocolsGrid $columns={columns}>
             {protocols.map((protocol) => {
               const isPopular = (protocol.stats?.views || 0) > 50 || (protocol.stats?.copies || 0) > 10;
               

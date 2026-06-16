@@ -215,6 +215,11 @@ const ProtocolsGrid = styled.div`
 
   /* Fallback général */
   grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+
+  /* Nombre de colonnes choisi par l'utilisateur (desktop uniquement). */
+  @media (min-width: 768px) {
+    ${props => props.$columns ? `grid-template-columns: repeat(${props.$columns}, 1fr);` : ''}
+  }
 `;
 
 const ProtocolCard = styled.div`
@@ -493,8 +498,10 @@ function ProtocolsPersonalPage() {
   const [filterRegion, setFilterRegion] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(24);
+  const [columns, setColumns] = useState(4);
 
-  const imagingTypes = ['IRM', 'Scanner', 'Échographie', 'Radiographie', 'Mammographie', 'Médecine Nucléaire', 'Angiographie'];
+  const imagingTypes =['IRM', 'Scanner', 'Échographie', 'Radiographie', 'Mammographie', 'Médecine Nucléaire', 'Angiographie'];
   
   const anatomicalRegions = [
     'Céphalée',
@@ -516,7 +523,7 @@ function ProtocolsPersonalPage() {
       setLoading(true);
       const params = new URLSearchParams({
         page: currentPage.toString(),
-        limit: '20', // Augmenté pour afficher plus de protocoles
+        limit: itemsPerPage.toString(),
         search: searchTerm,
         imagingType: filterType,
         anatomicalRegion: filterRegion
@@ -531,7 +538,7 @@ function ProtocolsPersonalPage() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, searchTerm, filterType, filterRegion]);
+  }, [currentPage, itemsPerPage, searchTerm, filterType, filterRegion]);
 
   useEffect(() => {
     fetchProtocols();
@@ -539,7 +546,7 @@ function ProtocolsPersonalPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, filterType, filterRegion]);
+  }, [searchTerm, filterType, filterRegion, itemsPerPage]);
 
   const handleCardClick = (protocolId) => {
     navigate(`/protocols/view/${protocolId}`);
@@ -630,6 +637,15 @@ function ProtocolsPersonalPage() {
               <option key={region} value={region}>{region}</option>
             ))}
           </FilterSelect>
+
+          <FilterSelect
+            value={columns}
+            onChange={(e) => setColumns(Number(e.target.value))}
+          >
+            {[2, 3, 4, 5, 6].map((n) => (
+              <option key={n} value={n}>{n} colonnes</option>
+            ))}
+          </FilterSelect>
         </FilterContainer>
       </FiltersSection>
 
@@ -651,7 +667,7 @@ function ProtocolsPersonalPage() {
       ) : (
         <>
           {/* GRILLE PLEINE LARGEUR */}
-          <ProtocolsGrid>
+          <ProtocolsGrid $columns={columns}>
             {protocols.map((protocol) => (
               <ProtocolCard 
                 key={protocol._id} 

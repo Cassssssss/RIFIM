@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 
 export const PageContainer = styled.div`
   display: flex;
+  flex-direction: column;
   background-color: ${props => props.theme.background};
   min-height: calc(100vh - 60px);
   padding: 1rem 2rem; /* 🔧 OPTIMISATION : Padding horizontal pour utiliser plus d'espace */
@@ -159,13 +160,10 @@ export const ListContainer = styled.div`
 export const TopActionsContainer = styled.div`
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 1rem;
   margin-bottom: 2rem;
   padding-top: 1rem;
-
-  @media (max-width: 768px) {
-    align-items: center;
-  }
 `;
 
 // ==================== INPUTS UNIFIÉS ====================

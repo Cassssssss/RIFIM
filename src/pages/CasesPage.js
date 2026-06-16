@@ -813,11 +813,13 @@ function CasesPage() {
   const [currentFolder, setCurrentFolder] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(24);
+  const [columns, setColumns] = useState(4);
   const [showTutorial, setShowTutorial] = useState(false);
 
   useEffect(() => {
-    fetchCases();
-  }, []);
+    fetchCases(1);
+  }, [itemsPerPage]);
 
   useEffect(() => {
     console.log('Cases mises à jour:', cases);
@@ -836,7 +838,7 @@ function CasesPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`/cases?page=${page}&limit=10`);
+      const response = await axios.get(`/cases?page=${page}&limit=${itemsPerPage}`);
       setCases(response.data.cases);
       setCurrentPage(response.data.currentPage);
       setTotalPages(response.data.totalPages);
@@ -846,7 +848,7 @@ function CasesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [itemsPerPage]);
 
   const handleImageUpload = useCallback((event, folder) => {
     const files = Array.from(event.target.files);
@@ -1290,7 +1292,22 @@ const handleReorderImages = useCallback(async (folder, reorderedImages) => {
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-  
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '2rem' }}>
+        <label htmlFor="columns" style={{ fontSize: '0.9rem', color: 'var(--color-text)' }}>
+          Colonnes par ligne :
+        </label>
+        <select
+          id="columns"
+          value={columns}
+          onChange={(e) => setColumns(Number(e.target.value))}
+        >
+          {[2, 3, 4, 5, 6].map((n) => (
+            <option key={n} value={n}>{n}</option>
+          ))}
+        </select>
+      </div>
+
       <ModernSectionContainer>
         <ModernInputGroup>
           <ModernInput
@@ -1398,7 +1415,7 @@ const handleReorderImages = useCallback(async (folder, reorderedImages) => {
         </ModernSectionContainer>
       )}
   
-      <S.CasesGrid>
+      <S.CasesGrid $columns={columns}>
         {filteredCases && filteredCases.length > 0 ? (
           filteredCases.map((cas) => (
             <CaseCard

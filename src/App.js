@@ -2,8 +2,9 @@ import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 import { DragDropContext } from 'react-beautiful-dnd';
-import { lightTheme, darkTheme } from './theme';
+import { themes, defaultStyleId } from './themes';
 import GlobalStyle from './GlobalStyle';
+import ThemeSwitcher from './components/ThemeSwitcher';
 import Header from './components/Header';
 import LoadingSpinner from './components/LoadingSpinner';
 import Auth from './components/Auth';
@@ -42,8 +43,10 @@ const LogoShowcasePage = lazy(() => import('./pages/LogoShowcasePage'));
 // NOUVEAU : Composant wrapper pour gérer la navigation dans les routes protégées
 function AppContent() {
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [styleId, setStyleId] = useState(defaultStyleId);
   const [user, setUser] = useState(null);
-  const theme = isDarkMode ? darkTheme : lightTheme;
+  const styleObj = themes[styleId] || themes[defaultStyleId];
+  const theme = isDarkMode ? styleObj.dark : styleObj.light;
   const navigate = useNavigate();
 
   // Gestion du thème - EXACTEMENT comme votre version originale
@@ -52,7 +55,17 @@ function AppContent() {
     if (savedTheme) {
       setIsDarkMode(JSON.parse(savedTheme));
     }
+    const savedStyle = localStorage.getItem('siteStyle');
+    if (savedStyle && themes[savedStyle]) {
+      setStyleId(savedStyle);
+    }
   }, []);
+
+  const changeStyle = (id) => {
+    if (!themes[id]) return;
+    setStyleId(id);
+    localStorage.setItem('siteStyle', id);
+  };
 
   // Gestion de l'utilisateur - EXACTEMENT comme votre version originale
   useEffect(() => {
@@ -70,17 +83,50 @@ function AppContent() {
     }
   }, []);
 
-  // Thème - EXACTEMENT comme votre version originale
+  // Thème - applique la classe dark + synchronise toutes les variables CSS
+  // (Tailwind --color-*, polices, header) depuis le style actif.
   useEffect(() => {
+    const root = document.documentElement;
+
     if (isDarkMode) {
-      document.documentElement.classList.add('dark');
+      root.classList.add('dark');
     } else {
-      document.documentElement.classList.remove('dark');
+      root.classList.remove('dark');
     }
-    
-    document.documentElement.style.setProperty('--header-background', theme.headerBackground);
-    document.documentElement.style.setProperty('--header-text', theme.headerText);
-  }, [isDarkMode, theme]);
+
+    // Identifiant du style actif (pour les overrides CSS d'agencement).
+    root.setAttribute('data-style', styleId);
+
+    const setVar = (name, value) => root.style.setProperty(name, value);
+
+    // Header
+    setVar('--header-background', theme.headerBackground);
+    setVar('--header-text', theme.headerText);
+
+    // Polices (utilisées aussi par index.css via var())
+    setVar('--app-font-body', theme.fonts.body);
+    setVar('--app-font-heading', theme.fonts.heading);
+
+    // Agencement (consommé par GlobalStyle : largeur, densité, titres).
+    const L = theme.layout;
+    setVar('--app-container-max', L.containerMax);
+    setVar('--app-content-pad', L.contentPad);
+    setVar('--app-font-scale', L.fontScale);
+    setVar('--app-line-height', L.lineHeight);
+    setVar('--app-heading-spacing', L.headingSpacing);
+    setVar('--app-heading-transform', L.headingTransform);
+    setVar('--app-heading-weight', L.headingWeight);
+
+    // Couleurs Tailwind (rgb « r g b » consommé via rgb(var(--color-*)))
+    const tw = theme.tw;
+    setVar('--color-primary', tw.primary);
+    setVar('--color-secondary', tw.secondary);
+    setVar('--color-accent', tw.accent);
+    setVar('--color-background', tw.background);
+    setVar('--color-surface', tw.surface);
+    setVar('--color-text', tw.text);
+    setVar('--color-border', tw.border);
+  }, [isDarkMode, theme, styleId]);
 
   const toggleDarkMode = () => {
     const newMode = !isDarkMode;
@@ -118,6 +164,7 @@ function AppContent() {
           <div className={`app ${isDarkMode ? 'dark' : ''}`}>
             <Auth onLogin={handleLogin} />
           </div>
+          <ThemeSwitcher currentStyle={styleId} onChangeStyle={changeStyle} isDarkMode={isDarkMode} />
         </DragDropContext>
       </ThemeProvider>
     );
@@ -187,6 +234,7 @@ function AppContent() {
             </Suspense>
           </main>
         </div>
+        <ThemeSwitcher currentStyle={styleId} onChangeStyle={changeStyle} isDarkMode={isDarkMode} />
       </DragDropContext>
     </ThemeProvider>
   );

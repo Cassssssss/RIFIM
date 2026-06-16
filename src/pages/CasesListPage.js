@@ -52,7 +52,7 @@ function CaseCardComponent({ cas, showSpoilers }) {
       />
       <UnifiedCaseContent>
         <UnifiedCaseTitle>
-          {showSpoilers ? (cas.title || 'Cas sans titre') : '?'}
+          {showSpoilers ? (cas.answer || cas.title || 'Cas sans titre') : '?'}
         </UnifiedCaseTitle>
         
         <UnifiedStarRating>
@@ -90,6 +90,8 @@ function CasesListPage() {
   const [filteredCases, setFilteredCases] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(24);
+  const [columns, setColumns] = useState(4);
   const [searchTerm, setSearchTerm] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState([1, 2, 3, 4, 5]);
   const [tagFilter, setTagFilter] = useState([]);
@@ -103,7 +105,7 @@ function CasesListPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`/cases/my?page=${page}&limit=12`);
+      const response = await axios.get(`/cases/my?page=${page}&limit=${itemsPerPage}`);
       
       if (response.data && Array.isArray(response.data.cases)) {
         setCases(response.data.cases);
@@ -129,7 +131,7 @@ function CasesListPage() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [itemsPerPage]);
 
   // Effet initial
   useEffect(() => {
@@ -173,6 +175,7 @@ function CasesListPage() {
       fetchCases(newPage);
     }
   };
+
 
   // Configuration des filtres pour UnifiedFilterSystem
   const filtersConfig = [
@@ -233,6 +236,17 @@ function CasesListPage() {
             spoilerLabels={{ show: 'Voir titres', hide: 'Masquer titres' }}
           />
         </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.75rem' }}>
+          <label htmlFor="columns" style={{ fontSize: '0.9rem', color: 'var(--color-text)' }}>
+            Colonnes par ligne :
+          </label>
+          <select id="columns" value={columns} onChange={(e) => setColumns(Number(e.target.value))}>
+            {[2, 3, 4, 5, 6].map((n) => (
+              <option key={n} value={n}>{n}</option>
+            ))}
+          </select>
+        </div>
       </SearchAndFiltersSection>
 
       {/* Contenu principal */}
@@ -256,9 +270,9 @@ function CasesListPage() {
         </UnifiedEmptyState>
       ) : (
         <>
-          <UnifiedCasesList>
+          <UnifiedCasesList $columns={columns}>
             {filteredCases.map((cas) => (
-              <CaseCardComponent 
+              <CaseCardComponent
                 key={cas._id} 
                 cas={cas} 
                 showSpoilers={showSpoilers}

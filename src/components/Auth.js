@@ -8,7 +8,7 @@ const AuthWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  background: linear-gradient(135deg, ${props => props.theme.background} 0%, ${props => props.theme.backgroundSecondary} 100%);
   padding: 2rem;
 `;
 
@@ -16,10 +16,10 @@ const AuthContainer = styled.div`
   max-width: 400px;
   width: 100%;
   padding: 2rem;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
+  background: ${props => props.theme.card};
+  border-radius: ${props => props.theme.radii.xl};
+  box-shadow: ${props => props.theme.shadows.cardHover};
+  border: 1px solid ${props => props.theme.border};
 `;
 
 const AuthHeader = styled.div`
@@ -29,7 +29,7 @@ const AuthHeader = styled.div`
 
 const AuthTitle = styled.h1`
   font-size: 2rem;
-  color: #1e3a8a;
+  color: ${props => props.theme.primary};
   margin-bottom: 0.5rem;
   display: flex;
   align-items: center;
@@ -39,13 +39,13 @@ const AuthTitle = styled.h1`
 
 const AuthSubtitle = styled.h2`
   font-size: 1.5rem;
-  color: #374151;
+  color: ${props => props.theme.text};
   margin-bottom: 0.5rem;
   font-weight: 600;
 `;
 
 const AuthDescription = styled.p`
-  color: #6b7280;
+  color: ${props => props.theme.textSecondary};
   font-size: 0.9rem;
   line-height: 1.4;
 `;
@@ -63,7 +63,7 @@ const InputGroup = styled.div`
 const InputLabel = styled.label`
   display: block;
   margin-bottom: 0.5rem;
-  color: #374151;
+  color: ${props => props.theme.text};
   font-weight: 500;
   font-size: 0.9rem;
 `;
@@ -71,43 +71,47 @@ const InputLabel = styled.label`
 const Input = styled.input`
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
-  background-color: #f9fafb;
-  color: #374151;
+  border: 2px solid ${props => props.theme.border};
+  border-radius: ${props => props.theme.radii.button};
+  background-color: ${props => props.theme.backgroundSecondary};
+  color: ${props => props.theme.text};
   font-size: 1rem;
   transition: all 0.3s ease;
-  
+
   &:focus {
     outline: none;
     border-color: ${props => props.theme.primary};
-    background-color: white;
+    background-color: ${props => props.theme.card};
     box-shadow: 0 0 0 3px ${props => props.theme.focus};
   }
-  
+
   &::placeholder {
-    color: #9ca3af;
+    color: ${props => props.theme.textLight};
   }
 `;
 
 const SubmitButton = styled.button`
   width: 100%;
   padding: 0.75rem 1rem;
-  background: linear-gradient(135deg, #5B7FBE 0%, #4A6BA8 100%);
-  color: white;
+  background: ${props => props.theme.primary};
+  color: ${props => props.theme.buttonText};
   border: none;
-  border-radius: 8px;
+  border-radius: ${props => props.theme.radii.button};
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 
   &:hover:not(:disabled) {
-    background: linear-gradient(135deg, #6A8DCF 0%, #5B7FBE 100%);
+    background: ${props => props.theme.primaryHover};
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(91, 127, 190, 0.3);
+    box-shadow: ${props => props.theme.shadows.button};
   }
-  
+
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -119,11 +123,11 @@ const ToggleSection = styled.div`
   text-align: center;
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid ${props => props.theme.border};
 `;
 
 const ToggleText = styled.p`
-  color: #6b7280;
+  color: ${props => props.theme.textSecondary};
   margin-bottom: 1rem;
   font-size: 0.9rem;
 `;
@@ -131,17 +135,17 @@ const ToggleText = styled.p`
 const ToggleButton = styled.button`
   background: none;
   border: none;
-  color: #3b82f6;
+  color: ${props => props.theme.primary};
   cursor: pointer;
   font-weight: 600;
   text-decoration: underline;
   font-size: 0.9rem;
   padding: 0.5rem;
-  border-radius: 4px;
+  border-radius: ${props => props.theme.radii.sm};
   transition: all 0.2s ease;
-  
+
   &:hover {
-    background-color: #eff6ff;
+    background-color: ${props => props.theme.hover};
   }
 `;
 
@@ -156,22 +160,22 @@ const MessageContainer = styled.div`
 `;
 
 const ErrorMessage = styled(MessageContainer)`
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #dc2626;
+  background-color: ${props => props.theme.errorLight};
+  border: 1px solid ${props => props.theme.error};
+  color: ${props => props.theme.error};
 `;
 
 const SuccessMessage = styled(MessageContainer)`
-  background-color: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #16a34a;
+  background-color: ${props => props.theme.successLight};
+  border: 1px solid ${props => props.theme.success};
+  color: ${props => props.theme.success};
 `;
 
 const LoadingSpinner = styled.div`
   width: 20px;
   height: 20px;
   border: 2px solid transparent;
-  border-top: 2px solid white;
+  border-top: 2px solid ${props => props.theme.buttonText};
   border-radius: 50%;
   animation: spin 1s linear infinite;
   
