@@ -246,7 +246,7 @@ const handleSubmit = async (e) => {
       <AuthContainer>
         <AuthHeader>
           <AuthTitle>
-            🩺 RIFIM
+            RIFIM
           </AuthTitle>
           <AuthSubtitle>
             {isLogin ? 'Connexion' : 'Inscription'}
@@ -261,19 +261,19 @@ const handleSubmit = async (e) => {
 
         {error && (
           <ErrorMessage>
-            ⚠️ {error}
+            {error}
           </ErrorMessage>
         )}
 
         {success && (
           <SuccessMessage>
-            ✅ {success}
+            {success}
           </SuccessMessage>
         )}
 
         <AuthForm onSubmit={handleSubmit}>
           <InputGroup>
-            <InputLabel>👤 Nom d'utilisateur</InputLabel>
+            <InputLabel>Nom d'utilisateur</InputLabel>
             <Input
               type="text"
               placeholder="Votre nom d'utilisateur"
@@ -285,7 +285,7 @@ const handleSubmit = async (e) => {
           </InputGroup>
 
           <InputGroup>
-            <InputLabel>🔒 Mot de passe</InputLabel>
+            <InputLabel>Mot de passe</InputLabel>
             <Input
               type="password"
               placeholder="Votre mot de passe"
@@ -304,7 +304,7 @@ const handleSubmit = async (e) => {
               </>
             ) : (
               <>
-                {isLogin ? '👤 Se connecter' : '➕ S\'inscrire'}
+                {isLogin ? 'Se connecter' : "S'inscrire"}
               </>
             )}
           </SubmitButton>
@@ -315,7 +315,7 @@ const handleSubmit = async (e) => {
             {isLogin ? "Pas encore de compte ?" : "Déjà un compte ?"}
           </ToggleText>
           <ToggleButton onClick={toggleMode} disabled={loading}>
-            {isLogin ? "➕ Créer un compte" : "👤 Se connecter"}
+            {isLogin ? "Créer un compte" : "Se connecter"}
           </ToggleButton>
         </ToggleSection>
       </AuthContainer>

@@ -1593,7 +1593,7 @@ export const themes = Object.fromEntries(
 
 export const styleList = STYLES.map((st) => ({ id: st.id, name: st.name, emoji: st.emoji }));
 
-export const defaultStyleId = 'classic';
+export const defaultStyleId = 'navy';
 
 // Compat ascendante : certains anciens imports attendent ces noms.
 export const lightTheme = themes.classic.light;
