@@ -21,10 +21,13 @@
 .container {
   position: fixed !important;
   top: 0 !important;
-  left: 0 !important;
+  /* La colonne de navigation est fixée à gauche et passe au-dessus (z-index
+     élevé) : on démarre après elle plutôt que de se faire recouvrir.
+     --app-rail-w vaut 0px sur mobile, où le rail devient un tiroir. */
+  left: var(--app-rail-w, 0px) !important;
   right: 0 !important;
   bottom: 0 !important;
-  width: 100vw;
+  width: auto;
   height: 100vh;
 
   display: flex;
@@ -52,9 +55,11 @@
 /* ==================== CONTENT - DIMENSIONS EXACTES AVEC VALEURS FIXES ==================== */
 .content {
   position: fixed !important;
-  top: 68px !important;
+  /* Plus de bandeau horizontal en haut sur desktop : seule la barre mobile
+     (--app-topbar-h) doit être dégagée, plus la marge de respiration. */
+  top: calc(var(--app-topbar-h, 0px) + 8px) !important;
   bottom: 68px !important;
-  left: 0 !important;
+  left: var(--app-rail-w, 0px) !important;
   right: 0 !important;
   z-index: 99 !important;
 

@@ -59,6 +59,27 @@ const GlobalStyle = createGlobalStyle`
     --touch-target: 44px;
   }
 
+  /* ============ AGENCEMENT AVEC COLONNE LATÉRALE ============ */
+  /* Le rail est en position fixed : il ne pousse rien. C'est cette réserve
+     d'espace qui empêche le contenu de passer dessous. Les deux variables
+     sont publiées par Sidebar (0px sur mobile, où le rail devient un tiroir
+     flottant et où seule la barre du haut occupe de la place). */
+  .app-shell {
+    min-height: 100vh;
+    padding-left: var(--app-rail-w, 0px);
+    padding-top: var(--app-topbar-h, 0px);
+    transition: padding-left 0.22s ease;
+  }
+
+  .app-shell > main {
+    padding-top: 1.75rem;
+    padding-bottom: 4rem;
+
+    @media (max-width: 900px) {
+      padding-top: 1rem;
+    }
+  }
+
   /* ============ AGENCEMENT PILOTÉ PAR LE STYLE ============ */
   /* Largeur de contenu + densité horizontale (centré étroit vs pleine largeur). */
   .container {
