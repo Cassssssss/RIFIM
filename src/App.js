@@ -5,7 +5,7 @@ import { DragDropContext } from 'react-beautiful-dnd';
 import { themes, defaultStyleId } from './themes';
 import GlobalStyle from './GlobalStyle';
 import ThemeSwitcher from './components/ThemeSwitcher';
-import Header from './components/Header';
+import Sidebar from './components/Sidebar';
 import LoadingSpinner from './components/LoadingSpinner';
 import Auth from './components/Auth';
 import PrivateRoute from './components/PrivateRoute';
@@ -175,14 +175,16 @@ function AppContent() {
     <ThemeProvider theme={theme}>
       <DragDropContext onDragEnd={onDragEnd}>
         <GlobalStyle />
-        <div className={`app ${isDarkMode ? 'dark' : ''}`}>
-          <Header 
-            isDarkMode={isDarkMode} 
+        {/* .app-shell réserve la place du rail (et de la barre mobile) à partir
+            des variables publiées par Sidebar : aucune valeur en dur ici. */}
+        <div className={`app app-shell ${isDarkMode ? 'dark' : ''}`}>
+          <Sidebar
+            isDarkMode={isDarkMode}
             toggleDarkMode={toggleDarkMode}
             userName={user?.username}
             onLogout={handleLogout}
           />
-          <main className="container mt-8" style={{ paddingTop: '80px' }}>
+          <main className="container">
             <Suspense fallback={<LoadingSpinner />}>
               <Routes>
                 {/* Routes protégées */}

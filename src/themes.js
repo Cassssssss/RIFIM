@@ -1251,7 +1251,7 @@ const STYLES = [
   //     doux, accent eucalyptus. Sobre et chaleureux.
   // -------------------------------------------------------------------------
   {
-    id: 'clay', name: 'Argile terracotta', emoji: '🏺',
+    id: 'terracotta', name: 'Argile terracotta', emoji: '🏺',
     light: {
       ...STATE_LIGHT, buttonText: '#fffaf4',
       successLight: '#e3ebdd', warningLight: '#f3e7cf', errorLight: '#f2ddd4',
@@ -1574,11 +1574,473 @@ const STYLES = [
       tw: { primary: '194 168 117', secondary: '176 160 129', accent: '147 160 174', background: '21 19 13', surface: '29 26 19', text: '240 234 217', border: '53 48 34' },
     },
   },
+
+  // ===========================================================================
+  // SÉRIE « MODERNE & LUDIQUE » — registres plus colorés, arrondis généreux,
+  // ombres teintées. Pensés pour donner de la personnalité sans nuire à la
+  // lisibilité des contenus médicaux (texte toujours ≥ 4.5:1 sur le fond).
+  // ===========================================================================
+
+  // -------------------------------------------------------------------------
+  // 32. AURORE — dégradé lavande → rose → pêche, surfaces translucides,
+  //     très arrondi. L'ambiance « aurore boréale » des dashboards récents.
+  // -------------------------------------------------------------------------
+  {
+    id: 'aurora', name: 'Aurore', emoji: '🌅',
+    light: {
+      ...STATE_LIGHT,
+      fonts: { heading: "'Outfit', sans-serif", body: "'DM Sans', sans-serif" },
+      radii: { sm: '10px', md: '16px', lg: '24px', xl: '32px', full: '9999px', button: '9999px', card: '24px' },
+      shadows: {
+        card: '0 10px 30px rgba(146,109,222,0.13), 0 2px 8px rgba(222,109,177,0.07)',
+        cardHover: '0 18px 44px rgba(146,109,222,0.20), 0 4px 12px rgba(222,109,177,0.10)',
+        button: '0 6px 16px rgba(146,109,222,0.28)',
+        color: 'rgba(110,70,170,0.14)', colorMedium: 'rgba(110,70,170,0.20)', colorStrong: 'rgba(110,70,170,0.30)',
+      },
+      header: { bg: 'rgba(250,244,255,0.72)', solid: '#faf4ff', blur: 'blur(20px)', border: '#eddcfa', text: '#3d2d52', shadow: '0 4px 24px rgba(146,109,222,0.12)' },
+      bg: '#faf4ff', bgSecondary: '#f2e8fd', card: '#ffffff', cardSecondary: '#f7eefe', cardHover: '#efe1fc',
+      text: '#3d2d52', textSecondary: '#6c5a86', textLight: '#9c8cb3',
+      border: '#eddcfa', borderLight: '#f6ecfd',
+      primary: '#926ddE', primaryHover: '#7a52d0', secondary: '#f06fb1', secondaryHover: '#e0539c', accent: '#ffa26b',
+      tag: { bg: '#f2e8fd', text: '#7a52d0', border: '#eddcfa' },
+      tw: { primary: '146 109 222', secondary: '240 111 177', accent: '255 162 107', background: '250 244 255', surface: '255 255 255', text: '61 45 82', border: '237 220 250' },
+    },
+    dark: {
+      ...STATE_DARK,
+      fonts: { heading: "'Outfit', sans-serif", body: "'DM Sans', sans-serif" },
+      radii: { sm: '10px', md: '16px', lg: '24px', xl: '32px', full: '9999px', button: '9999px', card: '24px' },
+      shadows: {
+        card: '0 10px 30px rgba(0,0,0,0.45)',
+        cardHover: '0 18px 44px rgba(178,142,255,0.22)',
+        button: '0 6px 18px rgba(178,142,255,0.35)',
+        color: 'rgba(0,0,0,0.45)', colorMedium: 'rgba(0,0,0,0.55)', colorStrong: 'rgba(0,0,0,0.68)',
+      },
+      header: { bg: 'rgba(25,19,38,0.82)', solid: '#191326', blur: 'blur(20px)', border: '#3a2d55', text: '#f1e9ff', shadow: '0 4px 24px rgba(0,0,0,0.45)' },
+      bg: '#191326', bgSecondary: '#211833', card: '#231a38', cardSecondary: '#2d2246', cardHover: '#392c58',
+      text: '#f1e9ff', textSecondary: '#c3b2e0', textLight: '#8f7fae',
+      border: '#3a2d55', borderLight: '#2d2246',
+      primary: '#b28eff', primaryHover: '#c6a8ff', secondary: '#ff8ec5', secondaryHover: '#ffa9d3', accent: '#ffb98a',
+      tag: { bg: '#2d2246', text: '#c6a8ff', border: '#3a2d55' },
+      tw: { primary: '178 142 255', secondary: '255 142 197', accent: '255 185 138', background: '25 19 38', surface: '35 26 56', text: '241 233 255', border: '58 45 85' },
+    },
+  },
+
+  // -------------------------------------------------------------------------
+  // 33. MANGUE — orange juteux sur crème, boutons en pilule, ombres chaudes.
+  //     Énergique et solaire, dans l'esprit des apps « bien-être ».
+  // -------------------------------------------------------------------------
+  {
+    id: 'mango', name: 'Mangue', emoji: '🥭',
+    light: {
+      ...STATE_LIGHT,
+      fonts: { heading: "'Baloo 2', system-ui, sans-serif", body: "'Nunito', sans-serif" },
+      radii: { sm: '12px', md: '18px', lg: '26px', xl: '34px', full: '9999px', button: '9999px', card: '26px' },
+      shadows: {
+        card: '0 10px 26px rgba(232,124,32,0.14), 0 2px 6px rgba(120,60,10,0.05)',
+        cardHover: '0 18px 40px rgba(232,124,32,0.22)',
+        button: '0 6px 16px rgba(232,124,32,0.32)',
+        color: 'rgba(150,80,15,0.14)', colorMedium: 'rgba(150,80,15,0.20)', colorStrong: 'rgba(150,80,15,0.30)',
+      },
+      header: { bg: 'rgba(255,247,236,0.75)', solid: '#fff7ec', blur: 'blur(18px)', border: '#fae0c4', text: '#4a2f16', shadow: '0 4px 20px rgba(232,124,32,0.12)' },
+      bg: '#fff7ec', bgSecondary: '#ffeed9', card: '#fffdfa', cardSecondary: '#fff2e2', cardHover: '#ffe6cd',
+      text: '#4a2f16', textSecondary: '#7d5a36', textLight: '#ae8b64',
+      border: '#fae0c4', borderLight: '#fff0de',
+      primary: '#e87c20', primaryHover: '#cc6710', secondary: '#12a37a', secondaryHover: '#0d8a67', accent: '#f5c518',
+      tag: { bg: '#ffeed9', text: '#cc6710', border: '#fae0c4' },
+      tw: { primary: '232 124 32', secondary: '18 163 122', accent: '245 197 24', background: '255 247 236', surface: '255 253 250', text: '74 47 22', border: '250 224 196' },
+    },
+    dark: {
+      ...STATE_DARK,
+      fonts: { heading: "'Baloo 2', system-ui, sans-serif", body: "'Nunito', sans-serif" },
+      radii: { sm: '12px', md: '18px', lg: '26px', xl: '34px', full: '9999px', button: '9999px', card: '26px' },
+      shadows: {
+        card: '0 10px 26px rgba(0,0,0,0.48)',
+        cardHover: '0 18px 40px rgba(255,150,64,0.22)',
+        button: '0 6px 18px rgba(255,150,64,0.35)',
+        color: 'rgba(0,0,0,0.48)', colorMedium: 'rgba(0,0,0,0.58)', colorStrong: 'rgba(0,0,0,0.70)',
+      },
+      header: { bg: 'rgba(31,21,13,0.85)', solid: '#1f150d', blur: 'blur(18px)', border: '#4a3320', text: '#ffeedd', shadow: '0 4px 20px rgba(0,0,0,0.45)' },
+      bg: '#1f150d', bgSecondary: '#291c11', card: '#2b1e13', cardSecondary: '#38271a', cardHover: '#473124',
+      text: '#ffeedd', textSecondary: '#d6b596', textLight: '#a3856a',
+      border: '#4a3320', borderLight: '#38271a',
+      primary: '#ff9640', primaryHover: '#ffac66', secondary: '#3ad2a4', secondaryHover: '#5fdeb8', accent: '#ffd85c',
+      tag: { bg: '#38271a', text: '#ffac66', border: '#4a3320' },
+      tw: { primary: '255 150 64', secondary: '58 210 164', accent: '255 216 92', background: '31 21 13', surface: '43 30 19', text: '255 238 221', border: '74 51 32' },
+    },
+  },
+
+  // -------------------------------------------------------------------------
+  // 34. BUBBLEGUM — rose vif + lilas, arrondis XXL, ombres colorées assumées.
+  //     Le plus franchement ludique de la série.
+  // -------------------------------------------------------------------------
+  {
+    id: 'bubblegum', name: 'Bubblegum', emoji: '🍬',
+    light: {
+      ...STATE_LIGHT,
+      fonts: { heading: "'Baloo 2', system-ui, sans-serif", body: "'Quicksand', sans-serif" },
+      radii: { sm: '14px', md: '20px', lg: '30px', xl: '40px', full: '9999px', button: '9999px', card: '30px' },
+      shadows: {
+        card: '0 12px 30px rgba(233,74,150,0.16), 0 3px 8px rgba(160,40,110,0.05)',
+        cardHover: '0 20px 46px rgba(233,74,150,0.24)',
+        button: '0 7px 18px rgba(233,74,150,0.34)',
+        color: 'rgba(170,40,110,0.15)', colorMedium: 'rgba(170,40,110,0.22)', colorStrong: 'rgba(170,40,110,0.32)',
+      },
+      header: { bg: 'rgba(255,243,250,0.75)', solid: '#fff3fa', blur: 'blur(18px)', border: '#fbd7ea', text: '#4d1f39', shadow: '0 4px 22px rgba(233,74,150,0.14)' },
+      bg: '#fff3fa', bgSecondary: '#ffe7f4', card: '#fffcfe', cardSecondary: '#ffeaf6', cardHover: '#ffdcef',
+      text: '#4d1f39', textSecondary: '#824964', textLight: '#b37e97',
+      border: '#fbd7ea', borderLight: '#ffecf6',
+      primary: '#e94a96', primaryHover: '#d1337e', secondary: '#7b5cf0', secondaryHover: '#6644e0', accent: '#ffc247',
+      tag: { bg: '#ffe7f4', text: '#d1337e', border: '#fbd7ea' },
+      tw: { primary: '233 74 150', secondary: '123 92 240', accent: '255 194 71', background: '255 243 250', surface: '255 252 254', text: '77 31 57', border: '251 215 234' },
+    },
+    dark: {
+      ...STATE_DARK,
+      fonts: { heading: "'Baloo 2', system-ui, sans-serif", body: "'Quicksand', sans-serif" },
+      radii: { sm: '14px', md: '20px', lg: '30px', xl: '40px', full: '9999px', button: '9999px', card: '30px' },
+      shadows: {
+        card: '0 12px 30px rgba(0,0,0,0.48)',
+        cardHover: '0 20px 46px rgba(255,109,178,0.24)',
+        button: '0 7px 20px rgba(255,109,178,0.36)',
+        color: 'rgba(0,0,0,0.48)', colorMedium: 'rgba(0,0,0,0.58)', colorStrong: 'rgba(0,0,0,0.70)',
+      },
+      header: { bg: 'rgba(33,16,28,0.85)', solid: '#21101c', blur: 'blur(18px)', border: '#4d2540', text: '#ffe8f4', shadow: '0 4px 22px rgba(0,0,0,0.45)' },
+      bg: '#21101c', bgSecondary: '#2b1625', card: '#2d1827', cardSecondary: '#3a2033', cardHover: '#4a2942',
+      text: '#ffe8f4', textSecondary: '#dfa8c7', textLight: '#ab7a95',
+      border: '#4d2540', borderLight: '#3a2033',
+      primary: '#ff6db2', primaryHover: '#ff8bc3', secondary: '#a68cff', secondaryHover: '#bda6ff', accent: '#ffd66b',
+      tag: { bg: '#3a2033', text: '#ff8bc3', border: '#4d2540' },
+      tw: { primary: '255 109 178', secondary: '166 140 255', accent: '255 214 107', background: '33 16 28', surface: '45 24 39', text: '255 232 244', border: '77 37 64' },
+    },
+  },
+
+  // -------------------------------------------------------------------------
+  // 35. SORBET — pastels pêche / pistache, très clair et aéré.
+  //     Doux sans être fade, agréable pour les longues sessions de lecture.
+  // -------------------------------------------------------------------------
+  {
+    id: 'sorbet', name: 'Sorbet', emoji: '🍧',
+    light: {
+      ...STATE_LIGHT,
+      fonts: { heading: "'Quicksand', sans-serif", body: "'Nunito', sans-serif" },
+      radii: { sm: '12px', md: '18px', lg: '26px', xl: '34px', full: '9999px', button: '9999px', card: '26px' },
+      shadows: {
+        card: '0 8px 24px rgba(214,120,110,0.12)',
+        cardHover: '0 16px 36px rgba(214,120,110,0.18)',
+        button: '0 5px 14px rgba(214,120,110,0.24)',
+        color: 'rgba(150,80,72,0.12)', colorMedium: 'rgba(150,80,72,0.18)', colorStrong: 'rgba(150,80,72,0.28)',
+      },
+      header: { bg: 'rgba(255,246,243,0.75)', solid: '#fff6f3', blur: 'blur(18px)', border: '#f8ddd6', text: '#4a2f2b', shadow: '0 4px 20px rgba(214,120,110,0.10)' },
+      bg: '#fff6f3', bgSecondary: '#ffeae4', card: '#fffdfc', cardSecondary: '#fff0ec', cardHover: '#ffe3db',
+      text: '#4a2f2b', textSecondary: '#7d574f', textLight: '#b08b83',
+      border: '#f8ddd6', borderLight: '#fff0ec',
+      primary: '#e0796c', primaryHover: '#c85f52', secondary: '#6bb98c', secondaryHover: '#54a074', accent: '#f0b429',
+      tag: { bg: '#ffeae4', text: '#c85f52', border: '#f8ddd6' },
+      tw: { primary: '224 121 108', secondary: '107 185 140', accent: '240 180 41', background: '255 246 243', surface: '255 253 252', text: '74 47 43', border: '248 221 214' },
+    },
+    dark: {
+      ...STATE_DARK,
+      fonts: { heading: "'Quicksand', sans-serif", body: "'Nunito', sans-serif" },
+      radii: { sm: '12px', md: '18px', lg: '26px', xl: '34px', full: '9999px', button: '9999px', card: '26px' },
+      shadows: {
+        card: '0 8px 24px rgba(0,0,0,0.45)',
+        cardHover: '0 16px 36px rgba(240,146,132,0.20)',
+        button: '0 5px 16px rgba(240,146,132,0.32)',
+        color: 'rgba(0,0,0,0.45)', colorMedium: 'rgba(0,0,0,0.55)', colorStrong: 'rgba(0,0,0,0.68)',
+      },
+      header: { bg: 'rgba(31,20,18,0.85)', solid: '#1f1412', blur: 'blur(18px)', border: '#48302c', text: '#ffeae4', shadow: '0 4px 20px rgba(0,0,0,0.45)' },
+      bg: '#1f1412', bgSecondary: '#291b18', card: '#2b1d1a', cardSecondary: '#382624', cardHover: '#46312e',
+      text: '#ffeae4', textSecondary: '#d7ada4', textLight: '#a37e77',
+      border: '#48302c', borderLight: '#382624',
+      primary: '#f09284', primaryHover: '#f7aa9e', secondary: '#7fd3a4', secondaryHover: '#9cdfb9', accent: '#ffcf5c',
+      tag: { bg: '#382624', text: '#f7aa9e', border: '#48302c' },
+      tw: { primary: '240 146 132', secondary: '127 211 164', accent: '255 207 92', background: '31 20 18', surface: '43 29 26', text: '255 234 228', border: '72 48 44' },
+    },
+  },
+
+  // -------------------------------------------------------------------------
+  // 36. MYRTILLE — bleu-violet profond et saturé, surfaces nettes.
+  //     Moderne « produit SaaS », plus sérieux que le reste de la série.
+  // -------------------------------------------------------------------------
+  {
+    id: 'blueberry', name: 'Myrtille', emoji: '🫐',
+    light: {
+      ...STATE_LIGHT,
+      fonts: { heading: "'Outfit', sans-serif", body: "'Inter', sans-serif" },
+      radii: { sm: '8px', md: '12px', lg: '18px', xl: '24px', full: '9999px', button: '12px', card: '18px' },
+      shadows: {
+        card: '0 6px 20px rgba(76,64,180,0.10)',
+        cardHover: '0 14px 34px rgba(76,64,180,0.18)',
+        button: '0 4px 12px rgba(76,64,180,0.24)',
+        color: 'rgba(50,40,140,0.11)', colorMedium: 'rgba(50,40,140,0.17)', colorStrong: 'rgba(50,40,140,0.27)',
+      },
+      header: { bg: 'rgba(245,246,255,0.78)', solid: '#f5f6ff', blur: 'blur(18px)', border: '#dfe1fa', text: '#26235c', shadow: '0 2px 12px rgba(76,64,180,0.10)' },
+      bg: '#f5f6ff', bgSecondary: '#eaecfc', card: '#ffffff', cardSecondary: '#f1f2fd', cardHover: '#e5e7fb',
+      text: '#26235c', textSecondary: '#5b5792', textLight: '#8e8ab8',
+      border: '#dfe1fa', borderLight: '#eff0fc',
+      primary: '#4c40b4', primaryHover: '#3d3296', secondary: '#0ea5a5', secondaryHover: '#0b8a8a', accent: '#f25f9c',
+      tag: { bg: '#eaecfc', text: '#3d3296', border: '#dfe1fa' },
+      tw: { primary: '76 64 180', secondary: '14 165 165', accent: '242 95 156', background: '245 246 255', surface: '255 255 255', text: '38 35 92', border: '223 225 250' },
+    },
+    dark: {
+      ...STATE_DARK,
+      fonts: { heading: "'Outfit', sans-serif", body: "'Inter', sans-serif" },
+      radii: { sm: '8px', md: '12px', lg: '18px', xl: '24px', full: '9999px', button: '12px', card: '18px' },
+      shadows: {
+        card: '0 6px 20px rgba(0,0,0,0.48)',
+        cardHover: '0 14px 34px rgba(140,128,255,0.20)',
+        button: '0 4px 14px rgba(140,128,255,0.32)',
+        color: 'rgba(0,0,0,0.48)', colorMedium: 'rgba(0,0,0,0.58)', colorStrong: 'rgba(0,0,0,0.70)',
+      },
+      header: { bg: 'rgba(17,17,40,0.85)', solid: '#111128', blur: 'blur(18px)', border: '#2f2f60', text: '#e8e9ff', shadow: '0 2px 12px rgba(0,0,0,0.45)' },
+      bg: '#111128', bgSecondary: '#181834', card: '#1a1a38', cardSecondary: '#232349', cardHover: '#2d2d5c',
+      text: '#e8e9ff', textSecondary: '#b0b1e0', textLight: '#8180b0',
+      border: '#2f2f60', borderLight: '#232349',
+      primary: '#8c80ff', primaryHover: '#a49aff', secondary: '#2fd4d4', secondaryHover: '#5ce0e0', accent: '#ff7fb4',
+      tag: { bg: '#232349', text: '#a49aff', border: '#2f2f60' },
+      tw: { primary: '140 128 255', secondary: '47 212 212', accent: '255 127 180', background: '17 17 40', surface: '26 26 56', text: '232 233 255', border: '47 47 96' },
+    },
+  },
+
+  // -------------------------------------------------------------------------
+  // 37. CITRON VERT — vert acide sur charbon, contrastes francs.
+  //     Le texte des boutons passe en sombre : l'accent est trop lumineux
+  //     pour supporter du blanc.
+  // -------------------------------------------------------------------------
+  {
+    id: 'lime', name: 'Citron vert', emoji: '🍈',
+    light: {
+      ...STATE_LIGHT, buttonText: '#14210a',
+      fonts: { heading: "'Space Grotesk', sans-serif", body: "'DM Sans', sans-serif" },
+      radii: { sm: '8px', md: '14px', lg: '20px', xl: '26px', full: '9999px', button: '9999px', card: '20px' },
+      shadows: {
+        card: '0 8px 22px rgba(60,90,20,0.12)',
+        cardHover: '0 16px 36px rgba(126,190,38,0.24)',
+        button: '0 5px 14px rgba(126,190,38,0.34)',
+        color: 'rgba(50,70,20,0.12)', colorMedium: 'rgba(50,70,20,0.18)', colorStrong: 'rgba(50,70,20,0.28)',
+      },
+      header: { bg: 'rgba(247,251,240,0.78)', solid: '#f7fbf0', blur: 'blur(18px)', border: '#dde9c9', text: '#1f2b12', shadow: '0 2px 12px rgba(126,190,38,0.14)' },
+      bg: '#f7fbf0', bgSecondary: '#edf5e0', card: '#ffffff', cardSecondary: '#f2f8e8', cardHover: '#e6f2d5',
+      text: '#1f2b12', textSecondary: '#52603f', textLight: '#8a9678',
+      border: '#dde9c9', borderLight: '#eef5e2',
+      primary: '#5f8f1a', primaryHover: '#4c7513', secondary: '#1f7a6b', secondaryHover: '#166055', accent: '#a8e02c',
+      tag: { bg: '#edf5e0', text: '#4c7513', border: '#dde9c9' },
+      tw: { primary: '95 143 26', secondary: '31 122 107', accent: '168 224 44', background: '247 251 240', surface: '255 255 255', text: '31 43 18', border: '221 233 201' },
+    },
+    dark: {
+      ...STATE_DARK, buttonText: '#0e1608',
+      fonts: { heading: "'Space Grotesk', sans-serif", body: "'DM Sans', sans-serif" },
+      radii: { sm: '8px', md: '14px', lg: '20px', xl: '26px', full: '9999px', button: '9999px', card: '20px' },
+      shadows: {
+        card: '0 8px 22px rgba(0,0,0,0.55)',
+        cardHover: '0 16px 36px rgba(174,229,64,0.22)',
+        button: '0 5px 16px rgba(174,229,64,0.34)',
+        color: 'rgba(0,0,0,0.55)', colorMedium: 'rgba(0,0,0,0.65)', colorStrong: 'rgba(0,0,0,0.75)',
+      },
+      header: { bg: 'rgba(15,18,12,0.88)', solid: '#0f120c', blur: 'blur(18px)', border: '#2d3524', text: '#eaf5da', shadow: '0 2px 12px rgba(0,0,0,0.5)' },
+      bg: '#0f120c', bgSecondary: '#161a11', card: '#181d12', cardSecondary: '#20261a', cardHover: '#2b3322',
+      text: '#eaf5da', textSecondary: '#b3c39c', textLight: '#7f8e6b',
+      border: '#2d3524', borderLight: '#20261a',
+      primary: '#aee540', primaryHover: '#c2f062', secondary: '#3fd6bd', secondaryHover: '#65e2ce', accent: '#ffe14d',
+      tag: { bg: '#20261a', text: '#c2f062', border: '#2d3524' },
+      tw: { primary: '174 229 64', secondary: '63 214 189', accent: '255 225 77', background: '15 18 12', surface: '24 29 18', text: '234 245 218', border: '45 53 36' },
+    },
+  },
+
+  // -------------------------------------------------------------------------
+  // 38. COBALT POP — bleu électrique sur blanc cassé, angles peu arrondis.
+  //     Registre « suisse moderne » : très lisible, une seule couleur forte.
+  // -------------------------------------------------------------------------
+  {
+    id: 'cobalt', name: 'Cobalt pop', emoji: '🔷',
+    light: {
+      ...STATE_LIGHT,
+      fonts: { heading: "'Space Grotesk', sans-serif", body: "'Inter', sans-serif" },
+      radii: { sm: '4px', md: '8px', lg: '12px', xl: '16px', full: '9999px', button: '8px', card: '12px' },
+      shadows: {
+        card: '0 4px 16px rgba(26,58,214,0.10)',
+        cardHover: '0 12px 30px rgba(26,58,214,0.20)',
+        button: '0 3px 10px rgba(26,58,214,0.26)',
+        color: 'rgba(20,40,150,0.11)', colorMedium: 'rgba(20,40,150,0.17)', colorStrong: 'rgba(20,40,150,0.28)',
+      },
+      header: { bg: 'rgba(243,245,250,0.80)', solid: '#f3f5fa', blur: 'blur(16px)', border: '#d7dcea', text: '#12183a', shadow: '0 1px 0 #d7dcea' },
+      bg: '#f3f5fa', bgSecondary: '#e7ebf5', card: '#ffffff', cardSecondary: '#eef1f8', cardHover: '#e1e7f4',
+      text: '#12183a', textSecondary: '#4c5578', textLight: '#8189a8',
+      border: '#d7dcea', borderLight: '#eaedf6',
+      primary: '#1a3ad6', primaryHover: '#1230b4', secondary: '#00a6a6', secondaryHover: '#008787', accent: '#ff5a36',
+      tag: { bg: '#e7ebf5', text: '#1230b4', border: '#d7dcea' },
+      layout: { containerMax: '100%', contentPad: '2rem', fontScale: '1', lineHeight: '1.6', headingSpacing: '-0.02em', headingTransform: 'none', headingWeight: '700' },
+      tw: { primary: '26 58 214', secondary: '0 166 166', accent: '255 90 54', background: '243 245 250', surface: '255 255 255', text: '18 24 58', border: '215 220 234' },
+    },
+    dark: {
+      ...STATE_DARK,
+      fonts: { heading: "'Space Grotesk', sans-serif", body: "'Inter', sans-serif" },
+      radii: { sm: '4px', md: '8px', lg: '12px', xl: '16px', full: '9999px', button: '8px', card: '12px' },
+      shadows: {
+        card: '0 4px 16px rgba(0,0,0,0.50)',
+        cardHover: '0 12px 30px rgba(92,131,255,0.22)',
+        button: '0 3px 12px rgba(92,131,255,0.32)',
+        color: 'rgba(0,0,0,0.50)', colorMedium: 'rgba(0,0,0,0.60)', colorStrong: 'rgba(0,0,0,0.72)',
+      },
+      header: { bg: 'rgba(11,14,26,0.88)', solid: '#0b0e1a', blur: 'blur(16px)', border: '#252c46', text: '#e6eaf7', shadow: '0 1px 0 #252c46' },
+      bg: '#0b0e1a', bgSecondary: '#121627', card: '#141829', cardSecondary: '#1c2138', cardHover: '#262d49',
+      text: '#e6eaf7', textSecondary: '#a6aecb', textLight: '#78809e',
+      border: '#252c46', borderLight: '#1c2138',
+      primary: '#5c83ff', primaryHover: '#7d9cff', secondary: '#2ad0d0', secondaryHover: '#55dcdc', accent: '#ff7a5c',
+      tag: { bg: '#1c2138', text: '#7d9cff', border: '#252c46' },
+      layout: { containerMax: '100%', contentPad: '2rem', fontScale: '1', lineHeight: '1.6', headingSpacing: '-0.02em', headingTransform: 'none', headingWeight: '700' },
+      tw: { primary: '92 131 255', secondary: '42 208 208', accent: '255 122 92', background: '11 14 26', surface: '20 24 41', text: '230 234 247', border: '37 44 70' },
+    },
+  },
+
+  // -------------------------------------------------------------------------
+  // 39. ORBITE — bleu nuit spatial + cyan lumineux, halos discrets.
+  //     Ambiance « salle de contrôle », adaptée aux écrans en faible lumière.
+  // -------------------------------------------------------------------------
+  {
+    id: 'orbit', name: 'Orbite', emoji: '🛰️',
+    light: {
+      ...STATE_LIGHT,
+      fonts: { heading: "'Exo 2', sans-serif", body: "'Inter', sans-serif" },
+      radii: { sm: '6px', md: '10px', lg: '16px', xl: '22px', full: '9999px', button: '10px', card: '16px' },
+      shadows: {
+        card: '0 5px 18px rgba(12,74,110,0.11)',
+        cardHover: '0 14px 32px rgba(12,74,110,0.20)',
+        button: '0 4px 12px rgba(14,116,144,0.28)',
+        color: 'rgba(12,60,90,0.12)', colorMedium: 'rgba(12,60,90,0.18)', colorStrong: 'rgba(12,60,90,0.28)',
+      },
+      header: { bg: 'rgba(240,248,251,0.80)', solid: '#f0f8fb', blur: 'blur(16px)', border: '#d0e4ec', text: '#0c2b38', shadow: '0 1px 0 #d0e4ec' },
+      bg: '#f0f8fb', bgSecondary: '#e1eff5', card: '#ffffff', cardSecondary: '#e9f4f8', cardHover: '#daecf3',
+      text: '#0c2b38', textSecondary: '#456374', textLight: '#7d97a4',
+      border: '#d0e4ec', borderLight: '#e6f2f7',
+      primary: '#0e7490', primaryHover: '#0a5a72', secondary: '#4f46e5', secondaryHover: '#403ac4', accent: '#f59e0b',
+      tag: { bg: '#e1eff5', text: '#0a5a72', border: '#d0e4ec' },
+      tw: { primary: '14 116 144', secondary: '79 70 229', accent: '245 158 11', background: '240 248 251', surface: '255 255 255', text: '12 43 56', border: '208 228 236' },
+    },
+    dark: {
+      ...STATE_DARK, buttonText: '#04131a',
+      fonts: { heading: "'Exo 2', sans-serif", body: "'Inter', sans-serif" },
+      radii: { sm: '6px', md: '10px', lg: '16px', xl: '22px', full: '9999px', button: '10px', card: '16px' },
+      shadows: {
+        card: '0 5px 18px rgba(0,0,0,0.55)',
+        cardHover: '0 14px 32px rgba(45,212,231,0.20)',
+        button: '0 4px 14px rgba(45,212,231,0.30)',
+        color: 'rgba(0,0,0,0.55)', colorMedium: 'rgba(0,0,0,0.65)', colorStrong: 'rgba(0,0,0,0.75)',
+      },
+      header: { bg: 'rgba(6,16,24,0.88)', solid: '#061018', blur: 'blur(16px)', border: '#153040', text: '#dcf3fa', shadow: '0 1px 0 #153040' },
+      bg: '#061018', bgSecondary: '#0c1a24', card: '#0d1c26', cardSecondary: '#132633', cardHover: '#1b3443',
+      text: '#dcf3fa', textSecondary: '#93b5c4', textLight: '#688595',
+      border: '#153040', borderLight: '#132633',
+      primary: '#2dd4e7', primaryHover: '#5ce0ef', secondary: '#8b7cf6', secondaryHover: '#a594ff', accent: '#fbbf24',
+      tag: { bg: '#132633', text: '#5ce0ef', border: '#153040' },
+      tw: { primary: '45 212 231', secondary: '139 124 246', accent: '251 191 36', background: '6 16 24', surface: '13 28 38', text: '220 243 250', border: '21 48 64' },
+    },
+  },
+
+  // -------------------------------------------------------------------------
+  // 40. CORAIL — corail chaud + turquoise, registre balnéaire et vivant.
+  // -------------------------------------------------------------------------
+  {
+    id: 'coral', name: 'Corail', emoji: '🪸',
+    light: {
+      ...STATE_LIGHT,
+      fonts: { heading: "'Poppins', sans-serif", body: "'DM Sans', sans-serif" },
+      radii: { sm: '10px', md: '16px', lg: '22px', xl: '28px', full: '9999px', button: '9999px', card: '22px' },
+      shadows: {
+        card: '0 8px 24px rgba(240,90,80,0.13)',
+        cardHover: '0 16px 38px rgba(240,90,80,0.21)',
+        button: '0 5px 14px rgba(240,90,80,0.30)',
+        color: 'rgba(160,50,45,0.13)', colorMedium: 'rgba(160,50,45,0.19)', colorStrong: 'rgba(160,50,45,0.29)',
+      },
+      header: { bg: 'rgba(255,245,243,0.78)', solid: '#fff5f3', blur: 'blur(18px)', border: '#fad9d3', text: '#46211d', shadow: '0 4px 20px rgba(240,90,80,0.11)' },
+      bg: '#fff5f3', bgSecondary: '#ffe8e3', card: '#fffdfc', cardSecondary: '#ffeeea', cardHover: '#ffdfd8',
+      text: '#46211d', textSecondary: '#7b4640', textLight: '#ae7c74',
+      border: '#fad9d3', borderLight: '#ffeeea',
+      primary: '#ea5a50', primaryHover: '#d0413a', secondary: '#12a4b8', secondaryHover: '#0d8698', accent: '#ffb02e',
+      tag: { bg: '#ffe8e3', text: '#d0413a', border: '#fad9d3' },
+      tw: { primary: '234 90 80', secondary: '18 164 184', accent: '255 176 46', background: '255 245 243', surface: '255 253 252', text: '70 33 29', border: '250 217 211' },
+    },
+    dark: {
+      ...STATE_DARK,
+      fonts: { heading: "'Poppins', sans-serif", body: "'DM Sans', sans-serif" },
+      radii: { sm: '10px', md: '16px', lg: '22px', xl: '28px', full: '9999px', button: '9999px', card: '22px' },
+      shadows: {
+        card: '0 8px 24px rgba(0,0,0,0.48)',
+        cardHover: '0 16px 38px rgba(255,124,112,0.22)',
+        button: '0 5px 16px rgba(255,124,112,0.32)',
+        color: 'rgba(0,0,0,0.48)', colorMedium: 'rgba(0,0,0,0.58)', colorStrong: 'rgba(0,0,0,0.70)',
+      },
+      header: { bg: 'rgba(29,17,16,0.86)', solid: '#1d1110', blur: 'blur(18px)', border: '#452b27', text: '#ffe7e2', shadow: '0 4px 20px rgba(0,0,0,0.45)' },
+      bg: '#1d1110', bgSecondary: '#271817', card: '#291a18', cardSecondary: '#362320', cardHover: '#452d29',
+      text: '#ffe7e2', textSecondary: '#d6a79f', textLight: '#a27a73',
+      border: '#452b27', borderLight: '#362320',
+      primary: '#ff7c70', primaryHover: '#ff9a90', secondary: '#33cadd', secondaryHover: '#5cd8e7', accent: '#ffc95c',
+      tag: { bg: '#362320', text: '#ff9a90', border: '#452b27' },
+      tw: { primary: '255 124 112', secondary: '51 202 221', accent: '255 201 92', background: '29 17 16', surface: '41 26 24', text: '255 231 226', border: '69 43 39' },
+    },
+  },
+
+  // -------------------------------------------------------------------------
+  // 41. NUAGE — bleu ciel très doux, arrondis généreux, ombres presque
+  //     absentes. Le plus calme de la série : reposant sur écran clair.
+  // -------------------------------------------------------------------------
+  {
+    id: 'cloud', name: 'Nuage', emoji: '☁️',
+    light: {
+      ...STATE_LIGHT,
+      fonts: { heading: "'Quicksand', sans-serif", body: "'Nunito', sans-serif" },
+      radii: { sm: '12px', md: '18px', lg: '26px', xl: '34px', full: '9999px', button: '9999px', card: '26px' },
+      shadows: {
+        card: '0 6px 20px rgba(86,132,190,0.11)',
+        cardHover: '0 14px 32px rgba(86,132,190,0.17)',
+        button: '0 4px 12px rgba(58,126,200,0.22)',
+        color: 'rgba(50,90,140,0.11)', colorMedium: 'rgba(50,90,140,0.16)', colorStrong: 'rgba(50,90,140,0.26)',
+      },
+      header: { bg: 'rgba(244,249,255,0.78)', solid: '#f4f9ff', blur: 'blur(18px)', border: '#d9e7f6', text: '#1f3350', shadow: '0 4px 18px rgba(86,132,190,0.10)' },
+      bg: '#f4f9ff', bgSecondary: '#e7f0fb', card: '#ffffff', cardSecondary: '#eef5fd', cardHover: '#e0ecfa',
+      text: '#1f3350', textSecondary: '#526b8c', textLight: '#8b9fba',
+      border: '#d9e7f6', borderLight: '#ecf3fc',
+      primary: '#3a7ec8', primaryHover: '#2d66a8', secondary: '#54b2a9', secondaryHover: '#41968e', accent: '#f59ac0',
+      tag: { bg: '#e7f0fb', text: '#2d66a8', border: '#d9e7f6' },
+      tw: { primary: '58 126 200', secondary: '84 178 169', accent: '245 154 192', background: '244 249 255', surface: '255 255 255', text: '31 51 80', border: '217 231 246' },
+    },
+    dark: {
+      ...STATE_DARK,
+      fonts: { heading: "'Quicksand', sans-serif", body: "'Nunito', sans-serif" },
+      radii: { sm: '12px', md: '18px', lg: '26px', xl: '34px', full: '9999px', button: '9999px', card: '26px' },
+      shadows: {
+        card: '0 6px 20px rgba(0,0,0,0.45)',
+        cardHover: '0 14px 32px rgba(122,178,240,0.18)',
+        button: '0 4px 14px rgba(122,178,240,0.28)',
+        color: 'rgba(0,0,0,0.45)', colorMedium: 'rgba(0,0,0,0.55)', colorStrong: 'rgba(0,0,0,0.68)',
+      },
+      header: { bg: 'rgba(15,22,33,0.86)', solid: '#0f1621', blur: 'blur(18px)', border: '#26354a', text: '#e4eefb', shadow: '0 4px 18px rgba(0,0,0,0.45)' },
+      bg: '#0f1621', bgSecondary: '#16202e', card: '#182231', cardSecondary: '#202d40', cardHover: '#2a3950',
+      text: '#e4eefb', textSecondary: '#a6bcd6', textLight: '#7589a3',
+      border: '#26354a', borderLight: '#202d40',
+      primary: '#7ab2f0', primaryHover: '#9bc6f6', secondary: '#6fd0c5', secondaryHover: '#8fddd5', accent: '#f9b3d1',
+      tag: { bg: '#202d40', text: '#9bc6f6', border: '#26354a' },
+      tw: { primary: '122 178 240', secondary: '111 208 197', accent: '249 179 209', background: '15 22 33', surface: '24 34 49', text: '228 238 251', border: '38 53 74' },
+    },
+  },
 ];
 
 // =============================================================================
 // EXPORTS
 // =============================================================================
+
+// Garde-fou : deux styles partageant le même id, c'est un style qui en écrase
+// silencieusement un autre dans `themes` tout en restant visible dans la liste
+// du sélecteur (le bug qu'avait « Clay doux » / « Argile terracotta »).
+if (process.env.NODE_ENV !== 'production') {
+  const seen = new Set();
+  STYLES.forEach((st) => {
+    if (seen.has(st.id)) {
+      // eslint-disable-next-line no-console
+      console.error(`themes.js : identifiant de style dupliqué « ${st.id} » (${st.name}).`);
+    }
+    seen.add(st.id);
+  });
+}
 
 export const themes = Object.fromEntries(
   STYLES.map((st) => [
@@ -1591,7 +2053,36 @@ export const themes = Object.fromEntries(
   ])
 );
 
+// Familles affichées dans le sélecteur. Tout id absent d'un groupe atterrit
+// automatiquement dans « Autres » : ajouter un style ne casse jamais la liste.
+const STYLE_GROUPS = [
+  { id: 'playful', label: 'Moderne & ludique',
+    ids: ['aurora', 'mango', 'bubblegum', 'sorbet', 'blueberry', 'lime', 'cobalt', 'orbit', 'coral', 'cloud', 'clay', 'kawaii', 'y2k'] },
+  { id: 'sober', label: 'Sobre & professionnel',
+    ids: ['navy', 'classic', 'swiss', 'corporate', 'slate', 'graphite', 'sage', 'forest', 'ocean', 'japandi', 'plum', 'bordeaux'] },
+  { id: 'editorial', label: 'Éditorial & matière',
+    ids: ['editorial', 'gazette', 'luxe', 'champagne', 'terracotta', 'botanical', 'ink', 'sketch', 'seventies', 'bauhaus'] },
+  { id: 'bold', label: 'Contrasté & technique',
+    ids: ['brutalist', 'cyberpunk', 'terminal', 'noir', 'pixel', 'glass', 'cosmic'] },
+];
+
 export const styleList = STYLES.map((st) => ({ id: st.id, name: st.name, emoji: st.emoji }));
+
+export const styleGroups = (() => {
+  const placed = new Set();
+  const groups = STYLE_GROUPS.map((g) => {
+    const styles = g.ids
+      .filter((id) => themes[id])
+      .map((id) => {
+        placed.add(id);
+        return themes[id].meta;
+      });
+    return { id: g.id, label: g.label, styles };
+  }).filter((g) => g.styles.length > 0);
+
+  const rest = STYLES.filter((st) => !placed.has(st.id)).map((st) => themes[st.id].meta);
+  return rest.length ? [...groups, { id: 'other', label: 'Autres', styles: rest }] : groups;
+})();
 
 export const defaultStyleId = 'navy';
 
