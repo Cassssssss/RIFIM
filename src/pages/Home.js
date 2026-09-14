@@ -11,95 +11,62 @@ import {
   BarChart3,
   Clock,
   Users,
-  Stethoscope,
   ChevronRight
 } from 'lucide-react';
 
 // CONTENEUR PRINCIPAL
 const HomeContainer = styled.div`
   min-height: calc(100vh - 80px);
-  background: linear-gradient(135deg,
-    ${props => props.theme.background} 0%,
-    ${props => props.theme.backgroundSecondary || props.theme.background} 100%
-  );
-  padding: 3rem 2rem;
+  padding: 0 0 2rem;
 
   @media (max-width: 768px) {
-    padding: 2rem 1rem;
     min-height: calc(100vh - 60px);
   }
 `;
 
 // CONTENEUR INTERNE
 const ContentWrapper = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
 `;
 
-// SECTION HERO
+// EN-TÊTE : l'utilisateur est déjà connecté et la marque figure dans le rail
+// de gauche. Inutile de lui resservir un bandeau d'accueil pleine hauteur :
+// on l'accueille par son nom et on affiche ses chiffres sur la même ligne.
 const HeroSection = styled.div`
-  text-align: center;
-  margin-bottom: 4rem;
-  padding-bottom: 3rem;
-  border-bottom: 1px solid ${props => props.theme.border};
-
-  @media (max-width: 768px) {
-    margin-bottom: 2rem;
-    padding-bottom: 2rem;
-  }
-`;
-
-const LogoContainer = styled.div`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-
-  @media (max-width: 768px) {
-    gap: 0.75rem;
-  }
-`;
-
-const Logo = styled.div`
-  font-size: 3rem;
-  font-weight: 700;
-  color: ${props => props.theme.text};
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 1.75rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid ${props => props.theme.borderLight || props.theme.border};
+`;
 
-  svg {
-    color: ${props => props.theme.primary};
-  }
-
-  @media (max-width: 768px) {
-    font-size: 2rem;
-  }
+const HeroText = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
 `;
 
 const Title = styled.h1`
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: 700;
   color: ${props => props.theme.text};
-  margin-bottom: 0.75rem;
-  line-height: 1.3;
+  margin: 0;
+  line-height: 1.2;
 
   @media (max-width: 768px) {
-    font-size: 1.5rem;
+    font-size: 1.45rem;
   }
 `;
 
 const Subtitle = styled.p`
-  font-size: 1.125rem;
+  font-size: 0.95rem;
   color: ${props => props.theme.textSecondary};
-  max-width: 650px;
-  margin: 0 auto;
-  line-height: 1.6;
-
-  @media (max-width: 768px) {
-    font-size: 1rem;
-  }
+  margin: 0;
+  line-height: 1.5;
 `;
 
 // GRILLE PRINCIPALE
@@ -254,45 +221,35 @@ const ActionArrow = styled.div`
   }
 `;
 
-// SECTION STATISTIQUES
+// SECTION STATISTIQUES — compacte, dans l'en-tête, en ligne.
+// Trois grands « 0 » pleine largeur, c'est l'accueil le plus décourageant
+// possible pour un compte neuf : on les réduit à un simple récapitulatif.
 const StatsSection = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 3rem;
+  display: flex;
+  align-items: baseline;
+  gap: 1.75rem;
+  flex-wrap: wrap;
 
   @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    margin-bottom: 2rem;
+    gap: 1.25rem;
   }
 `;
 
 const StatCard = styled.div`
-  background: ${props => props.theme.card};
-  border-radius: 12px;
-  padding: 1.5rem;
-  border: 1px solid ${props => props.theme.border};
-  text-align: center;
-
-  @media (max-width: 768px) {
-    padding: 1.25rem;
-  }
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
 `;
 
-const StatValue = styled.div`
-  font-size: 2.5rem;
+const StatValue = styled.span`
+  font-size: 1.4rem;
   font-weight: 700;
   color: ${props => props.color};
-  margin-bottom: 0.5rem;
-
-  @media (max-width: 768px) {
-    font-size: 2rem;
-  }
+  line-height: 1;
 `;
 
-const StatLabel = styled.div`
-  font-size: 0.875rem;
+const StatLabel = styled.span`
+  font-size: 0.85rem;
   color: ${props => props.theme.textSecondary};
   font-weight: 500;
 `;
@@ -428,6 +385,8 @@ const EmptyState = styled.div`
 
 function Home() {
   const navigate = useNavigate();
+  // Même source que le rail de gauche, pour rester cohérent après un relogin.
+  const userName = localStorage.getItem('username') || '';
   const [stats, setStats] = useState({
     questionnaires: 0,
     cases: 0,
@@ -619,36 +578,30 @@ function Home() {
   return (
     <HomeContainer>
       <ContentWrapper>
-        {/* HERO SECTION */}
+        {/* EN-TÊTE : accueil nominatif à gauche, chiffres clés à droite */}
         <HeroSection>
-          <LogoContainer>
-            <Logo>
-              <Stethoscope size={48} />
-              RIFIM
-            </Logo>
-          </LogoContainer>
+          <HeroText>
+            <Title>{userName ? `Bonjour ${userName}` : 'Bonjour'}</Title>
+            <Subtitle>
+              Vos questionnaires, cas cliniques et protocoles d'imagerie
+            </Subtitle>
+          </HeroText>
 
-          <Title>Radiologie Interventionnelle Formation et Innovation Médicale</Title>
-          <Subtitle>
-            Plateforme collaborative pour la gestion de questionnaires, cas cliniques et protocoles d'imagerie
-          </Subtitle>
+          <StatsSection>
+            <StatCard>
+              <StatValue color="#667eea">{stats.questionnaires}</StatValue>
+              <StatLabel>Questionnaires</StatLabel>
+            </StatCard>
+            <StatCard>
+              <StatValue color="#f093fb">{stats.cases}</StatValue>
+              <StatLabel>Cas cliniques</StatLabel>
+            </StatCard>
+            <StatCard>
+              <StatValue color="#4facfe">{stats.protocols}</StatValue>
+              <StatLabel>Protocoles</StatLabel>
+            </StatCard>
+          </StatsSection>
         </HeroSection>
-
-        {/* STATISTIQUES */}
-        <StatsSection>
-          <StatCard>
-            <StatValue color="#667eea">{stats.questionnaires}</StatValue>
-            <StatLabel>Questionnaires</StatLabel>
-          </StatCard>
-          <StatCard>
-            <StatValue color="#f093fb">{stats.cases}</StatValue>
-            <StatLabel>Cas cliniques</StatLabel>
-          </StatCard>
-          <StatCard>
-            <StatValue color="#4facfe">{stats.protocols}</StatValue>
-            <StatLabel>Protocoles</StatLabel>
-          </StatCard>
-        </StatsSection>
 
         {/* GRILLE PRINCIPALE */}
         <MainGrid>

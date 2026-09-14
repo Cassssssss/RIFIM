@@ -34,45 +34,59 @@ const PageContainer = styled.div`
   }
 `;
 
+// En-tête aligné à gauche, avec le sélecteur de période sur la même ligne :
+// le filtre de temps appartient à l'en-tête, pas à une rangée séparée.
 const Header = styled.div`
-  text-align: center;
-  margin-bottom: 3rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid ${props => props.theme.borderLight || props.theme.border};
+`;
+
+const HeaderText = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
 `;
 
 const Title = styled.h1`
-  font-size: 2.5rem;
+  font-size: 1.8rem;
   font-weight: 700;
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin: 0 0 0.5rem 0;
+  line-height: 1.2;
+  color: ${props => props.theme.text};
+  margin: 0;
 
   @media (max-width: 768px) {
-    font-size: 1.8rem;
+    font-size: 1.45rem;
   }
 `;
 
 const Subtitle = styled.p`
   color: ${props => props.theme.textSecondary};
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   margin: 0;
 `;
 
 // Conteneur pour les filtres de période
 const PeriodSelector = styled.div`
   display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 3rem;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0;
   flex-wrap: wrap;
 `;
 
 const PeriodButton = styled.button`
-  padding: 0.75rem 1.5rem;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.88rem;
   background-color: ${props => props.$active ? props.theme.primary : props.theme.card};
   color: ${props => props.$active ? 'white' : props.theme.text};
-  border: 2px solid ${props => props.$active ? props.theme.primary : props.theme.border};
+  border: 1px solid ${props => props.$active ? props.theme.primary : props.theme.border};
   border-radius: 8px;
   font-weight: 500;
   cursor: pointer;
@@ -1203,8 +1217,27 @@ function StatisticsDashboardPage() {
   return (
     <PageContainer>
       <Header>
-        <Title>📊 Tableau de Bord Analytique</Title>
-        <Subtitle>Vue d'ensemble de votre activité et performances</Subtitle>
+        <HeaderText>
+          <Title>Tableau de bord</Title>
+          <Subtitle>Vue d'ensemble de votre activité et performances</Subtitle>
+        </HeaderText>
+
+        {/* Sélecteur de période : rattaché à l'en-tête */}
+        <PeriodSelector>
+          <PeriodButton $active={period === 'week'} onClick={() => setPeriod('week')}>
+            <Calendar size={15} style={{ marginRight: '0.4rem', display: 'inline' }} />
+            Cette semaine
+          </PeriodButton>
+          <PeriodButton $active={period === 'month'} onClick={() => setPeriod('month')}>
+            Ce mois
+          </PeriodButton>
+          <PeriodButton $active={period === 'year'} onClick={() => setPeriod('year')}>
+            Cette année
+          </PeriodButton>
+          <PeriodButton $active={period === 'all'} onClick={() => setPeriod('all')}>
+            Tout
+          </PeriodButton>
+        </PeriodSelector>
       </Header>
 
       {dataWarning && (
@@ -1213,26 +1246,6 @@ function StatisticsDashboardPage() {
           <span>{dataWarning}</span>
         </WarningBanner>
       )}
-
-      {/* Sélecteur de période */}
-      <PeriodSelector>
-        <PeriodButton $active={period === 'week'} onClick={() => setPeriod('week')}>
-          <Calendar size={16} style={{ marginRight: '0.5rem', display: 'inline' }} />
-          Cette semaine
-        </PeriodButton>
-        <PeriodButton $active={period === 'month'} onClick={() => setPeriod('month')}>
-          <Calendar size={16} style={{ marginRight: '0.5rem', display: 'inline' }} />
-          Ce mois
-        </PeriodButton>
-        <PeriodButton $active={period === 'year'} onClick={() => setPeriod('year')}>
-          <Calendar size={16} style={{ marginRight: '0.5rem', display: 'inline' }} />
-          Cette année
-        </PeriodButton>
-        <PeriodButton $active={period === 'all'} onClick={() => setPeriod('all')}>
-          <Calendar size={16} style={{ marginRight: '0.5rem', display: 'inline' }} />
-          Tout
-        </PeriodButton>
-      </PeriodSelector>
 
       {/* Statistiques principales */}
       <StatsGrid>

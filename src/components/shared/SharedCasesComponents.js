@@ -5,66 +5,99 @@ import { Link } from 'react-router-dom';
 // ==================== LAYOUT PRINCIPAL ====================
 
 export const UnifiedPageContainer = styled.div`
-  padding: 2rem 3rem;
+  padding: 0 0 2rem;
   min-height: calc(100vh - 60px);
   background-color: ${props => props.theme.background};
 
-  @media (max-width: 1200px) {
-    padding: 2rem;
-  }
-
   @media (max-width: 768px) {
-    padding: 1rem;
+    padding: 0 0 1rem;
   }
 `;
 
+// En-tête de page aligné à gauche : on est dans une application, pas sur une
+// page d'accueil. Le titre s'aligne sur le contenu et sur le rail de gauche,
+// et le filet de séparation ancre le regard au lieu de le laisser flotter.
 export const PageHeader = styled.div`
-  text-align: center;
-  margin-bottom: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 0.25rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid ${props => props.theme.borderLight || props.theme.border};
 `;
 
 export const UnifiedPageTitle = styled.h1`
-  font-size: 2.5rem;
+  font-size: 1.8rem;
   font-weight: 700;
-  margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: 0 2px 4px ${props => props.theme.shadow};
+  line-height: 1.2;
+  margin: 0;
+  color: ${props => props.theme.text};
+
+  @media (max-width: 768px) {
+    font-size: 1.45rem;
+  }
 `;
 
 export const PageSubtitle = styled.p`
   color: ${props => props.theme.textSecondary};
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   margin: 0;
 `;
 
 // ==================== SECTION DE RECHERCHE ET FILTRES ====================
 
+// Barre d'outils sur une seule ligne : recherche, filtres et options de vue
+// se lisent d'un coup d'œil au lieu d'empiler trois blocs centrés.
 export const SearchAndFiltersSection = styled.div`
-  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 768px) {
+    align-items: stretch;
+  }
+`;
+
+// Options de vue (nombre de colonnes) : poussées à droite de la barre d'outils
+// sur grand écran, ramenées dans le flux normal sur mobile.
+export const ViewOptions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: ${props => props.theme.textSecondary};
+
+  label {
+    white-space: nowrap;
+  }
+
+  @media (max-width: 768px) {
+    margin-left: 0;
+  }
 `;
 
 export const UnifiedSearchInput = styled.input`
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto 2rem auto;
-  display: block;
-  padding: 1rem 1.5rem;
-  font-size: 1rem;
-  border: 2px solid ${props => props.theme.border};
-  border-radius: 12px;
+  flex: 1 1 260px;
+  max-width: 380px;
+  min-width: 0;
+  margin: 0;
+  padding: 0.6rem 1rem;
+  font-size: 0.95rem;
+  border: 1px solid ${props => props.theme.border};
+  border-radius: ${props => props.theme.radii?.md || '10px'};
   background-color: ${props => props.theme.card};
   color: ${props => props.theme.text};
-  box-shadow: 0 2px 8px ${props => props.theme.shadow};
-  transition: all 0.2s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 
   &:focus {
     outline: none;
     border-color: ${props => props.theme.primary};
-    box-shadow: 0 4px 15px ${props => props.theme.shadow};
-    transform: translateY(-1px);
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}22;
   }
 
   &::placeholder {
@@ -74,11 +107,11 @@ export const UnifiedSearchInput = styled.input`
 
 export const UnifiedFilterContainer = styled.div`
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   gap: 1rem;
   flex-wrap: wrap;
-  margin-bottom: 2rem;
+  margin-bottom: 0;
   padding: 1.5rem;
   background-color: ${props => props.theme.card};
   border-radius: 16px;

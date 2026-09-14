@@ -14,6 +14,7 @@ import {
   UnifiedPageTitle,
   PageSubtitle,
   SearchAndFiltersSection,
+  ViewOptions,
   UnifiedSearchInput,
   UnifiedCasesList,
   UnifiedCaseCard,
@@ -351,38 +352,33 @@ function PublicCasesPage() {
     <UnifiedPageContainer>
       <PageHeader>
         <UnifiedPageTitle>Cas Cliniques Publics</UnifiedPageTitle>
+        <PageSubtitle>Explorez les cas partagés par la communauté</PageSubtitle>
       </PageHeader>
 
-      <SearchAndFiltersSection style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <SearchAndFiltersSection>
         <UnifiedSearchInput
           type="text"
           placeholder="Rechercher dans les cas publics (titre, tags, auteur...)"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ maxWidth: '600px', width: '100%' }}
         />
 
-        {/* NOUVEAU SYSTÈME DE FILTRES UNIFIÉ */}
-        <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-          <UnifiedFilterSystem
-            filters={filtersConfig}
-            showSpoilerButton={true}
-            spoilerState={showSpoilers}
-            onSpoilerToggle={() => setShowSpoilers(!showSpoilers)}
-            spoilerLabels={{ show: 'Voir titres', hide: 'Masquer titres' }}
-          />
-        </div>
+        <UnifiedFilterSystem
+          filters={filtersConfig}
+          showSpoilerButton={true}
+          spoilerState={showSpoilers}
+          onSpoilerToggle={() => setShowSpoilers(!showSpoilers)}
+          spoilerLabels={{ show: 'Voir titres', hide: 'Masquer titres' }}
+        />
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.75rem' }}>
-          <label htmlFor="columns" style={{ fontSize: '0.9rem', color: 'var(--color-text)' }}>
-            Colonnes par ligne :
-          </label>
+        <ViewOptions>
+          <label htmlFor="columns">Colonnes :</label>
           <select id="columns" value={columns} onChange={(e) => setColumns(Number(e.target.value))}>
             {[2, 3, 4, 5, 6].map((n) => (
               <option key={n} value={n}>{n}</option>
             ))}
           </select>
-        </div>
+        </ViewOptions>
       </SearchAndFiltersSection>
 
       {/* Contenu principal */}

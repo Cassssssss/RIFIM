@@ -13,6 +13,9 @@ import UnifiedFilterSystem from '../components/shared/UnifiedFilterSystem';
 import {
   PageContainer,
   TopActionsContainer,
+  PageHead,
+  PageHeadText,
+  Toolbar,
   ListContainer,
   SearchInput,
   QuestionnairesGrid,
@@ -390,40 +393,41 @@ function QuestionnaireListPage() {
 
   return (
     <PageContainer>
-      {/* BOUTONS D'ACTIONS PRINCIPAUX */}
-      <TopActionsContainer>
-        <ActionButton 
-          as={Link} 
-          to="/create" 
-          variant="primary"
-          style={{ padding: '1rem 1.5rem', fontSize: '1rem', fontWeight: '600', textAlign: 'center' }}
-        >
-          ➕ CRÉER UN NOUVEAU QUESTIONNAIRE
-        </ActionButton>
+      {/* EN-TÊTE : identité de la page à gauche, actions à droite */}
+      <PageHead>
+        <PageHeadText>
+          <h1>Gérer les questionnaires</h1>
+          <p>Créez, organisez et partagez vos comptes rendus types</p>
+        </PageHeadText>
 
-        <TutorialButton onClick={() => setShowTutorial(true)}>
-          📚 Voir le tutoriel
-        </TutorialButton>
-      </TopActionsContainer>
+        <TopActionsContainer>
+          <TutorialButton onClick={() => setShowTutorial(true)}>
+            Voir le tutoriel
+          </TutorialButton>
+
+          <ActionButton as={Link} to="/create" variant="primary">
+            Créer un questionnaire
+          </ActionButton>
+        </TopActionsContainer>
+      </PageHead>
 
       {/* CONTENU PRINCIPAL */}
       <ListContainer>
-        {/* BARRE DE RECHERCHE */}
-        <SearchInput
-          className="search-bar"
-          type="text"
-          placeholder="🔍 Rechercher un questionnaire..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+        {/* BARRE D'OUTILS : recherche + filtres sur une ligne */}
+        <Toolbar>
+          <SearchInput
+            className="search-bar"
+            type="text"
+            placeholder="Rechercher un questionnaire..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
 
-        {/* NOUVEAU SYSTÈME DE FILTRES UNIFIÉ */}
-        <div className="filter-section" style={{ marginBottom: '2rem' }}>
           <UnifiedFilterSystem
             filters={filtersConfig}
             style={{ justifyContent: 'flex-start' }}
           />
-        </div>
+        </Toolbar>
 
         {/* 🔧 NOUVEAU : Affichage des filtres actifs avec logique ET */}
         {hasActiveFilters && (

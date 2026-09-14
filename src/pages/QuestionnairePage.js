@@ -12,6 +12,9 @@ import UnifiedFilterSystem from '../components/shared/UnifiedFilterSystem';
 // Import des composants partagés
 import {
   PageContainer,
+  PageHead,
+  PageHeadText,
+  Toolbar,
   ListContainer,
   SearchInput,
   QuestionnairesGrid,
@@ -291,27 +294,29 @@ function QuestionnairePage() {
 
   return (
     <PageContainer>
+      <PageHead>
+        <PageHeadText>
+          <h1>Mes questionnaires</h1>
+          <p>Vos comptes rendus types, prêts à l'emploi</p>
+        </PageHeadText>
+      </PageHead>
+
       {/* CONTENU PRINCIPAL */}
       <ListContainer>
-        {/* BARRE DE RECHERCHE */}
-        <SearchInput
-          type="text"
-          placeholder="🔍 Rechercher un questionnaire..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+        {/* BARRE D'OUTILS : recherche + filtres sur une ligne */}
+        <Toolbar>
+          <SearchInput
+            type="text"
+            placeholder="Rechercher un questionnaire..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
 
-        {/* NOUVEAU SYSTÈME DE FILTRES UNIFIÉ */}
-        <div style={{ 
-          marginBottom: '2rem',
-          display: 'flex',
-          justifyContent: 'center'  // 🔧 CENTRAGE : Centre les filtres aussi
-        }}>
           <UnifiedFilterSystem
             filters={filtersConfig}
-            style={{ justifyContent: 'center' }}  // 🔧 CENTRAGE : Centre le contenu des filtres
+            style={{ justifyContent: 'flex-start' }}
           />
-        </div>
+        </Toolbar>
 
         {/* 🔧 NOUVEAU : Affichage des filtres actifs avec logique ET */}
         {hasActiveFilters && (

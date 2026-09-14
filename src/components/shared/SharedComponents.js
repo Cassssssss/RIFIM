@@ -157,32 +157,87 @@ export const ListContainer = styled.div`
   }
 `;
 
+// Les actions principales se lisent sur une ligne, à gauche, comme dans
+// n'importe quelle application : on ne centre pas une barre d'actions.
 export const TopActionsContainer = styled.div`
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0;
+`;
+
+// ==================== EN-TÊTE DE PAGE ====================
+
+// Titre + sous-titre à gauche, actions à droite, séparés du contenu par un
+// filet. Remplace les grands titres centrés qui mangeaient un demi-écran.
+export const PageHead = styled.header`
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
   gap: 1rem;
-  margin-bottom: 2rem;
-  padding-top: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid ${props => props.theme.borderLight || props.theme.border};
+`;
+
+export const PageHeadText = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+
+  h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0;
+    color: ${props => props.theme.text};
+  }
+
+  p {
+    font-size: 0.95rem;
+    margin: 0;
+    color: ${props => props.theme.textSecondary};
+  }
+
+  @media (max-width: 768px) {
+    h1 {
+      font-size: 1.45rem;
+    }
+  }
+`;
+
+// Barre d'outils : recherche + filtres sur une seule ligne, alignés à gauche.
+export const Toolbar = styled.div`
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
 `;
 
 // ==================== INPUTS UNIFIÉS ====================
 
 export const SearchInput = styled.input`
-  width: 100%;
-  padding: 1rem 1.5rem;
-  margin-bottom: 2rem;
-  border: 2px solid ${props => props.theme.border};
-  border-radius: 12px;
-  font-size: 1rem;
+  flex: 1 1 260px;
+  max-width: 380px;
+  min-width: 0;
+  padding: 0.6rem 1rem;
+  margin: 0;
+  border: 1px solid ${props => props.theme.border};
+  border-radius: ${props => props.theme.radii?.md || '10px'};
+  font-size: 0.95rem;
   background-color: ${props => props.theme.card};
   color: ${props => props.theme.text};
-  transition: all 0.2s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 
   &:focus {
     outline: none;
     border-color: ${props => props.theme.primary};
-    box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
+    box-shadow: 0 0 0 3px ${props => props.theme.primary}22;
   }
 
   &::placeholder {
