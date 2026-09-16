@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="320" viewBox="0 0 480 320">
+  <rect width="480" height="320" fill="#eef0f5"/>
+  <g fill="none" stroke="#929aad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="219" y="118" width="42" height="36" rx="5"/>
+    <circle cx="232" cy="130" r="3"/>
+    <path d="m220 148 11-10 8 7 9-12 13 15"/>
+  </g>
+  <text x="240" y="187" text-anchor="middle" fill="#697286" font-family="system-ui,sans-serif" font-size="14">Aperçu indisponible</text>
+</svg>

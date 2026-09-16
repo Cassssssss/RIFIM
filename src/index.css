@@ -800,11 +800,11 @@ p {
 /* ==================== MODE SOMBRE ==================== */
 
 :global(.dark) .container {
-  background: linear-gradient(135deg, rgb(var(--color-background)) 0%, rgb(var(--color-surface)) 100%);
+  background: rgb(var(--color-background));
 }
 
 :global(.dark) .folderThumbnailLabel {
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+  background: rgba(0, 0, 0, 0.75);
 }
 
 :global(.dark) .shortcutPopup {

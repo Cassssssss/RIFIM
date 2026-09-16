@@ -58,6 +58,7 @@ function build(c) {
   return {
     // ---- nouveaux jetons (polices / arrondis / ombres / agencement) ----
     fonts: c.fonts,
+    categories: c.categories || { questionnaire: c.primary, cases: c.secondary, protocol: c.accent },
     radii: c.radii,
     borderRadius: c.radii, // compat : certains composants lisent theme.borderRadius
     shadows: c.shadows,
@@ -164,6 +165,36 @@ const SYSTEM_FONT =
   "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif";
 
 const STYLES = [
+  { id: 'atelier', name: 'Atelier RIFIM', emoji: '◒',
+    light: {
+      ...STATE_LIGHT,
+      fonts: { heading: "'DM Sans', sans-serif", body: "'DM Sans', sans-serif" },
+      radii: { sm: '6px', md: '10px', lg: '14px', xl: '20px', full: '9999px', button: '10px', card: '16px' },
+      layout: { containerMax: '1520px', contentPad: '2.5rem', headingSpacing: '-0.035em', headingWeight: '600' },
+      shadows: { card: '0 2px 3px rgba(36,43,64,0.025)', cardHover: '0 10px 28px rgba(36,43,64,0.08)', button: '0 2px 2px rgba(36,43,64,0.04)', color: 'rgba(36,43,64,0.06)', colorMedium: 'rgba(36,43,64,0.12)', colorStrong: 'rgba(36,43,64,0.22)' },
+      header: { bg: '#eeeff4', solid: '#eeeff4', blur: 'none', border: '#dcdfe9', text: '#242b40', shadow: 'none' },
+      bg: '#f7f7fa', bgSecondary: '#eeeff4', card: '#ffffff', cardSecondary: '#f3f4f8', cardHover: '#e9edfc',
+      text: '#242b40', textSecondary: '#626b80', textLight: '#737e94', border: '#dcdfe9', borderLight: '#eceef4',
+      categories: { questionnaire: '#3659d9', cases: '#c64c42', protocol: '#9b641a' },
+      primary: '#3659d9', primaryHover: '#2946b3', secondary: '#c64c42', secondaryHover: '#a53a32', accent: '#ca8b29',
+      success: '#327154', warning: '#906618', error: '#b74743',
+      tw: { primary: '54 89 217', secondary: '198 76 66', accent: '202 139 41', background: '247 247 250', surface: '255 255 255', text: '36 43 64', border: '220 223 233' },
+    },
+    dark: {
+      ...STATE_DARK,
+      fonts: { heading: "'DM Sans', sans-serif", body: "'DM Sans', sans-serif" },
+      radii: { sm: '6px', md: '10px', lg: '14px', xl: '20px', full: '9999px', button: '10px', card: '16px' },
+      layout: { containerMax: '1520px', contentPad: '2.5rem', headingSpacing: '-0.035em', headingWeight: '600' },
+      shadows: { card: '0 2px 3px rgba(0,0,0,0.08)', cardHover: '0 10px 28px rgba(0,0,0,0.18)', button: 'none', color: 'rgba(0,0,0,0.15)', colorMedium: 'rgba(0,0,0,0.25)', colorStrong: 'rgba(0,0,0,0.4)' },
+      header: { bg: '#191d2d', solid: '#191d2d', blur: 'none', border: '#343c57', text: '#f0f2fc', shadow: 'none' },
+      bg: '#131725', bgSecondary: '#1d2335', card: '#20273b', cardSecondary: '#29324a', cardHover: '#323e59',
+      text: '#f0f2fc', textSecondary: '#b5bfd9', textLight: '#99a7c5', border: '#3c4968', borderLight: '#2e3953',
+      categories: { questionnaire: '#9bacff', cases: '#ff9c91', protocol: '#ecc075' },
+      primary: '#9bacff', primaryHover: '#b6c3ff', secondary: '#ff9c91', secondaryHover: '#ffb9b0', accent: '#ecc075',
+      buttonText: '#18203f',
+      tw: { primary: '155 172 255', secondary: '255 156 145', accent: '236 192 117', background: '19 23 37', surface: '32 39 59', text: '240 242 252', border: '60 73 104' },
+    },
+  },
   // -------------------------------------------------------------------------
   // 0. CLASSIQUE (Apple) — l'existant, propre et sobre.
   // -------------------------------------------------------------------------
@@ -2057,7 +2088,7 @@ export const themes = Object.fromEntries(
 // automatiquement dans « Autres » : ajouter un style ne casse jamais la liste.
 const STYLE_GROUPS = [
   { id: 'playful', label: 'Moderne & ludique',
-    ids: ['aurora', 'mango', 'bubblegum', 'sorbet', 'blueberry', 'lime', 'cobalt', 'orbit', 'coral', 'cloud', 'clay', 'kawaii', 'y2k'] },
+    ids: ['atelier', 'aurora', 'mango', 'bubblegum', 'sorbet', 'blueberry', 'lime', 'cobalt', 'orbit', 'coral', 'cloud', 'clay', 'kawaii', 'y2k'] },
   { id: 'sober', label: 'Sobre & professionnel',
     ids: ['navy', 'classic', 'swiss', 'corporate', 'slate', 'graphite', 'sage', 'forest', 'ocean', 'japandi', 'plum', 'bordeaux'] },
   { id: 'editorial', label: 'Éditorial & matière',
@@ -2084,7 +2115,7 @@ export const styleGroups = (() => {
   return rest.length ? [...groups, { id: 'other', label: 'Autres', styles: rest }] : groups;
 })();
 
-export const defaultStyleId = 'navy';
+export const defaultStyleId = 'atelier';
 
 // Compat ascendante : certains anciens imports attendent ces noms.
 export const lightTheme = themes.classic.light;

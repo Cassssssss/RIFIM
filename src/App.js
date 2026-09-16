@@ -96,6 +96,7 @@ function AppContent() {
 
     // Identifiant du style actif (pour les overrides CSS d'agencement).
     root.setAttribute('data-style', styleId);
+    root.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
 
     const setVar = (name, value) => root.style.setProperty(name, value);
 

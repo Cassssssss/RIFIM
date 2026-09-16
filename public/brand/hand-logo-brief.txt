@@ -1,0 +1,6 @@
+Logo RIFIM sélectionné : main n°20, série 10.
+Préparation avec le générateur d’images intégré, mode natif.
+Asset livré : rifim-hand.png, fond transparent.
+Le composant de marque utilise une version blanche par filtre CSS en mode sombre.
+
+Use case: background-extraction. Edit the supplied contact sheet to extract ONLY the logo numbered 20, the stylized navy-blue hand with a terracotta wrist at the bottom-right. This is the user's SELECTED logo and must remain faithful to that exact design. Remove all other nine emblems and every number including 20. Isolate the selected hand, retain its exact silhouette, orientation, segmented carpal and finger shapes and terracotta wrist. Place it large and optically centered on a square genuinely TRANSPARENT canvas, with a small even 6% transparent safety margin. Preserve the original flat navy and terracotta colors, no gradients, no drop shadow, no outline or background rectangle, no new lettering, no redesign, no additional fingers or details. Clean smooth crisp anti-aliased edges. Deliver a transparent PNG suited for a website logo.

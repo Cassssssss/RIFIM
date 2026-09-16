@@ -1,22 +1,16 @@
+import { control, iconControl, primaryControl, quietControl, tagStyle } from '../components/shared/designSystem';
+import { pageLayout, pageTitle } from '../components/shared/designSystem';
 import styled from 'styled-components';
 import shouldForwardProp from '@styled-system/should-forward-prop';
 
 export const PageContainer = styled.div`
-  background-color: ${props => props.theme.background};
-  min-height: calc(100vh - 60px);
-  padding: 2rem;
-
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
+  ${pageLayout}
 `;
 
 
 export const Title = styled.h1`
-  color: ${props => props.theme.text};
-  text-align: center;
-  font-size: 2rem;
-  margin-bottom: 2rem;
+  ${pageTitle}
+  margin-bottom: 1.75rem;
 `;
 
 export const SearchInput = styled.input`
@@ -32,7 +26,7 @@ export const SectionContainer = styled.div`
   margin-bottom: 2rem;
   padding: 1.5rem;
   background-color: ${props => props.theme.surface};
-  border-radius: 8px;
+  border-radius: ${props => props.theme.radii.md};
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   border: 1px solid ${props => props.theme.border};
 `;
@@ -58,23 +52,7 @@ export const Input = styled.input`
 `;
 
 export const Button = styled.button`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  border-radius: 5px;
-  padding: 10px 20px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: ${props => props.theme.secondary};
-  }
-
-  &:disabled {
-    background-color: ${props => props.theme.disabled};
-    cursor: not-allowed;
-  }
+  ${primaryControl}
 `;
 
 export const Select = styled.select`
@@ -90,7 +68,7 @@ export const FolderContainer = styled.div`
   margin-bottom: 1.5rem;
   padding: 1rem;
   background-color: ${props => props.theme.background};
-  border-radius: 8px;
+  border-radius: ${props => props.theme.radii.md};
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   border: 1px solid ${props => props.theme.border};
 `;
@@ -103,11 +81,7 @@ export const FolderHeader = styled.div`
 `;
 
 export const MainImageButton = styled(Button)`
-  background-color: ${props => props.theme.secondary};
-  
-  &:hover {
-    background-color: ${props => props.theme.secondaryHover};
-  }
+  ${control}
 `;
 
 export const FolderTitle = styled.h3`
@@ -132,21 +106,7 @@ export const FolderActions = styled.div`
 `;
 
 export const UploadButton = styled.label`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 15px;
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-bottom: 10px;
-  font-size: 0.9rem;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: ${props => props.theme.secondary};
-  }
+  ${control}
 `;
 
 export const FileInput = styled.input`
@@ -184,7 +144,7 @@ export const RemoveImageButton = styled.button`
   top: 5px;
   right: 5px;
   background-color: rgba(255, 0, 0, 0.7);
-  color: white;
+  color: ${props => props.theme.buttonText};
   border: none;
   border-radius: 50%;
   width: 20px;
@@ -224,14 +184,14 @@ export const FoldersSection = styled.div`
 
 export const CaseCard = styled.div`
   background-color: ${props => props.theme.surface};
-  border-radius: 8px;
+  border-radius: ${props => props.theme.radii.md};
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
 
   &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    transform: none;
+    box-shadow: none;
   }
 `;
 
@@ -243,21 +203,28 @@ export const CaseImage = styled.img`
 
 export const CaseTitle = styled.h2`
   color: ${props => props.theme.text};
-  text-align: center;
-  padding: 1rem;
-  font-size: 1.1rem;
+  text-align: left;
+  padding: 0.85rem 0 0;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
 `;
 
 export const CaseActions = styled.div`
   display: flex;
-  justify-content: space-around;
-  padding: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.65rem 0 0;
+  margin-top: 0.65rem;
+  border-top: 1px solid ${props => props.theme.borderLight};
 `;
 
 export const GalleryContainer = styled.div`
   margin-bottom: 1.5rem;
   border: 1px solid ${props => props.theme.border};
-  border-radius: 8px;
+  border-radius: ${props => props.theme.radii.md};
   overflow: hidden;
 `;
 
@@ -292,7 +259,7 @@ export const DeleteButton = styled.button`
   top: 5px;
   right: 5px;
   background-color: rgba(255, 0, 0, 0.7);
-  color: white;
+  color: ${props => props.theme.buttonText};
   border: none;
   border-radius: 50%;
   width: 20px;
@@ -344,7 +311,7 @@ export const CloseButton = styled.button`
   top: 20px;
   right: 20px;
   background-color: transparent;
-  color: white;
+  color: ${props => props.theme.buttonText};
   border: none;
   font-size: 24px;
   cursor: pointer;
@@ -356,7 +323,7 @@ export const NavigationButton = styled.button`
   top: 50%;
   transform: translateY(-50%);
   background-color: rgba(255, 255, 255, 0.3);
-  color: white;
+  color: ${props => props.theme.buttonText};
   border: none;
   cursor: pointer;
   padding: 10px;
@@ -413,24 +380,14 @@ export const TagsContainer = styled.div`
 `;
 
 export const Tag = styled.span`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  display: flex;
-  align-items: center;
+  ${tagStyle}
 `;
 
 export const RemoveTagButton = styled.button`
-  background: none;
-  border: none;
-  color: white;
-  margin-left: 0.25rem;
-  cursor: pointer;
+  ${quietControl}
   padding: 0;
-  display: flex;
-  align-items: center;
+  min-height: 24px;
+  width: 24px;
 `;
 
 export const AddTagForm = styled.form`
@@ -446,15 +403,8 @@ export const TagInput = styled.input`
 `;
 
 export const AddTagButton = styled.button`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0.25rem;
-  margin-left: 0.25rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
+  ${control}
+  ${iconControl}
 `;
 
 export const MainImageLabel = styled.div`
@@ -462,7 +412,7 @@ export const MainImageLabel = styled.div`
   top: 5px;
   left: 5px;
   background-color: rgba(0, 0, 0, 0.7);
-  color: white;
+  color: ${props => props.theme.buttonText};
   padding: 2px 5px;
   font-size: 10px;
   border-radius: 3px;
@@ -484,7 +434,7 @@ export const PaginationContainer = styled.div`
   margin-top: 2rem;
   padding: 1rem;
   background-color: ${props => props.theme.surface};
-  border-radius: 8px;
+  border-radius: ${props => props.theme.radii.md};
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 `;
 

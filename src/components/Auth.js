@@ -2,42 +2,84 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import axios from '../utils/axiosConfig';
+import RifimLogo from './shared/Logo';
+import { FileText, FolderOpen, Activity } from 'lucide-react';
+
+const Introduction = styled.section`
+  color: ${props => props.theme.text};
+  h2 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: clamp(2.5rem, 4.5vw, 4rem);
+    font-weight: 400;
+    line-height: 1.12;
+    letter-spacing: -0.045em;
+    margin: 2.5rem 0 1.5rem;
+  }
+  > p { max-width: 360px; color: ${props => props.theme.textSecondary}; }
+  @media (max-width: 800px) {
+    h2 { font-size: 2.3rem; margin: 1.5rem 0 1rem; }
+  }
+`;
+const AuthBrand = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+`;
+const Resources = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 2rem;
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.7rem;
+    border: 1px solid ${props => props.theme.border};
+    border-radius: 999px;
+    font-size: 0.75rem;
+    color: ${props => props.theme.textSecondary};
+  }
+  svg { width: 14px; height: 14px; }
+`;
 
 const AuthWrapper = styled.div`
   min-height: 100vh;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.9fr);
   align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, ${props => props.theme.background} 0%, ${props => props.theme.backgroundSecondary} 100%);
-  padding: 2rem;
+  gap: clamp(2rem, 6vw, 7rem);
+  max-width: 1200px;
+  margin: auto;
+  padding: clamp(1.5rem, 5vw, 5rem);
+  @media (max-width: 800px) {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    max-width: 520px;
+  }
+
 `;
 
 const AuthContainer = styled.div`
-  max-width: 400px;
   width: 100%;
-  padding: 2rem;
+  padding: clamp(1.5rem, 3vw, 2.75rem);
   background: ${props => props.theme.card};
   border-radius: ${props => props.theme.radii.xl};
-  box-shadow: ${props => props.theme.shadows.cardHover};
+  box-shadow: ${props => props.theme.shadows.card};
   border: 1px solid ${props => props.theme.border};
+
 `;
 
 const AuthHeader = styled.div`
-  text-align: center;
+  text-align: left;
   margin-bottom: 2rem;
 `;
 
-const AuthTitle = styled.h1`
-  font-size: 2rem;
-  color: ${props => props.theme.primary};
-  margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-`;
 
-const AuthSubtitle = styled.h2`
+const AuthSubtitle = styled.h1`
   font-size: 1.5rem;
   color: ${props => props.theme.text};
   margin-bottom: 0.5rem;
@@ -71,9 +113,9 @@ const InputLabel = styled.label`
 const Input = styled.input`
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 2px solid ${props => props.theme.border};
+  border: 1px solid ${props => props.theme.border};
   border-radius: ${props => props.theme.radii.button};
-  background-color: ${props => props.theme.backgroundSecondary};
+  background-color: ${props => props.theme.card};
   color: ${props => props.theme.text};
   font-size: 1rem;
   transition: all 0.3s ease;
@@ -223,10 +265,10 @@ const handleSubmit = async (e) => {
       setTimeout(() => navigate('/'), 1500);
     }
   } catch (error) {
-    console.error('Erreur:', error.response ? error.response.data : error.message);
     setError(
-      error.response?.data?.message || 
-      'Une erreur est survenue. Veuillez réessayer.'
+      !error.response
+        ? 'Le serveur de connexion est injoignable. Veuillez réessayer lorsque la connexion au serveur est rétablie.'
+        : error.response.data?.message || 'Une erreur est survenue. Veuillez réessayer.'
     );
   } finally {
     setLoading(false);
@@ -243,11 +285,18 @@ const handleSubmit = async (e) => {
 
   return (
     <AuthWrapper>
+      <Introduction>
+        <AuthBrand><RifimLogo /> RIFIM</AuthBrand>
+        <h2>Le savoir se construit.<br />Et se partage.</h2>
+        <p>Un espace pour vos questionnaires, vos cas cliniques et vos protocoles d’imagerie.</p>
+        <Resources>
+          <span><FileText /> Questionnaires</span>
+          <span><FolderOpen /> Cas cliniques</span>
+          <span><Activity /> Protocoles</span>
+        </Resources>
+      </Introduction>
       <AuthContainer>
         <AuthHeader>
-          <AuthTitle>
-            RIFIM
-          </AuthTitle>
           <AuthSubtitle>
             {isLogin ? 'Connexion' : 'Inscription'}
           </AuthSubtitle>
@@ -273,8 +322,10 @@ const handleSubmit = async (e) => {
 
         <AuthForm onSubmit={handleSubmit}>
           <InputGroup>
-            <InputLabel>Nom d'utilisateur</InputLabel>
+            <InputLabel htmlFor="auth-username">Nom d'utilisateur</InputLabel>
             <Input
+              id="auth-username"
+              autoComplete="username"
               type="text"
               placeholder="Votre nom d'utilisateur"
               value={username}
@@ -285,8 +336,10 @@ const handleSubmit = async (e) => {
           </InputGroup>
 
           <InputGroup>
-            <InputLabel>Mot de passe</InputLabel>
+            <InputLabel htmlFor="auth-password">Mot de passe</InputLabel>
             <Input
+              id="auth-password"
+              autoComplete={isLogin ? "current-password" : "new-password"}
               type="password"
               placeholder="Votre mot de passe"
               value={password}

@@ -1,3 +1,4 @@
+import { pageTitle } from './shared/designSystem';
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
@@ -9,19 +10,20 @@ const SheetContainer = styled.div`
   padding: 20px;
   background-color: ${props => props.theme.card};
   color: ${props => props.theme.text};
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  border-radius: 8px;
+  box-shadow: ${props => props.theme.shadows.card};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: ${props => props.theme.radii.card};
 `;
 
 const SheetTitle = styled.h1`
-  color: ${props => props.theme.primary};
-  text-align: center;
-  margin-bottom: 20px;
-  font-weight: bold;
+  ${pageTitle}
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+  border-bottom: 1px solid ${props => props.theme.border};
 `;
 
 const SheetContent = styled.div`
-  font-family: Arial, sans-serif;
+  font-family: inherit;
   line-height: 1.6;
 
   h1, h2, h3, h4, h5, h6 {

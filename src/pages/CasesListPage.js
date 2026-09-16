@@ -1,3 +1,4 @@
+import DifficultyRating from '../components/shared/DifficultyRating';
 // CasesListPage.js - VERSION AVEC UNIFIED FILTER SYSTEM ROBUSTE ET ICÔNES CERVEAUX
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from '../utils/axiosConfig';
@@ -19,7 +20,6 @@ import {
   UnifiedCaseImage,
   UnifiedCaseContent,
   UnifiedCaseTitle,
-  UnifiedStarRating,
   UnifiedTagsContainer,
   UnifiedTag,
   UnifiedPaginationContainer,
@@ -38,7 +38,7 @@ function CaseCardComponent({ cas, showSpoilers }) {
     if (cas.folders && cas.folders[0] && cas.folderMainImages && cas.folderMainImages[cas.folders[0]]) {
       return cas.folderMainImages[cas.folders[0]];
     }
-    return '/images/default.jpg';
+    return '/images/case-placeholder.svg';
   };
 
   return (
@@ -48,7 +48,7 @@ function CaseCardComponent({ cas, showSpoilers }) {
         alt={cas.title || 'Cas médical'}
         loading="lazy"
         onError={(e) => {
-          e.target.src = '/images/default.jpg';
+          e.target.src = '/images/case-placeholder.svg';
         }}
       />
       <UnifiedCaseContent>
@@ -56,20 +56,7 @@ function CaseCardComponent({ cas, showSpoilers }) {
           {showSpoilers ? (cas.answer || cas.title || 'Cas sans titre') : '?'}
         </UnifiedCaseTitle>
         
-        <UnifiedStarRating>
-          {[...Array(5)].map((_, index) => (
-            <span
-              key={index}
-              style={{ 
-                fontSize: '22px',
-                opacity: index < (cas.difficulty || 0) ? 1 : 0.3,
-                filter: index < (cas.difficulty || 0) ? 'drop-shadow(0 1px 2px rgba(245, 158, 11, 0.3))' : 'none'
-              }}
-            >
-              🧠
-            </span>
-          ))}
-        </UnifiedStarRating>
+        <DifficultyRating value={cas.difficulty || 0} />
         
         {cas.tags && cas.tags.length > 0 && (
           <UnifiedTagsContainer>
@@ -212,7 +199,7 @@ function CasesListPage() {
   return (
     <UnifiedPageContainer>
       <PageHeader>
-        <UnifiedPageTitle>Mes Cas Cliniques</UnifiedPageTitle>
+        <UnifiedPageTitle>Mes cas cliniques</UnifiedPageTitle>
         <PageSubtitle>
           Gérez et consultez vos cas cliniques personnels
         </PageSubtitle>

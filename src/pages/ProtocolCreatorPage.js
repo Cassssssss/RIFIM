@@ -1,3 +1,5 @@
+import { control, dangerControl, iconControl, primaryControl } from '../components/shared/designSystem';
+import { pageHeading, pageLayout, pageTitle } from '../components/shared/designSystem';
 // ProtocolCreatorPage.js - VERSION CORRIGÉE AVEC SAUVEGARDE AMÉLIORÉE
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -19,27 +21,15 @@ import ErrorMessage from '../components/ErrorMessage';
 // ==================== STYLED COMPONENTS ====================
 
 const PageContainer = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-  background-color: ${props => props.theme.background};
-  min-height: 100vh;
+  ${pageLayout}
 `;
 
 const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-  gap: 1rem;
+  ${pageHeading}
 `;
 
 const PageTitle = styled.h1`
-  color: ${props => props.theme.text};
-  font-size: 2rem;
-  font-weight: 700;
-  margin: 0;
+  ${pageTitle}
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -52,45 +42,24 @@ const ActionButtons = styled.div`
 `;
 
 const ActionButton = styled.button`
-  background-color: ${props => props.className === 'primary' ? props.theme.primary : 'transparent'};
-  color: ${props => props.className === 'primary' ? 'white' : props.theme.text};
-  border: 2px solid ${props => props.className === 'primary' ? props.theme.primary : props.theme.border};
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: ${props => props.className === 'primary' ? 
-      props.theme.primaryHover : props.theme.cardHover};
-    border-color: ${props => props.theme.primary};
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  ${props => props.className === 'primary' ? primaryControl : control}
 `;
 
 const FormContainer = styled.div`
   background-color: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.border};
-  border-radius: 12px;
+  border-radius: ${props => props.theme.radii.card};
   padding: 2rem;
-  box-shadow: 0 4px 12px ${props => props.theme.shadow};
+  box-shadow: ${props => props.theme.shadows.card};
 `;
 
 const SectionTitle = styled.h2`
   color: ${props => props.theme.text};
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: 600;
   margin: 0 0 1.5rem 0;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid ${props => props.theme.primary};
+  border-bottom: 1px solid ${props => props.theme.border};
 `;
 
 const FormGrid = styled.div`
@@ -176,7 +145,7 @@ const CheckboxContainer = styled.div`
   gap: 0.75rem;
   padding: 1rem;
   background-color: ${props => props.theme.backgroundSecondary};
-  border-radius: 8px;
+  border-radius: ${props => props.theme.radii.md};
   border: 1px solid ${props => props.theme.border};
 `;
 
@@ -195,7 +164,7 @@ const CheckboxLabel = styled.label`
 const SequenceContainer = styled.div`
   background-color: ${props => props.theme.backgroundSecondary};
   border: 1px solid ${props => props.theme.border};
-  border-radius: 8px;
+  border-radius: ${props => props.theme.radii.md};
   padding: 1.5rem;
   margin-bottom: 1rem;
 `;
@@ -215,23 +184,7 @@ const SequenceTitle = styled.h3`
 `;
 
 const AddButton = styled.button`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  padding: 1rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: ${props => props.theme.primaryHover};
-    transform: translateY(-1px);
-  }
+  ${control}
 `;
 
 const ListContainer = styled.div`
@@ -265,19 +218,8 @@ const ListInput = styled.input`
 `;
 
 const RemoveItemButton = styled.button`
-  background-color: ${props => props.theme.error};
-  color: white;
-  border: none;
-  padding: 0.25rem;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &:hover {
-    background-color: ${props => props.theme.errorHover || props.theme.error};
-  }
+  ${dangerControl}
+  ${iconControl}
 `;
 
 const StatusToggle = styled.div`
@@ -286,7 +228,7 @@ const StatusToggle = styled.div`
   gap: 0.75rem;
   padding: 1rem;
   background-color: ${props => props.theme.backgroundSecondary};
-  border-radius: 8px;
+  border-radius: ${props => props.theme.radii.md};
   border: 1px solid ${props => props.theme.border};
   margin-top: 1rem;
 `;
@@ -308,7 +250,7 @@ const ToggleSwitch = styled.button`
     left: ${props => props.isActive ? '26px' : '2px'};
     width: 21px;
     height: 21px;
-    background-color: white;
+    background-color: ${props => props.theme.buttonText};
     border-radius: 50%;
     transition: all 0.2s ease;
   }
@@ -636,7 +578,7 @@ function ProtocolCreatorPage() {
     <PageContainer>
       <Header>
         <PageTitle>
-          📋 {isEditing ? 'Modifier le Protocole' : 'Créer un Nouveau Protocole'}
+          {isEditing ? 'Modifier le protocole' : 'Créer un protocole'}
         </PageTitle>
         
         <ActionButtons>
@@ -663,7 +605,7 @@ function ProtocolCreatorPage() {
       <FormContainer>
         {/* Informations générales - PLUS DE CHAMPS OBLIGATOIRES */}
         <SectionTitle>
-          📋 Informations Générales
+          Informations générales
         </SectionTitle>
         
         <FormGrid>
@@ -727,7 +669,7 @@ function ProtocolCreatorPage() {
 
         {/* Paramètres d'acquisition */}
         <SectionTitle>
-          🔬 Paramètres d'Acquisition
+          Paramètres d’acquisition
         </SectionTitle>
         
         <FormGrid>
@@ -822,7 +764,7 @@ function ProtocolCreatorPage() {
 
         {/* Séquences */}
         <SectionTitle>
-          📷 Séquences d'Acquisition
+          Séquences d’acquisition
         </SectionTitle>
         
         {formData.sequences.map((sequence, index) => (
@@ -877,7 +819,7 @@ function ProtocolCreatorPage() {
             {/* Paramètres techniques IRM */}
             <div style={{ marginTop: '1.5rem' }}>
               <h4 style={{ color: '#4f5b93', marginBottom: '1rem', fontWeight: '600' }}>
-                ⚙️ Paramètres Techniques
+                Paramètres techniques
               </h4>
               <FormGrid>
                 <FormGroup>
@@ -1012,7 +954,7 @@ function ProtocolCreatorPage() {
 
         {/* Contre-indications */}
         <SectionTitle>
-          ⚠️ Contre-indications
+          Contre-indications
         </SectionTitle>
         
         <ListContainer>
@@ -1038,7 +980,7 @@ function ProtocolCreatorPage() {
 
         {/* Avantages */}
         <SectionTitle>
-          ✅ Avantages
+          Avantages
         </SectionTitle>
         
         <ListContainer>
@@ -1064,7 +1006,7 @@ function ProtocolCreatorPage() {
 
         {/* Limitations */}
         <SectionTitle>
-          ⚡ Limitations
+          Limitations
         </SectionTitle>
         
         <ListContainer>
@@ -1090,7 +1032,7 @@ function ProtocolCreatorPage() {
 
         {/* Statut de publication */}
         <SectionTitle>
-          📊 Statut et Publication
+          Statut et publication
         </SectionTitle>
         
         <FormGrid>

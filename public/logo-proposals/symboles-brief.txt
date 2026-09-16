@@ -1,0 +1,20 @@
+RIFIM — Exploration de symboles de marque
+Outil : générateur d’images intégré (image_gen), mode natif.
+Livrable : planche d’exploration raster. Aucune vectorisation automatique ni intégration au logo du site.
+
+Use case: logo-brand.
+Create ONE finished presentation sheet of TEN different original logo SYMBOL concepts for RIFIM, a French radiology and musculoskeletal imaging application. The user rejected previous sheets that were mostly font variations or crudely drawn anatomy. These must be memorable, professionally resolved BRAND EMBLEMS, capable of identifying the product without a wordmark. This is a creative exploration sheet, not a functional icon library.
+Layout: landscape white canvas, exactly 5 equal columns by 2 equal rows, generous whitespace. Each logo large and optically centered in its cell. No boxes, no heading, no captions, no RIFIM text, no letters used as symbols. Only a tiny neutral gray number below each emblem, numbered 01 through 10 left to right.
+Ten distinct visual ideas, distinctly different silhouettes and visual construction:
+01 a bold sculptural knee joint seen in profile, using sophisticated negative space within one compact oval emblem, dark navy and a small burnt orange accent.
+02 a round radiology gantry with a precisely integrated patient table, an elegant geometric blue symbol with a clever single continuous negative space.
+03 an abstract vertebral column integrated into an organic S curve, a confident monochrome burgundy brand mark, NOT a row of separate rectangles.
+04 a refined shoulder ball-and-socket emblem created from interlocking sculpted curves, charcoal and warm copper, premium clinical brand identity.
+05 a clean angular three-dimensional imaging slice represented in absolutely flat overlapping planes, cobalt and lighter blue solid colors, a compact architectural emblem.
+06 a bold hip joint silhouette artfully integrated into a rounded square via white negative space, deep navy, anatomically evocative and instantly legible, not a stick figure.
+07 a circular emblem where two complementary opposing contours evoke femoral condyles and joint space, terracotta and ink, strong rotational balance.
+08 a distinctive abstract tendon ribbon wrapping around a joint, one fluid continuous line with balanced thick and thin curves, dark purple, no infinity symbol.
+09 an angular medical imaging aperture with a bone cross-section in its negative space, monochrome graphite, tight precise silhouette, avoid generic camera shutter cliche.
+10 a striking simplified hand/carpal arrangement transformed into a cohesive fan-shaped emblem with five connected rays and a solid central base, deep blue with a single muted gold accent, no literal detailed anatomical illustration.
+Style: highest quality contemporary professional identity design, deliberate optical corrections, masterful use of negative space, clear forms, smooth vector-like edges, clean silhouettes, compact and balanced. Each concept must be meaningfully different, not repeated variations. Think polished identity sketches that could be vectorized, not stock medical icons.
+Avoid: typography experiments, words, monograms, shields containing letters, generic medical plus signs, red crosses, caduceus, hearts, ECG, green, gradients, drop shadows, glow, bevels, 3D renders, textures, clipart, emojis, strange humanoids, anatomical detail, decorative mockups, tiny intricate lines. Pure flat colors on white.

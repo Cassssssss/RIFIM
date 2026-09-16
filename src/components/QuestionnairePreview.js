@@ -1,3 +1,4 @@
+import { control } from './shared/designSystem';
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -36,41 +37,21 @@ const FormatButton = styled.button`
 `;
 
 const PreviewWrapper = styled.div`
+  width: 100%;
+  min-width: 0;
   max-width: 100%;
-  overflow-x: hidden;
-  
-  @media (max-width: 768px) {
-    padding: 0.5rem;
-  }
 `;
 
 // Boutons de navigation des pages avec support mode sombre
 const PageNavigationButton = styled.button`
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  
-  ${props => props.isActive ? `
-    background-color: ${props.theme.primary || '#3b82f6'};
-    color: white;
-    border: 2px solid ${props.theme.primary || '#3b82f6'};
-    box-shadow: 0 4px 12px ${props.theme.shadow || 'rgba(0,0,0,0.1)'};
-  ` : `
-    background-color: ${props.theme.card || '#ffffff'};
-    color: ${props.theme.text || '#374151'};
-    border: 2px solid ${props.theme.border || '#d1d5db'};
-    box-shadow: 0 2px 4px ${props.theme.shadow || 'rgba(0,0,0,0.05)'};
-    
-    &:hover {
-      background-color: ${props.theme.backgroundSecondary || '#f3f4f6'};
-      border-color: ${props.theme.primary || '#3b82f6'};
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px ${props.theme.shadow || 'rgba(0,0,0,0.1)'};
-    }
-  `}
+  ${control}
+  background: ${props => props.isActive ? props.theme.primary : props.theme.card};
+  border-color: ${props => props.isActive ? props.theme.primary : props.theme.border};
+  color: ${props => props.isActive ? props.theme.buttonText : props.theme.textSecondary};
+  &:hover:not(:disabled) {
+    background: ${props => props.isActive ? props.theme.primaryHover : props.theme.hover};
+    color: ${props => props.isActive ? props.theme.buttonText : props.theme.text};
+  }
 `;
 
 const PageTitleInput = styled.input`
@@ -134,95 +115,91 @@ const NumberInput = styled.input`
 
 // Card principale d'une question - Style médical moderne avec support mode sombre
 const ModernQuestionCard = styled.div`
-  background: ${props => props.theme.card || "#f7fafd"};
-  border-radius: 16px;
-  box-shadow: 0 1px 12px rgba(20, 50, 80, 0.08);
-  border: 1px solid ${props => props.theme.border || "#e0e6ed"};
-  margin-bottom: 1.5rem;
-  padding: 0;
-  transition: box-shadow 0.2s;
+  background: ${props => props.theme.card};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 10px;
+  margin-bottom: 0.85rem;
   overflow: hidden;
-  
-  &:hover {
-    box-shadow: 0 4px 24px rgba(20,50,80,0.11);
-    border-color: ${props => props.theme.primary || "#005A9C"};
-  }
 `;
 
 // Header d'une question - Style professionnel avec support mode sombre
 const ModernQuestionHeader = styled.div`
-  font-weight: 600;
-  font-size: 1.17rem;
-  padding: 1.2rem;
-  color: ${props => props.theme.primary || "#005A9C"};
   display: flex;
   align-items: center;
-  gap: 0.7rem;
-  background: ${props => {
-    if (props.theme.background === '#1a202c') {
-      // Mode sombre
-      const depth = props.depth || 0;
-      const colors = ['#2d3748', '#4a5568', '#718096', '#a0aec0'];
-      return colors[Math.min(depth, colors.length - 1)];
-    } else {
-      // Mode clair
-      const depth = props.depth || 0;
-      const colors = ['#ffffff', '#fafafa', '#f5f5f5', '#f0f0f0'];
-      return colors[Math.min(depth, colors.length - 1)];
-    }
-  }};
-  border-bottom: 1px solid ${props => props.theme.border || "#e0e6ed"};
+  gap: 0.5rem;
+  padding: 0.6rem 0.8rem;
+  min-height: 42px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: ${props => props.theme.text};
+  background: ${props => props.depth % 2 ? props.theme.cardSecondary : props.theme.card};
+  border-bottom: 1px solid ${props => props.theme.borderLight};
+  svg { width: 15px; height: 15px; }
+  button { display: inline-flex; align-items: center; justify-content: center; color: inherit; }
+  @media (pointer: coarse) { min-height: 44px; }
 `;
 
 // Contenu de la question avec support mode sombre
 const ModernQuestionContent = styled.div`
-  padding: 1.2rem;
-  background-color: ${props => props.theme.card || '#ffffff'};
+  padding: 0.75rem;
+  background: ${props => props.theme.card};
 `;
 
 // Options avec style médical clair - CORRIGÉ POUR MODE SOMBRE !
 const ModernOptionCard = styled.label`
   display: flex;
   align-items: center;
-  background: ${props => props.theme.card || '#fff'};
-  border: 1.5px solid ${props => props.checked ? 
-    (props.theme.primary || "#005A9C") : (props.theme.border || "#e0e6ed")};
-  border-radius: 12px;
-  padding: 0.9rem 1.2rem;
-  margin-bottom: 0.7rem;
+  gap: 0.55rem;
+  min-height: 38px;
+  padding: 0.4rem 0.65rem;
+  margin-bottom: 0.4rem;
+  border: 1px solid ${props => props.checked ? props.theme.primary : props.theme.border};
+  border-radius: 7px;
+  background: ${props => props.checked ? props.theme.primary + '0a' : props.theme.card};
+  color: ${props => props.theme.text};
   cursor: pointer;
-  font-size: 1.08rem;
-  box-shadow: ${props => props.checked ? 
-    `0 2px 6px ${props.theme.primary || "#005A9C"}25` : `0 1px 3px ${props.theme.shadow || "rgba(0,0,0,0.05)"}`};
-  transition: all 0.17s ease;
-  
-  &:hover {
-    border-color: ${props => props.theme.primary || "#005A9C"};
-    box-shadow: 0 3px 12px ${props => props.theme.primary || "#005A9C"}25;
-    background-color: ${props => props.theme.backgroundSecondary || props.theme.hover || "#fafbfc"};
+  font-size: 0.85rem;
+  line-height: 1.45;
+  transition: border-color 150ms ease, background-color 150ms ease;
+  &:hover { border-color: ${props => props.theme.primary}; background: ${props => props.theme.hover}; }
+  &:focus-within { outline: 2px solid ${props => props.theme.primary}; outline-offset: 2px; }
+  input[type='radio'], input[type='checkbox'] {
+    width: 14px;
+    height: 14px;
+    min-width: 14px;
+    min-height: 14px;
+    margin: 0;
+    padding: 0;
+    appearance: auto;
+    border: initial;
+    border-radius: initial;
+    background: initial;
+    box-shadow: none;
+    flex-shrink: 0;
+    accent-color: ${props => props.theme.primary};
+    transform: none;
   }
-  
-  input {
-    margin-right: 0.9rem;
-    accent-color: ${props => props.theme.primary || "#005A9C"};
-    transform: scale(1.2);
-  }
-  
-  /* Texte de l'option */
   .option-text {
-    flex-grow: 1;
-    color: ${props => props.theme.text || "#424242"};
-    font-weight: ${props => props.checked ? "500" : "400"};
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-weight: ${props => props.checked ? '500' : '400'};
   }
-  
-  /* Conteneur des actions à droite */
   .option-actions {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.4rem;
     margin-left: auto;
-    padding-left: 1rem;
+    padding-left: 0.35rem;
+    max-width: 55%;
+    svg { width: 15px; height: 15px; }
+    label { gap: 0.35rem; }
+    label span { font-size: 0.7rem; color: ${props => props.theme.textSecondary}; }
   }
+  @media (pointer: coarse) { min-height: 44px; }
 `;
 
 // Conteneur pour les champs CR avec support mode sombre
@@ -438,6 +415,8 @@ const QuestionPreview = ({
             )}
             
             <button
+              aria-label={isExpanded ? `Replier ${question.text}` : `Déplier ${question.text}`}
+              aria-expanded={isExpanded}
               onClick={() => setIsExpanded(!isExpanded)}
               style={{
                 padding: '0.25rem',

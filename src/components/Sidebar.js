@@ -107,9 +107,9 @@ const Brand = styled(Link)`
   border-radius: ${(p) => p.theme.radii.md};
   color: ${(p) => p.theme.text};
   font-family: ${(p) => p.theme.fonts.heading};
-  font-size: 1.15rem;
+  font-size: 1.35rem;
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.05em;
   text-decoration: none;
 
   svg {
@@ -159,12 +159,12 @@ const RailNav = styled.nav`
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 0.75rem 0.6rem 1rem;
+  padding: 1.25rem 0.8rem 1rem;
 `;
 
 const Section = styled.div`
   & + & {
-    margin-top: 0.85rem;
+    margin-top: 1.15rem;
   }
 `;
 
@@ -174,7 +174,7 @@ const SectionLabel = styled.div`
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: ${(p) => p.theme.textLight};
+  color: ${(p) => p.theme.textSecondary};
   white-space: nowrap;
   overflow: hidden;
 
@@ -228,21 +228,14 @@ const Item = styled(NavLink)`
 
   /* NavLink v6 pose « active » tout seul sur la route courante. */
   &.active {
-    background: ${(p) => p.theme.primary};
-    color: ${(p) => p.theme.buttonText};
+    background: ${(p) => p.theme.primary}12;
+    color: ${(p) => p.theme.primary};
     font-weight: 600;
-    box-shadow: ${(p) => p.theme.shadows.button};
+    box-shadow: inset 2px 0 0 ${(p) => p.theme.primary};
   }
+  &.active svg, &.active:hover svg { color: ${(p) => p.theme.primary}; }
+  &.active:hover { background: ${(p) => p.theme.primary}1c; }
 
-  &.active svg,
-  &.active:hover svg {
-    color: ${(p) => p.theme.buttonText};
-  }
-
-  &.active:hover {
-    background: ${(p) => p.theme.primaryHover};
-    color: ${(p) => p.theme.buttonText};
-  }
 `;
 
 const ItemLabel = styled.span`
@@ -478,7 +471,7 @@ function Sidebar({ isDarkMode, toggleDarkMode, userName, user, onLogout }) {
 
       <Scrim $open={open} onClick={() => setOpen(false)} />
 
-      <Rail $collapsed={folded} $open={open} aria-label="Navigation principale">
+      <Rail $collapsed={folded} $open={open} inert={narrow && !open ? "" : undefined} aria-label="Navigation principale">
         <RailHead $collapsed={folded}>
           <Brand to="/" $collapsed={folded} title={folded ? 'RIFIM — accueil' : undefined}>
             <RifimLogo />

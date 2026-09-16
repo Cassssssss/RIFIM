@@ -1,3 +1,5 @@
+import { control, dangerControl, iconControl, quietControl, tagStyle, variantControl } from './designSystem';
+import { pageHeading, pageLayout, pageTitle } from './designSystem';
 // src/components/shared/SharedComponents.js
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
@@ -5,20 +7,7 @@ import { Link } from 'react-router-dom';
 // ==================== CONTENEURS PARTAGÉS ====================
 
 export const PageContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  background-color: ${props => props.theme.background};
-  min-height: calc(100vh - 60px);
-  padding: 1rem 2rem; /* 🔧 OPTIMISATION : Padding horizontal pour utiliser plus d'espace */
-  width: 100%; /* 🔧 OPTIMISATION : Pleine largeur */
-  max-width: 100vw; /* 🔧 OPTIMISATION : Utilise toute la largeur viewport */
-  box-sizing: border-box;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    padding: 1rem;
-    gap: 1rem;
-  }
+  ${pageLayout}
 `;
 
 export const FilterSection = styled.div`
@@ -26,7 +15,7 @@ export const FilterSection = styled.div`
   margin-right: 2rem;
   background-color: ${props => props.theme.card};
   padding: 1.5rem;
-  border-radius: 12px;
+  border-radius: ${props => props.theme.radii.card};
   box-shadow: 0 4px 20px ${props => props.theme.shadow};
   border: 1px solid ${props => props.theme.border};
   height: fit-content;
@@ -57,23 +46,7 @@ export const FilterDropdown = styled.div`
 `;
 
 export const DropdownButton = styled.button`
-  width: 100%;
-  padding: 0.75rem;
-  background-color: ${props => props.theme.background};
-  border: 2px solid ${props => props.theme.border};
-  border-radius: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  color: ${props => props.theme.text};
-  font-weight: 500;
-  transition: all 0.2s ease;
-
-  &:hover {
-    border-color: ${props => props.theme.primary};
-    background-color: ${props => props.theme.hover};
-  }
+  ${control}
 `;
 
 export const DropdownContent = styled.div`
@@ -88,7 +61,7 @@ export const DropdownContent = styled.div`
   border-top: none;
   border-radius: 0 0 8px 8px;
   z-index: 10;
-  box-shadow: 0 4px 12px ${props => props.theme.shadow};
+  box-shadow: ${props => props.theme.shadows.card};
 `;
 
 export const DropdownOption = styled.label`
@@ -147,14 +120,8 @@ export const FilterIndicator = styled.div`
 
 export const ListContainer = styled.div`
   flex: 1;
-  width: 100%; /* 🔧 OPTIMISATION : Utilise toute la largeur disponible */
-  max-width: 100%; /* 🔧 OPTIMISATION : Pas de restriction de largeur */
-  padding: 0 1rem; /* 🔧 OPTIMISATION : Petit padding latéral */
-
-  @media (max-width: 768px) {
-    max-width: 100%;
-    padding: 0;
-  }
+  min-width: 0;
+  width: 100%;
 `;
 
 // Les actions principales se lisent sur une ligne, à gauche, comme dans
@@ -173,41 +140,16 @@ export const TopActionsContainer = styled.div`
 // Titre + sous-titre à gauche, actions à droite, séparés du contenu par un
 // filet. Remplace les grands titres centrés qui mangeaient un demi-écran.
 export const PageHead = styled.header`
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid ${props => props.theme.borderLight || props.theme.border};
+  ${pageHeading}
 `;
 
 export const PageHeadText = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.5rem;
   min-width: 0;
-
-  h1 {
-    font-size: 1.8rem;
-    font-weight: 700;
-    line-height: 1.2;
-    margin: 0;
-    color: ${props => props.theme.text};
-  }
-
-  p {
-    font-size: 0.95rem;
-    margin: 0;
-    color: ${props => props.theme.textSecondary};
-  }
-
-  @media (max-width: 768px) {
-    h1 {
-      font-size: 1.45rem;
-    }
-  }
+  h1 { ${pageTitle} }
+  p { font-size: 0.95rem; margin: 0; color: ${props => props.theme.textSecondary}; }
 `;
 
 // Barre d'outils : recherche + filtres sur une seule ligne, alignés à gauche.
@@ -280,7 +222,8 @@ export const QuestionnairesGrid = styled.div`
 
   /* 🔧 MODIFICATION PRINCIPALE : Optimisation pour mobile avec 2 colonnes compactes */
   @media (max-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    @media (max-width: 480px) { grid-template-columns: 1fr; }
     gap: 0.75rem;
     margin-bottom: 1rem;
     padding: 0;
@@ -320,7 +263,8 @@ export const CasesList = styled.div`
 
   /* 🔧 MODIFICATION PRINCIPALE : Optimisation pour mobile avec 2 colonnes compactes */
   @media (max-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    @media (max-width: 480px) { grid-template-columns: 1fr; }
     gap: 0.75rem;
     margin-bottom: 1rem;
     padding: 0;
@@ -330,47 +274,17 @@ export const CasesList = styled.div`
 // ==================== CARTES UNIFIÉES ====================
 
 export const QuestionnaireCard = styled.div`
-  background-color: ${props => props.theme.card};
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.border};
   border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 12px ${props => props.theme.shadow};
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
+  padding: 1.25rem;
+  transition: border-color 150ms ease;
+  &:hover { border-color: ${props => props.theme.textLight}; }
+  @media (max-width: 768px) { padding: 1rem; }
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  }
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px ${props => props.theme.shadow};
-    border-color: ${props => props.theme.primary};
-  }
-
-  /* 🔧 MODIFICATION : Optimisation mobile compacte */
-  @media (max-width: 768px) {
-    padding: 0.75rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px ${props => props.theme.shadow};
-    
-    &:hover {
-      transform: none;
-      box-shadow: 0 2px 8px ${props => props.theme.shadow};
-      border-color: ${props => props.theme.border};
-    }
-
-    &::before {
-      height: 3px;
-    }
-  }
 `;
 
 // ==================== COMPOSANTS CARTE CAS PARTAGÉS ====================
@@ -378,7 +292,7 @@ export const QuestionnaireCard = styled.div`
 export const CaseCard = styled(Link)`
   display: block;
   background-color: ${props => props.theme.surface || props.theme.card};
-  border-radius: 12px;
+  border-radius: ${props => props.theme.radii.card};
   overflow: hidden;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px ${props => props.theme.shadow};
@@ -475,10 +389,10 @@ export const StarRating = styled.div`
 `;
 
 export const PopularityBadge = styled.span`
-  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-  color: white;
+  background: ${props => props.theme.secondary};
+  color: ${props => props.theme.buttonText};
   padding: 0.25rem 0.5rem;
-  border-radius: 12px;
+  border-radius: ${props => props.theme.radii.card};
   font-size: 0.7rem;
   font-weight: 600;
   display: flex;
@@ -585,44 +499,7 @@ export const ActionsContainer = styled.div`
 `;
 
 export const CopyActionButton = styled.button`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.8rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: ${props => props.theme.primaryDark || props.theme.secondary};
-    transform: translateY(-1px);
-  }
-
-  svg {
-    width: 14px;
-    height: 14px;
-  }
-
-  /* 🔧 MODIFICATION : Bouton plus compact sur mobile */
-  @media (max-width: 768px) {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.7rem;
-    border-radius: 4px;
-    
-    &:hover {
-      transform: none;
-    }
-    
-    svg {
-      width: 12px !important;
-      height: 12px !important;
-    }
-  }
+  ${quietControl}
 `;
 
 export const RatingSection = styled.div`
@@ -655,7 +532,7 @@ export const FilterContainer = styled.div`
 
 export const FilterButton = styled.button`
   background-color: ${props => props.active ? props.theme.primary : props.theme.backgroundSecondary || props.theme.background};
-  color: ${props => props.active ? 'white' : props.theme.text};
+  color: ${props => props.active ? props.theme.buttonText : props.theme.text};
   border: 1px solid ${props => props.active ? props.theme.primary : props.theme.border};
   padding: 0.5rem 1rem;
   border-radius: 6px;
@@ -665,13 +542,13 @@ export const FilterButton = styled.button`
 
   &:hover {
     background-color: ${props => props.theme.primary};
-    color: white;
+    color: ${props => props.theme.buttonText};
   }
 `;
 
 export const SpoilerButton = styled.button`
   background-color: ${props => props.active ? props.theme.secondary : props.theme.disabled};
-  color: white;
+  color: ${props => props.theme.buttonText};
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 6px;
@@ -702,183 +579,83 @@ export const CardHeader = styled.div`
 `;
 
 export const QuestionnaireTitle = styled.h3`
-  color: ${props => props.theme.text};
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin: 0;
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  line-height: 1.4;
-
-  /* 🔧 MODIFICATION : Titre plus compact sur mobile */
-  @media (max-width: 768px) {
-    font-size: 0.9rem;
-    line-height: 1.3;
-    gap: 0.5rem;
-  }
+  align-items: flex-start;
+  gap: 0.65rem;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+  margin: 0;
+  color: ${props => props.theme.text};
+  overflow-wrap: anywhere;
 `;
 
 export const QuestionnaireIcon = styled.span`
-  font-size: 1.5rem;
-  flex-shrink: 0;
-
-  /* 🔧 MODIFICATION : Icône plus petite sur mobile */
-  @media (max-width: 768px) {
-    font-size: 1.2rem;
-  }
+  display: inline-flex;
+  color: ${props => props.theme.textLight};
+  flex: 0 0 auto;
+  svg { width: 19px; height: 19px; stroke-width: 1.6; }
 `;
 
 export const CardMeta = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background-color: ${props => props.theme.backgroundSecondary};
-  border-radius: 8px;
-  border: 1px solid ${props => props.theme.border};
-
-  /* 🔧 MODIFICATION : Meta plus compact sur mobile */
-  @media (max-width: 768px) {
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-    padding: 0.5rem;
-    border-radius: 6px;
-    flex-direction: column;
-  }
+  gap: 0.55rem 0.9rem;
+  margin: 0.8rem 0 1rem;
+  padding: 0;
+  background: transparent;
+  border: 0;
 `;
 
 export const MetaItem = styled.div`
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
   color: ${props => props.theme.textSecondary};
-  font-size: 0.85rem;
-  font-weight: 500;
-
-  svg {
-    color: ${props => props.theme.primary};
-    flex-shrink: 0;
-  }
-
-  /* 🔧 MODIFICATION : Meta item plus compact sur mobile */
-  @media (max-width: 768px) {
-    font-size: 0.75rem;
-    gap: 0.375rem;
-    
-    svg {
-      width: 12px !important;
-      height: 12px !important;
-    }
-  }
+  font-size: 0.75rem;
+  line-height: 1.5;
+  svg { width: 14px; height: 14px; flex-shrink: 0; stroke-width: 1.6; }
 `;
 
 // ==================== TAGS UNIFIÉS ====================
 
 export const TagsSection = styled.div`
-  margin: 1rem 0;
-
-  /* 🔧 MODIFICATION : Section tags plus compacte sur mobile */
-  @media (max-width: 768px) {
-    margin: 0.5rem 0;
-  }
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0 1rem;
 `;
 
 export const TagsContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-  justify-content: center;
-
-  /* 🔧 MODIFICATION : Tags plus compacts sur mobile */
-  @media (max-width: 768px) {
-    gap: 0.25rem;
-    margin-bottom: 0.375rem;
-  }
+  gap: 0.35rem;
+  align-items: center;
 `;
 
 export const Tag = styled.span`
-  background: linear-gradient(135deg, ${props => props.theme.primary}20, ${props => props.theme.secondary}20);
-  color: ${props => props.theme.primary};
-  border: 1px solid ${props => props.theme.primary}30;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-
-  /* 🔧 MODIFICATION : Tag plus petit sur mobile */
-  @media (max-width: 768px) {
-    font-size: 0.65rem;
-    padding: 0.2rem 0.5rem;
-    border-radius: 8px;
-    
-    svg {
-      width: 10px !important;
-      height: 10px !important;
-    }
-  }
+  ${tagStyle}
 `;
 
 export const RemoveTagButton = styled.button`
-  background: none;
-  border: none;
-  color: white;
-  cursor: pointer;
+  ${quietControl}
   padding: 0;
-  display: flex;
-  align-items: center;
-  
-  &:hover {
-    opacity: 0.7;
-  }
+  min-height: 20px;
+  width: 20px;
+  @media (pointer: coarse) { min-height: 32px; width: 32px; }
 `;
 
 export const AddTagSection = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-
-  /* 🔧 MODIFICATION : Section ajout tag plus compacte sur mobile */
-  @media (max-width: 768px) {
-    gap: 0.25rem;
-    margin-top: 0.375rem;
-    justify-content: center;
-  }
+  gap: 0.35rem;
 `;
 
 export const AddTagButton = styled.button`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0.25rem 0.5rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.75rem;
-  
-  &:hover {
-    background-color: ${props => props.theme.secondary};
-  }
-
-  /* 🔧 MODIFICATION : Bouton ajout tag plus compact sur mobile */
-  @media (max-width: 768px) {
-    font-size: 0.65rem;
-    padding: 0.2rem 0.4rem;
-    border-radius: 3px;
-    
-    svg {
-      width: 10px !important;
-      height: 10px !important;
-    }
-  }
+  ${quietControl}
+  font-size: 0.72rem;
+  padding: 0.25rem 0.35rem;
 `;
 
 export const TagInput = styled.input`
@@ -909,55 +686,13 @@ export const TagForm = styled.form`
 `;
 
 export const SubmitTagButton = styled.button`
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0.25rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  
-  &:hover {
-    background-color: ${props => props.theme.secondary};
-  }
-
-  /* 🔧 MODIFICATION : Bouton submit tag plus compact sur mobile */
-  @media (max-width: 768px) {
-    padding: 0.2rem;
-    border-radius: 3px;
-    
-    svg {
-      width: 10px !important;
-      height: 10px !important;
-    }
-  }
+  ${control}
+  ${iconControl}
 `;
 
 export const CancelTagButton = styled.button`
-  background-color: ${props => props.theme.disabled};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0.25rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-
-  &:hover {
-    background-color: ${props => props.theme.textSecondary};
-  }
-
-  /* 🔧 MODIFICATION : Bouton cancel tag plus compact sur mobile */
-  @media (max-width: 768px) {
-    padding: 0.2rem;
-    border-radius: 3px;
-    
-    svg {
-      width: 10px !important;
-      height: 10px !important;
-    }
-  }
+  ${quietControl}
+  ${iconControl}
 `;
 
 // ==================== BOUTONS UNIFIÉS ====================
@@ -965,221 +700,35 @@ export const CancelTagButton = styled.button`
 export const ActionButtons = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1rem;
-
-  /* 🔧 MODIFICATION : Boutons d'action plus compacts sur mobile */
-  @media (max-width: 768px) {
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-    justify-content: center;
-  }
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid ${props => props.theme.borderLight};
 `;
 
 export const ActionButton = styled(Link)`
-  background-color: ${props => {
-    switch(props.variant) {
-      case 'primary': return props.theme.primary;
-      case 'secondary': return props.theme.backgroundSecondary;
-      case 'danger': return '#ef4444';
-      default: return props.theme.primary;
-    }
-  }};
-  color: ${props => {
-    switch(props.variant) {
-      case 'secondary': return props.theme.text;
-      default: return 'white';
-    }
-  }};
-  padding: ${props => props.size === 'large' ? '0.75rem 1.5rem' : '0.5rem 1rem'};
-  border: 1px solid ${props => {
-    switch(props.variant) {
-      case 'secondary': return props.theme.border;
-      default: return 'transparent';
-    }
-  }};
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 500;
-  font-size: ${props => props.size === 'large' ? '0.95rem' : '0.85rem'};
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px ${props => props.theme.shadow};
-    opacity: 0.9;
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  /* 🔧 MODIFICATION : Boutons action plus compacts sur mobile */
-  @media (max-width: 768px) {
-    padding: ${props => props.size === 'large' ? '0.5rem 1rem' : '0.375rem 0.75rem'};
-    font-size: ${props => props.size === 'large' ? '0.8rem' : '0.7rem'};
-    border-radius: 6px;
-    gap: 0.375rem;
-    
-    &:hover {
-      transform: none;
-      box-shadow: none;
-    }
-    
-    svg {
-      width: 14px !important;
-      height: 14px !important;
-    }
-  }
+  ${variantControl}
 `;
 
 export const Button = styled.button`
-  background-color: ${props => {
-    switch(props.variant) {
-      case 'primary': return props.theme.primary;
-      case 'secondary': return props.theme.backgroundSecondary;
-      case 'danger': return '#ef4444';
-      default: return props.theme.primary;
-    }
-  }};
-  color: ${props => {
-    switch(props.variant) {
-      case 'secondary': return props.theme.text;
-      default: return 'white';
-    }
-  }};
-  padding: ${props => props.variant === 'danger' ? '0.25rem 0.5rem' : '0.5rem 1rem'};
-  border: 1px solid ${props => {
-    switch(props.variant) {
-      case 'secondary': return props.theme.border;
-      default: return 'transparent';
-    }
-  }};
-  border-radius: 8px;
-  font-weight: 500;
-  font-size: ${props => props.variant === 'danger' ? '0.75rem' : '0.85rem'};
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px ${props => props.theme.shadow};
-    opacity: 0.9;
-  }
-
-  svg {
-    width: ${props => props.variant === 'danger' ? '12px' : '16px'};
-    height: ${props => props.variant === 'danger' ? '12px' : '16px'};
-  }
-
-  /* 🔧 MODIFICATION : Boutons plus compacts sur mobile */
-  @media (max-width: 768px) {
-    padding: ${props => props.variant === 'danger' ? '0.2rem 0.4rem' : '0.375rem 0.75rem'};
-    font-size: ${props => props.variant === 'danger' ? '0.65rem' : '0.7rem'};
-    border-radius: 6px;
-    gap: 0.375rem;
-    
-    &:hover {
-      transform: none;
-      box-shadow: none;
-    }
-    
-    svg {
-      width: ${props => props.variant === 'danger' ? '10px' : '14px'} !important;
-      height: ${props => props.variant === 'danger' ? '10px' : '14px'} !important;
-    }
-  }
+  ${variantControl}
 `;
 
 export const DeleteButton = styled.button`
-  background: linear-gradient(135deg, #E57373 0%, #D85858 100%);
-  color: white;
-  padding: 0.5rem;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  width: 40px;
-  height: 40px;
-  box-shadow: 0 2px 6px rgba(229, 115, 115, 0.25);
-
-  &:hover {
-    background: linear-gradient(135deg, #F48383 0%, #E57373 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(229, 115, 115, 0.3);
-  }
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
-
-  /* 🔧 MODIFICATION : Bouton supprimer plus compact sur mobile */
-  @media (max-width: 768px) {
-    width: 32px;
-    height: 32px;
-    padding: 0.375rem;
-    border-radius: 6px;
-    
-    &:hover {
-      transform: none;
-      box-shadow: none;
-    }
-    
-    svg {
-      width: 14px !important;
-      height: 14px !important;
-    }
-  }
+  ${dangerControl}
+  ${iconControl}
 `;
 
 export const TutorialButton = styled.button`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-  text-align: center;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
-  }
-
-  /* 🔧 MODIFICATION : Bouton tutoriel plus compact sur mobile */
-  @media (max-width: 768px) {
-    padding: 0.5rem 1rem;
-    font-size: 0.8rem;
-    border-radius: 8px;
-
-    &:hover {
-      transform: none;
-      box-shadow: 0 2px 8px ${props => props.theme.shadowMedium};
-    }
-  }
+  ${control}
 `;
 
 export const VideoContainer = styled.div`
   margin-top: 2rem;
   padding: 1.5rem;
   background-color: ${props => props.theme.card};
-  border-radius: 12px;
+  border-radius: ${props => props.theme.radii.card};
   border: 1px solid ${props => props.theme.border};
 
   h3 {

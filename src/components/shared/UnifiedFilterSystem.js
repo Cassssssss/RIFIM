@@ -1,8 +1,9 @@
+import { control } from './designSystem';
 // components/shared/UnifiedFilterSystem.js - COMPOSANT DE FILTRES AVEC PORTAL
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
-import { ChevronDown, Eye, EyeOff } from 'lucide-react';
+import { ChevronDown, Eye, EyeOff, SlidersHorizontal, MapPin, Activity, Layers } from 'lucide-react';
 
 // ==================== STYLES ROBUSTES ====================
 
@@ -16,13 +17,15 @@ const FilterSystemContainer = styled.div`
   overflow: visible;
 
   @media (max-width: 768px) {
-    flex-direction: column;
+    flex-direction: row;
+    align-items: stretch;
     width: 100%;
     gap: 0.5rem;
   }
 `;
 
 const FilterWrapper = styled.div`
+  @media (max-width: 768px) { flex: 1 1 100px; min-width: 0; }
   position: relative;
   display: flex;
   flex-direction: column;
@@ -31,59 +34,16 @@ const FilterWrapper = styled.div`
 `;
 
 const FilterButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.6rem 0.8rem;
-  background-color: ${props => props.active ? props.theme.primary : props.theme.backgroundSecondary};
-  color: ${props => props.active ? 'white' : props.theme.text};
-  border: 2px solid ${props => props.active ? props.theme.primary : props.theme.border};
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  min-width: 100px;
-  max-width: 150px;
+  ${control}
   justify-content: space-between;
-  position: relative;
-  z-index: 1;
+  min-width: 100px;
+  color: ${props => props.$active ? props.theme.primary : props.theme.textSecondary};
+  border-color: ${props => props.$active ? props.theme.primary : props.theme.border};
+  &.open { border-color: ${props => props.theme.primary}; }
+  &.open > svg:last-child { transform: rotate(180deg); }
+  span { display: inline-flex; align-items: center; gap: 0.4rem; }
+  @media (max-width: 768px) { width: 100%; min-width: 0; }
 
-  &:hover {
-    border-color: ${props => props.theme.primary};
-    background-color: ${props => props.active ? props.theme.primaryDark : props.theme.card};
-  }
-
-  &.open {
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    border-bottom-color: transparent;
-    background-color: ${props => props.theme.card};
-    color: ${props => props.theme.text};
-  }
-
-  svg {
-    transition: transform 0.2s ease;
-    width: 14px;
-    height: 14px;
-    flex-shrink: 0;
-  }
-
-  &.open svg {
-    transform: rotate(180deg);
-  }
-
-  span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  @media (max-width: 768px) {
-    width: 100%;
-    min-width: auto;
-    max-width: none;
-  }
 `;
 
 const DropdownOption = styled.label`
@@ -135,35 +95,8 @@ const DropdownOption = styled.label`
 `;
 
 const SpoilerButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.6rem 0.8rem;
-  background-color: ${props => props.active ? props.theme.secondary : props.theme.backgroundSecondary};
-  color: ${props => props.active ? 'white' : props.theme.text};
-  border: 2px solid ${props => props.active ? props.theme.secondary : props.theme.border};
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-
-  &:hover {
-    border-color: ${props => props.theme.secondary};
-    background-color: ${props => props.active ? props.theme.secondaryDark : props.theme.card};
-  }
-
-  svg {
-    width: 14px;
-    height: 14px;
-    flex-shrink: 0;
-  }
-
-  @media (max-width: 768px) {
-    padding: 0.6rem 0.8rem;
-    font-size: 0.8rem;
-  }
+  ${control}
+  color: ${props => props.$active ? props.theme.primary : props.theme.textSecondary};
 `;
 
 // ==================== PORTAL STYLES ====================
@@ -185,8 +118,8 @@ const PortalOverlay = styled.div`
 const PortalDropdownContainer = styled.div`
   position: fixed;
   background-color: ${props => props.theme.card};
-  border: 2px solid ${props => props.theme.primary};
-  border-radius: 6px;
+  border: 1px solid ${props => props.theme.primary};
+  border-radius: ${props => props.theme.radii.button};
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   max-height: 250px;
   overflow-y: auto;
@@ -360,18 +293,20 @@ function FilterDropdown({
   onToggle,
   filterRef
 }) {
+  const FilterIcon = { '📊': SlidersHorizontal, '🏥': Activity, '📍': MapPin, '🔧': Layers }[icon];
   return (
     <FilterWrapper ref={filterRef}>
       <FilterButton
         className={isOpen ? 'open' : ''}
-        active={selectedValues.length > 0}
+        $active={selectedValues.length > 0}
+        aria-expanded={isOpen}
         onClick={(e) => {
           e.stopPropagation();
           onToggle();
         }}
       >
         <span>
-          {icon} {title} {selectedValues.length > 0 && `(${selectedValues.length})`}
+          {FilterIcon ? <FilterIcon aria-hidden="true" /> : icon} {title} {selectedValues.length > 0 && `(${selectedValues.length})`}
         </span>
         <ChevronDown />
       </FilterButton>
@@ -462,7 +397,7 @@ function UnifiedFilterSystem({
       
       {showSpoilerButton && (
         <SpoilerButton 
-          active={spoilerState}
+          $active={spoilerState}
           onClick={onSpoilerToggle}
         >
           {spoilerState ? <EyeOff size={16} /> : <Eye size={16} />}

@@ -1,3 +1,5 @@
+import { control, primaryControl, quietControl } from '../components/shared/designSystem';
+import { pageHeading, pageLayout, pageTitle } from '../components/shared/designSystem';
 // ProtocolsPersonalPage.js - VERSION PLEINE LARGEUR
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -8,31 +10,11 @@ import { Plus, Search, Filter, Edit, Copy, Trash2, Eye, EyeOff, Clock, FileText,
 // ==================== STYLED COMPONENTS PLEINE LARGEUR ====================
 
 const PageContainer = styled.div`
-  background-color: ${props => props.theme.background};
-  min-height: calc(100vh - 60px);
-  padding: 2rem;
-  width: 100%;
-  box-sizing: border-box;
-
-  @media (max-width: 1200px) {
-    padding: 1.5rem;
-  }
-
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
+  ${pageLayout}
 `;
 
 const Header = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 2rem;
-  gap: 1rem;
-
-  @media (max-width: 768px) {
-    align-items: stretch;
-  }
+  ${pageHeading}
 `;
 
 const HeaderActions = styled.div`
@@ -46,54 +28,19 @@ const HeaderActions = styled.div`
 `;
 
 const Title = styled.h1`
-  font-size: 2.5rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin: 0;
-  text-align: center;  /* Toujours centré */
-  width: 100%;  /* Prend toute la largeur */
-
-  @media (max-width: 768px) {
-    font-size: 1.8rem;
-  }
+  ${pageTitle}
 `;
 
 const CreateButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1rem 2rem;
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px ${props => props.theme.primary}40;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px ${props => props.theme.primary}60;
-  }
-
-  @media (max-width: 768px) {
-    width: 100%;
-    justify-content: center;
-  }
+  ${primaryControl}
 `;
 
 // Section des filtres centrée
 const FiltersSection = styled.div`
-  max-width: 1200px;
-  margin: 0 auto 2rem auto;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
 `;
 
 const SearchBar = styled.div`
@@ -105,7 +52,7 @@ const SearchInput = styled.input`
   width: 100%;
   padding: 1rem 1rem 1rem 3rem;
   border: 2px solid ${props => props.theme.border};
-  border-radius: 12px;
+  border-radius: ${props => props.theme.radii.card};
   font-size: 1rem;
   background-color: ${props => props.theme.card};
   color: ${props => props.theme.text};
@@ -136,7 +83,7 @@ const FilterContainer = styled.div`
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: flex-start;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -144,107 +91,38 @@ const FilterContainer = styled.div`
 `;
 
 const FilterSelect = styled.select`
-  padding: 0.75rem 1rem;
-  border: 2px solid ${props => props.theme.border};
-  border-radius: 8px;
-  background-color: ${props => props.theme.card};
-  color: ${props => props.theme.text};
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 200px;
-
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.primary};
-  }
-
-  @media (max-width: 768px) {
-    width: 100%;
-  }
+  ${control}
+  min-width: 160px;
 `;
 
 // Grille personnalisée pleine largeur
 const ProtocolsGrid = styled.div`
   display: grid;
-  width: 100%;
-  gap: 1rem;
-  margin: 2rem 0;
-  padding: 0;
-
-  /* Configuration responsive des colonnes */
-  @media (min-width: 2560px) {
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1.2rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+  @media (min-width: 769px) {
+    ${props => props.$columns ? `grid-template-columns: repeat(${props.$columns}, minmax(0, 1fr));` : ''}
   }
-
-  @media (min-width: 1920px) and (max-width: 2559px) {
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 1.1rem;
-  }
-
-  @media (min-width: 1600px) and (max-width: 1919px) {
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 1rem;
-  }
-
-  @media (min-width: 1400px) and (max-width: 1599px) {
-    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-    gap: 1rem;
-  }
-
-  @media (min-width: 1200px) and (max-width: 1399px) {
-    grid-template-columns: repeat(auto-fill, minmax(370px, 1fr));
-    gap: 1rem;
-  }
-
-  @media (min-width: 1024px) and (max-width: 1199px) {
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 1rem;
-  }
-
-  @media (min-width: 768px) and (max-width: 1023px) {
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 0.9rem;
-  }
-
-  @media (max-width: 767px) {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-  }
-
-  /* Fallback général */
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-
-  /* Nombre de colonnes choisi par l'utilisateur (desktop uniquement). */
-  @media (min-width: 768px) {
-    ${props => props.$columns ? `grid-template-columns: repeat(${props.$columns}, 1fr);` : ''}
-  }
+  @media (max-width: 768px) { grid-template-columns: 1fr; }
 `;
 
 const ProtocolCard = styled.div`
+  min-width: 0;
+  container-type: inline-size;
   background-color: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.border};
-  border-radius: 12px;
+  border-radius: ${props => props.theme.radii.card};
   padding: 1.5rem;
   transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
   overflow: hidden;
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  }
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px ${props => props.theme.shadow};
+    transform: none;
+    box-shadow: none;
     border-color: ${props => props.theme.primary};
   }
 
@@ -262,6 +140,7 @@ const CardHeader = styled.div`
 `;
 
 const ProtocolTitle = styled.h3`
+  overflow-wrap: anywhere;
   font-size: 1.2rem;
   font-weight: 600;
   color: ${props => props.theme.text};
@@ -292,17 +171,17 @@ const StatusBadge = styled.span`
       case 'Validé':
         return `
           background-color: ${props.theme.success};
-          color: white;
+          color: ${props.theme.buttonText};
         `;
       case 'En révision':
         return `
           background-color: ${props.theme.warning};
-          color: white;
+          color: ${props.theme.buttonText};
         `;
       default:
         return `
           background-color: ${props.theme.textSecondary};
-          color: white;
+          color: ${props.theme.buttonText};
         `;
     }
   }}
@@ -317,7 +196,7 @@ const VisibilityBadge = styled.span`
   align-items: center;
   gap: 0.25rem;
   background-color: ${props => props.isPublic ? props.theme.primary : props.theme.textSecondary};
-  color: white;
+  color: ${props => props.theme.buttonText};
 
   svg {
     width: 12px;
@@ -326,17 +205,11 @@ const VisibilityBadge = styled.span`
 `;
 
 const CardMeta = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
   margin-bottom: 1rem;
-  padding: 1rem;
-  background-color: ${props => props.theme.backgroundSecondary || props.theme.background};
-  border-radius: 8px;
-
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
-  }
+  font-size: 0.75rem;
 `;
 
 const MetaItem = styled.div`
@@ -365,7 +238,8 @@ const ProtocolDescription = styled.p`
 `;
 
 const CardActions = styled.div`
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.5rem;
   justify-content: space-between;
   border-top: 1px solid ${props => props.theme.border};
@@ -373,53 +247,13 @@ const CardActions = styled.div`
 `;
 
 const ViewButton = styled.button`
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.6rem;
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: ${props => props.theme.primaryDark || props.theme.secondary};
-  }
+  ${primaryControl}
+  grid-column: 1 / -1;
 `;
 
 const ActionButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.6rem;
-  background-color: ${props => {
-    if (props.variant === 'danger') return '#ef4444';
-    if (props.variant === 'secondary') return props.theme.backgroundSecondary;
-    return props.theme.card;
-  }};
-  color: ${props => props.variant === 'danger' ? 'white' : props.theme.text};
-  border: 1px solid ${props => props.variant === 'danger' ? 'transparent' : props.theme.border};
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    transform: translateY(-1px);
-    background-color: ${props => {
-      if (props.variant === 'danger') return '#dc2626';
-      return props.theme.hover;
-    }};
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
+  ${quietControl}
+  color: ${props => props.variant === 'danger' ? props.theme.error : props.theme.textSecondary};
 `;
 
 const EmptyState = styled.div`
@@ -452,7 +286,7 @@ const ErrorContainer = styled.div`
   padding: 2rem;
   color: ${props => props.theme.error};
   background-color: ${props => props.theme.errorLight};
-  border-radius: 8px;
+  border-radius: ${props => props.theme.radii.md};
   border: 1px solid ${props => props.theme.error};
   max-width: 600px;
   margin: 2rem auto;
@@ -469,7 +303,7 @@ const PaginationContainer = styled.div`
 const PaginationButton = styled.button`
   padding: 0.75rem 1.5rem;
   background-color: ${props => props.isActive ? props.theme.primary : props.theme.card};
-  color: ${props => props.isActive ? 'white' : props.theme.text};
+  color: ${props => props.isActive ? props.theme.buttonText : props.theme.text};
   border: 1px solid ${props => props.theme.border};
   border-radius: 6px;
   cursor: pointer;
@@ -477,7 +311,7 @@ const PaginationButton = styled.button`
 
   &:hover:not(:disabled) {
     background-color: ${props => props.theme.primary};
-    color: white;
+    color: ${props => props.theme.buttonText};
   }
 
   &:disabled {
@@ -596,7 +430,7 @@ function ProtocolsPersonalPage() {
   return (
     <PageContainer>
       <Header>
-        <Title>📋 Mes Protocoles</Title>
+        <Title>Mes protocoles</Title>
         <HeaderActions>
           <CreateButton onClick={() => navigate('/protocols/create')}>
             <Plus size={20} />

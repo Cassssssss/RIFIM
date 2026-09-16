@@ -1,5 +1,6 @@
+import { pageHeading, pageTitle } from '../components/shared/designSystem';
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
 import {
@@ -33,14 +34,17 @@ const ContentWrapper = styled.div`
 // de gauche. Inutile de lui resservir un bandeau d'accueil pleine hauteur :
 // on l'accueille par son nom et on affiche ses chiffres sur la même ligne.
 const HeroSection = styled.div`
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  margin-bottom: 1.75rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid ${props => props.theme.borderLight || props.theme.border};
+  ${pageHeading}
+  padding-top: 0.75rem;
+`;
+
+const Eyebrow = styled.span`
+  color: ${props => props.theme.textSecondary};
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 0.65rem;
 `;
 
 const HeroText = styled.div`
@@ -51,15 +55,8 @@ const HeroText = styled.div`
 `;
 
 const Title = styled.h1`
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: ${props => props.theme.text};
-  margin: 0;
-  line-height: 1.2;
-
-  @media (max-width: 768px) {
-    font-size: 1.45rem;
-  }
+  ${pageTitle}
+  font-size: clamp(2rem, 3vw, 2.8rem);
 `;
 
 const Subtitle = styled.p`
@@ -72,32 +69,33 @@ const Subtitle = styled.p`
 // GRILLE PRINCIPALE
 const MainGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 2rem;
-  margin-bottom: 3rem;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-  }
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+  @media (max-width: 1150px) { grid-template-columns: 1fr; }
 `;
 
 // SECTION CATÉGORIE
 const CategorySection = styled.div`
+  position: relative;
+  min-width: 0;
   background: ${props => props.theme.card};
-  border-radius: 12px;
-  padding: 2rem;
   border: 1px solid ${props => props.theme.border};
-  transition: box-shadow 0.2s ease;
-
-  &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-radius: ${props => props.theme.radii.card};
+  padding: 1.5rem;
+  box-shadow: ${props => props.theme.shadows.card};
+  &::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 1.5rem;
+    width: 42px;
+    height: 3px;
+    border-radius: 4px;
+    background: ${props => props.$tone};
   }
+  @media (max-width: 768px) { padding: 1.1rem; }
 
-  @media (max-width: 768px) {
-    padding: 1.5rem;
-  }
 `;
 
 const CategoryHeader = styled.div`
@@ -126,20 +124,20 @@ const CategoryIcon = styled.div`
 `;
 
 const CategoryTitle = styled.h2`
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 600;
-  color: ${props => props.theme.text};
+  margin: 0;
   flex: 1;
-
-  @media (max-width: 768px) {
-    font-size: 1.25rem;
-  }
 `;
 
 const CategoryCount = styled.div`
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: ${props => props.theme.textSecondary};
-  font-weight: 500;
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 999px;
+  min-width: 28px;
+  text-align: center;
+  padding: 0.15rem 0.4rem;
 `;
 
 const CategoryActions = styled.div`
@@ -152,17 +150,13 @@ const ActionLink = styled(Link)`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem;
-  background: ${props => props.theme.background};
-  border-radius: 8px;
+  gap: 0.35rem;
+  padding: 0.85rem 0.5rem;
+  border-radius: ${props => props.theme.radii.md};
   text-decoration: none;
-  border: 1px solid ${props => props.theme.border};
-  transition: all 0.2s ease;
+  transition: background 160ms ease;
+  &:hover { background: ${props => props.theme.cardSecondary}; }
 
-  &:hover {
-    border-color: ${props => props.color};
-    transform: translateX(4px);
-  }
 `;
 
 const ActionContent = styled.div`
@@ -206,8 +200,8 @@ const ActionDescription = styled.div`
 
 const ActionArrow = styled.div`
   color: ${props => props.theme.textSecondary};
-  opacity: 0;
-  transform: translateX(-4px);
+  opacity: 0.5;
+  transform: translateX(0);
   transition: all 0.2s ease;
 
   ${ActionLink}:hover & {
@@ -257,7 +251,7 @@ const StatLabel = styled.span`
 // SECTION ACTIVITÉ RÉCENTE
 const RecentSection = styled.div`
   background: ${props => props.theme.card};
-  border-radius: 12px;
+  border-radius: ${props => props.theme.radii.card};
   padding: 2rem;
   border: 1px solid ${props => props.theme.border};
 
@@ -316,7 +310,10 @@ const RecentList = styled.div`
   gap: 0.75rem;
 `;
 
-const RecentItem = styled.div`
+const RecentItem = styled.button`
+  width: 100%;
+  text-align: left;
+  color: inherit;
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -384,6 +381,7 @@ const EmptyState = styled.div`
 `;
 
 function Home() {
+  const { categories } = useTheme();
   const navigate = useNavigate();
   // Même source que le rail de gauche, pour rester cohérent après un relogin.
   const userName = localStorage.getItem('username') || '';
@@ -461,7 +459,7 @@ function Home() {
               title: q.title || 'Sans titre',
               time: formatTimeAgo(q.updatedAt || q.createdAt),
               icon: <FileText />,
-              color: '#667eea',
+              color: categories.questionnaire,
               id: q._id
             });
           });
@@ -474,7 +472,7 @@ function Home() {
               title: c.title || 'Sans titre',
               time: formatTimeAgo(c.updatedAt || c.createdAt),
               icon: <FolderOpen />,
-              color: '#f093fb',
+              color: categories.cases,
               id: c._id
             });
           });
@@ -509,21 +507,21 @@ function Home() {
       title: 'Créer un questionnaire',
       description: 'Nouveau questionnaire',
       icon: <Plus />,
-      color: '#667eea'
+      color: categories.questionnaire
     },
     {
       to: '/questionnaires-list',
       title: 'Mes questionnaires',
       description: 'Gérer vos questionnaires',
       icon: <FileText />,
-      color: '#764ba2'
+      color: categories.questionnaire
     },
     {
       to: '/public-questionnaires',
       title: 'Questionnaires publics',
       description: 'Explorer la bibliothèque',
       icon: <Globe />,
-      color: '#667eea'
+      color: categories.questionnaire
     }
   ];
 
@@ -533,21 +531,21 @@ function Home() {
       title: 'Créer un cas',
       description: 'Nouveau cas DICOM',
       icon: <Plus />,
-      color: '#f093fb'
+      color: categories.cases
     },
     {
       to: '/cases-list',
       title: 'Mes cas',
       description: 'Votre bibliothèque',
       icon: <FolderOpen />,
-      color: '#f5576c'
+      color: categories.cases
     },
     {
       to: '/public-cases',
       title: 'Cas publics',
       description: 'Cas de la communauté',
       icon: <Users />,
-      color: '#f093fb'
+      color: categories.cases
     }
   ];
 
@@ -557,21 +555,21 @@ function Home() {
       title: 'Créer un protocole',
       description: 'Nouveau protocole',
       icon: <Plus />,
-      color: '#4facfe'
+      color: categories.protocol
     },
     {
       to: '/protocols/personal',
       title: 'Mes protocoles',
       description: 'Protocoles personnels',
       icon: <Activity />,
-      color: '#00f2fe'
+      color: categories.protocol
     },
     {
       to: '/protocols/public',
       title: 'Protocoles publics',
       description: 'Protocoles partagés',
       icon: <Globe />,
-      color: '#4facfe'
+      color: categories.protocol
     }
   ];
 
@@ -581,6 +579,7 @@ function Home() {
         {/* EN-TÊTE : accueil nominatif à gauche, chiffres clés à droite */}
         <HeroSection>
           <HeroText>
+            <Eyebrow>Votre espace de travail</Eyebrow>
             <Title>{userName ? `Bonjour ${userName}` : 'Bonjour'}</Title>
             <Subtitle>
               Vos questionnaires, cas cliniques et protocoles d'imagerie
@@ -589,15 +588,15 @@ function Home() {
 
           <StatsSection>
             <StatCard>
-              <StatValue color="#667eea">{stats.questionnaires}</StatValue>
+              <StatValue color={categories.questionnaire}>{stats.questionnaires}</StatValue>
               <StatLabel>Questionnaires</StatLabel>
             </StatCard>
             <StatCard>
-              <StatValue color="#f093fb">{stats.cases}</StatValue>
+              <StatValue color={categories.cases}>{stats.cases}</StatValue>
               <StatLabel>Cas cliniques</StatLabel>
             </StatCard>
             <StatCard>
-              <StatValue color="#4facfe">{stats.protocols}</StatValue>
+              <StatValue color={categories.protocol}>{stats.protocols}</StatValue>
               <StatLabel>Protocoles</StatLabel>
             </StatCard>
           </StatsSection>
@@ -606,9 +605,9 @@ function Home() {
         {/* GRILLE PRINCIPALE */}
         <MainGrid>
           {/* QUESTIONNAIRES */}
-          <CategorySection>
+          <CategorySection $tone={categories.questionnaire}>
             <CategoryHeader>
-              <CategoryIcon color="#667eea">
+              <CategoryIcon color={categories.questionnaire}>
                 <FileText />
               </CategoryIcon>
               <CategoryTitle>Questionnaires</CategoryTitle>
@@ -639,9 +638,9 @@ function Home() {
           </CategorySection>
 
           {/* CAS CLINIQUES */}
-          <CategorySection>
+          <CategorySection $tone={categories.cases}>
             <CategoryHeader>
-              <CategoryIcon color="#f093fb">
+              <CategoryIcon color={categories.cases}>
                 <FolderOpen />
               </CategoryIcon>
               <CategoryTitle>Cas Cliniques</CategoryTitle>
@@ -672,9 +671,9 @@ function Home() {
           </CategorySection>
 
           {/* PROTOCOLES */}
-          <CategorySection>
+          <CategorySection $tone={categories.protocol}>
             <CategoryHeader>
-              <CategoryIcon color="#4facfe">
+              <CategoryIcon color={categories.protocol}>
                 <Activity />
               </CategoryIcon>
               <CategoryTitle>Protocoles</CategoryTitle>
@@ -730,7 +729,7 @@ function Home() {
                     }
                   }}
                 >
-                  <RecentIcon color={activity.color}>
+                  <RecentIcon color={activity.type === 'case' ? categories.cases : categories.questionnaire}>
                     {activity.icon}
                   </RecentIcon>
                   <RecentInfo>
@@ -744,7 +743,8 @@ function Home() {
               ))
             ) : (
               <EmptyState>
-                Aucune activité récente
+                Votre prochain cas commence ici.
+                <p>Créez une ressource ou explorez celles de la communauté.</p>
               </EmptyState>
             )}
           </RecentList>

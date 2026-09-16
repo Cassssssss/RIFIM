@@ -1,3 +1,4 @@
+import { control, pageHeading, pageLayout, pageTitle, primaryControl } from '../components/shared/designSystem';
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
@@ -9,37 +10,15 @@ import ErrorMessage from '../components/ErrorMessage';
 // ==================== STYLED COMPONENTS ====================
 
 const PageContainer = styled.div`
-  padding: 2rem;
-  background-color: ${props => props.theme.background};
-  color: ${props => props.theme.text};
-  min-height: calc(100vh - 60px);
-
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
+  ${pageLayout}
 `;
 
 const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  gap: 1rem;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: stretch;
-  }
+  ${pageHeading}
 `;
 
 const PageTitle = styled.h1`
-  font-size: 2.5rem;
-  margin: 0;
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: 700;
+  ${pageTitle}
 `;
 
 const ActionButtons = styled.div`
@@ -53,34 +32,8 @@ const ActionButtons = styled.div`
 `;
 
 const ActionButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: 1px solid ${props => props.theme.border};
-  border-radius: 8px;
-  background-color: ${props => props.theme.card};
-  color: ${props => props.theme.text};
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-weight: 500;
-  text-decoration: none;
-
-  &:hover {
-    background-color: ${props => props.theme.backgroundSecondary};
-    transform: translateY(-1px);
-  }
-
-  &.primary {
-    background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-    color: white;
-    border: none;
-    
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px ${props => props.theme.primary}40;
-    }
-  }
+  ${control}
+  &.primary { ${primaryControl} }
 `;
 
 const ContentContainer = styled.div`
@@ -88,7 +41,7 @@ const ContentContainer = styled.div`
   border: 1px solid ${props => props.theme.border};
   border-radius: 16px;
   padding: 2rem;
-  box-shadow: 0 4px 20px ${props => props.theme.shadow};
+  box-shadow: ${props => props.theme.shadows.card};
 `;
 
 const MetaInfo = styled.div`
@@ -98,7 +51,7 @@ const MetaInfo = styled.div`
   margin-bottom: 2rem;
   padding: 1.5rem;
   background-color: ${props => props.theme.backgroundSecondary || '#f8fafc'};
-  border-radius: 12px;
+  border-radius: ${props => props.theme.radii.card};
 `;
 
 const MetaItem = styled.div`
@@ -137,12 +90,12 @@ const StatusBadge = styled.span`
       case 'Validé':
         return `
           background-color: ${props.theme.success};
-          color: white;
+          color: ${props.theme.buttonText};
         `;
       case 'En révision':
         return `
           background-color: ${props.theme.warning};
-          color: white;
+          color: ${props.theme.buttonText};
         `;
       default: // Brouillon
         return `
@@ -174,7 +127,7 @@ const Description = styled.p`
 const SequenceCard = styled.div`
   background-color: ${props => props.theme.backgroundSecondary || '#f8fafc'};
   border: 1px solid ${props => props.theme.border};
-  border-radius: 12px;
+  border-radius: ${props => props.theme.radii.card};
   padding: 1.5rem;
   margin-bottom: 1rem;
 `;
@@ -187,8 +140,8 @@ const SequenceHeader = styled.div`
 `;
 
 const SequenceNumber = styled.div`
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  color: white;
+  background: ${props => props.theme.primary};
+  color: ${props => props.theme.buttonText};
   width: 32px;
   height: 32px;
   border-radius: 50%;

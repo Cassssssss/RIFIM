@@ -1,3 +1,6 @@
+import DifficultyRating from '../components/shared/DifficultyRating';
+import { control, dangerControl, iconControl, primaryControl, quietControl, tagStyle } from '../components/shared/designSystem';
+import { pageLayout, pageTitle } from '../components/shared/designSystem';
 import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
@@ -20,24 +23,14 @@ const UPLOAD_BASE_URL = process.env.REACT_APP_UPLOAD_URL || 'http://localhost:50
 // ==================== STYLED COMPONENTS HARMONISÉS AVEC LE THÈME ====================
 
 const ModernPageContainer = styled(S.PageContainer)`
-  background: ${props => props.theme.background};  min-height: calc(100vh - 60px);
-  padding: 2rem;
-
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
+  ${pageLayout}
 `;
 
 const ModernTitle = styled(S.Title)`
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-size: 2.5rem;
-  font-weight: 700;
-  text-shadow: 0 2px 4px ${props => props.theme.shadow};
-  margin-bottom: 2rem;
-  text-align: center;
+  ${pageTitle}
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+  border-bottom: 1px solid ${props => props.theme.border};
 `;
 
 const ModernSectionContainer = styled(S.SectionContainer)`
@@ -45,20 +38,11 @@ const ModernSectionContainer = styled(S.SectionContainer)`
   overflow: hidden;
   background-color: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.border};
-  border-radius: 12px;
-  box-shadow: 0 4px 20px ${props => props.theme.shadow};
+  border-radius: ${props => props.theme.radii.card};
+  box-shadow: ${props => props.theme.shadows.card};
   margin-bottom: 2rem;
   padding: 1.5rem;
   
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  }
 `;
 
 const ModernInputGroup = styled(S.InputGroup)`
@@ -76,7 +60,7 @@ const ModernInputGroup = styled(S.InputGroup)`
 const ModernInput = styled(S.Input)`
   flex: 1;
   padding: 0.75rem 1rem;
-  border: 2px solid ${props => props.theme.border};
+  border: 1px solid ${props => props.theme.border};
   border-radius: 8px;
   font-size: 1rem;
   background-color: ${props => props.theme.inputBackground || props.theme.background};
@@ -98,7 +82,7 @@ const ModernTextarea = styled.textarea`
   width: 100%;
   min-height: 120px;
   padding: 0.75rem 1rem;
-  border: 2px solid ${props => props.theme.border};
+  border: 1px solid ${props => props.theme.border};
   border-radius: 8px;
   font-size: 1rem;
   background-color: ${props => props.theme.inputBackground || props.theme.background};
@@ -123,7 +107,7 @@ const ModernSelect = styled(S.Select)`
   width: 100%;
   padding: 0.75rem 1rem;
   margin-top: 1rem;
-  border: 2px solid ${props => props.theme.border};
+  border: 1px solid ${props => props.theme.border};
   border-radius: 8px;
   font-size: 1rem;
   background-color: ${props => props.theme.inputBackground || props.theme.background};
@@ -139,152 +123,23 @@ const ModernSelect = styled(S.Select)`
 
 // Boutons harmonisés avec le thème
 const PrimaryButton = styled.button`
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.primaryHover || props.theme.secondary});
-  color: ${props => props.theme.buttonText || 'white'};
-  border: none;
-  border-radius: 8px;
-  padding: 0.75rem 1.5rem;
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px ${props => props.theme.primary}30;
-
-  &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px ${props => props.theme.primary}40;
-  }
-
-  &:active:not(:disabled) {
-    transform: translateY(0);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-    background: ${props => props.theme.disabled || '#9ca3af'};
-    box-shadow: none;
-  }
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
+  ${primaryControl}
 `;
 
 const SecondaryButton = styled.button`
-  background-color: ${props => props.theme.buttonSecondary || props.theme.background};
-  color: ${props => props.theme.buttonSecondaryText || props.theme.text};
-  border: 2px solid ${props => props.theme.border};
-  border-radius: 8px;
-  padding: 0.75rem 1.5rem;
-  font-weight: 500;
-  font-size: 0.9rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.3s ease;
-
-  &:hover:not(:disabled) {
-    background-color: ${props => props.theme.hover};
-    border-color: ${props => props.theme.primary};
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px ${props => props.theme.shadow};
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
+  ${quietControl}
 `;
 
 const DangerButton = styled.button`
-  background: linear-gradient(135deg, ${props => props.theme.error || '#ef4444'}, ${props => props.theme.buttonDangerHover || '#dc2626'});
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 0.75rem 1.5rem;
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px ${props => props.theme.error || '#ef4444'}30;
-
-  &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px ${props => props.theme.error || '#ef4444'}40;
-  }
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
+  ${dangerControl}
 `;
 
 const UploadButtonStyled = styled.label`
-  background: linear-gradient(135deg, ${props => props.theme.secondary}, ${props => props.theme.secondaryHover || props.theme.primary});
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 0.75rem 1.5rem;
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px ${props => props.theme.secondary}30;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px ${props => props.theme.secondary}40;
-  }
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
+  ${control}
 `;
 
 const MainImageButtonStyled = styled.label`
-  background: linear-gradient(135deg, ${props => props.theme.accent || '#f59e0b'}, #d97706);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 0.75rem 1.5rem;
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px ${props => props.theme.accent || '#f59e0b'}30;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px ${props => props.theme.accent || '#f59e0b'}40;
-  }
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
+  ${control}
 `;
 
 const ModernFolderContainer = styled(S.FolderContainer)`
@@ -292,12 +147,12 @@ const ModernFolderContainer = styled(S.FolderContainer)`
   padding: 1.5rem;
   background-color: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.border};
-  border-radius: 12px;
+  border-radius: ${props => props.theme.radii.card};
   box-shadow: 0 2px 10px ${props => props.theme.shadow};
   transition: all 0.3s ease;
 
   &:hover {
-    box-shadow: 0 4px 20px ${props => props.theme.shadow};
+    box-shadow: ${props => props.theme.shadows.card};
     border-color: ${props => props.theme.primary}50;
   }
 `;
@@ -343,30 +198,18 @@ const ModernFolderActions = styled(S.FolderActions)`
 `;
 
 const ModernCaseCard = styled(S.CaseCard)`
-  position: relative;
-  overflow: hidden;
-  background-color: ${props => props.theme.card};
+  background: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.border};
   border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 15px ${props => props.theme.shadow};
-  transition: all 0.3s ease;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  }
+  padding: 1rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  overflow: hidden;
+  transition: border-color 150ms ease;
+  &:hover { border-color: ${props => props.theme.textLight}; }
+  > a { display: block; }
+  > a > img { border-radius: 7px; }
 
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 30px ${props => props.theme.shadow};
-    border-color: ${props => props.theme.primary}50;
-  }
 `;
 
 const ModernTagsContainer = styled(S.TagsContainer)`
@@ -377,69 +220,28 @@ const ModernTagsContainer = styled(S.TagsContainer)`
 `;
 
 const ModernTag = styled(S.Tag)`
-  background: linear-gradient(135deg, ${props => props.theme.tagBackground || props.theme.primary}, ${props => props.theme.primary});
-  color: ${props => props.theme.tagText || 'white'};
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  box-shadow: 0 1px 3px ${props => props.theme.shadow};
+  ${tagStyle}
 `;
 
 const ModernAddTagButton = styled(S.AddTagButton)`
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  color: white;
-  border: none;
-  border-radius: 20px;
-  padding: 0.25rem 0.75rem;
-  font-weight: 500;
-  font-size: 0.75rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 3px ${props => props.theme.shadow};
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px ${props => props.theme.shadow};
-  }
-
-  svg {
-    width: 12px;
-    height: 12px;
-  }
+  ${control}
+  ${iconControl}
 `;
 
 const TutorialButton = styled.button`
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  padding: 1rem 2rem;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 2rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid ${props => props.theme.border};
+  border-radius: ${props => props.theme.radii.button};
+  background: ${props => props.theme.card};
+  color: ${props => props.theme.text};
+  font-size: 0.9rem;
+  font-weight: 500;
+  &:hover { background: ${props => props.theme.hover}; border-color: ${props => props.theme.primary}; }
 
-  &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
-  }
-
-  &::before {
-    content: '🎓';
-    font-size: 1.2rem;
-  }
 `;
 
 const VideoContainer = styled.div`
@@ -447,7 +249,7 @@ const VideoContainer = styled.div`
   padding: 2rem;
   background-color: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.border};
-  border-radius: 12px;
+  border-radius: ${props => props.theme.radii.card};
   box-shadow: 0 4px 15px ${props => props.theme.shadow};
 
   h3 {
@@ -488,7 +290,7 @@ const ModernSearchInput = styled(S.SearchInput)`
   width: 100%;
   padding: 0.75rem 1rem;
   margin-bottom: 2rem;
-  border: 2px solid ${props => props.theme.border};
+  border: 1px solid ${props => props.theme.border};
   border-radius: 8px;
   font-size: 1rem;
   background-color: ${props => props.theme.inputBackground || props.theme.background};
@@ -643,7 +445,8 @@ const CaseCard = memo(({ cas, onUpdateDifficulty, onUpdateAnswer, onUpdateClinic
     <ModernCaseCard>
       <Link to={`/radiology-viewer/${cas._id}`}>
         <S.CaseImage 
-          src={cas.mainImage ? cas.mainImage : (cas.folders && cas.folders[0] && cas.folderMainImages && cas.folderMainImages[cas.folders[0]]) || '/images/default.jpg'}
+          src={cas.mainImage ? cas.mainImage : (cas.folders && cas.folders[0] && cas.folderMainImages && cas.folderMainImages[cas.folders[0]]) || '/images/case-placeholder.svg'}
+          onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/case-placeholder.svg'; }}
           alt={cas.title || 'Image sans titre'} 
         />
         <S.CaseTitle>{cas.title || 'Cas sans titre'}</S.CaseTitle>
@@ -717,7 +520,7 @@ const CaseCard = memo(({ cas, onUpdateDifficulty, onUpdateAnswer, onUpdateClinic
         {cas.tags && cas.tags.map(tag => (
           <ModernTag key={tag}>
             {tag}
-            <S.RemoveTagButton onClick={() => onRemoveTag(cas._id, tag)}>
+            <S.RemoveTagButton aria-label={`Supprimer le tag ${tag}`} onClick={() => onRemoveTag(cas._id, tag)}>
               <X size={12} />
             </S.RemoveTagButton>
           </ModernTag>
@@ -729,7 +532,7 @@ const CaseCard = memo(({ cas, onUpdateDifficulty, onUpdateAnswer, onUpdateClinic
             onChange={(e) => setNewTag(e.target.value)}
             placeholder="Nouveau tag"
           />
-          <ModernAddTagButton type="submit">
+          <ModernAddTagButton type="submit" aria-label="Ajouter le tag">
             <Plus size={16} />
           </ModernAddTagButton>
         </S.AddTagForm>
@@ -740,62 +543,17 @@ const CaseCard = memo(({ cas, onUpdateDifficulty, onUpdateAnswer, onUpdateClinic
         <SecondaryButton onClick={handleTogglePublic}>
           {cas.public ? 'Rendre privé' : 'Rendre public'}
         </SecondaryButton>
-        <button
-          onClick={() => onDeleteCase(cas._id)}
-          style={{
-            backgroundColor: '#ef4444',
-            color: 'white',
-            padding: '0.5rem',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.3s ease',
-            width: '40px',
-            height: '40px'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = '#dc2626';
-            e.target.style.transform = 'translateY(-2px)';
-            e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.3)';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = '#ef4444';
-            e.target.style.transform = 'translateY(0)';
-            e.target.style.boxShadow = 'none';
-          }}
-          title="Supprimer ce cas"
-        >
+        <DangerButton onClick={() => onDeleteCase(cas._id)} title="Supprimer ce cas" aria-label="Supprimer ce cas">
           <Trash2 size={18} />
-        </button>
+        </DangerButton>
       </div>
     </ModernCaseCard>
   );
 });
 
-const StarRating = memo(({ rating, onRatingChange }) => {
-  return (
-    <S.StarRatingContainer>
-      {[1, 2, 3, 4, 5].map((brain) => (
-        <S.Star
-          key={brain}
-          onClick={() => onRatingChange(brain)}
-          filled={rating >= brain}
-          style={{ cursor: 'pointer' }}
-        >
-          <span style={{ 
-            fontSize: '24px',
-            opacity: rating >= brain ? 1 : 0.3
-          }}>
-            🧠
-          </span>
-        </S.Star>
-      ))}
-    </S.StarRatingContainer>
-  );
-});
+const StarRating = memo(({ rating, onRatingChange }) => (
+  <DifficultyRating value={rating} onChange={onRatingChange} />
+));
 
 function CasesPage() {
   const [cases, setCases] = useState([]);
@@ -1284,11 +1042,11 @@ const handleReorderImages = useCallback(async (folder, reorderedImages) => {
 
   return (
     <ModernPageContainer>
-      <ModernTitle>🎯 Création de cas</ModernTitle>
+      <ModernTitle>Gérer les cas</ModernTitle>
   
       <ModernSearchInput
         type="text"
-        placeholder="🔍 Rechercher un cas..."
+        placeholder="Rechercher un cas..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />

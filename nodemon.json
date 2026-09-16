@@ -1,0 +1,6 @@
+{
+  "watch": ["server.js", "routes", "models", "middleware", "config", "src/utils/db.js", "src/utils/spacesConfig.js"],
+  "ext": "js,json",
+  "ignore": ["build/**", "public/**", "uploads/**"],
+  "delay": "500"
+}

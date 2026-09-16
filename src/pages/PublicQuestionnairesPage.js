@@ -1,3 +1,5 @@
+import { primaryControl, quietControl } from '../components/shared/designSystem';
+import { pageLayout, pageTitle } from '../components/shared/designSystem';
 // PublicQuestionnairesPage.js - VERSION AVEC FILTRES CUMULATIFS (ET)
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
@@ -24,64 +26,39 @@ import {
 // ==================== STYLES SPÉCIFIQUES PLEINE LARGEUR ====================
 
 const PageContainer = styled.div`
-  background-color: ${props => props.theme.background};
-  min-height: calc(100vh - 60px);
-  padding: 2rem;
-  width: 100%;
-  box-sizing: border-box;
-
-  @media (max-width: 1200px) {
-    padding: 1.5rem;
-  }
-
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
+  ${pageLayout}
 `;
 
 const Title = styled.h1`
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 2rem;
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-align: center;
-  
-  @media (max-width: 768px) {
-    font-size: 1.8rem;
-    margin-bottom: 1.5rem;
-  }
+  ${pageTitle}
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+  border-bottom: 1px solid ${props => props.theme.border};
 `;
 
 const SearchAndFiltersSection = styled.div`
-  max-width: 1200px;
-  margin: 0 auto 2rem auto;
   display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
 `;
 
 const SearchBar = styled.input`
-  width: 100%;
-  padding: 1rem 1.5rem;
-  font-size: 1rem;
-  border: 2px solid ${props => props.theme.border};
-  border-radius: 12px;
-  background-color: ${props => props.theme.card};
+  flex: 1 1 300px;
+  min-width: 0;
+  max-width: 520px;
+  min-height: 38px;
+  padding: 0.55rem 0.8rem;
+  font: inherit;
+  font-size: 0.85rem;
+  border: 1px solid ${props => props.theme.border};
+  border-radius: 7px;
+  background: ${props => props.theme.card};
   color: ${props => props.theme.text};
-  transition: border-color 0.2s ease;
+  &:focus { outline: 2px solid ${props => props.theme.primary}; outline-offset: 2px; }
+  &::placeholder { color: ${props => props.theme.textSecondary}; }
 
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.primary};
-    box-shadow: 0 0 0 3px ${props => props.theme.primary}20;
-  }
-
-  &::placeholder {
-    color: ${props => props.theme.textSecondary};
-  }
 `;
 
 // Grille personnalisée pleine largeur pour cette page
@@ -161,19 +138,19 @@ const QuestionnaireTitle = styled(Link)`
 `;
 
 const QuestionnaireIcon = styled.span`
-  font-size: 1.2rem;
-  flex-shrink: 0;
-  margin-top: 2px;
+  display: inline-flex;
+  color: ${props => props.theme.textLight};
+  svg { width: 19px; height: 19px; }
 `;
 
 const PopularityBadge = styled.div`
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  background: linear-gradient(45deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  color: white;
+  background: ${props => props.theme.primary};
+  color: ${props => props.theme.buttonText};
   padding: 0.2rem 0.5rem;
-  border-radius: 12px;
+  border-radius: ${props => props.theme.radii.card};
   font-size: 0.7rem;
   font-weight: 600;
   margin-left: 0.5rem;
@@ -193,82 +170,11 @@ const AuthorInfo = styled.div`
 `;
 
 const ActionButton = styled(Link)`
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  padding: 0.6rem 0.8rem;
-  background-color: ${props => props.theme.primary};
-  color: white;
-  text-decoration: none;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: ${props => props.theme.primaryHover};
-    transform: translateY(-1px);
-  }
-
-  svg {
-    width: 14px;
-    height: 14px;
-  }
+  ${primaryControl}
 `;
 
 const CopyButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.6rem;
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-
-  &:hover {
-    background-color: ${props => props.theme.primaryHover};
-    transform: translateY(-1px);
-  }
-
-  &:hover::after {
-    content: "Ajouter à mes questionnaires";
-    position: absolute;
-    bottom: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: ${props => props.theme.text};
-    color: ${props => props.theme.background};
-    padding: 0.5rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    white-space: nowrap;
-    z-index: 1000;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    border: 1px solid ${props => props.theme.border};
-  }
-
-  &:hover::before {
-    content: '';
-    position: absolute;
-    bottom: calc(100% + 2px);
-    left: 50%;
-    transform: translateX(-50%);
-    border: 6px solid transparent;
-    border-top-color: ${props => props.theme.text};
-    z-index: 1001;
-  }
-
-  svg {
-    width: 14px;
-    height: 14px;
-  }
+  ${quietControl}
 `;
 
 const PaginationContainer = styled.div`
@@ -284,7 +190,7 @@ const PaginationContainer = styled.div`
 const PaginationButton = styled.button`
   padding: 0.75rem 1.5rem;
   background-color: ${props => props.theme.primary};
-  color: white;
+  color: ${props => props.theme.buttonText};
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -363,7 +269,7 @@ const ActiveFiltersDisplay = styled.div`
 
   .filter-tag {
     background-color: ${props => props.theme.primary};
-    color: white;
+    color: ${props => props.theme.buttonText};
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
     font-size: 0.8rem;
@@ -417,25 +323,13 @@ function QuestionnaireCardComponent({ questionnaire }) {
     });
   };
 
-  const getQuestionnaireIcon = (tags) => {
-    if (!tags || tags.length === 0) return '📋';
-    if (tags.includes('IRM')) return '🧲';
-    if (tags.includes('TDM')) return '💽';
-    if (tags.includes('Echo')) return '📡';
-    if (tags.includes('Rx')) return '🦴';
-    if (tags.includes('Neuro')) return '🧠';
-    if (tags.includes('Cardiovasc')) return '❤️';
-    if (tags.includes('Thorax')) return '🫁';
-    if (tags.includes('Pelvis')) return '🦴';
-    return '📋';
-  };
 
   return (
     <QuestionnaireCard>
       <CardHeader>
         <QuestionnaireTitle to={`/use/${questionnaire._id}`}>
           <QuestionnaireIcon>
-            {getQuestionnaireIcon(questionnaire.tags)}
+            <FileText />
           </QuestionnaireIcon>
           {questionnaire.title}
           {isPopular(questionnaire) && (
@@ -676,13 +570,13 @@ function PublicQuestionnairesPage() {
 
   return (
     <PageContainer>
-      <Title>🗂️ Questionnaires Publics</Title>
+      <Title>Questionnaires publics</Title>
 
       {/* SECTION DE RECHERCHE ET FILTRES CENTRÉE */}
       <SearchAndFiltersSection>
         <SearchBar
           type="text"
-          placeholder="🔍 Rechercher un questionnaire..."
+          placeholder="Rechercher un questionnaire..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />

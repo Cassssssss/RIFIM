@@ -1,64 +1,48 @@
+import { control, dangerControl, iconControl, primaryControl } from './shared/designSystem';
+import { pageHeading, pageLayout, pageTitle } from './shared/designSystem';
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
 import QuestionnairePreview from './QuestionnairePreview';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
-import { X } from 'lucide-react';
+import { X, FileText } from 'lucide-react';
 import set from 'lodash/set';
 import styled from 'styled-components';
 
 const ModernPageContainer = styled.div`
-  padding: 2rem;
-  background: ${props => props.theme.background};
-  color: ${props => props.theme.text};
-  min-height: calc(100vh - 60px);
-  max-width: 1600px;
-  margin: 0 auto;
-
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
+  ${pageLayout}
 `;
 
 const PageHeader = styled.div`
-  text-align: center;
-  margin-bottom: 2rem;
+  ${pageHeading}
 `;
 
 const ModernCard = styled.div`
   background-color: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.border};
-  border-radius: 16px;
-  box-shadow: 0 4px 24px ${props => props.theme.shadow};
-  padding: 2rem;
+  min-width: 0;
+  border-radius: 12px;
+  padding: 1rem;
 
   @media (max-width: 768px) {
-    padding: 1.5rem;
-    border-radius: 12px;
+    padding: 0.75rem;
+    border-radius: ${props => props.theme.radii.card};
   }
 `;
 
 const ModernTitle = styled.h1`
-  font-size: 2.2rem;
-  margin-bottom: 2rem;
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-align: center;
-  font-weight: 700;
-  text-shadow: 0 2px 4px ${props => props.theme.shadow};
+  ${pageTitle}
 `;
 
 const ContentWrapper = styled.div`
   display: grid;
-  grid-template-columns: 1fr 550px;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.9fr);
   gap: 2rem;
   align-items: start;
 
   @media (max-width: 1200px) {
-    grid-template-columns: 1fr 450px;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.9fr);
     gap: 1.5rem;
   }
 
@@ -83,18 +67,21 @@ const PreviewSection = styled.div`
 
 const PreviewCard = styled.div`
   background-color: ${props => props.theme.card};
-  border: 2px solid ${props => props.theme.border};
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 12px ${props => props.theme.shadow};
+  border: 1px solid ${props => props.theme.border};
+  border-radius: ${props => props.theme.radii.card};
+  padding: 1rem;
 `;
 
 const PreviewTitle = styled.h3`
-  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  color: ${props => props.theme.primary};
+  color: ${props => props.theme.text};
+  svg { width: 16px; height: 16px; }
   margin-bottom: 1rem;
-  border-bottom: 2px solid ${props => props.theme.primary};
+  border-bottom: 1px solid ${props => props.theme.border};
   padding-bottom: 0.5rem;
 `;
 
@@ -125,62 +112,20 @@ const ButtonGroup = styled.div`
 `;
 
 const SecondaryButton = styled.button`
-  background: linear-gradient(135deg, #6B7FA0 0%, #596A8C 100%);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(107, 127, 160, 0.25);
-
-  &:hover {
-    background: linear-gradient(135deg, #7A8FB2 0%, #6B7FA0 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(107, 127, 160, 0.3);
-  }
+  ${control}
 `;
 
 const SaveButton = styled.button`
-  background: linear-gradient(135deg, #52B788 0%, #40916C 100%);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(82, 183, 136, 0.25);
-
-  &:hover {
-    background: linear-gradient(135deg, #63C599 0%, #52B788 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(82, 183, 136, 0.3);
-  }
+  ${primaryControl}
 `;
 
 const RemoveImageButton = styled.button`
+  ${dangerControl}
+  ${iconControl}
   position: absolute;
   top: 4px;
   right: 4px;
-  background: linear-gradient(135deg, #E57373 0%, #D85858 100%);
-  color: white;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 2px 6px rgba(229, 115, 115, 0.25);
-
-  &:hover {
-    background: linear-gradient(135deg, #F48383 0%, #E57373 100%);
-    box-shadow: 0 3px 8px rgba(229, 115, 115, 0.3);
-  }
+  background: ${props => props.theme.card};
 `;
 
 const SuccessMessage = styled.span`
@@ -192,13 +137,13 @@ const SuccessMessage = styled.span`
 
 const ProgressContainer = styled.div`
   width: 100%;
-  margin: 1.5rem 0;
-  text-align: center;
+  margin: 0.35rem 0 0;
+  text-align: left;
 `;
 
 const ProgressBar = styled.div`
   width: 100%;
-  height: 8px;
+  height: 5px;
   background-color: ${props => props.theme.borderLight};
   border-radius: 4px;
   overflow: hidden;
@@ -207,16 +152,16 @@ const ProgressBar = styled.div`
 
 const ProgressFill = styled.div`
   height: 100%;
-  background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+  background: ${props => props.theme.border};
   transition: width 0.3s ease;
   width: ${props => props.percentage}%;
 `;
 
 const ProgressText = styled.div`
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: ${props => props.theme.text};
-  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: ${props => props.theme.textSecondary};
+  margin-bottom: 0.35rem;
 `;
 
 const QuestionnaireUsePage = () => {
@@ -673,7 +618,7 @@ const QuestionnaireUsePage = () => {
 
         <PreviewSection>
           <PreviewCard>
-            <PreviewTitle>📋 Aperçu du Compte-Rendu</PreviewTitle>
+            <PreviewTitle><FileText aria-hidden="true" />Aperçu du compte rendu</PreviewTitle>
               <PreviewContent
                 ref={crRef}
                 contentEditable={true}

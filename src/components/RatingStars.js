@@ -1,3 +1,4 @@
+import { control, dangerControl, primaryControl, quietControl } from './shared/designSystem';
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Star } from 'lucide-react';
@@ -121,25 +122,9 @@ const RatingButtons = styled.div`
 `;
 
 const QuickRatingButton = styled.button`
-  padding: 0.5rem 0.75rem;
-  border: 2px solid ${props => props.isSelected ? props.theme.primary : props.theme.borderLight};
-  border-radius: 6px;
-  background-color: ${props => props.isSelected ? props.theme.primary : props.theme.background};
-  color: ${props => props.isSelected ? 'white' : props.theme.text};
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.875rem;
-  font-weight: 500;
-
-  &:hover:not(:disabled) {
-    border-color: ${props => props.theme.primary};
-    background-color: ${props => !props.isSelected ? props.theme.hover : props.theme.primary};
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  ${control}
+  border-color: ${props => props.isSelected ? props.theme.primary : props.theme.border};
+  color: ${props => props.isSelected ? props.theme.primary : props.theme.text};
 `;
 
 const CommentInput = styled.textarea`
@@ -172,74 +157,15 @@ const RatingActions = styled.div`
 `;
 
 const RatingButton = styled.button`
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  
-  &.primary {
-    background-color: ${props => props.theme.primary};
-    color: white;
-    
-    &:hover:not(:disabled) {
-      background-color: ${props => props.theme.primaryDark || props.theme.primary};
-      transform: translateY(-1px);
-    }
-  }
-  
-  &.secondary {
-    background-color: ${props => props.theme.background};
-    color: ${props => props.theme.text};
-    border: 2px solid ${props => props.theme.borderLight};
-    
-    &:hover:not(:disabled) {
-      border-color: ${props => props.theme.primary};
-      background-color: ${props => props.theme.hover};
-    }
-  }
-  
-  &.danger {
-    background-color: #ef4444;
-    color: white;
-    
-    &:hover:not(:disabled) {
-      background-color: #dc2626;
-    }
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-  }
+  ${control}
+  &.primary { ${primaryControl} }
+  &.danger { ${dangerControl} }
 `;
 
 const StartRatingButton = styled.button`
-  padding: 0.5rem 1rem;
-  background-color: ${props => props.theme.primary};
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-
-  &:hover:not(:disabled) {
-    background-color: ${props => props.theme.primaryDark || props.theme.primary};
-    transform: translateY(-1px);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  ${quietControl}
+  justify-content: flex-start;
+  padding-left: 0;
 `;
 
 const Message = styled.div`
@@ -468,7 +394,8 @@ function RatingStars({
       {/* Bouton pour commencer à noter */}
       {!isRating && (
         <StartRatingButton onClick={handleStartRating} disabled={loading}>
-          {userRating ? 'Modifier ma note' : `⭐ Noter ce ${getItemTypeFrench()}`}
+          <Star aria-hidden="true" />
+          {userRating ? 'Modifier ma note' : `Noter ce ${getItemTypeFrench()}`}
         </StartRatingButton>
       )}
 

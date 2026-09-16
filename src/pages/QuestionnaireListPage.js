@@ -337,14 +337,6 @@ function QuestionnaireListPage() {
     }
   };
 
-  const getQuestionnaireIcon = (tags) => {
-    if (!tags || tags.length === 0) return '📋';
-    if (tags.includes('IRM') || tags.includes('irm')) return '🧲';
-    if (tags.includes('TDM') || tags.includes('tdm')) return '📍';
-    if (tags.includes('Rx') || tags.includes('rx')) return '🩻';
-    if (tags.includes('Echo') || tags.includes('echo')) return '📡';
-    return '📋';
-  };
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('fr-FR', {
@@ -491,7 +483,7 @@ function QuestionnaireListPage() {
                   <CardHeader>
                     <QuestionnaireTitle>
                       <QuestionnaireIcon>
-                        {getQuestionnaireIcon(questionnaire.tags)}
+                        <FileText />
                       </QuestionnaireIcon>
                       {questionnaire.title}
                     </QuestionnaireTitle>
@@ -579,7 +571,7 @@ function QuestionnaireListPage() {
                       variant="primary" 
                       size="large"
                     >
-                      ▶️ UTILISER
+                      Utiliser
                     </ActionButton>
                     
                     <ActionButton 
@@ -587,7 +579,7 @@ function QuestionnaireListPage() {
                       variant="secondary"
                     >
                       <Edit />
-                      MODIFIER
+                      Modifier
                     </ActionButton>
                     
                     <ActionButton 
@@ -606,7 +598,7 @@ function QuestionnaireListPage() {
                       }}
                     >
                       <Copy />
-                      DUPLIQUER
+                      Dupliquer
                     </Button>
                     
                     <Button 

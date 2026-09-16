@@ -1,3 +1,4 @@
+import { pageHeading, pageLayout, pageTitle } from '../components/shared/designSystem';
 // StatisticsDashboardPage.js - Dashboard de statistiques d'utilisation
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -19,32 +20,13 @@ import {
 // ==================== STYLED COMPONENTS ====================
 
 const PageContainer = styled.div`
-  background-color: ${props => props.theme.background};
-  min-height: calc(100vh - 60px);
-  padding: 2rem;
-  width: 100%;
-  box-sizing: border-box;
-
-  @media (max-width: 1200px) {
-    padding: 1.5rem;
-  }
-
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
+  ${pageLayout}
 `;
 
 // En-tête aligné à gauche, avec le sélecteur de période sur la même ligne :
 // le filtre de temps appartient à l'en-tête, pas à une rangée séparée.
 const Header = styled.div`
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid ${props => props.theme.borderLight || props.theme.border};
+  ${pageHeading}
 `;
 
 const HeaderText = styled.div`
@@ -55,15 +37,7 @@ const HeaderText = styled.div`
 `;
 
 const Title = styled.h1`
-  font-size: 1.8rem;
-  font-weight: 700;
-  line-height: 1.2;
-  color: ${props => props.theme.text};
-  margin: 0;
-
-  @media (max-width: 768px) {
-    font-size: 1.45rem;
-  }
+  ${pageTitle}
 `;
 
 const Subtitle = styled.p`
@@ -87,13 +61,13 @@ const PeriodButton = styled.button`
   background-color: ${props => props.$active ? props.theme.primary : props.theme.card};
   color: ${props => props.$active ? 'white' : props.theme.text};
   border: 1px solid ${props => props.$active ? props.theme.primary : props.theme.border};
-  border-radius: 8px;
+  border-radius: ${props => props.theme.radii.md};
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    background-color: ${props => props.$active ? props.theme.primaryDark : props.theme.hover};
+    background-color: ${props => props.$active ? props.theme.primaryHover : props.theme.hover};
     border-color: ${props => props.theme.primary};
   }
 `;
@@ -109,7 +83,7 @@ const StatsGrid = styled.div`
 const StatCard = styled.div`
   background-color: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.border};
-  border-radius: 12px;
+  border-radius: ${props => props.theme.radii.card};
   padding: 1.5rem;
   position: relative;
   overflow: hidden;
@@ -127,7 +101,7 @@ const StatCard = styled.div`
     left: 0;
     right: 0;
     height: 4px;
-    background: ${props => props.$gradient || `linear-gradient(90deg, ${props.theme.primary}, ${props.theme.secondary})`};
+    background: ${props => props.$gradient || props.theme.primary};
   }
 `;
 
@@ -148,11 +122,11 @@ const StatTitle = styled.h3`
 const StatIcon = styled.div`
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: ${props => props.theme.radii.md};
   display: flex;
   align-items: center;
   justify-content: center;
-  background: ${props => props.$background || `linear-gradient(135deg, ${props.theme.primary}20, ${props.theme.secondary}20)`};
+  background: ${props => props.$background || props.theme.cardSecondary};
   color: ${props => props.$color || props.theme.primary};
 
   svg {
@@ -202,7 +176,7 @@ const ChartsContainer = styled.div`
 const ChartCard = styled.div`
   background-color: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.border};
-  border-radius: 12px;
+  border-radius: ${props => props.theme.radii.card};
   padding: 1.5rem;
   height: 400px;
 `;
@@ -237,7 +211,7 @@ const ChartButton = styled.button`
 
   &:hover {
     background-color: ${props => props.theme.primary};
-    color: white;
+    color: ${props => props.theme.buttonText};
   }
 
   svg {
@@ -250,13 +224,18 @@ const ChartButton = styled.button`
 const LeaderboardCard = styled.div`
   background-color: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.border};
-  border-radius: 12px;
+  border-radius: ${props => props.theme.radii.card};
   padding: 1.5rem;
   grid-column: span 2;
 
   @media (max-width: 1200px) {
     grid-column: span 1;
   }
+`;
+
+const TableScroll = styled.div`
+  max-width: 100%;
+  overflow-x: auto;
 `;
 
 const LeaderboardTable = styled.table`
@@ -304,9 +283,9 @@ const RankBadge = styled.div`
   font-weight: 700;
   font-size: 0.85rem;
   background: ${props => {
-    if (props.$rank === 1) return 'linear-gradient(135deg, #FFD700, #FFA500)';
-    if (props.$rank === 2) return 'linear-gradient(135deg, #C0C0C0, #808080)';
-    if (props.$rank === 3) return 'linear-gradient(135deg, #CD7F32, #8B4513)';
+    if (props.$rank === 1) return '#c89329';
+    if (props.$rank === 2) return '#727d91';
+    if (props.$rank === 3) return '#a66c47';
     return props.theme.backgroundSecondary;
   }};
   color: ${props => props.$rank <= 3 ? 'white' : props.theme.text};
@@ -334,14 +313,14 @@ const ErrorContainer = styled.div`
     margin-top: 1rem;
     padding: 0.75rem 1.5rem;
     background-color: ${props => props.theme.primary};
-    color: white;
+    color: ${props => props.theme.buttonText};
     border: none;
-    border-radius: 8px;
+    border-radius: ${props => props.theme.radii.md};
     cursor: pointer;
     font-weight: 500;
     
     &:hover {
-      background-color: ${props => props.theme.primaryDark};
+      background-color: ${props => props.theme.primaryHover};
     }
   }
 `;
@@ -349,7 +328,7 @@ const ErrorContainer = styled.div`
 const WarningBanner = styled.div`
   background-color: #fef3c7;
   border: 1px solid #f59e0b;
-  border-radius: 8px;
+  border-radius: ${props => props.theme.radii.md};
   padding: 1rem;
   margin-bottom: 2rem;
   display: flex;
@@ -369,8 +348,8 @@ const ExportButton = styled.button`
   bottom: 2rem;
   right: 2rem;
   padding: 1rem;
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  color: white;
+  background: ${props => props.theme.primary};
+  color: ${props => props.theme.buttonText};
   border: none;
   border-radius: 50%;
   width: 60px;
@@ -1249,10 +1228,10 @@ function StatisticsDashboardPage() {
 
       {/* Statistiques principales */}
       <StatsGrid>
-        <StatCard $gradient="linear-gradient(90deg, #667eea, #764ba2)">
+        <StatCard $gradient={theme.categories.questionnaire}>
           <StatHeader>
             <StatTitle>Questionnaires Créés</StatTitle>
-            <StatIcon $background="linear-gradient(135deg, #667eea20, #764ba220)" $color="#667eea">
+            <StatIcon $background={`${theme.categories.questionnaire}18`} $color={theme.categories.questionnaire}>
               <FileText />
             </StatIcon>
           </StatHeader>
@@ -1264,10 +1243,10 @@ function StatisticsDashboardPage() {
           <StatDescription>{globalStats.weeklyActive} jours actifs cette semaine</StatDescription>
         </StatCard>
 
-        <StatCard $gradient="linear-gradient(90deg, #f093fb, #f5576c)">
+        <StatCard $gradient={theme.categories.cases}>
           <StatHeader>
             <StatTitle>Protocoles Créés</StatTitle>
-            <StatIcon $background="linear-gradient(135deg, #f093fb20, #f5576c20)" $color="#f093fb">
+            <StatIcon $background={`${theme.categories.cases}18`} $color={theme.categories.cases}>
               <Target />
             </StatIcon>
           </StatHeader>
@@ -1279,10 +1258,10 @@ function StatisticsDashboardPage() {
           <StatDescription>Fonctionnalité récente</StatDescription>
         </StatCard>
 
-        <StatCard $gradient="linear-gradient(90deg, #4facfe, #00f2fe)">
+        <StatCard $gradient={theme.categories.protocol}>
           <StatHeader>
             <StatTitle>Cas Cliniques Créés</StatTitle>
-            <StatIcon $background="linear-gradient(135deg, #4facfe20, #00f2fe20)" $color="#4facfe">
+            <StatIcon $background={`${theme.categories.protocol}18`} $color={theme.categories.protocol}>
               <FolderOpen />
             </StatIcon>
           </StatHeader>
@@ -1296,10 +1275,10 @@ function StatisticsDashboardPage() {
           </StatDescription>
         </StatCard>
 
-        <StatCard $gradient="linear-gradient(90deg, #fa709a, #fee140)">
+        <StatCard $gradient={theme.categories.questionnaire}>
           <StatHeader>
             <StatTitle>Documents Totaux</StatTitle>
-            <StatIcon $background="linear-gradient(135deg, #fa709a20, #fee14020)" $color="#fa709a">
+            <StatIcon $background={`${theme.categories.questionnaire}18`} $color={theme.categories.questionnaire}>
               <Award />
             </StatIcon>
           </StatHeader>
@@ -1478,6 +1457,7 @@ function StatisticsDashboardPage() {
             )}
           </ChartTitle>
         </ChartHeader>
+        <TableScroll role="region" aria-label="Classement des utilisateurs" tabIndex={0}>
         <LeaderboardTable>
           <TableHeader>
             <tr>
@@ -1505,6 +1485,7 @@ function StatisticsDashboardPage() {
             ))}
           </TableBody>
         </LeaderboardTable>
+        </TableScroll>
       </LeaderboardCard>
 
       {/* Bouton d'export */}

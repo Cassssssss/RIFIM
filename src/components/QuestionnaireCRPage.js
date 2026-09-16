@@ -1,3 +1,4 @@
+import { pageHeading, pageLayout, pageTitle, primaryControl } from './shared/designSystem';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
@@ -8,21 +9,11 @@ import set from 'lodash/set';
 import styled from 'styled-components';
 
 const ModernPageContainer = styled.div`
-  padding: 2rem;
-  background: ${props => props.theme.background};
-  color: ${props => props.theme.text};
-  min-height: calc(100vh - 60px);
-  max-width: 1600px;
-  margin: 0 auto;
-
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
+  ${pageLayout}
 `;
 
 const PageHeader = styled.div`
-  text-align: center;
-  margin-bottom: 2rem;
+  ${pageHeading}
 `;
 
 const ModernCard = styled.div`
@@ -34,20 +25,12 @@ const ModernCard = styled.div`
 
   @media (max-width: 768px) {
     padding: 1.5rem;
-    border-radius: 12px;
+    border-radius: ${props => props.theme.radii.card};
   }
 `;
 
 const ModernTitle = styled.h1`
-  font-size: 2.2rem;
-  margin-bottom: 2rem;
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-align: center;
-  font-weight: 700;
-  text-shadow: 0 2px 4px ${props => props.theme.shadow};
+  ${pageTitle}
 `;
 
 const ContentWrapper = styled.div`
@@ -83,7 +66,7 @@ const PreviewSection = styled.div`
 const PreviewCard = styled.div`
   background-color: ${props => props.theme.card};
   border: 2px solid ${props => props.theme.border};
-  border-radius: 12px;
+  border-radius: ${props => props.theme.radii.card};
   padding: 1.5rem;
   box-shadow: 0 4px 12px ${props => props.theme.shadow};
 `;
@@ -117,27 +100,8 @@ const PreviewContent = styled.div`
 `;
 
 const SaveButton = styled.button`
-  width: 100%;
+  ${primaryControl}
   margin-top: 1rem;
-  background-color: ${props => props.theme.primary};
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  border: none;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    background-color: ${props => props.theme.primaryHover};
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px ${props => props.theme.shadow};
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
 `;
 
 

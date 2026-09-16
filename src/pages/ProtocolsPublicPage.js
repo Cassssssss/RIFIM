@@ -1,3 +1,5 @@
+import { control } from '../components/shared/designSystem';
+import { pageHeading, pageLayout, pageTitle } from '../components/shared/designSystem';
 // ProtocolsPublicPage.js - VERSION AVEC AFFICHAGE CORRECT DU NOM D'UTILISATEUR
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -9,54 +11,34 @@ import RatingStars from '../components/RatingStars';
 // ==================== STYLES ====================
 
 const PageContainer = styled.div`
-  padding: 2rem 3rem;
-  min-height: calc(100vh - 60px);
-  background-color: ${props => props.theme.background};
-
-  @media (max-width: 1200px) {
-    padding: 2rem;
-  }
-
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
+  ${pageLayout}
 `;
 
 const Header = styled.div`
-  text-align: center;
-  margin-bottom: 3rem;
+  ${pageHeading}
+  display: block;
 `;
 
 const Title = styled.h1`
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  ${pageTitle}
 `;
 
 const StatsContainer = styled.div`
   display: flex;
-  justify-content: center;
-  gap: 3rem;
-  margin: 2rem 0;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: center;
-  }
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin: 1.25rem 0 0;
 `;
 
 const StatBox = styled.div`
-  text-align: center;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
 `;
 
 const StatNumber = styled.div`
-  font-size: 2.5rem;
-  font-weight: 700;
+  font-size: 1.35rem;
+  font-weight: 600;
   color: ${props => props.theme.primary};
 `;
 
@@ -73,8 +55,8 @@ const FiltersContainer = styled.div`
   margin-bottom: 2rem;
   padding: 1.5rem;
   background-color: ${props => props.theme.card};
-  border-radius: 12px;
-  box-shadow: 0 2px 8px ${props => props.theme.shadow};
+  border-radius: ${props => props.theme.radii.card};
+  box-shadow: ${props => props.theme.shadows.card};
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -82,12 +64,14 @@ const FiltersContainer = styled.div`
 `;
 
 const SearchContainer = styled.div`
+  min-width: 0;
   position: relative;
   flex: 1;
   min-width: 300px;
 
   @media (max-width: 768px) {
-    min-width: 100%;
+    min-width: 0;
+    width: 100%;
   }
 `;
 
@@ -95,7 +79,7 @@ const SearchInput = styled.input`
   width: 100%;
   padding: 0.75rem 1rem 0.75rem 3rem;
   border: 2px solid ${props => props.theme.borderLight};
-  border-radius: 8px;
+  border-radius: ${props => props.theme.radii.md};
   background-color: ${props => props.theme.background};
   color: ${props => props.theme.text};
   font-size: 1rem;
@@ -123,7 +107,7 @@ const SearchIconWrapper = styled.div`
 const FilterSelect = styled.select`
   padding: 0.75rem;
   border: 2px solid ${props => props.theme.borderLight};
-  border-radius: 8px;
+  border-radius: ${props => props.theme.radii.md};
   background-color: ${props => props.theme.background};
   color: ${props => props.theme.text};
   cursor: pointer;
@@ -141,26 +125,16 @@ const FilterSelect = styled.select`
 `;
 
 const SortContainer = styled.div`
+  flex-wrap: wrap;
+  min-width: 0;
   display: flex;
   gap: 0.5rem;
 `;
 
 const SortButton = styled.button`
-  display: flex;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  border: 2px solid ${props => props.isActive ? props.theme.primary : props.theme.borderLight};
-  border-radius: 8px;
-  background-color: ${props => props.isActive ? props.theme.primary : props.theme.background};
-  color: ${props => props.isActive ? 'white' : props.theme.text};
-  cursor: pointer;
-  transition: all 0.2s ease;
-  gap: 0.5rem;
-
-  &:hover {
-    border-color: ${props => props.theme.primary};
-    background-color: ${props => props.isActive ? props.theme.primary : props.theme.hover};
-  }
+  ${control}
+  background: ${props => props.isActive ? props.theme.cardSecondary : props.theme.card};
+  color: ${props => props.isActive ? props.theme.primary : props.theme.textSecondary};
 `;
 
 const ProtocolsGrid = styled.div`
@@ -182,9 +156,9 @@ const ProtocolsGrid = styled.div`
 const ProtocolCard = styled.div`
   background-color: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.borderLight};
-  border-radius: 12px;
+  border-radius: ${props => props.theme.radii.card};
   overflow: hidden;
-  box-shadow: 0 2px 8px ${props => props.theme.shadow};
+  box-shadow: ${props => props.theme.shadows.card};
   transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
@@ -196,7 +170,7 @@ const ProtocolCard = styled.div`
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
+    background: ${props => props.theme.border};
   }
 
   &:hover {
@@ -227,8 +201,8 @@ const ProtocolTitle = styled.h3`
 `;
 
 const PopularityBadge = styled.div`
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  color: white;
+  background: ${props => props.theme.primary};
+  color: ${props => props.theme.buttonText};
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
   font-size: 0.75rem;
@@ -259,7 +233,7 @@ const ProtocolMeta = styled.div`
   margin: 1rem 0;
   padding: 0.75rem;
   background-color: ${props => props.theme.backgroundSecondary};
-  border-radius: 8px;
+  border-radius: ${props => props.theme.radii.md};
 `;
 
 const MetaItem = styled.div`
@@ -318,7 +292,7 @@ const ActionsContainer = styled.div`
 
 const ActionButton = styled.button`
   background-color: ${props => props.theme.primary};
-  color: white;
+  color: ${props => props.theme.buttonText};
   border: none;
   border-radius: 6px;
   padding: 0.5rem;
@@ -353,7 +327,7 @@ const ErrorMessage = styled.div`
   padding: 2rem;
   color: #dc2626;
   background-color: #fef2f2;
-  border-radius: 8px;
+  border-radius: ${props => props.theme.radii.md};
   margin: 2rem 0;
 `;
 
@@ -379,9 +353,9 @@ const PaginationContainer = styled.div`
 const PaginationButton = styled.button`
   padding: 0.75rem 1.5rem;
   background-color: ${props => props.theme.primary};
-  color: white;
+  color: ${props => props.theme.buttonText};
   border: none;
-  border-radius: 8px;
+  border-radius: ${props => props.theme.radii.md};
   cursor: pointer;
   transition: all 0.2s ease;
 
@@ -520,7 +494,7 @@ function ProtocolsPublicPage() {
   return (
     <PageContainer>
       <Header>
-        <Title>Protocoles Publics</Title>
+        <Title>Protocoles publics</Title>
         
         <StatsContainer>
           <StatBox>

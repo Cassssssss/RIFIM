@@ -233,14 +233,6 @@ function QuestionnairePage() {
     }
   };
 
-  const getQuestionnaireIcon = (tags) => {
-    if (!tags || tags.length === 0) return '📋';
-    if (tags.includes('IRM') || tags.includes('irm')) return '🧲';
-    if (tags.includes('TDM') || tags.includes('tdm')) return '📍';
-    if (tags.includes('Rx') || tags.includes('rx')) return '🩻';
-    if (tags.includes('Echo') || tags.includes('echo')) return '📡';
-    return '📋';
-  };
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('fr-FR', {
@@ -385,23 +377,12 @@ function QuestionnairePage() {
                   <QuestionnaireCard 
                     key={questionnaire._id}
                     onClick={() => handleCardClick(questionnaire._id)}
-                    style={{
-                      cursor: 'pointer',
-                      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '';
-                    }}
+                    style={{ cursor: 'pointer' }}
                   >
                     <CardHeader>
                       <QuestionnaireTitle>
                         <QuestionnaireIcon>
-                          {getQuestionnaireIcon(questionnaire.tags)}
+                          <FileText />
                         </QuestionnaireIcon>
                         {questionnaire.title}
                       </QuestionnaireTitle>
@@ -440,7 +421,7 @@ function QuestionnairePage() {
                         to={`/use/${questionnaire._id}`}
                         onClick={(e) => e.stopPropagation()} // Empêcher le double clic
                       >
-                        ▶️ UTILISER
+                        Utiliser
                       </ActionButton>
                       
                       <DeleteButton 

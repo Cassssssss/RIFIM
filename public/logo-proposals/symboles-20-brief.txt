@@ -1,0 +1,28 @@
+RIFIM — Vingt nouveaux emblèmes
+Générateur d’images intégré, mode natif. Deux planches raster exploratoires ; aucune vectorisation ni modification du logo de l’application.
+
+Use case: logo-brand. Create one professional logo exploration contact sheet for RIFIM, a radiology and musculoskeletal imaging app. Landscape composition, exactly FIVE columns and TWO rows of large standalone logo EMBLEMS, clean white background, equal generous margins, one original symbol in each cell. These are brand marks, not text logos or font studies. Flat vector-like geometry, strong carefully composed silhouettes, sophisticated negative space, excellent optical balance. Mostly navy, cobalt, burgundy, charcoal with restrained ochre or terracotta accents. Absolutely NO green, gradients, shadows, bevels, texture, 3D render, letters, words, monograms, medical crosses, ECG or caduceus. Only small gray numbers below the symbols. Distinct design vocabulary for every symbol: not ten modifications of one design. Anatomy is an inspiration for identity, not a detailed medical drawing. No old common stock medical logos. Each must look like a refined original brand emblem.
+Sheet A. Numbers exactly 11 to 20, left to right:
+11 a stylized scapula: bold triangular organic silhouette with shoulder socket in precise negative space, navy with ochre accent.
+12 an elbow joint seen in profile, interlocking angular pieces forming a compact emblem, dark burgundy.
+13 an ankle mortise and talus transformed into two complementary solid forms inside a vertically compact silhouette, cobalt and charcoal.
+14 a single vertebra viewed axially, a subtle three-lobed radial emblem with central negative-space canal, dark navy.
+15 an abstract pelvis butterfly-shaped symmetrical emblem with two joint sockets suggested by circular notches, charcoal and terracotta.
+16 a meniscus: two opposing tapered crescents woven into a memorable rounded brand symbol, cobalt.
+17 two forearm bones in a graceful crossing rotational arrangement forming an elegant compact diagonal mark, deep purple with muted ochre.
+18 a stylized rib cage forming an open book motif, knowledge and radiology merged into one minimalist emblem, navy and coral.
+19 a tendon insertion represented by an organic fan merging into a solid bone silhouette, a clean compact unique shape, burgundy.
+20 a hand in profile with thumb and carpal curve suggested by sophisticated white negative space within a cohesive rounded silhouette, ink and terracotta.
+
+Use case: logo-brand. Create one professional logo exploration contact sheet for RIFIM, a radiology and musculoskeletal imaging app. Landscape composition, exactly FIVE columns and TWO rows of large standalone logo EMBLEMS, clean white background, equal generous margins, one original symbol in each cell. These are brand marks, not text logos or font studies. Flat vector-like geometry, strong carefully composed silhouettes, sophisticated negative space, excellent optical balance. Mostly navy, cobalt, burgundy, charcoal with restrained ochre or terracotta accents. Absolutely NO green, gradients, shadows, bevels, texture, 3D render, letters, words, monograms, medical crosses, ECG or caduceus. Only small gray numbers below the symbols. Distinct design vocabulary for every symbol: not ten modifications of one design. Anatomy is an inspiration for identity, not a detailed medical drawing. No old common stock medical logos. Each must look like a refined original brand emblem.
+Sheet B. Numbers exactly 21 to 30, left to right:
+21 a radiology scan sweep crossing a solid oval to reveal a small bone cross section through a clean negative-space cut, navy and muted orange.
+22 two orthogonal imaging planes interlocked into a distinctive compact geometric knot, cobalt and charcoal, NOT a generic infinity knot.
+23 an ultrasound transducer and its sector beam merged into one bold shield-like outline with an internal curved negative-space shape, burgundy.
+24 an MRI magnet built from two balanced opposite C-shaped lobes enclosing a small central square, deep navy with ochre.
+25 an X-ray detector plate with one elegant diagonal bone silhouette cut out in white negative space, charcoal.
+26 a radiographic image composed of four carefully arranged modular tiles, the gaps imply a joint, cobalt and terracotta.
+27 three curved imaging slices spiralling into an almost spherical but absolutely FLAT emblem, dark purple and lighter purple solid fills, no gradient.
+28 a circular diagnostic focus frame whose breaks reveal a small abstract vertebral arch in the center, burgundy and charcoal.
+29 a clean geometric hexagonal voxel emblem whose internal white channels form two opposing condyles, navy.
+30 a medical image stack reduced to a distinctive asymmetric folded corner and circular central aperture, warm charcoal with restrained ochre.

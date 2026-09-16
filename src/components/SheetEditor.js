@@ -1,3 +1,4 @@
+import { pageLayout, pageTitle, primaryControl } from './shared/designSystem';
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
@@ -5,18 +6,14 @@ import styled from 'styled-components';
 import { Editor } from '@tinymce/tinymce-react';
 
 const EditorContainer = styled.div`
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  ${pageLayout}
 `;
 
 const Title = styled.h1`
-  color: #4a69bd;
-  text-align: center;
-  margin-bottom: 20px;
+  ${pageTitle}
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
+  border-bottom: 1px solid ${props => props.theme.border};
 `;
 
 const TitleInput = styled.input`
@@ -24,24 +21,12 @@ const TitleInput = styled.input`
   padding: 10px;
   margin-bottom: 20px;
   font-size: 18px;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
+  border: 1px solid ${props => props.theme.border};
+  border-radius: ${props => props.theme.radii.button};
 `;
 
 const Button = styled.button`
-  padding: 10px 20px;
-  background-color: #4a69bd;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-right: 10px;
-  font-size: 16px;
-  transition: background-color 0.3s;
-
-  &:hover {
-    background-color: #3c55a5;
-  }
+  ${primaryControl}
 `;
 
 const ButtonContainer = styled.div`

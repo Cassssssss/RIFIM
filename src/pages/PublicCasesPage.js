@@ -1,3 +1,4 @@
+import DifficultyRating from '../components/shared/DifficultyRating';
 // PublicCasesPage.js - VERSION AVEC UNIFIED FILTER SYSTEM ROBUSTE ET ICÔNES CERVEAUX
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from '../utils/axiosConfig';
@@ -22,7 +23,6 @@ import {
   UnifiedCaseContent,
   UnifiedCaseHeader,
   UnifiedCaseTitle,
-  UnifiedStarRating,
   UnifiedPopularityBadge,
   UnifiedAuthorInfo,
   UnifiedStatsContainer,
@@ -48,7 +48,7 @@ function PublicCaseCardComponent({ cas, showSpoilers, onCopyCase, caseRating, on
     if (cas.folders && cas.folders[0] && cas.folderMainImages && cas.folderMainImages[cas.folders[0]]) {
       return cas.folderMainImages[cas.folders[0]];
     }
-    return '/images/default.jpg';
+    return '/images/case-placeholder.svg';
   };
 
   const isPopular = cas.views > 100 || cas.copies > 20;
@@ -77,7 +77,7 @@ function PublicCaseCardComponent({ cas, showSpoilers, onCopyCase, caseRating, on
         alt={cas.title || 'Cas médical'}
         loading="lazy"
         onError={(e) => {
-          e.target.src = '/images/default.jpg';
+          e.target.src = '/images/case-placeholder.svg';
         }}
       />
       <UnifiedCaseContent>
@@ -93,20 +93,7 @@ function PublicCaseCardComponent({ cas, showSpoilers, onCopyCase, caseRating, on
           )}
         </UnifiedCaseHeader>
         
-        <UnifiedStarRating>
-          {[...Array(5)].map((_, index) => (
-            <span
-              key={index}
-              style={{ 
-                fontSize: '22px',
-                opacity: index < (cas.difficulty || 0) ? 1 : 0.3,
-                filter: index < (cas.difficulty || 0) ? 'drop-shadow(0 1px 2px rgba(245, 158, 11, 0.3))' : 'none'
-              }}
-            >
-              🧠
-            </span>
-          ))}
-        </UnifiedStarRating>
+        <DifficultyRating value={cas.difficulty || 0} />
 
         <UnifiedAuthorInfo>
           <User size={14} />
@@ -351,7 +338,7 @@ function PublicCasesPage() {
   return (
     <UnifiedPageContainer>
       <PageHeader>
-        <UnifiedPageTitle>Cas Cliniques Publics</UnifiedPageTitle>
+        <UnifiedPageTitle>Cas cliniques publics</UnifiedPageTitle>
         <PageSubtitle>Explorez les cas partagés par la communauté</PageSubtitle>
       </PageHeader>
 

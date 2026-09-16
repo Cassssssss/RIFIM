@@ -4,7 +4,6 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
 router.post('/register', async (req, res) => {
-  console.log('Tentative d\'inscription:', req.body);
   try {
     const { username, password } = req.body;
     // Vérifiez si l'utilisateur existe déjà
@@ -23,7 +22,6 @@ router.post('/register', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-  console.log('Tentative de connexion:', req.body);
   try {
     const { username, password } = req.body;
     console.log('Recherche de l\'utilisateur:', username);

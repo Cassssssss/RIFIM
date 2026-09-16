@@ -37,6 +37,8 @@ const GlobalStyle = createGlobalStyle`
   }
 
   html {
+    color-scheme: light;
+    &[data-theme="dark"] { color-scheme: dark; }
     scroll-behavior: smooth;
     
     @media (max-width: 768px) {
@@ -72,11 +74,39 @@ const GlobalStyle = createGlobalStyle`
   }
 
   .app-shell > main {
-    padding-top: 1.75rem;
+    width: 100%;
+    min-width: 0;
+    padding-top: 2.5rem;
     padding-bottom: 4rem;
 
     @media (max-width: 900px) {
       padding-top: 1rem;
+    }
+  }
+
+  .app-shell > main.container {
+    max-width: var(--app-container-max, 1520px);
+    padding-left: var(--app-content-pad, 2rem);
+    padding-right: var(--app-content-pad, 2rem);
+    @media (max-width: 900px) {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+
+  :focus-visible {
+    outline: 2px solid ${props => props.theme.primary};
+    outline-offset: 3px;
+  }
+
+  ::selection { background: ${props => props.theme.focus}; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
     }
   }
 

@@ -1,3 +1,5 @@
+import { control, dangerControl, iconControl, primaryControl, quietControl } from './shared/designSystem';
+import { pageLayout, pageTitle } from './shared/designSystem';
 import React, { useState, useEffect, useCallback, memo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -11,26 +13,14 @@ import ImageMapEditor from './ImageMapEditor';
 // ==================== STYLED COMPONENTS MODERNISÉS COMPACTS ====================
 
 const ModernCreatorWrapper = styled.div`
-  background: ${props => props.theme.background};
-  color: ${props => props.theme.text};
-  padding: 1.5rem;
-  min-height: calc(100vh - 60px);
-
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
+  ${pageLayout}
 `;
 
 const ModernTitle = styled.h1`
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-size: 2rem;
-  font-weight: 700;
-  text-shadow: 0 2px 4px ${props => props.theme.shadow};
-  margin-bottom: 1.5rem;
-  text-align: center;
+  ${pageTitle}
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid ${props => props.theme.border};
 `;
 
 const ModernCreatorCard = styled.div`
@@ -38,28 +28,19 @@ const ModernCreatorCard = styled.div`
   overflow: hidden;
   background-color: ${props => props.theme.card};
   border: 1px solid ${props => props.theme.border};
-  border-radius: 12px;
+  border-radius: ${props => props.theme.radii.card};
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 4px 20px ${props => props.theme.shadow};
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, ${props => props.theme.primary}, ${props => props.theme.secondary});
-  }
+  box-shadow: ${props => props.theme.shadows.card};
+
 `;
 
 const ModernQuestionCard = styled.div`
   background-color: ${props => props.theme.cardSecondary || props.theme.card};
   border: 1px solid ${props => props.theme.border};
-  border-radius: 8px;
+  border-radius: ${props => props.theme.radii.md};
   margin-bottom: 0.75rem;
-  box-shadow: 0 2px 8px ${props => props.theme.shadow};
+  box-shadow: ${props => props.theme.shadows.card};
   transition: all 0.2s ease;
   overflow: hidden;
 
@@ -74,16 +55,16 @@ const ModernQuestionHeader = styled.div`
   align-items: center;
   padding: 0.75rem;
   border-bottom: 1px solid ${props => props.theme.border};
-  background: ${props => props.depth === 0 ? 
-    `linear-gradient(90deg, ${props.theme.primary}10, ${props.theme.secondary}10)` : 
+  background: ${props => props.depth === 0 ?
+    props.theme.cardSecondary :
     props.theme.background};
   transition: background-color 0.2s ease;
 `;
 
 const ModernQuestionContent = styled.div`
   padding: 0.75rem;
-  background-color: ${props => props.depth % 2 === 0 ? 
-    props.theme.card : 
+  background-color: ${props => props.depth % 2 === 0 ?
+    props.theme.card :
     props.theme.cardSecondary || props.theme.background};
 `;
 
@@ -170,102 +151,25 @@ const ModernSelect = styled.select`
 `;
 
 const CompactButton = styled.button`
-  background: linear-gradient(135deg, ${props => props.theme.primary}, ${props => props.theme.primaryHover || props.theme.secondary});
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 0.5rem 1rem;
-  font-weight: 500;
-  font-size: 0.85rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px ${props => props.theme.primary}30;
-
-  &:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px ${props => props.theme.primary}40;
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  svg {
-    width: 14px;
-    height: 14px;
-  }
+  ${primaryControl}
 `;
 
 const CompactSuccessButton = styled(CompactButton)`
-  background: linear-gradient(135deg, ${props => props.theme.success}, ${props => props.theme.successLight || props.theme.secondary});
-  box-shadow: 0 2px 4px ${props => props.theme.success}30;
-
-  &:hover:not(:disabled) {
-    box-shadow: 0 4px 8px ${props => props.theme.success}40;
-  }
+  ${primaryControl}
 `;
 
 const CompactDangerButton = styled(CompactButton)`
-  background: linear-gradient(135deg, ${props => props.theme.error}, ${props => props.theme.errorLight || '#dc2626'});
-  box-shadow: 0 2px 4px ${props => props.theme.error}30;
-
-  &:hover:not(:disabled) {
-    box-shadow: 0 4px 8px ${props => props.theme.error}40;
-  }
+  ${dangerControl}
 `;
 
 const CompactSecondaryButton = styled(CompactButton)`
-  background: ${props => props.theme.buttonSecondary || props.theme.background};
-  color: ${props => props.theme.text};
-  border: 1px solid ${props => props.theme.border};
-  box-shadow: 0 1px 3px ${props => props.theme.shadow};
-
-  &:hover:not(:disabled) {
-    background: ${props => props.theme.hover};
-    border-color: ${props => props.theme.primary};
-  }
+  ${control}
 `;
 
 const CompactIconButton = styled.button`
-  background: ${props => props.variant === 'danger' ? 
-    `linear-gradient(135deg, ${props.theme.error}, ${props.theme.errorLight || '#dc2626'})` :
-    props.variant === 'secondary' ?
-    props.theme.background :
-    props.variant === 'move' ?
-    `linear-gradient(135deg, ${props.theme.secondary}, ${props.theme.primary})` :
-    `linear-gradient(135deg, ${props.theme.primary}, ${props.theme.primaryHover || props.theme.secondary})`
-  };
-  color: ${props => props.variant === 'secondary' ? props.theme.text : 'white'};
-  border: ${props => props.variant === 'secondary' ? `1px solid ${props.theme.border}` : 'none'};
-  border-radius: 6px;
-  padding: 0.375rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 3px ${props => props.theme.shadow};
-
-  &:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px ${props => props.theme.shadow};
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  svg {
-    width: 14px;
-    height: 14px;
-  }
+  ${quietControl}
+  ${iconControl}
+  color: ${props => props.variant === 'danger' ? props.theme.error : props.theme.textSecondary};
 `;
 
 const CompactButtonGroup = styled.div`
@@ -291,7 +195,7 @@ const MoveButtonGroup = styled.div`
 `;
 
 const ModernPreviewSection = styled(ModernCreatorCard)`
-  background: linear-gradient(135deg, ${props => props.theme.card}, ${props => props.theme.cardSecondary || props.theme.background});
+  background: ${props => props.theme.cardSecondary || props.theme.background};
 `;
 
 const ModernPreviewTitle = styled.h3`
@@ -385,22 +289,22 @@ const ImageUploadComponent = memo(({ onImageUpload, currentImage, id, onAddCapti
           {currentImage ? <Camera size={14} /> : <Upload size={14} />}
         </CompactIconButton>
       </label>
-      
+
       {uploading && <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>...</span>}
-      
+
       {currentImage && (
-        <div 
+        <div
           style={{ position: 'relative' }}
           onMouseEnter={() => setShowPreview(true)}
           onMouseLeave={() => setShowPreview(false)}
         >
-          <CompactIconButton 
+          <CompactIconButton
             variant="secondary"
             onClick={() => setShowCaptionModal(true)}
           >
             <Camera size={14} />
           </CompactIconButton>
-          
+
           {showPreview && (
             <div style={{
               position: 'absolute',
@@ -424,7 +328,7 @@ const ImageUploadComponent = memo(({ onImageUpload, currentImage, id, onAddCapti
           )}
         </div>
       )}
-      
+
       {showCaptionModal && (
         <div style={{
           position: 'fixed',
@@ -476,7 +380,7 @@ const QuestionnaireCreator = () => {
     crData: { crTexts: {}, freeTexts: {} },
     pageTitles: {}
   });
-  
+
   const [expandedQuestions, setExpandedQuestions] = useState({});
   const [questionLinks, setQuestionLinks] = useState({});
   const [showLinkEditor, setShowLinkEditor] = useState(false);
@@ -498,7 +402,7 @@ const QuestionnaireCreator = () => {
             crData: data.crData || { crTexts: {}, freeTexts: {} },
             pageTitles: data.pageTitles || {}
           });
-          
+
           if (data.links) {
             setQuestionLinks(data.links);
           }
@@ -523,7 +427,7 @@ const QuestionnaireCreator = () => {
   const moveQuestion = useCallback((path, direction) => {
     setQuestionnaire(prev => {
       const newQuestions = JSON.parse(JSON.stringify(prev.questions));
-      
+
       const getParentArray = (questions, questionPath) => {
         let current = questions;
         for (let i = 0; i < questionPath.length - 1; i++) {
@@ -614,7 +518,7 @@ const QuestionnaireCreator = () => {
     const formData = new FormData();
     formData.append('image', file);
     formData.append('questionnaireTitle', questionnaireTitle);
-  
+
     try {
       const response = await axios.post('/upload-image', formData, {
         headers: {
@@ -651,24 +555,24 @@ const QuestionnaireCreator = () => {
   }, []);
 
   const addQuestion = useCallback((path = [], duplicatedQuestion = null) => {
-    const newQuestion = duplicatedQuestion || { 
-      id: Date.now().toString(), 
-      text: '', 
-      type: 'single', 
-      options: [] 
+    const newQuestion = duplicatedQuestion || {
+      id: Date.now().toString(),
+      text: '',
+      type: 'single',
+      options: []
     };
-    
+
     setQuestionnaire(prev => {
       const updatedQuestions = JSON.parse(JSON.stringify(prev.questions));
-      
+
       const addRecursive = (questions, currentPath) => {
         if (currentPath.length === 0) {
           questions.push(newQuestion);
           return questions;
         }
-        
+
         const [index, ...restPath] = currentPath;
-        
+
         if (restPath[0] === 'options') {
           if (!questions[index].options) {
             questions[index].options = [];
@@ -680,10 +584,10 @@ const QuestionnaireCreator = () => {
           }
           questions[index].subQuestions = addRecursive(questions[index].subQuestions, restPath.slice(1));
         }
-        
+
         return questions;
       };
-      
+
       return { ...prev, questions: addRecursive(updatedQuestions, path) };
     });
   }, []);
@@ -712,7 +616,7 @@ const QuestionnaireCreator = () => {
       const updatedQuestions = JSON.parse(JSON.stringify(prev.questions));
       const parentPath = path.slice(0, -1);
       const index = path[path.length - 1];
-      
+
       if (parentPath.length === 0) {
         updatedQuestions.splice(index, 1);
       } else {
@@ -726,7 +630,7 @@ const QuestionnaireCreator = () => {
         }
         current.splice(index, 1);
       }
-      
+
       return { ...prev, questions: updatedQuestions };
     });
   }, []);
@@ -769,13 +673,13 @@ const QuestionnaireCreator = () => {
           // S'assurer que les options existent
           options: question.options || []
         })),
-        
+
         selectedOptions: questionnaire.selectedOptions || {},
         crData: {
           crTexts: questionnaire.crData?.crTexts || {},
           freeTexts: questionnaire.crData?.freeTexts || {}
         },
-        
+
         // ✅ CORRECTION CRITIQUE : S'assurer que hiddenQuestions est un objet, pas un tableau ou une chaîne
         hiddenQuestions: (() => {
           const hidden = questionnaire.hiddenQuestions;
@@ -791,7 +695,7 @@ const QuestionnaireCreator = () => {
           if (typeof hidden === 'object') return hidden;
           return {};
         })(),
-        
+
         // ✅ AJOUT des champs manquants pour la création initiale - AVEC VÉRIFICATION DU TYPE
         pageTitles: (() => {
           const titles = questionnaire.pageTitles;
@@ -806,7 +710,7 @@ const QuestionnaireCreator = () => {
           if (typeof titles === 'object' && !Array.isArray(titles)) return titles;
           return {};
         })(),
-        
+
         links: (() => {
           const links = questionLinks;
           if (!links) return {};
@@ -820,7 +724,7 @@ const QuestionnaireCreator = () => {
           if (typeof links === 'object' && !Array.isArray(links)) return links;
           return {};
         })(),
-        
+
         tags: (() => {
           const tags = questionnaire.tags;
           if (!tags) return [];
@@ -835,9 +739,9 @@ const QuestionnaireCreator = () => {
           if (Array.isArray(tags)) return tags;
           return [];
         })(),
-        
+
         public: Boolean(questionnaire.public || false),
-        
+
         // Champs par défaut pour les nouvelles créations
         averageRating: Number(questionnaire.averageRating || 0),
         ratingsCount: Number(questionnaire.ratingsCount || 0),
@@ -866,7 +770,7 @@ const QuestionnaireCreator = () => {
         console.log('✅ Mise à jour du questionnaire existant...');
         response = await axios.put(`/questionnaires/${id}`, dataToSave);
         console.log('✅ Questionnaire mis à jour:', response.data);
-        
+
         // Mettre à jour l'état local avec la réponse du serveur
         if (response.data) {
           setQuestionnaire(prev => ({
@@ -874,49 +778,49 @@ const QuestionnaireCreator = () => {
             ...response.data
           }));
         }
-        
+
         alert('✅ Questionnaire sauvegardé avec succès');
         navigate('/questionnaires'); // Rediriger vers la liste après mise à jour
-        
+
       } else {
         // ✅ CRÉATION d'un nouveau questionnaire - NE PAS REDIRIGER AUTOMATIQUEMENT
         console.log('✅ Création d\'un nouveau questionnaire...');
         console.log('🔍 Questions à sauvegarder:', dataToSave.questions);
-        
+
         response = await axios.post('/questionnaires', dataToSave);
         console.log('✅ Nouveau questionnaire créé:', response.data);
-        
+
         if (response.data && response.data._id) {
           console.log('✅ Mise à jour de l\'état local avec l\'ID:', response.data._id);
-          
+
           // 🚨 CORRECTION : Utiliser les questions envoyées si celles reçues sont vides
-          const questionsToUse = (response.data.questions && response.data.questions.length > 0) 
-            ? response.data.questions 
+          const questionsToUse = (response.data.questions && response.data.questions.length > 0)
+            ? response.data.questions
             : dataToSave.questions;
-            
+
           console.log('🔍 Questions utilisées pour l\'état local:', questionsToUse);
-          
+
           setQuestionnaire(prev => ({
             ...prev,
             ...response.data,
             // 🚨 CORRECTION CRITIQUE : S'assurer que les questions sont bien préservées
             questions: questionsToUse
           }));
-          
+
           // ✅ CORRECTION PRINCIPALE : Mettre à jour l'URL sans rediriger pour éviter la perte des questions
           const newId = response.data._id;
           console.log('✅ Mise à jour de l\'URL sans redirection:', newId);
           window.history.replaceState(null, null, `/edit/${newId}`);
           // NE PAS utiliser navigate() pour éviter la perte des données
           // navigate(`/edit/${newId}`); // ← SUPPRIMÉ pour corriger le problème
-          
+
 alert('✅ Questionnaire créé avec succès !');
 setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir ici pour éviter l'exécution du reste
         }
       }
 
       console.log('✅ Réponse serveur:', response.data);
-      
+
     } catch (error) {
       console.error('❌ Détails complets de l\'erreur:', error);
       console.error('❌ Données de la requête:', error?.config?.data);
@@ -947,7 +851,7 @@ setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir 
       if (!updatedQuestionnaire.selectedOptions[questionId]) {
         updatedQuestionnaire.selectedOptions[questionId] = [];
       }
-      
+
       if (questionType === 'single') {
         updatedQuestionnaire.selectedOptions[questionId] = [optionIndex];
       } else if (questionType === 'multiple') {
@@ -958,7 +862,7 @@ setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir 
           updatedQuestionnaire.selectedOptions[questionId].push(optionIndex);
         }
       }
-      
+
       return updatedQuestionnaire;
     });
   }, []);
@@ -976,28 +880,28 @@ setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir 
   const handleSaveLink = useCallback(async (elementId, content, linkIndex, title) => {
     try {
       const updatedLinks = { ...questionLinks };
-      
+
       if (!updatedLinks[elementId]) {
         updatedLinks[elementId] = [];
       }
-      
+
       const newLink = { content, title, date: new Date() };
-      
+
       if (typeof linkIndex !== 'undefined') {
         updatedLinks[elementId][linkIndex] = newLink;
       } else {
         updatedLinks[elementId].push(newLink);
       }
-      
+
       setQuestionLinks(updatedLinks);
-      
+
       await axios.post(`/questionnaires/${id}/links`, {
         elementId,
         content,
         linkIndex,
         title
       });
-      
+
     } catch (error) {
       console.error('Erreur lors de la sauvegarde du lien:', error);
     }
@@ -1006,7 +910,7 @@ setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir 
   const handleDeleteLink = useCallback(async (elementId, linkIndex) => {
     try {
       await axios.delete(`/questionnaires/${id}/links/${elementId}/${linkIndex}`);
-      
+
       setQuestionLinks(prev => {
         const updated = { ...prev };
         if (updated[elementId]) {
@@ -1038,7 +942,7 @@ setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir 
 
   const canMoveDown = useCallback((path) => {
     const currentIndex = path[path.length - 1];
-    
+
     // Obtenir la longueur du tableau parent
     let parentArray = questionnaire.questions;
     for (let i = 0; i < path.length - 1; i++) {
@@ -1049,7 +953,7 @@ setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir 
         parentArray = parentArray[pathPart];
       }
     }
-    
+
     return currentIndex < parentArray.length - 1;
   }, [questionnaire.questions]);
 
@@ -1059,7 +963,7 @@ setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir 
     const questionId = path.join('-');
     const depth = path.length;
     const links = questionLinks[questionId] || [];
-  
+
     return (
       <ModernQuestionCard key={question.id || questionId}>
         <ModernQuestionHeader depth={depth}>
@@ -1090,13 +994,13 @@ setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir 
           >
             {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
           </CompactIconButton>
-          
+
           <ModernInput
             value={question.text || ''}
             onChange={(e) => updateQuestion(path, 'text', e.target.value)}
             placeholder="Tapez votre question ici..."
-            style={{ 
-              marginLeft: '0.5rem', 
+            style={{
+              marginLeft: '0.5rem',
               flex: 1,
               marginBottom: 0,
               fontSize: '0.9rem'
@@ -1115,7 +1019,7 @@ setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir 
                 />
                 <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Important?</span>
               </div>
-              
+
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                 <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>Page:</span>
                 <input
@@ -1194,7 +1098,7 @@ setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir 
                 </CompactSecondaryButton>
               </div>
             ))}
-            
+
             <CompactIconButton
               variant="secondary"
               onClick={() => handleOpenLinkEditor(questionId)}
@@ -1216,7 +1120,7 @@ setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir 
             >
               <Copy size={14} />
             </CompactIconButton>
-            
+
             <CompactIconButton
               variant="danger"
               onClick={() => deleteQuestion(path)}
@@ -1271,9 +1175,9 @@ setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir 
                 ) : (
                   <div>
                     <div style={{ position: 'relative' }}>
-                      <img 
-                        src={question.questionImage.src} 
-                        alt="Question" 
+                      <img
+                        src={question.questionImage.src}
+                        alt="Question"
                         style={{ width: '100%', borderRadius: '6px' }}
                       />
                       <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem' }}>
@@ -1298,7 +1202,7 @@ setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir 
                     <ImageMapEditor
                       image={question.questionImage}
                       areas={question.questionImage.areas || []}
-                      onAreasChange={(newAreas) => 
+                      onAreasChange={(newAreas) =>
                         updateQuestion(path, 'questionImage', {
                           ...question.questionImage,
                           areas: newAreas
@@ -1323,7 +1227,7 @@ setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir 
                           placeholder={`Option ${oIndex + 1}`}
                           style={{ flex: 1, marginBottom: 0 }}
                         />
-                        
+
                         {/* Images pour les options */}
                         <ImageUploadComponent
                           onImageUpload={handleImageUpload}
@@ -1358,7 +1262,7 @@ setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir 
                               </CompactIconButton>
                             </CompactSecondaryButton>
                           ))}
-                          
+
                           <CompactIconButton
                             variant="secondary"
                             onClick={() => handleOpenLinkEditor(`${questionId}-options-${oIndex}`)}
@@ -1367,7 +1271,7 @@ setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir 
                             <Plus size={12} />
                           </CompactIconButton>
                         </div>
-                        
+
                         <CompactIconButton
                           variant="danger"
                           onClick={() => deleteOption([...path, 'options', oIndex])}
@@ -1375,7 +1279,7 @@ setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir 
                         >
                           <Trash2 size={14} />
                         </CompactIconButton>
-                        
+
                         <CompactIconButton
                           variant="secondary"
                           onClick={() => addQuestion([...path, 'options', oIndex, 'subQuestions'])}
@@ -1388,7 +1292,7 @@ setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir 
                       {/* Sous-questions */}
                       {option.subQuestions?.length > 0 && (
                         <SubQuestionWrapper>
-                          {option.subQuestions.map((subQuestion, sqIndex) => 
+                          {option.subQuestions.map((subQuestion, sqIndex) =>
                             renderQuestion(subQuestion, [...path, 'options', oIndex, 'subQuestions', sqIndex])
                           )}
                         </SubQuestionWrapper>
@@ -1418,8 +1322,8 @@ setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir 
         {id ? 'Modifier le questionnaire' : 'Créer un nouveau questionnaire'}
       </ModernTitle>
 
-      <div style={{ 
-        display: 'flex', 
+      <div style={{
+        display: 'flex',
         flexDirection: 'row',
         gap: '1.5rem'
       }}>
@@ -1427,38 +1331,38 @@ setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir 
         <div style={{ flex: '2', minWidth: '0' }}>
           <ModernCreatorCard>
             <ModernTitleInput
-              type="text" 
-              value={questionnaire.title} 
+              type="text"
+              value={questionnaire.title}
               onChange={(e) => updateQuestionnaire('title', e.target.value)}
-              placeholder="Titre du questionnaire" 
+              placeholder="Titre du questionnaire"
             />
-            
-            {questionnaire.questions.map((question, index) => 
+
+            {questionnaire.questions.map((question, index) =>
               renderQuestion(question, [index])
             )}
-            
+
             <CompactButtonGroup>
               <CompactButton onClick={() => addQuestion()}>
                 <Plus size={14} />
                 Ajouter une question
               </CompactButton>
-              
+
               <CompactSuccessButton onClick={handleSave}>
                 Sauvegarder le questionnaire
               </CompactSuccessButton>
             </CompactButtonGroup>
           </ModernCreatorCard>
         </div>
-        
+
         {/* Section aperçu - 1/3 de la largeur, à droite */}
         <div style={{ flex: '1', minWidth: '300px' }}>
           <ModernPreviewSection>
             <ModernPreviewTitle>
               Aperçu du questionnaire
             </ModernPreviewTitle>
-            
+
             <PreviewContainer>
-              <QuestionnairePreview 
+              <QuestionnairePreview
                 questions={questionnaire.questions}
                 selectedOptions={questionnaire.selectedOptions}
                 setSelectedOptions={(questionId, optionIndex, type) => {
@@ -1466,7 +1370,7 @@ setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir 
                     ...prev,
                     selectedOptions: {
                       ...prev.selectedOptions,
-                      [questionId]: type === 'single' ? [optionIndex] : 
+                      [questionId]: type === 'single' ? [optionIndex] :
                         [...(prev.selectedOptions[questionId] || [])].includes(optionIndex) ?
                         prev.selectedOptions[questionId].filter(i => i !== optionIndex) :
                         [...(prev.selectedOptions[questionId] || []), optionIndex]
@@ -1537,11 +1441,11 @@ setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir 
               <AlertTriangle size={20} style={{ color: '#f59e0b', marginRight: '0.5rem' }} />
               <h3 style={{ margin: 0, color: '#374151', fontSize: '1.1rem' }}>Confirmer la suppression</h3>
             </div>
-            
+
             <p style={{ marginBottom: '1.5rem', color: '#6b7280', fontSize: '0.9rem' }}>
               Êtes-vous sûr de vouloir supprimer ce lien ? Cette action est irréversible.
             </p>
-            
+
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
               <CompactSecondaryButton
                 onClick={() => {
@@ -1551,7 +1455,7 @@ setTimeout(() => navigate('/questionnaires'), 100);           return; // Sortir 
               >
                 Annuler
               </CompactSecondaryButton>
-              
+
               <CompactDangerButton onClick={handleDeleteLinkConfirm}>
                 Supprimer
               </CompactDangerButton>
