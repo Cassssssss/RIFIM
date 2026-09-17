@@ -794,7 +794,11 @@
 .clinicalInfoBox {
   position: fixed;
   top: calc(var(--header-height) + 20px);
-  left: 20px;
+  /* 🔧 Le rail de navigation occupe les --app-rail-w premiers pixels du viewport
+     et passe au-dessus (z-index 999998). Comme cette boîte est en position fixed,
+     un `left: 20px` la place SOUS le rail et la rogne. On décale donc depuis le
+     bord du rail. Sur mobile --app-rail-w vaut 0px : le calc redonne 20px. */
+  left: calc(var(--app-rail-w, 0px) + 20px);
   max-width: 400px;
   background-color: rgb(var(--color-surface));
   border: 2px solid rgb(var(--color-border));
@@ -818,7 +822,7 @@
   @media (max-width: 768px) {
     /* 🔧 AJUSTE pour mobile */
     top: calc(var(--header-height) + 10px);
-    left: 10px;
+    left: calc(var(--app-rail-w, 0px) + 10px);
     right: 10px;
     max-width: none;
     border-radius: 8px;
@@ -1067,7 +1071,7 @@
   /* 🆕 NOUVEAU : Clinical info box en paysage */
   .clinicalInfoBox {
     top: calc(var(--header-height) + 5px);
-    left: 5px;
+    left: calc(var(--app-rail-w, 0px) + 5px);
     max-width: 300px;
   }
 }
