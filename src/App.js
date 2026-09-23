@@ -184,6 +184,8 @@ function AppContent() {
             toggleDarkMode={toggleDarkMode}
             userName={user?.username}
             onLogout={handleLogout}
+            currentStyle={styleId}
+            onChangeStyle={changeStyle}
           />
           <main className="container">
             <Suspense fallback={<LoadingSpinner />}>
@@ -237,7 +239,6 @@ function AppContent() {
             </Suspense>
           </main>
         </div>
-        <ThemeSwitcher currentStyle={styleId} onChangeStyle={changeStyle} isDarkMode={isDarkMode} />
       </DragDropContext>
     </ThemeProvider>
   );

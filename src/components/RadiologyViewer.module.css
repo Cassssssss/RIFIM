@@ -1,12 +1,10 @@
 /* Viewer controls stay inside the fullscreen element. */
 .viewerSettings {
-  position: absolute;
-  top: calc(var(--app-topbar-h, 0px) + 8px);
-  right: 12px;
-  left: 12px;
+  position: relative;
   z-index: 1100;
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  flex-shrink: 0;
   gap: 8px;
 }
 
@@ -37,10 +35,10 @@
 }
 .sensitivityPanel {
   position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  width: min(320px, 100%);
-  max-height: calc(100dvh - 190px);
+  bottom: calc(100% + 12px);
+  left: 0;
+  width: min(300px, calc(100vw - 56px));
+  max-height: calc(100dvh - 140px);
   overflow-y: auto;
   overscroll-behavior: contain;
   touch-action: pan-y;
@@ -76,7 +74,7 @@
 .sensitivityLegend { display: flex; justify-content: space-between; font-size: 11px; opacity: .7; }
 .settingsReset { margin-top: 16px; min-height: 36px; width: 100%; padding: 6px; font-size: 12px; }
 .fullscreenError {
-  position: absolute; top: 100%; right: 0; max-width: 320px;
+  position: absolute; bottom: calc(100% + 12px); left: 0; width: 280px; max-width: calc(100vw - 56px);
   padding: 12px; background: rgb(var(--color-surface)); color: rgb(var(--color-text));
   border: 1px solid rgb(var(--color-border)); border-radius: 8px; font-size: 13px;
 }
@@ -95,11 +93,24 @@
   height: 100dvh;
 }
 @media (max-width: 768px) {
-  .viewerSettings { top: 68px; left: 8px; right: 8px; }
-  .settingsButton { min-height: 40px; }
-  .settingsClose { width: 40px; height: 40px; }
-  .sensitivityField input { height: 40px; }
+  .viewerSettings { gap: 4px; }
+  .settingsButton { min-height: 36px; padding: 5px 7px; font-size: 11px; gap: 4px; }
+  .sensitivityPanel { padding: 10px 12px; border-radius: 10px; }
+  .settingsHeading strong { font-size: 13px; }
+  .settingsClose { width: 32px; height: 32px; min-height: 32px; }
+  .sensitivityField { margin-top: 4px; font-size: 12px; }
+  .sensitivityField input { height: 28px; min-height: 28px; margin: 0; }
+  .sensitivityLegend { display: none; }
+  .settingsReset { margin-top: 6px; min-height: 32px; padding: 4px; font-size: 11px; }
 }
+
+.viewerActions {
+  min-width: 0;
+  overflow-x: auto;
+  touch-action: pan-x;
+  scrollbar-width: thin;
+}
+.viewerActions > * { flex-shrink: 0; }
 
 /* ==================== VARIABLES CSS PRÉCISES ==================== */
 :root {
@@ -160,7 +171,7 @@
   position: fixed !important;
   /* Plus de bandeau horizontal en haut sur desktop : seule la barre mobile
      (--app-topbar-h) doit être dégagée, plus la marge de respiration. */
-  top: calc(var(--app-topbar-h, 0px) + 52px) !important;
+  top: calc(var(--app-topbar-h, 0px) + 8px) !important;
   bottom: 68px !important;
   left: var(--app-rail-w, 0px) !important;
   right: 0 !important;
@@ -175,7 +186,7 @@
 
   @media (max-width: 768px) {
     /* 🔧 MOBILE : header 64px + bottom bar 60px */
-    top: 112px !important;
+    top: calc(var(--app-topbar-h, 60px) + 8px) !important;
     bottom: 68px !important;
   }
 }
@@ -583,7 +594,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  gap: 12px;
+  padding: 0 12px;
 
   z-index: 1001;
   box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15);
@@ -591,8 +603,8 @@
 
   /* Safe areas pour iPhone */
   padding-bottom: var(--safe-area-bottom);
-  padding-left: calc(24px + var(--safe-area-left));
-  padding-right: calc(24px + var(--safe-area-right));
+  padding-left: calc(12px + var(--safe-area-left));
+  padding-right: calc(12px + var(--safe-area-right));
 
   & > div:last-child {
     display: flex;
@@ -731,6 +743,8 @@
   display: flex;
   align-items: center;
   position: relative;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .shortcutIcon {
@@ -1295,4 +1309,19 @@
 :global(.dark) .clinicalInfoBox {
   backdrop-filter: blur(12px);
   border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Keep the bottom controls on one row, including on narrow phones. */
+.bottomBar .responseButton, .bottomBar .sheetLink { margin-left: 0; }
+@media (max-width: 768px) {
+  .bottomBar { gap: 6px; padding-left: 6px; padding-right: 6px; }
+  .shortcutGuide { gap: 5px; }
+  .bottomBar .actionLabel { display: none; }
+  .bottomBar .responseButton, .bottomBar .sheetLink {
+    height: 36px;
+    min-height: 36px;
+    min-width: 32px;
+    padding: 5px 7px;
+  }
+  .bottomBar .viewerActions { gap: 4px; }
 }

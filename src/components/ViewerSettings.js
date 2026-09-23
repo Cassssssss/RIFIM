@@ -73,7 +73,7 @@ export default function ViewerSettings({ sensitivity, onChange, isMobile, contai
   return (
     <div className={styles.viewerSettings}>
       <button ref={triggerRef} type="button" className={styles.settingsButton}
-        aria-expanded={open} aria-controls="viewer-sensitivity" onClick={() => setOpen(!open)}>
+        aria-expanded={open} aria-controls="viewer-sensitivity" title="Régler la sensibilité" onClick={() => setOpen(!open)}>
         <SlidersHorizontal size={16} aria-hidden="true" /> Sensibilité
       </button>
       {desktop && fullscreenSupported && (
@@ -90,7 +90,7 @@ export default function ViewerSettings({ sensitivity, onChange, isMobile, contai
             <button type="button" className={styles.settingsClose} aria-label="Fermer les réglages"
               onClick={() => { setOpen(false); triggerRef.current?.focus(); }}><X size={16} /></button>
           </div>
-          <p>Ajustez la vitesse des gestes. Réglages mémorisés sur cet appareil.</p>
+          {!isMobile && <p>Ajustez la vitesse des gestes. Réglages mémorisés sur cet appareil.</p>}
           {fields.map(([key, label]) => (
             <label key={key} className={styles.sensitivityField}>
               <span>{label}<output>{sensitivity[key].toLocaleString('fr-FR')}×</output></span>

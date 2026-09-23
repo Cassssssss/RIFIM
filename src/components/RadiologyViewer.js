@@ -1344,9 +1344,9 @@ function RadiologyViewer() {
   const getViewModeText = () => {
     if (isMobile) {
       switch(viewMode) {
-        case 1: return 'Mode 1 viewer';
-        case 2: return 'Mode 2 viewers';
-        default: return 'Mode 1 viewer';
+        case 1: return '1 vue';
+        case 2: return '2 vues';
+        default: return '1 vue';
       }
     } else {
       switch(viewMode) {
@@ -1361,7 +1361,6 @@ function RadiologyViewer() {
       
   return (
     <div ref={containerRef} className={styles.container}>
-      <ViewerSettings sensitivity={sensitivity} onChange={setSensitivity} isMobile={isMobile} containerRef={containerRef} />
       <div className={styles.content}>
         <div className={styles.layout}>
           {renderFolderThumbnails()}
@@ -1410,8 +1409,9 @@ function RadiologyViewer() {
               </ul>
             </div>
           )}
+          <ViewerSettings sensitivity={sensitivity} onChange={setSensitivity} isMobile={isMobile} containerRef={containerRef} />
         </div>
-        <div>
+        <div className={styles.viewerActions}>
           {/* 🆕 NOUVEAU : Bouton pour les infos cliniques */}
           <button 
             className={styles.responseButton}
@@ -1431,16 +1431,18 @@ function RadiologyViewer() {
           <button 
             className={styles.responseButton}
             onClick={() => setIsResponseVisible(!isResponseVisible)}
+            aria-label={isResponseVisible ? 'Cacher la réponse' : 'Voir la réponse'}
+            title={isResponseVisible ? 'Cacher la réponse' : 'Voir la réponse'}
           >
             {isResponseVisible ? (
               <>
                 <EyeOff size={16} />
-                Cacher la réponse
+                <span className={styles.actionLabel}>Cacher la réponse</span>
               </>
             ) : (
               <>
                 <Eye size={16} />
-                Voir la réponse
+                <span className={styles.actionLabel}>Voir la réponse</span>
               </>
             )}
           </button>

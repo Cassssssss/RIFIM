@@ -6,6 +6,7 @@
 // par famille, filtrable, et chaque option montre un aperçu des couleurs du
 // style dans le mode courant (clair/sombre) plutôt qu'un simple émoji.
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import styled from 'styled-components';
 import { Palette, X, Check, Search } from 'lucide-react';
 import { themes, styleGroups } from '../themes';
@@ -37,6 +38,26 @@ const FloatingButton = styled.button`
   }
 `;
 
+const SidebarButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: ${({ $collapsed }) => $collapsed ? 'center' : 'flex-start'};
+  gap: 0.7rem;
+  width: 100%;
+  padding: ${({ $collapsed }) => $collapsed ? '0.55rem 0' : '0.55rem 0.65rem'};
+  margin: 0.12rem 0;
+  border: 0;
+  border-radius: ${({ theme }) => theme.radii.md};
+  background: transparent;
+  color: ${({ theme }) => theme.textSecondary};
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  svg { width: 18px; height: 18px; flex-shrink: 0; }
+  &:hover { background: ${({ theme }) => theme.hover}; color: ${({ theme }) => theme.text}; }
+`;
+
 const Panel = styled.div`
   position: fixed;
   bottom: 84px;
@@ -53,6 +74,14 @@ const Panel = styled.div`
   box-shadow: ${({ theme }) => theme.shadows.cardHover};
   overflow: hidden;
   animation: fadeIn 0.2s ease-out;
+
+  ${({ $sidebar }) => $sidebar && `
+    left: calc(var(--app-rail-w, 0px) + 8px);
+    right: auto;
+    bottom: 12px;
+    max-height: calc(100dvh - 84px);
+    @media (max-width: 900px) { left: 12px; max-width: calc(100vw - 24px); }
+  `}
 
   @media print {
     display: none;
@@ -201,13 +230,14 @@ const Empty = styled.div`
 const normalize = (s) =>
   s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-function ThemeSwitcher({ currentStyle, onChangeStyle, isDarkMode }) {
+function ThemeSwitcher({ currentStyle, onChangeStyle, isDarkMode, placement = 'floating', collapsed = false }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const panelRef = useRef(null);
   const buttonRef = useRef(null);
 
   const mode = isDarkMode ? 'dark' : 'light';
+  const Trigger = placement === 'sidebar' ? SidebarButton : FloatingButton;
 
   const groups = useMemo(() => {
     const q = normalize(query.trim());
@@ -247,8 +277,8 @@ function ThemeSwitcher({ currentStyle, onChangeStyle, isDarkMode }) {
 
   return (
     <>
-      {open && (
-        <Panel ref={panelRef} role="dialog" aria-label="Sélecteur de style">
+      {open && createPortal(
+        <Panel $sidebar={placement === 'sidebar'} ref={panelRef} role="dialog" aria-label="Sélecteur de style">
           <PanelHeader>
             <Title>
               Style du site
@@ -298,17 +328,20 @@ function ThemeSwitcher({ currentStyle, onChangeStyle, isDarkMode }) {
               </div>
             ))}
           </ScrollArea>
-        </Panel>
+        </Panel>, document.body
       )}
 
-      <FloatingButton
+      <Trigger
+        $collapsed={collapsed}
         ref={buttonRef}
         onClick={() => setOpen((v) => !v)}
         aria-label="Changer le style du site"
+        aria-expanded={open}
         title="Changer le style du site"
       >
         <Palette size={22} />
-      </FloatingButton>
+        {placement === 'sidebar' && !collapsed && <span>Couleurs et style</span>}
+      </Trigger>
     </>
   );
 }

@@ -18,6 +18,7 @@ import {
   Users, BarChart3, Home, PlusCircle, PanelLeftClose, PanelLeftOpen,
 } from 'lucide-react';
 import RifimLogo from './shared/Logo';
+import ThemeSwitcher from './ThemeSwitcher';
 
 const RAIL_WIDE = 260;
 const RAIL_NARROW = 76;
@@ -373,7 +374,7 @@ const SECTIONS = [
 
 // ---------------------------------------------------------------- composant
 
-function Sidebar({ isDarkMode, toggleDarkMode, userName, user, onLogout }) {
+function Sidebar({ isDarkMode, toggleDarkMode, userName, user, onLogout, currentStyle, onChangeStyle }) {
   const name = userName || user?.username || '';
   const location = useLocation();
 
@@ -520,6 +521,11 @@ function Sidebar({ isDarkMode, toggleDarkMode, userName, user, onLogout }) {
               <User />
               {!folded && <ItemLabel>{name}</ItemLabel>}
             </UserRow>
+          )}
+
+          {(!narrow || open) && (
+            <ThemeSwitcher key={location.pathname} placement="sidebar" collapsed={folded}
+              currentStyle={currentStyle} onChangeStyle={onChangeStyle} isDarkMode={isDarkMode} />
           )}
 
           <FootButton
