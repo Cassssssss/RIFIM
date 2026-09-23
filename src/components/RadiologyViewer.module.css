@@ -1,3 +1,106 @@
+/* Viewer controls stay inside the fullscreen element. */
+.viewerSettings {
+  position: absolute;
+  top: calc(var(--app-topbar-h, 0px) + 8px);
+  right: 12px;
+  left: 12px;
+  z-index: 1100;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.settingsButton, .settingsClose, .settingsReset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid rgb(var(--color-border));
+  border-radius: 7px;
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-text));
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.settingsButton { min-height: 36px; padding: 6px 11px; }
+.settingsButton:hover, .settingsButton[aria-expanded='true'], .settingsButton[aria-pressed='true'] {
+  border-color: rgb(var(--color-primary));
+  color: rgb(var(--color-primary));
+}
+.settingsButton:focus-visible, .settingsClose:focus-visible, .settingsReset:focus-visible,
+.sensitivityField input:focus-visible {
+  outline: 2px solid rgb(var(--color-primary));
+  outline-offset: 3px;
+}
+.sensitivityPanel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(320px, 100%);
+  max-height: calc(100dvh - 190px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  padding: 16px;
+  border: 1px solid rgb(var(--color-border));
+  border-radius: 12px;
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-text));
+  box-shadow: 0 8px 28px rgb(15 23 42 / 15%);
+}
+.settingsHeading { display: flex; align-items: center; justify-content: space-between; }
+.settingsHeading strong { font-size: 14px; }
+.settingsClose { width: 32px; height: 32px; border: 0; }
+.sensitivityPanel p { font-size: 12px; line-height: 1.5; margin: 8px 0 16px; }
+.sensitivityField { display: block; margin-top: 10px; font-size: 13px; }
+.sensitivityField > span { display: flex; justify-content: space-between; gap: 12px; }
+.sensitivityField output { font-variant-numeric: tabular-nums; color: rgb(var(--color-primary)); }
+.sensitivityField input {
+  appearance: auto;
+  -webkit-appearance: auto;
+  display: block;
+  width: 100%;
+  height: 32px;
+  padding: 0;
+  margin: 2px 0;
+  accent-color: rgb(var(--color-primary));
+  cursor: pointer;
+  touch-action: none;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.sensitivityLegend { display: flex; justify-content: space-between; font-size: 11px; opacity: .7; }
+.settingsReset { margin-top: 16px; min-height: 36px; width: 100%; padding: 6px; font-size: 12px; }
+.fullscreenError {
+  position: absolute; top: 100%; right: 0; max-width: 320px;
+  padding: 12px; background: rgb(var(--color-surface)); color: rgb(var(--color-text));
+  border: 1px solid rgb(var(--color-border)); border-radius: 8px; font-size: 13px;
+}
+.container:fullscreen {
+  --app-rail-w: 0px;
+  --app-topbar-h: 0px;
+  left: 0 !important;
+  width: 100%;
+  height: 100dvh;
+}
+.container:-webkit-full-screen {
+  --app-rail-w: 0px;
+  --app-topbar-h: 0px;
+  left: 0 !important;
+  width: 100%;
+  height: 100dvh;
+}
+@media (max-width: 768px) {
+  .viewerSettings { top: 68px; left: 8px; right: 8px; }
+  .settingsButton { min-height: 40px; }
+  .settingsClose { width: 40px; height: 40px; }
+  .sensitivityField input { height: 40px; }
+}
+
 /* ==================== VARIABLES CSS PRÉCISES ==================== */
 :root {
   /* 🔧 CORRECTION : Hauteurs différentes pour desktop et mobile */
@@ -57,7 +160,7 @@
   position: fixed !important;
   /* Plus de bandeau horizontal en haut sur desktop : seule la barre mobile
      (--app-topbar-h) doit être dégagée, plus la marge de respiration. */
-  top: calc(var(--app-topbar-h, 0px) + 8px) !important;
+  top: calc(var(--app-topbar-h, 0px) + 52px) !important;
   bottom: 68px !important;
   left: var(--app-rail-w, 0px) !important;
   right: 0 !important;
@@ -72,7 +175,7 @@
 
   @media (max-width: 768px) {
     /* 🔧 MOBILE : header 64px + bottom bar 60px */
-    top: 72px !important;
+    top: 112px !important;
     bottom: 68px !important;
   }
 }
@@ -466,9 +569,9 @@
 .bottomBar {
   position: fixed;
   bottom: 0;
-  left: 0;
+  left: var(--app-rail-w, 0px);
   right: 0;
-  width: 100vw;
+  width: auto;
   height: var(--bottom-bar-height);
 
   /* 🔧 CORRECTION : Même style que le header */

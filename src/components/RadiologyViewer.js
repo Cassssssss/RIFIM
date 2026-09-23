@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { ChevronDown, ChevronUp, X, ChevronLeft, ChevronRight, Eye, EyeOff, FileText } from 'lucide-react';
 import axios from '../utils/axiosConfig';
 import styles from './RadiologyViewer.module.css';
+import ViewerSettings from './ViewerSettings';
+import { accumulateSlices, readSensitivity, SENSITIVITY_STORAGE_KEY } from '../utils/viewerSensitivity';
 
 // Composant simple sans cache complexe
 const CollapsibleImageGallery = memo(({ folder, images, onImageClick, onDeleteImage }) => {
@@ -41,6 +43,17 @@ const CollapsibleImageGallery = memo(({ folder, images, onImageClick, onDeleteIm
 function RadiologyViewer() {
   const { caseId } = useParams();
   const [currentCase, setCurrentCase] = useState(null);
+  const containerRef = useRef(null);
+  const scrollRemainders = useRef({});
+  const displayedImages = useRef({});
+  const [sensitivity, setSensitivity] = useState(readSensitivity);
+
+  useEffect(() => {
+    scrollRemainders.current = {};
+    try {
+      localStorage.setItem(SENSITIVITY_STORAGE_KEY, JSON.stringify(sensitivity));
+    } catch { /* Settings still work when storage is unavailable. */ }
+  }, [sensitivity]);
   const [currentIndexLeft, setCurrentIndexLeft] = useState(0);
   const [currentIndexRight, setCurrentIndexRight] = useState(0);
   const [currentIndexTopLeft, setCurrentIndexTopLeft] = useState(0);
@@ -69,9 +82,8 @@ function RadiologyViewer() {
   // Détection mobile simple
   const [isMobile] = useState(() => {
     if (typeof window === 'undefined') return false;
-    return window.innerWidth <= 768 || 
-           'ontouchstart' in window || 
-           navigator.maxTouchPoints > 0;
+    // A touchscreen laptop still needs mouse controls when its primary pointer is fine.
+    return window.innerWidth <= 768 || window.matchMedia('(pointer: coarse)').matches;
   });
   
   // Mode viewer : forcé à 1 sur mobile au démarrage
@@ -97,7 +109,6 @@ function RadiologyViewer() {
   const [isAdjustingContrast, setIsAdjustingContrast] = useState(false);
   const [startX, setStartX] = useState(0);
   const [startY, setStartY] = useState(0);
-  const [accumulatedDelta, setAccumulatedDelta] = useState(0);
   const [isShortcutGuideVisible, setIsShortcutGuideVisible] = useState(false);
 
   // 📧 NOUVEAUX ÉTATS POUR DRAG & DROP MOBILE
@@ -204,6 +215,7 @@ function RadiologyViewer() {
     }
     
     if (imageElement) {
+      displayedImages.current[side] = { folder, index };
       // Changer l'image directement
       imageElement.src = imageUrl;
       
@@ -259,68 +271,38 @@ function RadiologyViewer() {
 
   // ==================== FONCTION handleScroll ==================== 
   
-  const handleScroll = useCallback((deltaY, slowMode = false, side) => {
-    const threshold = slowMode ? 8: 40;
-    
-    setAccumulatedDelta(prev => {
-      const newDelta = prev + deltaY;
-      if (Math.abs(newDelta) >= threshold) {
-        const direction = newDelta > 0 ? 1 : -1;
-        
-        let currentFolder, currentIndex;
-        switch(side) {
-          case 'left':
-          case 'single':
-            currentFolder = currentFolderLeft;
-            currentIndex = currentIndexLeft;
-            break;
-          case 'right':
-            currentFolder = currentFolderRight;
-            currentIndex = currentIndexRight;
-            break;
-          case 'topLeft':
-            currentFolder = currentFolderTopLeft;
-            currentIndex = currentIndexTopLeft;
-            break;
-          case 'topRight':
-            currentFolder = currentFolderTopRight;
-            currentIndex = currentIndexTopRight;
-            break;
-          case 'bottomLeft':
-            currentFolder = currentFolderBottomLeft;
-            currentIndex = currentIndexBottomLeft;
-            break;
-          case 'bottomRight':
-            currentFolder = currentFolderBottomRight;
-            currentIndex = currentIndexBottomRight;
-            break;
-          default:
-            currentFolder = currentFolderLeft;
-            currentIndex = currentIndexLeft;
-        }
-        
-        const images = currentCase?.images?.[currentFolder];
-        
-        if (images && images.length > 0) {
-          let newIndex = currentIndex + direction;
-          
-          if (newIndex < 0) {
-            newIndex = 0;
-          } else if (newIndex >= images.length) {
-            newIndex = images.length - 1;
-          }
-          
-          if (newIndex !== currentIndex) {
-            loadImage(currentFolder, newIndex, side);
-          }
-        }
-        return 0;
-      }
-      return newDelta;
-    });
+  const handleScroll = useCallback((deltaY, slowMode = false, side, keyboard = false) => {
+    const threshold = slowMode ? 8 : 40;
+    const positions = {
+      single: [currentFolderLeft, currentIndexLeft],
+      left: [currentFolderLeft, currentIndexLeft],
+      right: [currentFolderRight, currentIndexRight],
+      topLeft: [currentFolderTopLeft, currentIndexTopLeft],
+      topRight: [currentFolderTopRight, currentIndexTopRight],
+      bottomLeft: [currentFolderBottomLeft, currentIndexBottomLeft],
+      bottomRight: [currentFolderBottomRight, currentIndexBottomRight]
+    };
+    const [folder, index] = positions[side] || positions.single;
+    const images = currentCase?.images?.[folder];
+    if (!images?.length) return;
+
+    const previous = scrollRemainders.current[side];
+    const { steps, remainder } = keyboard
+      ? { steps: Math.sign(deltaY), remainder: 0 }
+      : accumulateSlices(previous?.folder === folder ? previous.value : 0, deltaY, threshold, sensitivity.scroll);
+    scrollRemainders.current[side] = { folder, value: remainder };
+
+    // Use the last displayed slice even when multiple events arrive before React renders.
+    const displayed = displayedImages.current[side];
+    const currentIndex = displayed?.folder === folder ? displayed.index : index;
+    const newIndex = Math.max(0, Math.min(images.length - 1, currentIndex + steps));
+    if (newIndex !== currentIndex) loadImage(folder, newIndex, side);
+    if ((newIndex === 0 && deltaY < 0) || (newIndex === images.length - 1 && deltaY > 0)) {
+      scrollRemainders.current[side].value = 0;
+    }
   }, [currentCase, currentFolderLeft, currentFolderRight, currentFolderTopLeft, currentFolderTopRight, 
       currentFolderBottomLeft, currentFolderBottomRight, currentIndexLeft, currentIndexRight, 
-      currentIndexTopLeft, currentIndexTopRight, currentIndexBottomLeft, currentIndexBottomRight, loadImage]);
+      currentIndexTopLeft, currentIndexTopRight, currentIndexBottomLeft, currentIndexBottomRight, loadImage, sensitivity.scroll]);
 
   // ==================== AUTRES FONCTIONS ====================
 
@@ -362,7 +344,7 @@ function RadiologyViewer() {
 
   const handleZoom = useCallback((side, deltaY) => {
     const zoomSensitivity = isMobile ? 0.002 : 0.001;
-    const zoomFactor = 1 + (deltaY * zoomSensitivity);
+    const zoomFactor = Math.exp(deltaY * zoomSensitivity * sensitivity.zoom);
     
     setImageControls(prevControls => {
       const newControls = {
@@ -375,7 +357,7 @@ function RadiologyViewer() {
       
       return newControls;
     });
-  }, [isMobile]);
+  }, [isMobile, sensitivity.zoom]);
 
   const handlePan = useCallback((side, deltaX, deltaY) => {
     setImageControls(prevControls => {
@@ -383,8 +365,8 @@ function RadiologyViewer() {
         ...prevControls,
         [side]: {
           ...prevControls[side],
-          translateX: prevControls[side].translateX + deltaX,
-          translateY: prevControls[side].translateY + deltaY
+          translateX: prevControls[side].translateX + deltaX * sensitivity.pan,
+          translateY: prevControls[side].translateY + deltaY * sensitivity.pan
         }
       };
       
@@ -421,11 +403,11 @@ function RadiologyViewer() {
       
       return newControls;
     });
-  }, []);
+  }, [sensitivity.pan]);
 
   const handleContrast = useCallback((side, deltaX, deltaY = 0) => {
-    const contrastSensitivity = 2;
-    const brightnessSensitivity = 2;
+    const contrastSensitivity = 2 * sensitivity.contrast;
+    const brightnessSensitivity = 2 * sensitivity.contrast;
 
     setImageControls(prevControls => {
       const newControls = {
@@ -439,12 +421,13 @@ function RadiologyViewer() {
 
       return newControls;
     });
-  }, []);
+  }, [sensitivity.contrast]);
 
   // ==================== GESTION TOUCH MOBILE ====================
 
   const handleTouchStart = useCallback((e, side) => {
     if (!isMobile) return;
+    scrollRemainders.current[side] = undefined;
     
     const currentTime = Date.now();
     const tapInterval = currentTime - lastTapTime;
@@ -516,14 +499,14 @@ function RadiologyViewer() {
       const deltaY = touch.clientY - panStartPoint.y;
       
       // Applique le déplacement avec une sensibilité ajustée
-      const sensitivity = 0.5; // 📧 RÉDUIT de 1.5 à 0.5 pour un mouvement plus précis
+      const panSensitivity = 0.5 * sensitivity.pan;
       
       setImageControls(prev => ({
         ...prev,
         [side]: {
           ...prev[side],
-          translateX: currentPanOffset.x + (deltaX * sensitivity),
-          translateY: currentPanOffset.y + (deltaY * sensitivity)
+          translateX: currentPanOffset.x + (deltaX * panSensitivity),
+          translateY: currentPanOffset.y + (deltaY * panSensitivity)
         }
       }));
       
@@ -557,7 +540,7 @@ function RadiologyViewer() {
       
       if (imageElement) {
         const controls = imageControls[side];
-        imageElement.style.transform = `scale(${controls.scale}) translate(${currentPanOffset.x + (deltaX * sensitivity)}px, ${currentPanOffset.y + (deltaY * sensitivity)}px)`;
+        imageElement.style.transform = `scale(${controls.scale}) translate(${currentPanOffset.x + (deltaX * panSensitivity)}px, ${currentPanOffset.y + (deltaY * panSensitivity)}px)`;
       }
       
       return;
@@ -576,7 +559,7 @@ function RadiologyViewer() {
           touch2.clientY - touch1.clientY
         );
     
-        const scaleFactor = newDistance / touchStartPoints.distance;
+        const scaleFactor = Math.pow(newDistance / Math.max(1, touchStartPoints.distance), sensitivity.zoom);
         const newScale = Math.max(0.1, Math.min(5, initialScale * scaleFactor));
     
         setImageControls(prev => ({
@@ -612,9 +595,7 @@ function RadiologyViewer() {
       const touch = e.touches[0];
       const deltaY = touch.clientY - lastTouch.y;
       
-      if (Math.abs(deltaY) > 2) {
-        handleScroll(deltaY * 5, false, side);
-      }
+      handleScroll(deltaY * 5, false, side);
       
       setLastTouch({
         x: touch.clientX,
@@ -622,7 +603,7 @@ function RadiologyViewer() {
       });
     }
   }, [isMobile, isDoubleTapPanning, panStartPoint, currentPanOffset, touchStartPoints, 
-      initialScale, handleScroll, lastTouch, imageControls]);
+      initialScale, handleScroll, lastTouch, imageControls, sensitivity.pan, sensitivity.zoom]);
   
   const handleTouchEnd = useCallback((e, side) => {
     if (!isMobile) return;
@@ -857,6 +838,7 @@ function RadiologyViewer() {
 
   const handleMouseDown = useCallback((e, side) => {
     if (isMobile) return;
+    scrollRemainders.current[side] = undefined;
     
     // 🔧 CORRECTION : Stocker le side actuel
     currentDragSideRef.current = side;
@@ -975,7 +957,9 @@ function RadiologyViewer() {
     if (e.ctrlKey || e.metaKey) {
       handleZoom(targetSide, -e.deltaY);
     } else {
-      handleScroll(e.deltaY, false, targetSide);
+      // Wheel events can be expressed in pixels, lines or pages.
+      const delta = e.deltaY * (e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? 400 : 1);
+      handleScroll(delta, false, targetSide);
     }
   }, [viewMode, handleZoom, handleScroll, isMobile]);
 
@@ -1017,13 +1001,22 @@ function RadiologyViewer() {
         mainViewer.removeEventListener('wheel', handleWheelEvent);
       }
     };
-  }, [handleWheelEvent, isMobile]);
+  }, [handleWheelEvent, isMobile, currentCase]);
 
   // Touches clavier (desktop uniquement)
   useEffect(() => {
     if (isMobile) return;
     
     const handleKeyDown = (event) => {
+      if (event.target.closest?.('input, textarea, select, [contenteditable="true"]')) return;
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        const sides = viewMode === 1 ? ['single'] : viewMode === 2 ? ['left', 'right']
+          : viewMode === 3 ? ['topLeft', 'topRight', 'bottomLeft']
+          : ['topLeft', 'topRight', 'bottomLeft', 'bottomRight'];
+        sides.forEach(side => handleScroll(event.key === 'ArrowDown' ? 1 : -1, false, side, true));
+        return;
+      }
       if (event.key === "&" || event.key === "1") {
         setViewMode(1);
       } else if (event.key === "é" || event.key === "2") {
@@ -1032,38 +1025,6 @@ function RadiologyViewer() {
         setViewMode(3);
       } else if (event.key === "'" || event.key === "4") {
         setViewMode(4);
-      } else if (event.key === "ArrowDown") {
-        if (viewMode === 1) {
-          handleScroll(100, false, 'single');
-        } else if (viewMode === 2) {
-          handleScroll(100, false, 'left');
-          handleScroll(100, false, 'right');
-        } else if (viewMode === 3) {
-          handleScroll(100, false, 'topLeft');
-          handleScroll(100, false, 'topRight');
-          handleScroll(100, false, 'bottomLeft');
-        } else if (viewMode === 4) {
-          handleScroll(100, false, 'topLeft');
-          handleScroll(100, false, 'topRight');
-          handleScroll(100, false, 'bottomLeft');
-          handleScroll(100, false, 'bottomRight');
-        }
-      } else if (event.key === "ArrowUp") {
-        if (viewMode === 1) {
-          handleScroll(-100, false, 'single');
-        } else if (viewMode === 2) {
-          handleScroll(-100, false, 'left');
-          handleScroll(-100, false, 'right');
-        } else if (viewMode === 3) {
-          handleScroll(-100, false, 'topLeft');
-          handleScroll(-100, false, 'topRight');
-          handleScroll(-100, false, 'bottomLeft');
-        } else if (viewMode === 4) {
-          handleScroll(-100, false, 'topLeft');
-          handleScroll(-100, false, 'topRight');
-          handleScroll(-100, false, 'bottomLeft');
-          handleScroll(-100, false, 'bottomRight');
-        }
       }
     };
 
@@ -1107,7 +1068,7 @@ function RadiologyViewer() {
 
   // Effects pour charger les images initiales
   useEffect(() => {
-    if (currentCase && currentFolderLeft && leftViewerRef.current) {
+    if (currentCase && currentFolderLeft && (viewMode === 1 ? singleViewerRef.current : leftViewerRef.current)) {
       loadImage(currentFolderLeft, currentIndexLeft, viewMode === 1 ? 'single' : 'left');
     }
   }, [currentCase, currentFolderLeft, currentIndexLeft, viewMode, loadImage]);
@@ -1399,7 +1360,8 @@ function RadiologyViewer() {
   };
       
   return (
-    <div className={styles.container}>
+    <div ref={containerRef} className={styles.container}>
+      <ViewerSettings sensitivity={sensitivity} onChange={setSensitivity} isMobile={isMobile} containerRef={containerRef} />
       <div className={styles.content}>
         <div className={styles.layout}>
           {renderFolderThumbnails()}
